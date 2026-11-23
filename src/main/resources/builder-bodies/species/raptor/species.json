@@ -1,0 +1,21 @@
+{
+ "vehicle": false,
+ "armor": 0.0,
+ "behaves": "pack_hunter",
+ "body": "humanoid",
+ "damage": 5.0,
+ "health": 40.0,
+ "id": "raptor",
+ "knockbackResistance": 0.0,
+ "modelKey": "raptor",
+ "name": "Velociraptor",
+ "powers": [
+  "leaps",
+  "friendly"
+ ],
+ "scale": 0.8,
+ "speed": 0.4,
+ "texture": "zombie",
+ "tint": "#FFFFFF",
+ "voice": "ravager"
+}

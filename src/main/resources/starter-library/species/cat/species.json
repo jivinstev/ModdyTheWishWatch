@@ -1,0 +1,19 @@
+{
+  "armor": 0.0,
+  "body": "humanoid",
+  "damage": 0.0,
+  "health": 20.0,
+  "id": "cat",
+  "knockbackResistance": 0.0,
+  "modelKey": "cat",
+  "name": "Cat",
+  "powers": [
+    "friendly",
+    "skittish"
+  ],
+  "scale": 1.2,
+  "speed": 0.3,
+  "texture": "zombie",
+  "tint": "#FFFFFF",
+  "voice": "cat"
+}

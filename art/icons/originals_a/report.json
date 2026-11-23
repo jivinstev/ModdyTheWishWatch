@@ -1,0 +1,296 @@
+[
+ {
+  "cluster": "originals_a",
+  "name": "machine",
+  "verdict": "PASS",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.534,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "body": 368,
+   "fixed": 43,
+   "line": 132,
+   "shine": 4
+  }
+ },
+ {
+  "cluster": "originals_a",
+  "name": "block",
+  "verdict": "WARN",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [
+   "silhouette 90% the same as food_round",
+   "silhouette 89% the same as orb"
+  ],
+  "stats": {
+   "fill": 0.607,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "body": 163,
+   "fixed": 282,
+   "line": 172,
+   "shine": 5
+  }
+ },
+ {
+  "cluster": "originals_a",
+  "name": "cup",
+  "verdict": "PASS",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.349,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "body": 219,
+   "fixed": 15,
+   "line": 119,
+   "shine": 4
+  }
+ },
+ {
+  "cluster": "originals_a",
+  "name": "cone",
+  "verdict": "PASS",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.311,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "body": 108,
+   "fixed": 95,
+   "line": 111,
+   "shine": 4
+  }
+ },
+ {
+  "cluster": "originals_a",
+  "name": "bottle",
+  "verdict": "PASS",
+  "kind": "fixed",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.406,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "fixed": 306,
+   "line": 105,
+   "shine": 5
+  }
+ },
+ {
+  "cluster": "originals_a",
+  "name": "bucket",
+  "verdict": "PASS",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.419,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "body": 259,
+   "fixed": 36,
+   "line": 130,
+   "shine": 4
+  }
+ },
+ {
+  "cluster": "originals_a",
+  "name": "bag",
+  "verdict": "PASS",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.504,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "body": 389,
+   "line": 123,
+   "shine": 4
+  }
+ },
+ {
+  "cluster": "originals_a",
+  "name": "food_round",
+  "verdict": "WARN",
+  "kind": "fixed",
+  "n": 32,
+  "problems": [],
+  "warnings": [
+   "silhouette 90% the same as block",
+   "silhouette 88% the same as orb"
+  ],
+  "stats": {
+   "fill": 0.572,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "fixed": 493,
+   "line": 88,
+   "shine": 5
+  }
+ },
+ {
+  "cluster": "originals_a",
+  "name": "orb",
+  "verdict": "WARN",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [
+   "silhouette 89% the same as block",
+   "silhouette 88% the same as food_round"
+  ],
+  "stats": {
+   "fill": 0.653,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "body": 1,
+   "fixed": 544,
+   "line": 119,
+   "shine": 5
+  }
+ },
+ {
+  "cluster": "originals_a",
+  "name": "wand",
+  "verdict": "WARN",
+  "kind": "fixed",
+  "n": 32,
+  "problems": [],
+  "warnings": [
+   "fill 25% (want 30-85%)"
+  ],
+  "stats": {
+   "fill": 0.245,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "fixed": 148,
+   "line": 100,
+   "shine": 3
+  }
+ },
+ {
+  "cluster": "originals_a",
+  "name": "pad",
+  "verdict": "PASS",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.355,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "body": 271,
+   "line": 88,
+   "shine": 5
+  }
+ },
+ {
+  "cluster": "originals_a",
+  "name": "rocket",
+  "verdict": "PASS",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.341,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "body": 145,
+   "fixed": 78,
+   "line": 121,
+   "shine": 5
+  }
+ },
+ {
+  "cluster": "originals_a",
+  "name": "coin",
+  "verdict": "PASS",
+  "kind": "fixed",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.417,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "fixed": 335,
+   "line": 87,
+   "shine": 5
+  }
+ },
+ {
+  "cluster": "originals_a",
+  "name": "lamp",
+  "verdict": "PASS",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.465,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "body": 105,
+   "fixed": 118,
+   "line": 251,
+   "shine": 2
+  }
+ },
+ {
+  "cluster": "originals_a",
+  "name": "vehicle",
+  "verdict": "PASS",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.491,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "body": 294,
+   "fixed": 43,
+   "line": 164,
+   "shine": 2
+  }
+ },
+ {
+  "cluster": "originals_a",
+  "name": "small_pile",
+  "verdict": "WARN",
+  "kind": "fixed",
+  "n": 32,
+  "problems": [],
+  "warnings": [
+   "silhouette is 2 pieces"
+  ],
+  "stats": {
+   "fill": 0.537,
+   "dark_body": 0.0,
+   "pieces": 2,
+   "fixed": 455,
+   "line": 91,
+   "shine": 4
+  }
+ }
+]

@@ -1,0 +1,248 @@
+{
+  "id": "bear",
+  "name": "Bear",
+  "note": "Plain brown bear base: chunky body 16x14x26, four thick legs, head with lighter tan muzzle, round ears, small black eyes/nose, stubby tail. Fur pattern for texture. Friendly wild, no accessories so it can be a base.",
+  "palette": [
+    {
+      "colour": "#6B4423",
+      "percent": 88
+    },
+    {
+      "colour": "#A67B5B",
+      "percent": 5
+    }
+  ],
+  "powers": [
+    "friendly"
+  ],
+  "base": "wild",
+  "damage": 0,
+  "health": 30,
+  "speed": 0.22,
+  "status": "Sculpting your brown bear",
+  "parts": [
+    {
+      "name": "body",
+      "from": [
+        -8,
+        8,
+        -13
+      ],
+      "to": [
+        8,
+        22,
+        13
+      ],
+      "colour": "#6B4423",
+      "pattern": "fur",
+      "pattern_colour": "#4E3018"
+    },
+    {
+      "name": "hump",
+      "from": [
+        -7,
+        20,
+        -10
+      ],
+      "to": [
+        7,
+        24,
+        0
+      ],
+      "colour": "#6B4423",
+      "parent": "body",
+      "pattern": "fur",
+      "pattern_colour": "#4E3018"
+    },
+    {
+      "name": "legFL",
+      "from": [
+        -8,
+        0,
+        -12
+      ],
+      "to": [
+        -2,
+        10,
+        -6
+      ],
+      "colour": "#5A381C",
+      "pattern": "fur",
+      "pattern_colour": "#3E2612"
+    },
+    {
+      "name": "legFR",
+      "from": [
+        2,
+        0,
+        -12
+      ],
+      "to": [
+        8,
+        10,
+        -6
+      ],
+      "colour": "#5A381C",
+      "pattern": "fur",
+      "pattern_colour": "#3E2612"
+    },
+    {
+      "name": "legBL",
+      "from": [
+        -8,
+        0,
+        6
+      ],
+      "to": [
+        -2,
+        10,
+        12
+      ],
+      "colour": "#5A381C",
+      "pattern": "fur",
+      "pattern_colour": "#3E2612"
+    },
+    {
+      "name": "legBR",
+      "from": [
+        2,
+        0,
+        6
+      ],
+      "to": [
+        8,
+        10,
+        12
+      ],
+      "colour": "#5A381C",
+      "pattern": "fur",
+      "pattern_colour": "#3E2612"
+    },
+    {
+      "name": "head",
+      "from": [
+        -6,
+        14,
+        -22
+      ],
+      "to": [
+        6,
+        25,
+        -12
+      ],
+      "colour": "#6B4423",
+      "pattern": "fur",
+      "pattern_colour": "#4E3018"
+    },
+    {
+      "name": "muzzle",
+      "from": [
+        -3,
+        14,
+        -26
+      ],
+      "to": [
+        3,
+        19,
+        -21
+      ],
+      "colour": "#A67B5B",
+      "parent": "head"
+    },
+    {
+      "name": "nose",
+      "from": [
+        -1.5,
+        17,
+        -27
+      ],
+      "to": [
+        1.5,
+        19,
+        -25
+      ],
+      "colour": "#1A1A1A",
+      "parent": "head"
+    },
+    {
+      "name": "eyeL",
+      "from": [
+        -4.0,
+        20.0,
+        -22.0
+      ],
+      "to": [
+        -2.0,
+        22.0,
+        -21.0
+      ],
+      "colour": "#111111",
+      "parent": "head"
+    },
+    {
+      "name": "eyeR",
+      "from": [
+        2.0,
+        20.0,
+        -22.0
+      ],
+      "to": [
+        4.0,
+        22.0,
+        -21.0
+      ],
+      "colour": "#111111",
+      "parent": "head",
+      "pivot": [
+        3.0,
+        20.0,
+        -21.5
+      ]
+    },
+    {
+      "name": "earL",
+      "from": [
+        -6,
+        24,
+        -18
+      ],
+      "to": [
+        -3,
+        27,
+        -16
+      ],
+      "colour": "#5A381C",
+      "parent": "head"
+    },
+    {
+      "name": "earR",
+      "from": [
+        3,
+        24,
+        -18
+      ],
+      "to": [
+        6,
+        27,
+        -16
+      ],
+      "colour": "#5A381C",
+      "parent": "head"
+    },
+    {
+      "name": "tail",
+      "from": [
+        -1.5,
+        17,
+        12
+      ],
+      "to": [
+        1.5,
+        20,
+        15
+      ],
+      "colour": "#5A381C",
+      "parent": "body"
+    }
+  ]
+}

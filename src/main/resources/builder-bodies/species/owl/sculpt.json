@@ -1,0 +1,230 @@
+{
+ "behaves_like": "buzzer",
+ "damage": 0,
+ "health": 20,
+ "id": "owl",
+ "kits": [
+  {
+   "colour": "#6B4220",
+   "kit": "wing",
+   "on": "body",
+   "size": "S"
+  }
+ ],
+ "name": "Brown Owl",
+ "note": "Cute: round brown fur body, tan speckled belly, oversized white eyes with big black pupils, small orange beak, ear tufts; friendly, flits like a bee.",
+ "palette": [
+  {
+   "colour": "#8B5A2B",
+   "percent": 70
+  },
+  {
+   "colour": "#D9B98A",
+   "percent": 8
+  },
+  {
+   "colour": "white",
+   "percent": 3
+  }
+ ],
+ "parts": [
+  {
+   "colour": "#8B5A2B",
+   "from": [
+    -5,
+    3,
+    -4
+   ],
+   "name": "body",
+   "pattern": "fur",
+   "pattern_colour": "#6B4220",
+   "to": [
+    5,
+    14,
+    4
+   ]
+  },
+  {
+   "colour": "#D9B98A",
+   "from": [
+    -3,
+    4,
+    -5
+   ],
+   "name": "belly",
+   "parent": "body",
+   "pattern": "speckle",
+   "pattern_colour": "#B8946A",
+   "to": [
+    3,
+    12,
+    -3
+   ]
+  },
+  {
+   "colour": "#8B5A2B",
+   "from": [
+    -5,
+    13,
+    -5
+   ],
+   "name": "head",
+   "pattern": "fur",
+   "pattern_colour": "#6B4220",
+   "to": [
+    5,
+    22,
+    4
+   ]
+  },
+  {
+   "colour": "white",
+   "from": [
+    -4.0,
+    15.0,
+    -6.0
+   ],
+   "name": "eyeL",
+   "parent": "head",
+   "to": [
+    0.0,
+    20.0,
+    -4.0
+   ]
+  },
+  {
+   "colour": "white",
+   "from": [
+    0.0,
+    15.0,
+    -6.0
+   ],
+   "name": "eyeR",
+   "parent": "head",
+   "pivot": [
+    2.0,
+    15.0,
+    -5.0
+   ],
+   "to": [
+    4.0,
+    20.0,
+    -4.0
+   ]
+  },
+  {
+   "colour": "black",
+   "from": [
+    -3.0,
+    16.0,
+    -7.0
+   ],
+   "name": "pupilL",
+   "parent": "head",
+   "to": [
+    -1.0,
+    19.0,
+    -6.0
+   ]
+  },
+  {
+   "colour": "black",
+   "from": [
+    1.0,
+    16.0,
+    -7.0
+   ],
+   "name": "pupilR",
+   "parent": "head",
+   "pivot": [
+    2.0,
+    16.0,
+    -6.5
+   ],
+   "to": [
+    3.0,
+    19.0,
+    -6.0
+   ]
+  },
+  {
+   "colour": "orange",
+   "from": [
+    -1,
+    13.5,
+    -6.5
+   ],
+   "name": "beak",
+   "parent": "head",
+   "to": [
+    1,
+    16,
+    -4.5
+   ]
+  },
+  {
+   "colour": "#6B4220",
+   "from": [
+    -5,
+    21,
+    -2
+   ],
+   "name": "tuftL",
+   "parent": "head",
+   "to": [
+    -3,
+    24,
+    1
+   ]
+  },
+  {
+   "colour": "#6B4220",
+   "from": [
+    3,
+    21,
+    -2
+   ],
+   "name": "tuftR",
+   "parent": "head",
+   "to": [
+    5,
+    24,
+    1
+   ]
+  },
+  {
+   "colour": "orange",
+   "from": [
+    -3,
+    0,
+    -2
+   ],
+   "name": "legL",
+   "to": [
+    -1,
+    4,
+    0
+   ]
+  },
+  {
+   "colour": "orange",
+   "from": [
+    1,
+    0,
+    -2
+   ],
+   "name": "legR",
+   "to": [
+    3,
+    4,
+    0
+   ]
+  }
+ ],
+ "powers": [
+  "friendly",
+  "flies"
+ ],
+ "status": "Sculpting your cute owl",
+ "voice": "parrot"
+}

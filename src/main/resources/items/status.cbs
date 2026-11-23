@@ -1,0 +1,7 @@
+# STATUS — a kind vanilla status effect on him. Held, for a while after he uses it; worn,
+# for as long as it stays on, renewed by the worn clock before it can run out. A quiet sparkle and
+# no sound, because a worn one renews every half minute for as long as he plays.
+function effect()
+    /execute as ${TARGET} run effect give @s ${EFFECT} ${DURATION} ${LEVEL} true
+    /particle minecraft:happy_villager ~ ~1 ~ 0.3 0.5 0.3 0.01 6 force
+end

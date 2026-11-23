@@ -1,0 +1,33 @@
+# ON_HIT — he SWINGS it at something, and the wish happens to what he hit.
+#
+# The trigger a child asks for far more often than the tool could grant: "a sword that…", "a hammer
+# that…", "gloves that…". Before this, `held` was the only thing close, and `held` means RIGHT-CLICK
+# — so a sword wish came back as a wand. The item worked, it just was not the thing he asked for,
+# and nothing in any gate could tell the difference.
+#
+# WHERE THE EFFECT HAPPENS. WishMeleeHit runs this AT what he hit and AS him, so both kinds of
+# effect land correctly with no AIM line at all:
+#
+#   an effect that lands on the TARGET (hurt, ignite, freeze, launch) is already standing on it;
+#   an effect that lands on HIM (heal, rich, speed, grow) addresses @s, which is still him.
+#
+# That is why this file has no AIM: the trigger already positioned everything. The held shape has to
+# guess a reach because a right-click has no target; a swing has one by definition, which makes this
+# the more accurate shape for any wish about hitting — and the one to prefer when he says "hits",
+# "whack", "smack", "when I attack".
+#
+# (A placeholder written in a COMMENT is still a placeholder — the renderer scans the whole source.
+# So the reach and the tags are spelled out in words here rather than named.)
+import common
+
+function give()
+${GIVES}
+    /tellraw @s {"text":"${GIVE_MESSAGE}","color":"${HEX}"}
+end
+
+function act()
+    /function $namespace:effect
+${YIELD}
+end
+
+${EFFECT_BLOCK}

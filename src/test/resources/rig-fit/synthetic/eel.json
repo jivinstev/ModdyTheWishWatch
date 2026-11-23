@@ -1,0 +1,68 @@
+{
+ "name": "Eel",
+ "scale": 1.0,
+ "powers": [
+  "friendly"
+ ],
+ "parts": [
+  {
+   "name": "body",
+   "from": [
+    -2,
+    0,
+    -24
+   ],
+   "to": [
+    2,
+    4,
+    24
+   ],
+   "pivot": [
+    0,
+    0,
+    0
+   ],
+   "colour": "#3050E0"
+  },
+  {
+   "name": "head",
+   "from": [
+    -3,
+    0,
+    -30
+   ],
+   "to": [
+    3,
+    5,
+    -24
+   ],
+   "pivot": [
+    0,
+    0,
+    0
+   ],
+   "colour": "#3050E0"
+  },
+  {
+   "name": "tail_fin",
+   "from": [
+    -1,
+    0,
+    24
+   ],
+   "to": [
+    1,
+    6,
+    32
+   ],
+   "pivot": [
+    0,
+    0,
+    0
+   ],
+   "colour": "#3050E0"
+  }
+ ],
+ "id": "eel",
+ "source": "synthetic \u2014 shapes the committed corpus does not contain"
+}

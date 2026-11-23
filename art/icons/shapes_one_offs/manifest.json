@@ -1,0 +1,98 @@
+{
+ "cluster": "shapes_one_offs",
+ "order": [
+  "armor_stand",
+  "elytra",
+  "flint_and_steel",
+  "goat_horn",
+  "lead",
+  "name_tag",
+  "saddle",
+  "shears",
+  "spyglass",
+  "pot",
+  "campfire",
+  "brewing_stand",
+  "ladder"
+ ],
+ "icons": [
+  {
+   "name": "armor_stand",
+   "status": "ok",
+   "attempts": 2,
+   "note": "Wooden stand shaped like a person, arms out."
+  },
+  {
+   "name": "elytra",
+   "status": "ok",
+   "attempts": 2,
+   "note": "Pair of folded wings like a cloak, with fold lines."
+  },
+  {
+   "name": "flint_and_steel",
+   "status": "ok",
+   "attempts": 2,
+   "note": "Steel ring striking dark flint, one white spark."
+  },
+  {
+   "name": "goat_horn",
+   "status": "ok",
+   "attempts": 2,
+   "note": "Curved horn with ridge bands."
+  },
+  {
+   "name": "lead",
+   "status": "ok",
+   "attempts": 1,
+   "note": "Coiled rope with a handle loop."
+  },
+  {
+   "name": "name_tag",
+   "status": "ok",
+   "attempts": 1,
+   "note": "Blank tag on a string, ink-ringed hole, no letters."
+  },
+  {
+   "name": "saddle",
+   "status": "ok",
+   "attempts": 2,
+   "note": "Seat with pommel, cantle, skirt, strap and dark stirrup."
+  },
+  {
+   "name": "shears",
+   "status": "ok",
+   "attempts": 1,
+   "note": "Pair of shears, open, with handle loops and pivot."
+  },
+  {
+   "name": "spyglass",
+   "status": "ok",
+   "attempts": 1,
+   "note": "Short diagonal telescope, cyan lens end."
+  },
+  {
+   "name": "pot",
+   "status": "ok",
+   "attempts": 1,
+   "note": "Round pot seen from the front, rim lip and interior shadow."
+  },
+  {
+   "name": "campfire",
+   "status": "ok",
+   "attempts": 1,
+   "note": "Small fire on two crossed logs; logs fixed brown, flames cyan."
+  },
+  {
+   "name": "brewing_stand",
+   "status": "ok",
+   "attempts": 1,
+   "note": "Stand with central rod, crossbar and three hanging bottles."
+  },
+  {
+   "name": "ladder",
+   "status": "ok",
+   "attempts": 1,
+   "note": "Short wooden ladder, straight on, two rails and four rungs."
+  }
+ ]
+}

@@ -1,0 +1,322 @@
+{
+  "_why": "Every on-disk shape a wish store has EVER written, replayed through the current reader on every commit. A version that loses data goes red BY NAME. See docs/WISH_STORES.md §6.",
+  "_provenance": "SYNTHESISED from what the writers produce, not harvested from a played world. That is the weaker of the two and it is said out loud: a harvested corpus would also catch a shape the code can no longer produce but a child's disk still holds. Harvest into here from a real world as soon as one exists — `--harvest` on the test's tool.",
+  "cases": [
+    {
+      "file": "items-v0-specs.json",
+      "reader": "item-specs",
+      "expect": "legacy",
+      "mustHold": {
+        "key": "specs",
+        "count": 1,
+        "contains": "bloop_slayer"
+      },
+      "why": "Pre-versioning items.json in the state where ItemSpecStore won the race. The migration reads exactly this."
+    },
+    {
+      "file": "items-v0-catalogue.json",
+      "reader": "items",
+      "expect": "legacy",
+      "mustHold": {
+        "key": "items",
+        "count": 1,
+        "contains": "splash_water_sword"
+      },
+      "why": "The same file in the state where the catalogue won. A real child's world is one of these two."
+    },
+    {
+      "file": "items-v0-empty.json",
+      "reader": "item-specs",
+      "expect": "legacy",
+      "mustHold": {
+        "key": "specs",
+        "count": 0
+      },
+      "why": "An empty store is a legitimate state and must NOT be confused with an unreadable one."
+    },
+    {
+      "file": "item-specs-v1.json",
+      "reader": "item-specs",
+      "expect": "ok",
+      "mustHold": {
+        "key": "specs",
+        "count": 1,
+        "contains": "bloop_slayer"
+      },
+      "why": "What the versioned store writes. Also carries the ownerId, so the owner stamp round-trips."
+    },
+    {
+      "file": "items-v1.json",
+      "reader": "items",
+      "expect": "ok",
+      "mustHold": {
+        "key": "items",
+        "count": 1,
+        "contains": "splash_water_sword"
+      },
+      "why": "The catalogue's own v1."
+    },
+    {
+      "file": "refused-wrong-store.json",
+      "reader": "item-specs",
+      "expect": "refused",
+      "reasonContains": "'items' store",
+      "why": "#585 ITSELF. This used to read as an empty store and then get overwritten."
+    },
+    {
+      "file": "refused-future.json",
+      "reader": "item-specs",
+      "expect": "refused",
+      "reasonContains": "newer Moddy",
+      "why": "A jar downgrade. The child's newer file must survive the older jar untouched."
+    },
+    {
+      "file": "refused-garbage.json",
+      "reader": "item-specs",
+      "expect": "refused",
+      "reasonContains": "parsed",
+      "why": "A half-written file — a crash mid-save. Every store returned empty on this."
+    },
+    {
+      "file": "refused-not-an-object.json",
+      "reader": "item-specs",
+      "expect": "refused",
+      "reasonContains": "not a JSON object",
+      "why": "A top-level array, which two stores' readers would have silently ignored."
+    },
+    {
+      "file": "item-specs-v1-no-effects.json",
+      "reader": "item-specs",
+      "expect": "ok",
+      "mustHold": {
+        "key": "specs",
+        "count": 1,
+        "contains": "plain_wand"
+      },
+      "why": "⚠ FINDING, recorded not fixed. The ENVELOPE reads this fine — but ItemSpecStore.Spec.fromJson ends `fx.isEmpty() ? null : s`, so a design with no effects is written perfectly and rejected on the way back in. put() accepts one, so a store can hold a design that vanishes at the next world load. This case pins the envelope's half; the reader's half is docs/WISH_STORES.md §7. let a `plain`-shaped design with no effects back in (make_item mints those); this fixture's shape is `wand`, which the reader still drops."
+    },
+    {
+      "file": "item-specs-v2.json",
+      "reader": "item-specs",
+      "expect": "ok",
+      "mustHold": {
+        "key": "specs",
+        "count": 1,
+        "contains": "bloop_slayer"
+      },
+      "why": "The DESIGN only — no icon, no colour. Its look is item-icons-v1.json. item-specs-v1.json and items-v0-specs.json above are the shapes it migrates FROM, and ItemIconSplitTest replays both through the real store."
+    },
+    {
+      "file": "item-specs-v2-convert.json",
+      "reader": "item-specs",
+      "expect": "ok",
+      "mustHold": {
+        "key": "specs",
+        "count": 2,
+        "contains": "grinder_convert"
+      },
+      "why": "#2216: a v2 design made with convert (flat INPUT/OUTPUT) and change_block (grouped BLOCK) — the shapes the v3 migration renames to turn_into's FROM/TO. TurnIntoStoreMigrationTest replays them through the real store."
+    },
+    {
+      "file": "item-specs-v3.json",
+      "reader": "item-specs",
+      "expect": "ok",
+      "mustHold": {
+        "key": "specs",
+        "count": 1,
+        "contains": "grinder_convert"
+      },
+      "why": "#2216: v3 — convert and change_block are one effect, turn_into, with FROM/TO/RADIUS. The id keeps the name it was minted with."
+    },
+    {
+      "file": "item-icons-v1.json",
+      "reader": "item-icons",
+      "expect": "ok",
+      "mustHold": {
+        "key": "icons",
+        "count": 1,
+        "contains": "trident"
+      },
+      "why": "Each design's look, by id, in its own store with its own v — so an icon revamp bumps THIS file and never the design store. The sprite is a NAME, never a custom_model_data number."
+    },
+    {
+      "file": "library-icons-v1.json",
+      "reader": "library-icons",
+      "expect": "ok",
+      "mustHold": {
+        "key": "icons",
+        "count": 1,
+        "contains": "minecraft:cake"
+      },
+      "why": "The curated library's button pictures (<library>/icons.json), apart from templates.json. Read-only in the mod; promote.py writes it."
+    },
+    {
+      "file": "learned-v0.json",
+      "reader": "learned",
+      "expect": "legacy",
+      "mustHold": {
+        "key": "templates",
+        "count": 2,
+        "contains": "treehouse~1f2e3d4c"
+      },
+      "why": "learned.json before it had an envelope: every world today. Carries the ownerId on one row — the row the shelf load moves onto that child's shelf."
+    },
+    {
+      "file": "learned-v1.json",
+      "reader": "learned",
+      "expect": "ok",
+      "mustHold": {
+        "key": "templates",
+        "count": 1,
+        "contains": "rain_chickens"
+      },
+      "why": "What the shelf store writes, to the world file (shared rows) and to each child's shelf alike — one shape for both places."
+    },
+    {
+      "file": "species-v0.json",
+      "reader": "species",
+      "expect": "legacy",
+      "mustHold": {
+        "key": "species",
+        "count": 2,
+        "contains": "dragon_king~1f2e3d4c"
+      },
+      "why": "species.json before the shelf stamp: unstamped, shared and owned creatures side by side in the world."
+    },
+    {
+      "file": "species-v1.json",
+      "reader": "species",
+      "expect": "ok",
+      "mustHold": {
+        "key": "species",
+        "count": 1,
+        "contains": "dragon_king~1f2e3d4c"
+      },
+      "why": "The shelf store's stamped shape — here as a child's shelf would hold it."
+    },
+    {
+      "file": "buildings-v0.json",
+      "reader": "buildings",
+      "expect": "legacy",
+      "mustHold": {
+        "key": "buildings",
+        "count": 1,
+        "contains": "hill_castle"
+      },
+      "why": "buildings.json before the shelf stamp, with an owned plan still in the world."
+    },
+    {
+      "file": "buildings-v1.json",
+      "reader": "buildings",
+      "expect": "ok",
+      "mustHold": {
+        "key": "buildings",
+        "count": 1,
+        "contains": "hill_castle"
+      },
+      "why": "The shelf store's stamped shape."
+    },
+    {
+      "file": "buildings-v1-placed.json",
+      "reader": "buildings",
+      "expect": "ok",
+      "mustHold": {
+        "key": "buildings",
+        "count": 1,
+        "contains": "hill_castle"
+      },
+      "why": "#1376: where a building stands, an inline per-world `placed` field beside the plan (still v1 — additive, so a jar from before reads the plan and ignores it)."
+    },
+    {
+      "file": "paintings-v0.json",
+      "reader": "paintings",
+      "expect": "legacy",
+      "mustHold": {
+        "key": "paintings",
+        "count": 1,
+        "contains": "castle_mural"
+      },
+      "why": "paintings.json before the stamp: unstamped — every world today. The undo state (where it hangs, what it covered) must survive."
+    },
+    {
+      "file": "paintings-v1.json",
+      "reader": "paintings",
+      "expect": "ok",
+      "mustHold": {
+        "key": "paintings",
+        "count": 1,
+        "contains": "castle_mural"
+      },
+      "why": "What the stamped store writes."
+    },
+    {
+      "file": "paintings-v2.json",
+      "reader": "paintings",
+      "expect": "ok",
+      "mustHold": {
+        "key": "paintings",
+        "count": 1,
+        "contains": "castle_mural"
+      },
+      "why": "#680: a picture carries its owner. v2 so an older jar REFUSES the file instead of re-saving it without the stamps."
+    },
+    {
+      "file": "machines-v0.json",
+      "reader": "machines",
+      "expect": "legacy",
+      "mustHold": {
+        "key": "machines",
+        "count": 1,
+        "contains": "rock_crusher"
+      },
+      "why": "machines.json before the stamp, anchor and dimension inline — the placement half verify/feed/remove need."
+    },
+    {
+      "file": "machines-v1.json",
+      "reader": "machines",
+      "expect": "ok",
+      "mustHold": {
+        "key": "machines",
+        "count": 1,
+        "contains": "rock_crusher"
+      },
+      "why": "What the stamped store writes."
+    },
+    {
+      "file": "trains-v0.json",
+      "reader": "trains",
+      "expect": "legacy",
+      "mustHold": {
+        "key": "trains",
+        "count": 1,
+        "contains": "mctrain"
+      },
+      "why": "trains.json before the stamp."
+    },
+    {
+      "file": "trains-v1.json",
+      "reader": "trains",
+      "expect": "ok",
+      "mustHold": {
+        "key": "trains",
+        "count": 1,
+        "contains": "mctrain"
+      },
+      "why": "What the stamped store writes."
+    },
+    {
+      "file": "refused-paintings-future.json",
+      "reader": "paintings",
+      "expect": "refused",
+      "reasonContains": "newer Moddy",
+      "why": "A paintings file from a newer Moddy is REFUSED by name and latched, never read as empty and rewritten — the mechanism, on a store that had no defence until it was versioned."
+    }
+  ],
+  "schemas": {
+    "_why": "The newest schema each reader understands, so a store can move past v1 while its OLD fixtures keep replaying. A reader not named here is at v1. ItemIconSplitTest fails if this disagrees with the code's own constants.",
+    "item-specs": 3,
+    "item-icons": 1,
+    "library-icons": 1,
+    "paintings": 2
+  }
+}

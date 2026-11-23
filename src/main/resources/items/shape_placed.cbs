@@ -1,0 +1,31 @@
+# PLACED — right-click the ground to put it down, and it keeps working by itself.
+#
+# WishPlaceTag drops an invisible marker armour stand facing the child, and this wrapper runs the
+# effect from that marker on a fixed cadence. So `placed` means: a thing that sits there
+# and does its effect to whatever comes near it — a trap, a campfire, a healing totem, a hatchery.
+#
+# WHY A PERIOD AND NOT EVERY TICK. A placed `hurt` firing twenty times a second is not a trap, it is
+# a meat grinder that kills anything that brushes past before the child sees what happened; a placed
+# `summon` on every tick fills the world in about four seconds. The cadence is what makes the class
+# playable, so it is a real parameter rather than a constant.
+#
+# TARGET here is never @s — @s is the MARKER, an armour stand. An effect that lands on "you" lands
+# on whoever is standing near the thing instead, which is what a placed healing totem should mean.
+import common
+
+reset
+    /scoreboard objectives add mfam_place dummy
+end
+
+function give()
+${GIVES}
+    /tellraw @s {"text":"${GIVE_MESSAGE}","color":"${HEX}"}
+end
+
+clock tick
+    /execute as @e[tag=${FEATURE}_here] run scoreboard players add @s mfam_place 1
+    /execute as @e[tag=${FEATURE}_here,scores={mfam_place=${PERIOD_TICKS}..}] at @s run function $namespace:effect
+    /execute as @e[tag=${FEATURE}_here,scores={mfam_place=${PERIOD_TICKS}..}] run scoreboard players set @s mfam_place 0
+end
+
+${EFFECT_BLOCK}

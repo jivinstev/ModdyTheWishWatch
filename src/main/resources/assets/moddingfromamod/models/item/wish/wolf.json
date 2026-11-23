@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "moddingfromamod:item/wish/wolf",
+    "layer1": "moddingfromamod:item/wish/wolf_detail"
+  }
+}

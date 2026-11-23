@@ -1,0 +1,16 @@
+# ON_BLOCK — he raises it and BLOCKS a hit, and the wish rides the block. A real shield, built
+# with base_item: vanilla raises it and blocks exactly as it always does, and WishShapeEvents runs
+# act() as him each time it actually stops a hit. A wish about him happens on him; one about
+# something else happens a few steps along his line of sight, as for a right-click (the AIM line).
+import common
+
+function give()
+${GIVES}
+    /tellraw @s {"text":"${GIVE_MESSAGE}","color":"${HEX}"}
+end
+
+function act()
+    ${AIM}
+end
+
+${EFFECT_BLOCK}

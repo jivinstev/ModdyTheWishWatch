@@ -1,0 +1,22 @@
+# DROPS — every so often it drops something at its feet for him: honey, an egg, a flower.
+#
+# THE WISHES: "a pet bee that drops honey for me", "a chicken dragon that lays fire eggs", "a cactus
+# dog that drops cactus flowers". A chicken already does this, and the shape is the same: a timer,
+# and an item that appears where it stands.
+#
+# IT STOPS AT A PILE. A source that never stops is a runaway (fix it at the source): it drops only
+# while fewer than MOST of its own drops lie unclaimed. When he picks them up it starts again, so the
+# pile he has not collected is the limit, not a timer he cannot see.
+reset
+    /scoreboard objectives add mfam_dropt dummy
+    /scoreboard objectives add mfam_dropn dummy
+end
+
+clock tick
+    /execute as @e[tag=${TAG}] run scoreboard players add @s mfam_dropt 1
+    /execute store result score #drops_${TAG} mfam_dropn if entity @e[type=minecraft:item,tag=mfam_drop_${TAG}]
+    /execute unless score #drops_${TAG} mfam_dropn matches ${MOST}.. as @e[tag=${TAG},scores={mfam_dropt=${PERIOD_TICKS}..}] at @s run summon minecraft:item ~ ~0.3 ~ {Item:{id:"${ITEM}",count:1},Tags:["mfam_drop_${TAG}"],PickupDelay:10s}
+    /execute unless entity @e[tag=${TAG},tag=mfam_veiled,limit=1] unless score #drops_${TAG} mfam_dropn matches ${MOST}.. as @e[tag=${TAG},scores={mfam_dropt=${PERIOD_TICKS}..}] at @s run playsound ${SOUND} neutral @a ~ ~ ~ 1 1
+    /execute if entity @e[tag=${TAG},tag=mfam_veiled,limit=1] unless score #drops_${TAG} mfam_dropn matches ${MOST}.. as @e[tag=${TAG},scores={mfam_dropt=${PERIOD_TICKS}..}] at @s run playsound ${SOUND} neutral @a[tag=!mfam_veil_blind] ~ ~ ~ 1 1
+    /execute as @e[tag=${TAG},scores={mfam_dropt=${PERIOD_TICKS}..}] run scoreboard players set @s mfam_dropt 0
+end

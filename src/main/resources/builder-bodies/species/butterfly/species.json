@@ -1,0 +1,22 @@
+{
+ "vehicle": false,
+ "armor": 0.0,
+ "behaves": "buzzer",
+ "body": "humanoid",
+ "damage": 0.0,
+ "health": 30.0,
+ "id": "butterfly",
+ "knockbackResistance": 0.0,
+ "modelKey": "butterfly",
+ "name": "Rainbow Butterfly",
+ "powers": [
+  "friendly",
+  "flies",
+  "persistent"
+ ],
+ "scale": 2.5,
+ "speed": 0.25,
+ "texture": "zombie",
+ "tint": "#FFFFFF",
+ "voice": "bee"
+}

@@ -1,0 +1,387 @@
+{
+  "id": "long_neck_dinosaur",
+  "name": "Long Neck Dinosaur",
+  "scale": 3,
+  "powers": [
+    "friendly",
+    "persistent"
+  ],
+  "base": "wild",
+  "damage": 0,
+  "health": 120,
+  "speed": 0.15,
+  "status": "Sculpting your long-neck dinosaur",
+  "note": "Plain reusable brontosaurus base: olive-green back, tan belly, 4 pillar legs, neck rises forward (+z) in 3 tilted segments, tail tapers back in 3 segments. Scale 3, friendly, no accessories by request.",
+  "palette": [
+    {
+      "colour": "#6B7F3A",
+      "percent": 75
+    },
+    {
+      "colour": "#C8B47A",
+      "percent": 12
+    },
+    {
+      "colour": "#4E5E2A",
+      "percent": 10
+    }
+  ],
+  "parts": [
+    {
+      "name": "body",
+      "from": [
+        -8,
+        14,
+        -14
+      ],
+      "to": [
+        8,
+        30,
+        14
+      ],
+      "colour": "#6B7F3A",
+      "pattern": "scales",
+      "pattern_colour": "#5A6B30"
+    },
+    {
+      "name": "belly",
+      "from": [
+        -7,
+        13,
+        -12
+      ],
+      "to": [
+        7,
+        15,
+        12
+      ],
+      "colour": "#C8B47A",
+      "parent": "body"
+    },
+    {
+      "name": "legL",
+      "from": [
+        3,
+        0,
+        6
+      ],
+      "to": [
+        8,
+        15,
+        11
+      ],
+      "colour": "#4E5E2A",
+      "pivot": [
+        5,
+        15,
+        8
+      ]
+    },
+    {
+      "name": "legR",
+      "from": [
+        -8,
+        0,
+        6
+      ],
+      "to": [
+        -3,
+        15,
+        11
+      ],
+      "colour": "#4E5E2A",
+      "pivot": [
+        -5,
+        15,
+        8
+      ]
+    },
+    {
+      "name": "legBackL",
+      "from": [
+        3,
+        0,
+        -11
+      ],
+      "to": [
+        8,
+        15,
+        -6
+      ],
+      "colour": "#4E5E2A",
+      "pivot": [
+        5,
+        15,
+        -8
+      ]
+    },
+    {
+      "name": "legBackR",
+      "from": [
+        -8,
+        0,
+        -11
+      ],
+      "to": [
+        -3,
+        15,
+        -6
+      ],
+      "colour": "#4E5E2A",
+      "pivot": [
+        -5,
+        15,
+        -8
+      ]
+    },
+    {
+      "name": "neck_base",
+      "from": [
+        -4,
+        22,
+        12
+      ],
+      "to": [
+        4,
+        30,
+        22
+      ],
+      "colour": "#6B7F3A",
+      "parent": "body"
+    },
+    {
+      "name": "neck_mid",
+      "from": [
+        -3,
+        28,
+        18
+      ],
+      "to": [
+        3,
+        44,
+        24
+      ],
+      "colour": "#6B7F3A",
+      "parent": "body",
+      "pivot": [
+        0,
+        28,
+        21
+      ],
+      "rotation": [
+        20,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "neck_top",
+      "from": [
+        -3,
+        42,
+        22
+      ],
+      "to": [
+        3,
+        56,
+        28
+      ],
+      "colour": "#6B7F3A",
+      "parent": "body",
+      "pivot": [
+        0,
+        42,
+        25
+      ],
+      "rotation": [
+        10,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "neck_underside",
+      "from": [
+        -2,
+        28,
+        23
+      ],
+      "to": [
+        2,
+        42,
+        25
+      ],
+      "colour": "#C8B47A",
+      "parent": "body",
+      "pivot": [
+        0,
+        28,
+        21
+      ],
+      "rotation": [
+        20,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "head",
+      "from": [
+        -4,
+        54,
+        24
+      ],
+      "to": [
+        4,
+        60,
+        36
+      ],
+      "colour": "#6B7F3A",
+      "pivot": [
+        0,
+        56,
+        26
+      ]
+    },
+    {
+      "name": "eyeL",
+      "from": [
+        4,
+        57,
+        30
+      ],
+      "to": [
+        5,
+        59,
+        32
+      ],
+      "colour": "black",
+      "parent": "head"
+    },
+    {
+      "name": "eyeR",
+      "from": [
+        -5,
+        57,
+        30
+      ],
+      "to": [
+        -4,
+        59,
+        32
+      ],
+      "colour": "black",
+      "parent": "head"
+    },
+    {
+      "name": "nostrilL",
+      "from": [
+        1,
+        59,
+        34
+      ],
+      "to": [
+        2,
+        60,
+        35
+      ],
+      "colour": "#2E3A18",
+      "parent": "head"
+    },
+    {
+      "name": "nostrilR",
+      "from": [
+        -2,
+        59,
+        34
+      ],
+      "to": [
+        -1,
+        60,
+        35
+      ],
+      "colour": "#2E3A18",
+      "parent": "head"
+    },
+    {
+      "name": "mouth",
+      "from": [
+        -4,
+        54,
+        30
+      ],
+      "to": [
+        4,
+        55,
+        36
+      ],
+      "colour": "#3A2A1A",
+      "parent": "head"
+    },
+    {
+      "name": "tail_base",
+      "from": [
+        -5,
+        18,
+        -26
+      ],
+      "to": [
+        5,
+        27,
+        -13
+      ],
+      "colour": "#6B7F3A",
+      "parent": "body"
+    },
+    {
+      "name": "tail_mid",
+      "from": [
+        -3,
+        15,
+        -40
+      ],
+      "to": [
+        3,
+        22,
+        -25
+      ],
+      "colour": "#6B7F3A",
+      "parent": "body",
+      "pivot": [
+        0,
+        20,
+        -25
+      ],
+      "rotation": [
+        -10,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "tail_tip",
+      "from": [
+        -2,
+        10,
+        -54
+      ],
+      "to": [
+        2,
+        15,
+        -39
+      ],
+      "colour": "#6B7F3A",
+      "parent": "body",
+      "pivot": [
+        0,
+        15,
+        -39
+      ],
+      "rotation": [
+        -10,
+        0,
+        0
+      ]
+    }
+  ]
+}

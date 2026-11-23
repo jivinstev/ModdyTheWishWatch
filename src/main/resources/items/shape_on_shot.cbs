@@ -1,0 +1,18 @@
+# ON_SHOT — he SHOOTS it and the wish happens the moment he does. A bow, crossbow or trident:
+# a beam leaves his eyes along the way he is looking and stops at the first block or creature in its
+# way, and the wish happens there — the laser. A wish on HIM happens on him, and the beam is still
+# drawn. The weapon shoots its own arrow exactly as it always does; the beam rides the shot.
+# WishShapeEvents runs act() as him the tick his arrow leaves the weapon. The beam lines are Java's,
+# ShotBeam, filled in where the right-click shapes put their aim.
+import common
+
+function give()
+${GIVES}
+    /tellraw @s {"text":"${GIVE_MESSAGE}","color":"${HEX}"}
+end
+
+function act()
+    ${AIM}
+end
+
+${EFFECT_BLOCK}

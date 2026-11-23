@@ -1,0 +1,216 @@
+{
+  "id": "pig",
+  "name": "Pig",
+  "status": "Sculpting a pink pig",
+  "note": "Plain reusable pig base modelled on vanilla proportions (body 10x8x16, head 8x8x8, snout 4x3, legs 4x6). Pink #F0A5A2 with darker pink snout, no accessories so variants can start_from it; parts named head/body/snout/eyeL/eyeR/legFL/FR/BL/BR.",
+  "palette": [
+    {
+      "colour": "#F0A5A2",
+      "percent": 90
+    },
+    {
+      "colour": "#E07F7F",
+      "percent": 3
+    }
+  ],
+  "powers": [
+    "friendly"
+  ],
+  "damage": 0,
+  "health": 10,
+  "parts": [
+    {
+      "name": "body",
+      "from": [
+        -5,
+        6,
+        -8
+      ],
+      "to": [
+        5,
+        14,
+        8
+      ],
+      "colour": "#F0A5A2",
+      "pattern": "speckle",
+      "pattern_colour": "#E8968F"
+    },
+    {
+      "name": "head",
+      "from": [
+        -4,
+        8,
+        -14
+      ],
+      "to": [
+        4,
+        16,
+        -7
+      ],
+      "colour": "#F0A5A2",
+      "pattern": "speckle",
+      "pattern_colour": "#E8968F"
+    },
+    {
+      "name": "snout",
+      "from": [
+        -2,
+        9,
+        -15
+      ],
+      "to": [
+        2,
+        12,
+        -13
+      ],
+      "colour": "#E07F7F",
+      "parent": "head"
+    },
+    {
+      "name": "nostrilL",
+      "from": [
+        -1.5,
+        10.0,
+        -15.8
+      ],
+      "to": [
+        -0.5,
+        11.0,
+        -14.8
+      ],
+      "colour": "#8A4A4A",
+      "parent": "head"
+    },
+    {
+      "name": "nostrilR",
+      "from": [
+        0.5,
+        10.0,
+        -15.8
+      ],
+      "to": [
+        1.5,
+        11.0,
+        -14.8
+      ],
+      "colour": "#8A4A4A",
+      "parent": "head"
+    },
+    {
+      "name": "eyeL",
+      "from": [
+        -4.0,
+        13.0,
+        -14.8
+      ],
+      "to": [
+        -2.0,
+        14.0,
+        -13.8
+      ],
+      "colour": "white",
+      "parent": "head"
+    },
+    {
+      "name": "pupilL",
+      "from": [
+        -3.0,
+        13.0,
+        -15.2
+      ],
+      "to": [
+        -2.0,
+        14.0,
+        -14.2
+      ],
+      "colour": "black",
+      "parent": "head"
+    },
+    {
+      "name": "eyeR",
+      "from": [
+        2.0,
+        13.0,
+        -14.8
+      ],
+      "to": [
+        4.0,
+        14.0,
+        -13.8
+      ],
+      "colour": "white",
+      "parent": "head"
+    },
+    {
+      "name": "pupilR",
+      "from": [
+        2.0,
+        13.0,
+        -15.2
+      ],
+      "to": [
+        3.0,
+        14.0,
+        -14.2
+      ],
+      "colour": "black",
+      "parent": "head"
+    },
+    {
+      "name": "legL",
+      "from": [
+        -5,
+        0,
+        -7
+      ],
+      "to": [
+        -1,
+        7,
+        -3
+      ],
+      "colour": "#F0A5A2"
+    },
+    {
+      "name": "legR",
+      "from": [
+        1,
+        0,
+        -7
+      ],
+      "to": [
+        5,
+        7,
+        -3
+      ],
+      "colour": "#F0A5A2"
+    },
+    {
+      "name": "legBL",
+      "from": [
+        -5,
+        0,
+        3
+      ],
+      "to": [
+        -1,
+        7,
+        7
+      ],
+      "colour": "#F0A5A2"
+    },
+    {
+      "name": "legBR",
+      "from": [
+        1,
+        0,
+        3
+      ],
+      "to": [
+        5,
+        7,
+        7
+      ],
+      "colour": "#F0A5A2"
+    }
+  ]
+}

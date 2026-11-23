@@ -1,0 +1,3 @@
+com.moddingfromamod.plugin.PluginsTest$TestPlugin
+com.moddingfromamod.plugin.NoSuchPluginStrippedFromThisJar
+com.moddingfromamod.plugin.PluginsTest$BrokenPlugin

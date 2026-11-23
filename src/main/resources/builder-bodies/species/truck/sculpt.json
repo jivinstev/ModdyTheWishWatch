@@ -1,0 +1,338 @@
+{
+ "behaves_like": "vehicle",
+ "damage": 0,
+ "health": 100,
+ "id": "truck",
+ "name": "Red Pickup Truck",
+ "note": "Boxy red pickup: cab at front (-z) with light-blue glass, open bed with dark floor behind, black wheels, grey bumpers, yellow headlights. Vehicle life + rideable so it parks until driven; scale 1.6 so the bed reads.",
+ "palette": [
+  {
+   "colour": "red",
+   "percent": 70
+  },
+  {
+   "colour": "black",
+   "percent": 12
+  },
+  {
+   "colour": "#9fd8ff",
+   "percent": 8
+  },
+  {
+   "colour": "gray",
+   "percent": 6
+  }
+ ],
+ "parts": [
+  {
+   "colour": "#D01818",
+   "from": [
+    -12,
+    6,
+    -24
+   ],
+   "name": "body",
+   "pattern": "gradient",
+   "pattern_colour": "#A00E0E",
+   "to": [
+    12,
+    14,
+    24
+   ]
+  },
+  {
+   "colour": "#D01818",
+   "from": [
+    -11,
+    13,
+    -14
+   ],
+   "name": "cab",
+   "parent": "body",
+   "to": [
+    11,
+    28,
+    2
+   ]
+  },
+  {
+   "colour": "#9FD8FF",
+   "from": [
+    -10,
+    17,
+    -15
+   ],
+   "name": "windshield",
+   "parent": "body",
+   "to": [
+    10,
+    26,
+    -13
+   ]
+  },
+  {
+   "colour": "#9FD8FF",
+   "from": [
+    -12,
+    18,
+    -12
+   ],
+   "name": "side_windows",
+   "parent": "body",
+   "to": [
+    12,
+    25,
+    0
+   ]
+  },
+  {
+   "colour": "#9FD8FF",
+   "from": [
+    -9,
+    18,
+    1
+   ],
+   "name": "rear_window",
+   "parent": "body",
+   "to": [
+    9,
+    25,
+    3
+   ]
+  },
+  {
+   "colour": "#D01818",
+   "from": [
+    -12,
+    13,
+    3
+   ],
+   "name": "bed_left",
+   "parent": "body",
+   "to": [
+    -9,
+    20,
+    24
+   ]
+  },
+  {
+   "colour": "#D01818",
+   "from": [
+    9,
+    13,
+    3
+   ],
+   "name": "bed_right",
+   "parent": "body",
+   "to": [
+    12,
+    20,
+    24
+   ]
+  },
+  {
+   "colour": "#B01414",
+   "from": [
+    -12,
+    13,
+    21
+   ],
+   "name": "tailgate",
+   "parent": "body",
+   "to": [
+    12,
+    20,
+    24
+   ]
+  },
+  {
+   "colour": "#333333",
+   "from": [
+    -9,
+    13,
+    3
+   ],
+   "name": "bed_floor",
+   "parent": "body",
+   "to": [
+    9,
+    15,
+    21
+   ]
+  },
+  {
+   "colour": "#151515",
+   "from": [
+    -14,
+    0,
+    -20
+   ],
+   "name": "wheel_fl",
+   "parent": "body",
+   "to": [
+    -10,
+    9,
+    -11
+   ]
+  },
+  {
+   "colour": "#151515",
+   "from": [
+    10,
+    0,
+    -20
+   ],
+   "name": "wheel_fr",
+   "parent": "body",
+   "to": [
+    14,
+    9,
+    -11
+   ]
+  },
+  {
+   "colour": "#151515",
+   "from": [
+    -14,
+    0,
+    11
+   ],
+   "name": "wheel_bl",
+   "parent": "body",
+   "to": [
+    -10,
+    9,
+    20
+   ]
+  },
+  {
+   "colour": "#151515",
+   "from": [
+    10,
+    0,
+    11
+   ],
+   "name": "wheel_br",
+   "parent": "body",
+   "to": [
+    14,
+    9,
+    20
+   ]
+  },
+  {
+   "colour": "#888888",
+   "from": [
+    -5,
+    7,
+    -25
+   ],
+   "name": "grille",
+   "parent": "body",
+   "to": [
+    5,
+    12,
+    -23
+   ]
+  },
+  {
+   "colour": "#FFE84A",
+   "from": [
+    -10,
+    9,
+    -25
+   ],
+   "name": "headlight_l",
+   "parent": "body",
+   "to": [
+    -6,
+    12,
+    -23
+   ]
+  },
+  {
+   "colour": "#FFE84A",
+   "from": [
+    6,
+    9,
+    -25
+   ],
+   "name": "headlight_r",
+   "parent": "body",
+   "to": [
+    10,
+    12,
+    -23
+   ]
+  },
+  {
+   "colour": "#999999",
+   "from": [
+    -12,
+    4,
+    -26
+   ],
+   "name": "bumper_front",
+   "parent": "body",
+   "to": [
+    12,
+    7,
+    -22
+   ]
+  },
+  {
+   "colour": "#999999",
+   "from": [
+    -12,
+    4,
+    22
+   ],
+   "name": "bumper_back",
+   "parent": "body",
+   "to": [
+    12,
+    7,
+    26
+   ]
+  },
+  {
+   "colour": "#FF5500",
+   "from": [
+    -12,
+    15,
+    24
+   ],
+   "name": "taillight_l",
+   "parent": "body",
+   "to": [
+    -9,
+    18,
+    25
+   ]
+  },
+  {
+   "colour": "#FF5500",
+   "from": [
+    9,
+    15,
+    24
+   ],
+   "name": "taillight_r",
+   "parent": "body",
+   "to": [
+    12,
+    18,
+    25
+   ]
+  }
+ ],
+ "powers": [
+  "friendly",
+  "rideable",
+  "persistent"
+ ],
+ "scale": 1.6,
+ "speed": 0.45,
+ "status": "Building your red pickup truck",
+ "voice": "silent"
+}

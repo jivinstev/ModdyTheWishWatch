@@ -1,0 +1,12 @@
+# HEAL — a top-up to full, then a glow that keeps healing.
+#
+# instant_health at a high amplifier heals to full whatever the creature's max health is, which is
+# what "it heals you" means to a child. Deriving an amplifier from a number of hearts would be
+# fake precision: the vanilla scale is 4 x 2^amplifier, so most hearts values are not expressible
+# and would silently round.
+function effect()
+    /execute as ${TARGET} run effect give @s minecraft:instant_health 1 4
+    /execute as ${TARGET} run effect give @s minecraft:regeneration ${SECONDS} 1
+    /particle minecraft:heart ~ ~1 ~ 0.5 0.5 0.5 0.1 15 force
+    /playsound minecraft:entity.player.levelup master @a ~ ~ ~ 1 1.6
+end

@@ -1,0 +1,77 @@
+{
+ "cluster": "standins_reshoot",
+ "order": [
+  "cake",
+  "chicken",
+  "cod",
+  "feather",
+  "wheat_seeds",
+  "pumpkin",
+  "compass",
+  "book",
+  "enchanted_book",
+  "diamond_pickaxe"
+ ],
+ "icons": [
+  {
+   "name": "cake",
+   "status": "ok",
+   "attempts": 1,
+   "note": ""
+  },
+  {
+   "name": "chicken",
+   "status": "ok",
+   "attempts": 1,
+   "note": ""
+  },
+  {
+   "name": "cod",
+   "status": "ok",
+   "attempts": 1,
+   "note": ""
+  },
+  {
+   "name": "feather",
+   "status": "needs_help",
+   "attempts": 4,
+   "note": "Diagonal thin shape cannot hit 30% coverage while staying thin (best 26.7% on 32-grid, 11.3% on 16-grid); outline has gaps along the diagonal staircase (10 cells on 32-grid, 2 on 16-grid touch magenta). 4 attempts made (one over the 3-attempt limit)."
+  },
+  {
+   "name": "wheat_seeds",
+   "status": "ok",
+   "attempts": 1,
+   "note": ""
+  },
+  {
+   "name": "pumpkin",
+   "status": "ok",
+   "attempts": 1,
+   "note": ""
+  },
+  {
+   "name": "compass",
+   "status": "ok",
+   "attempts": 1,
+   "note": ""
+  },
+  {
+   "name": "book",
+   "status": "ok",
+   "attempts": 1,
+   "note": ""
+  },
+  {
+   "name": "enchanted_book",
+   "status": "ok",
+   "attempts": 1,
+   "note": ""
+  },
+  {
+   "name": "diamond_pickaxe",
+   "status": "needs_help",
+   "attempts": 3,
+   "note": "Diagonal handle+head cannot hit 30% coverage (best 21.3% on 32-grid, 13.7% on 16-grid); outline has gaps along the diagonal (16 cells on 32-grid, 2 on 16-grid touch magenta)."
+  }
+ ]
+}

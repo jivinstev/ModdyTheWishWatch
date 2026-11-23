@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "moddingfromamod:item/wish/butterfly_net",
+    "layer1": "moddingfromamod:item/wish/butterfly_net_detail"
+  }
+}

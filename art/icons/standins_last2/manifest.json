@@ -1,0 +1,21 @@
+{
+ "cluster": "standins_last2",
+ "order": [
+  "feather",
+  "diamond_pickaxe"
+ ],
+ "icons": [
+  {
+   "name": "feather",
+   "status": "ok",
+   "attempts": 1,
+   "note": "Curved ragged bow blade, thin pale quill sticking out at the bottom, no crossguard; silhouette reads as feather, not knife/sword. (16-grid shifted 1 cell for margin.)"
+  },
+  {
+   "name": "diamond_pickaxe",
+   "status": "ok",
+   "attempts": 1,
+   "note": "Symmetrical crescent head (23 wide) across the handle's middle, wider than the handle is long; silhouette reads as pickaxe, not axe/hammer/umbrella. (16-grid handle shortened 1 cell for margin.)"
+  }
+ ]
+}

@@ -1,0 +1,372 @@
+{
+ "behaves_like": "climber",
+ "damage": 0,
+ "health": 30,
+ "id": "crab",
+ "name": "Red Crab",
+ "note": "Invented crab: wide flat red shell with darker speckle, oversized claws on short arms so 'big claws' reads instantly, eyes on stalks with a 3-box smile so it's cute. Friendly, wild, wolf voice-free (silent-ish via frog).",
+ "palette": [
+  {
+   "colour": "red",
+   "percent": 85
+  },
+  {
+   "colour": "black",
+   "percent": 2
+  }
+ ],
+ "parts": [
+  {
+   "colour": "#D62A1E",
+   "from": [
+    -9,
+    4,
+    -6
+   ],
+   "name": "body",
+   "pattern": "speckle",
+   "pattern_colour": "#9E1A12",
+   "to": [
+    9,
+    10,
+    6
+   ]
+  },
+  {
+   "colour": "#D62A1E",
+   "from": [
+    -5,
+    8,
+    -8
+   ],
+   "name": "head",
+   "parent": "body",
+   "to": [
+    5,
+    11,
+    -4
+   ]
+  },
+  {
+   "colour": "#D62A1E",
+   "from": [
+    -4,
+    10,
+    -7
+   ],
+   "name": "stalkL",
+   "parent": "head",
+   "to": [
+    -2,
+    14,
+    -5
+   ]
+  },
+  {
+   "colour": "#D62A1E",
+   "from": [
+    2,
+    10,
+    -7
+   ],
+   "name": "stalkR",
+   "parent": "head",
+   "to": [
+    4,
+    14,
+    -5
+   ]
+  },
+  {
+   "colour": "white",
+   "from": [
+    -5,
+    13,
+    -8
+   ],
+   "name": "eyeL",
+   "parent": "head",
+   "to": [
+    -1,
+    16,
+    -4
+   ]
+  },
+  {
+   "colour": "white",
+   "from": [
+    1,
+    13,
+    -8
+   ],
+   "name": "eyeR",
+   "parent": "head",
+   "to": [
+    5,
+    16,
+    -4
+   ]
+  },
+  {
+   "colour": "black",
+   "from": [
+    -4,
+    14,
+    -8.5
+   ],
+   "name": "pupilL",
+   "parent": "head",
+   "to": [
+    -2,
+    16,
+    -7.5
+   ]
+  },
+  {
+   "colour": "black",
+   "from": [
+    2,
+    14,
+    -8.5
+   ],
+   "name": "pupilR",
+   "parent": "head",
+   "to": [
+    4,
+    16,
+    -7.5
+   ]
+  },
+  {
+   "colour": "black",
+   "from": [
+    -1,
+    8,
+    -8.5
+   ],
+   "name": "mouthM",
+   "parent": "head",
+   "to": [
+    1,
+    9,
+    -7.5
+   ]
+  },
+  {
+   "colour": "black",
+   "from": [
+    -3,
+    9,
+    -8.5
+   ],
+   "name": "mouthL",
+   "parent": "head",
+   "to": [
+    -1,
+    10,
+    -7.5
+   ]
+  },
+  {
+   "colour": "black",
+   "from": [
+    1,
+    9,
+    -8.5
+   ],
+   "name": "mouthR",
+   "parent": "head",
+   "to": [
+    3,
+    10,
+    -7.5
+   ]
+  },
+  {
+   "colour": "#D62A1E",
+   "from": [
+    -12,
+    6,
+    -8
+   ],
+   "name": "armL",
+   "parent": "body",
+   "to": [
+    -8,
+    9,
+    -4
+   ]
+  },
+  {
+   "colour": "#D62A1E",
+   "from": [
+    8,
+    6,
+    -8
+   ],
+   "name": "armR",
+   "parent": "body",
+   "to": [
+    12,
+    9,
+    -4
+   ]
+  },
+  {
+   "colour": "#E8352A",
+   "from": [
+    -17,
+    4,
+    -17
+   ],
+   "name": "clawL",
+   "parent": "armL",
+   "to": [
+    -9,
+    12,
+    -7
+   ]
+  },
+  {
+   "colour": "#E8352A",
+   "from": [
+    9,
+    4,
+    -17
+   ],
+   "name": "clawR",
+   "parent": "armR",
+   "to": [
+    17,
+    12,
+    -7
+   ]
+  },
+  {
+   "colour": "#E8352A",
+   "from": [
+    -16,
+    12,
+    -17
+   ],
+   "name": "pincerL",
+   "parent": "clawL",
+   "to": [
+    -10,
+    14,
+    -11
+   ]
+  },
+  {
+   "colour": "#E8352A",
+   "from": [
+    10,
+    12,
+    -17
+   ],
+   "name": "pincerR",
+   "parent": "clawR",
+   "to": [
+    16,
+    14,
+    -11
+   ]
+  },
+  {
+   "colour": "#B8221A",
+   "from": [
+    -13,
+    0,
+    -3
+   ],
+   "name": "legL",
+   "parent": "body",
+   "to": [
+    -8,
+    6,
+    -1
+   ]
+  },
+  {
+   "colour": "#B8221A",
+   "from": [
+    8,
+    0,
+    -3
+   ],
+   "name": "legR",
+   "parent": "body",
+   "to": [
+    13,
+    6,
+    -1
+   ]
+  },
+  {
+   "colour": "#B8221A",
+   "from": [
+    -13,
+    0,
+    1
+   ],
+   "name": "legL2",
+   "parent": "body",
+   "to": [
+    -8,
+    6,
+    3
+   ]
+  },
+  {
+   "colour": "#B8221A",
+   "from": [
+    8,
+    0,
+    1
+   ],
+   "name": "legR2",
+   "parent": "body",
+   "to": [
+    13,
+    6,
+    3
+   ]
+  },
+  {
+   "colour": "#B8221A",
+   "from": [
+    -12,
+    0,
+    4
+   ],
+   "name": "legL3",
+   "parent": "body",
+   "to": [
+    -8,
+    6,
+    6
+   ]
+  },
+  {
+   "colour": "#B8221A",
+   "from": [
+    8,
+    0,
+    4
+   ],
+   "name": "legR3",
+   "parent": "body",
+   "to": [
+    12,
+    6,
+    6
+   ]
+  }
+ ],
+ "powers": [
+  "friendly"
+ ],
+ "scale": 1.2,
+ "status": "Sculpting your red crab",
+ "voice": "frog"
+}

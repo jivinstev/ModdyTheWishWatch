@@ -1,0 +1,292 @@
+[
+ {
+  "cluster": "tools_gadgets",
+  "name": "pickaxe",
+  "verdict": "PASS",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.321,
+   "dark_body": 0.302,
+   "pieces": 1,
+   "body": 116,
+   "fixed": 80,
+   "line": 128,
+   "shine": 5
+  }
+ },
+ {
+  "cluster": "tools_gadgets",
+  "name": "shovel",
+  "verdict": "PASS",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.403,
+   "dark_body": 0.253,
+   "pieces": 1,
+   "body": 229,
+   "fixed": 55,
+   "line": 125,
+   "shine": 4
+  }
+ },
+ {
+  "cluster": "tools_gadgets",
+  "name": "magnet",
+  "verdict": "PASS",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.41,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "body": 190,
+   "fixed": 112,
+   "line": 113,
+   "shine": 5
+  }
+ },
+ {
+  "cluster": "tools_gadgets",
+  "name": "flashlight",
+  "verdict": "PASS",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.394,
+   "dark_body": 0.227,
+   "pieces": 1,
+   "accent": 4,
+   "body": 251,
+   "fixed": 31,
+   "line": 117
+  }
+ },
+ {
+  "cluster": "tools_gadgets",
+  "name": "wrench",
+  "verdict": "PASS",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.322,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "body": 236,
+   "line": 89,
+   "shine": 5
+  }
+ },
+ {
+  "cluster": "tools_gadgets",
+  "name": "paintbrush",
+  "verdict": "PASS",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.434,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "body": 152,
+   "fixed": 183,
+   "line": 104,
+   "shine": 5
+  }
+ },
+ {
+  "cluster": "tools_gadgets",
+  "name": "paint_can",
+  "verdict": "PASS",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.594,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "body": 391,
+   "fixed": 75,
+   "line": 137,
+   "shine": 5
+  }
+ },
+ {
+  "cluster": "tools_gadgets",
+  "name": "butterfly_net",
+  "verdict": "PASS",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.319,
+   "dark_body": 0.111,
+   "pieces": 1,
+   "body": 90,
+   "line": 235,
+   "shine": 2
+  }
+ },
+ {
+  "cluster": "tools_gadgets",
+  "name": "fishing_rod",
+  "verdict": "FAIL",
+  "kind": "tint",
+  "n": 32,
+  "problems": [
+   "touches the edge (needs a 1px margin)"
+  ],
+  "warnings": [],
+  "stats": {
+   "fill": 0.327,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "body": 64,
+   "fixed": 95,
+   "line": 173,
+   "shine": 3
+  }
+ },
+ {
+  "cluster": "tools_gadgets",
+  "name": "umbrella",
+  "verdict": "PASS",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.374,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "body": 41,
+   "fixed": 174,
+   "line": 163,
+   "shine": 5
+  }
+ },
+ {
+  "cluster": "tools_gadgets",
+  "name": "alarm_clock",
+  "verdict": "PASS",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.439,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "body": 170,
+   "fixed": 125,
+   "line": 150,
+   "shine": 5
+  }
+ },
+ {
+  "cluster": "tools_gadgets",
+  "name": "compass",
+  "verdict": "PASS",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.598,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "body": 200,
+   "fixed": 207,
+   "line": 200,
+   "shine": 5
+  }
+ },
+ {
+  "cluster": "tools_gadgets",
+  "name": "treasure_map",
+  "verdict": "PASS",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.461,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "body": 285,
+   "fixed": 61,
+   "line": 124,
+   "shine": 2
+  }
+ },
+ {
+  "cluster": "tools_gadgets",
+  "name": "spellbook",
+  "verdict": "PASS",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.478,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "accent": 53,
+   "body": 95,
+   "fixed": 187,
+   "line": 152,
+   "shine": 2
+  }
+ },
+ {
+  "cluster": "tools_gadgets",
+  "name": "envelope",
+  "verdict": "PASS",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.562,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "body": 351,
+   "fixed": 109,
+   "line": 112,
+   "shine": 4
+  }
+ },
+ {
+  "cluster": "tools_gadgets",
+  "name": "battery",
+  "verdict": "PASS",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.494,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "accent": 57,
+   "body": 323,
+   "fixed": 38,
+   "line": 84,
+   "shine": 4
+  }
+ }
+]

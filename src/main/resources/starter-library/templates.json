@@ -1,0 +1,25 @@
+{"templates":[
+  {"id": "starter_pet_dragon", "label": "A pet dragon that breathes fire!", "phrase": "a pet dragon that follows me and breathes fire", "all": ["dragon"], "any": ["pet", "follow", "fire", "breathe", "breathes", "my"], "commands": ["wishmob spawn pet_dragon"], "say": "Here comes your pet dragon! It follows you and breathes fire - but never at you."},
+
+  {"id": "starter_leaping_beast", "label": "A giant beast you ride - when you jump it leaps, and the ground shakes when it lands!", "phrase": "a giant beast i can ride that leaps when i jump and shakes the ground when it lands", "all": ["ride"], "any": ["giant", "beast", "t-rex", "trex", "rex", "dinosaur", "i", "can", "leaps", "leap", "jump", "jumps", "high", "really", "shakes", "shake", "ground", "lands", "land", "when"], "commands": ["wishmob spawn trex"], "say": "Here's your giant T-Rex! Climb on, then jump and it leaps way up high - and when it lands, the ground shakes and the monsters go flying."},
+
+  {"id": "starter_helper_caller", "label": "A creature that calls little helpers to fight for it!", "phrase": "a creature that calls little helpers to fight for it", "all": ["helpers"], "any": ["creature", "calls", "call", "little", "tiny", "fight", "fights", "friendly", "monsters", "summon", "summons"], "commands": ["wishmob spawn helper_caller"], "say": "Meet Captain Puff! When monsters come, he calls his little helpers to fight them - and they never fight you."},
+
+  {"id": "starter_fireball_thrower", "label": "A creature that throws fireballs at monsters - but never at you!", "phrase": "a creature that throws fireballs at monsters but never at me", "all": ["fireballs", "monsters"], "any": ["creature", "throws", "throw", "shoots", "never", "me"], "commands": ["wishmob spawn fire_imp"], "say": "Meet your fire buddy! It throws fireballs at the monsters - but never at you."},
+
+  {"id": "starter_lightning_sword", "label": "A sword that shoots lightning!", "phrase": "a sword that shoots lightning", "all": ["sword"], "any": ["lightning", "thunder", "zap"], "commands": ["wishdatapack lightning_sword_lightning give"], "say": "Your Lightning Sword is in your hand! Hit something with it and lightning strikes it."},
+
+  {"id": "starter_lava_castle", "label": "A huge castle with a lava moat!", "phrase": "a huge castle with a lava moat", "all": ["castle"], "any": ["lava", "moat"], "commands": ["wishbuild lava_moat_castle"], "say": "Your castle is going up - with a lava moat all around it!"},
+
+  {"id": "starter_creeper_picture", "label": "A giant creeper face picture!", "phrase": "a giant pixel art creeper face", "all": ["creeper"], "any": ["picture", "face", "pixel", "art", "painting", "drawing"], "commands": ["wishpaint starter_creeper_face"], "say": "Sssss... a GIANT creeper face! Look in front of you!"},
+
+  {"id": "starter_jump_boots", "label": "Boots that make you jump REALLY high!", "phrase": "boots that let me DOUBLE JUMP!!!", "all": ["boots"], "any": ["jump", "bounce", "bouncy", "hop", "high", "double"], "commands": ["wishdatapack double_jump_boots_jump give"], "say": "Here are your jump boots! Put them on and you jump REALLY high - and you land softly. A real double jump in mid-air isn't possible, so these jump extra high instead!", "needs": "wearables"},
+
+  {"id": "starter_slushie_machine", "label": "A slushie machine - fill it with ice!", "phrase": "a slushie machine i fill with ice", "all": ["slushie"], "any": ["machine", "maker", "ice", "fill", "pour"], "commands": ["wishdatapack slushie_machine_load_and_pour give", "wishdatapack slushie_plain give"], "say": "Here's your Slushie Machine! Put it down, hold ice and pull the handle to fill it, then pull again to pour a slushie. 1 ice makes a small one and 3 makes a BIG one - add sugar too if you like! Here's a slushie to try."},
+
+  {"id": "starter_lucky_block", "label": "A LUCKY BLOCK - break it for a surprise!", "phrase": "a lucky block that gives a surprise when i break it", "all": ["lucky"], "any": ["block", "break", "surprise", "random", "mystery"], "commands": ["wishdatapack lucky_block_outcome_table give"], "say": "Here are your Lucky Blocks! Put one down and BREAK it - most of the time you get a present (diamonds, cake, golden apples, emeralds), sometimes a chicken, a pig or a zombie pops out, and once in a while... BOOM! Every one is different!"},
+
+  {"id": "starter_meteor", "label": "A meteor that makes a crater!", "phrase": "a meteor that crashes down and makes a crater", "all": ["meteor"], "any": ["crater", "crash", "crashes", "fall", "falls", "space", "rock", "sky"], "commands": ["moddyevent stage meteor"], "say": "Look up - a METEOR! It smashes down and leaves a giant smoking crater. Say undo and the ground comes back."},
+
+  {"id": "starter_chicken_rain", "label": "It's raining chickens!", "phrase": "make it rain chickens", "all": ["chickens"], "any": ["rain", "raining", "sky", "fall", "falling", "lots"], "commands": ["moddyevent stage chicken_rain"], "say": "It's raining CHICKENS! They float down all around you. Say undo and they fly off home."}
+]}

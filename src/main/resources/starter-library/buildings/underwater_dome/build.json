@@ -1,0 +1,152 @@
+{
+  "id": "underwater_dome",
+  "name": "Underwater Glass Dome",
+  "shapes": [
+    {
+      "kind": "box",
+      "dx": -17,
+      "dy": -23,
+      "dz": -17,
+      "width": 35,
+      "height": 23,
+      "depth": 35,
+      "block": "minecraft:prismarine",
+      "hollow": true,
+      "name": "ocean_shell"
+    },
+    {
+      "kind": "box",
+      "dx": -16,
+      "dy": -22,
+      "dz": -16,
+      "width": 33,
+      "height": 22,
+      "depth": 33,
+      "block": "minecraft:water",
+      "hollow": false,
+      "name": "ocean_water"
+    },
+    {
+      "kind": "box",
+      "dx": -16,
+      "dy": -22,
+      "dz": -16,
+      "width": 33,
+      "height": 1,
+      "depth": 33,
+      "block": "minecraft:sand",
+      "hollow": false,
+      "name": "seabed"
+    },
+    {
+      "kind": "sphere",
+      "dx": 0,
+      "dy": -22,
+      "dz": 0,
+      "width": 19,
+      "height": 19,
+      "depth": 19,
+      "block": "minecraft:glass",
+      "hollow": true,
+      "anchor": "centre",
+      "name": "dome_glass"
+    },
+    {
+      "kind": "sphere",
+      "dx": 0,
+      "dy": -21,
+      "dz": 0,
+      "width": 17,
+      "height": 17,
+      "depth": 17,
+      "block": "minecraft:air",
+      "hollow": false,
+      "anchor": "centre",
+      "name": "dome_air"
+    },
+    {
+      "kind": "box",
+      "dx": -9,
+      "dy": -31,
+      "dz": -9,
+      "width": 19,
+      "height": 9,
+      "depth": 19,
+      "block": "minecraft:sand",
+      "hollow": false,
+      "name": "under_fill"
+    },
+    {
+      "kind": "box",
+      "dx": -8,
+      "dy": -22,
+      "dz": -8,
+      "width": 17,
+      "height": 1,
+      "depth": 17,
+      "block": "minecraft:smooth_quartz",
+      "hollow": false,
+      "name": "floor"
+    },
+    {
+      "kind": "box",
+      "dx": -4,
+      "dy": -22,
+      "dz": -4,
+      "width": 9,
+      "height": 1,
+      "depth": 9,
+      "block": "minecraft:sea_lantern",
+      "hollow": true,
+      "name": "lights"
+    },
+    {
+      "kind": "box",
+      "dx": -1,
+      "dy": -14,
+      "dz": -1,
+      "width": 3,
+      "height": 15,
+      "depth": 3,
+      "block": "minecraft:glass",
+      "hollow": true,
+      "name": "shaft"
+    },
+    {
+      "kind": "box",
+      "dx": 0,
+      "dy": -14,
+      "dz": 0,
+      "width": 1,
+      "height": 16,
+      "depth": 1,
+      "block": "minecraft:air",
+      "hollow": false,
+      "name": "shaft_air"
+    },
+    {
+      "kind": "box",
+      "dx": 0,
+      "dy": -21,
+      "dz": 1,
+      "width": 1,
+      "height": 7,
+      "depth": 1,
+      "block": "minecraft:glass",
+      "hollow": false,
+      "name": "ladder_post"
+    },
+    {
+      "kind": "box",
+      "dx": 0,
+      "dy": -21,
+      "dz": 0,
+      "width": 1,
+      "height": 22,
+      "depth": 1,
+      "block": "minecraft:ladder[facing=north]",
+      "hollow": false,
+      "name": "ladder"
+    }
+  ]
+}

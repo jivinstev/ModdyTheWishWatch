@@ -1,0 +1,54 @@
+{
+ "id": "animal_pen",
+ "name": "Animal Pen",
+ "shapes": [
+  {
+   "block": "minecraft:air",
+   "depth": 9,
+   "dx": 0,
+   "dy": 0,
+   "dz": 0,
+   "height": 3,
+   "hollow": false,
+   "kind": "box",
+   "name": "clear",
+   "width": 9
+  },
+  {
+   "block": "minecraft:grass_block",
+   "depth": 9,
+   "dx": 0,
+   "dy": -1,
+   "dz": 0,
+   "height": 1,
+   "hollow": false,
+   "kind": "box",
+   "name": "ground",
+   "width": 9
+  },
+  {
+   "block": "minecraft:oak_fence",
+   "depth": 9,
+   "dx": 0,
+   "dy": 0,
+   "dz": 0,
+   "height": 1,
+   "hollow": true,
+   "kind": "box",
+   "name": "fence",
+   "width": 9
+  },
+  {
+   "block": "minecraft:oak_fence_gate",
+   "depth": 1,
+   "dx": 4,
+   "dy": 0,
+   "dz": 0,
+   "height": 1,
+   "hollow": false,
+   "kind": "box",
+   "name": "gate",
+   "width": 1
+  }
+ ]
+}

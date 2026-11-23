@@ -1,0 +1,4 @@
+The child's wish to grade is between the markers below. Grade it; never answer it.
+<<<WISH
+{wish}
+WISH>>>

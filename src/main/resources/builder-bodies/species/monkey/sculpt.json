@@ -1,0 +1,375 @@
+{
+  "id": "monkey",
+  "name": "Monkey",
+  "status": "Sculpting a monkey",
+  "powers": [
+    "friendly"
+  ],
+  "damage": 0,
+  "health": 20,
+  "speed": 0.3,
+  "note": "Plain base monkey: brown fur (#6B4226, fur pattern) with tan (#D9B48A) face muzzle, belly, ears, hands, feet; long curled tail; cheerful 3-box smile, relaxed brows. Face at -z. No accessories so it can be start_from'd.",
+  "palette": [
+    {
+      "colour": "#6B4226",
+      "percent": 75
+    },
+    {
+      "colour": "#D9B48A",
+      "percent": 20
+    }
+  ],
+  "parts": [
+    {
+      "name": "body",
+      "from": [
+        -5,
+        12,
+        -3
+      ],
+      "to": [
+        5,
+        24,
+        3
+      ],
+      "colour": "#6B4226",
+      "pattern": "fur",
+      "pattern_colour": "#4E2F1A"
+    },
+    {
+      "name": "belly",
+      "from": [
+        -3,
+        14,
+        -4
+      ],
+      "to": [
+        3,
+        22,
+        -2
+      ],
+      "colour": "#D9B48A",
+      "parent": "body"
+    },
+    {
+      "name": "head",
+      "from": [
+        -5,
+        23,
+        -5
+      ],
+      "to": [
+        5,
+        32,
+        4
+      ],
+      "colour": "#6B4226",
+      "pattern": "fur",
+      "pattern_colour": "#4E2F1A"
+    },
+    {
+      "name": "face",
+      "from": [
+        -4,
+        24,
+        -6
+      ],
+      "to": [
+        4,
+        30,
+        -4
+      ],
+      "colour": "#D9B48A",
+      "parent": "head"
+    },
+    {
+      "name": "eyeL",
+      "from": [
+        1,
+        28,
+        -7
+      ],
+      "to": [
+        3,
+        30,
+        -5
+      ],
+      "colour": "black",
+      "parent": "head"
+    },
+    {
+      "name": "eyeR",
+      "from": [
+        -3,
+        28,
+        -7
+      ],
+      "to": [
+        -1,
+        30,
+        -5
+      ],
+      "colour": "black",
+      "parent": "head"
+    },
+    {
+      "name": "browL",
+      "from": [
+        1,
+        30,
+        -7
+      ],
+      "to": [
+        3,
+        31,
+        -5
+      ],
+      "colour": "#4E2F1A",
+      "parent": "head"
+    },
+    {
+      "name": "browR",
+      "from": [
+        -3,
+        30,
+        -7
+      ],
+      "to": [
+        -1,
+        31,
+        -5
+      ],
+      "colour": "#4E2F1A",
+      "parent": "head"
+    },
+    {
+      "name": "mouth_mid",
+      "from": [
+        -2,
+        25,
+        -7
+      ],
+      "to": [
+        2,
+        26,
+        -5
+      ],
+      "colour": "#5A2A1A",
+      "parent": "head"
+    },
+    {
+      "name": "mouth_cornerL",
+      "from": [
+        2,
+        26,
+        -7
+      ],
+      "to": [
+        3,
+        27,
+        -5
+      ],
+      "colour": "#5A2A1A",
+      "parent": "head"
+    },
+    {
+      "name": "mouth_cornerR",
+      "from": [
+        -3,
+        26,
+        -7
+      ],
+      "to": [
+        -2,
+        27,
+        -5
+      ],
+      "colour": "#5A2A1A",
+      "parent": "head"
+    },
+    {
+      "name": "earL",
+      "from": [
+        4,
+        26,
+        -2
+      ],
+      "to": [
+        7,
+        30,
+        1
+      ],
+      "colour": "#D9B48A",
+      "parent": "head"
+    },
+    {
+      "name": "earR",
+      "from": [
+        -7,
+        26,
+        -2
+      ],
+      "to": [
+        -4,
+        30,
+        1
+      ],
+      "colour": "#D9B48A",
+      "parent": "head"
+    },
+    {
+      "name": "armL",
+      "from": [
+        4,
+        10,
+        -2
+      ],
+      "to": [
+        8,
+        24,
+        1
+      ],
+      "colour": "#6B4226",
+      "pattern": "fur",
+      "pattern_colour": "#4E2F1A"
+    },
+    {
+      "name": "handL",
+      "from": [
+        4,
+        8,
+        -2
+      ],
+      "to": [
+        8,
+        11,
+        1
+      ],
+      "colour": "#D9B48A",
+      "parent": "armL"
+    },
+    {
+      "name": "armR",
+      "from": [
+        -8,
+        10,
+        -2
+      ],
+      "to": [
+        -4,
+        24,
+        1
+      ],
+      "colour": "#6B4226",
+      "pattern": "fur",
+      "pattern_colour": "#4E2F1A"
+    },
+    {
+      "name": "handR",
+      "from": [
+        -8,
+        8,
+        -2
+      ],
+      "to": [
+        -4,
+        11,
+        1
+      ],
+      "colour": "#D9B48A",
+      "parent": "armR"
+    },
+    {
+      "name": "legL",
+      "from": [
+        1,
+        1,
+        -2
+      ],
+      "to": [
+        4,
+        13,
+        2
+      ],
+      "colour": "#6B4226",
+      "pattern": "fur",
+      "pattern_colour": "#4E2F1A"
+    },
+    {
+      "name": "footL",
+      "from": [
+        1,
+        0,
+        -3
+      ],
+      "to": [
+        4,
+        2,
+        2
+      ],
+      "colour": "#D9B48A",
+      "parent": "legL"
+    },
+    {
+      "name": "legR",
+      "from": [
+        -4,
+        1,
+        -2
+      ],
+      "to": [
+        -1,
+        13,
+        2
+      ],
+      "colour": "#6B4226",
+      "pattern": "fur",
+      "pattern_colour": "#4E2F1A"
+    },
+    {
+      "name": "footR",
+      "from": [
+        -4,
+        0,
+        -3
+      ],
+      "to": [
+        -1,
+        2,
+        2
+      ],
+      "colour": "#D9B48A",
+      "parent": "legR"
+    },
+    {
+      "name": "tail_base",
+      "from": [
+        -1,
+        12,
+        2
+      ],
+      "to": [
+        1,
+        14,
+        10
+      ],
+      "colour": "#6B4226",
+      "parent": "body"
+    },
+    {
+      "name": "tail_tip",
+      "from": [
+        -1,
+        13,
+        9
+      ],
+      "to": [
+        1,
+        22,
+        11
+      ],
+      "colour": "#6B4226",
+      "parent": "body"
+    }
+  ]
+}

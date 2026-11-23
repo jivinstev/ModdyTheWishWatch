@@ -1,0 +1,286 @@
+{
+ "base": "wild",
+ "behaves_like": "buzzer",
+ "damage": 0,
+ "health": 20,
+ "id": "ghost",
+ "name": "Little Ghost",
+ "note": "Friendly cute ghost: white sheet body with wavy hem bumps, big round black eyes, 3-box upturned smile, pink cheeks; floats via flies, friendly, small scale. Mood: sweet.",
+ "palette": [
+  {
+   "colour": "white",
+   "percent": 90
+  },
+  {
+   "colour": "black",
+   "percent": 3
+  }
+ ],
+ "parts": [
+  {
+   "colour": "white",
+   "from": [
+    -6,
+    4,
+    -6
+   ],
+   "name": "body",
+   "pattern": "gradient",
+   "pattern_colour": "#DDE8FF",
+   "to": [
+    6,
+    16,
+    6
+   ]
+  },
+  {
+   "colour": "white",
+   "from": [
+    -6,
+    16,
+    -6
+   ],
+   "inflate": 1,
+   "name": "head",
+   "parent": "body",
+   "to": [
+    6,
+    26,
+    6
+   ]
+  },
+  {
+   "colour": "white",
+   "from": [
+    -6,
+    1,
+    -6
+   ],
+   "name": "hem1",
+   "parent": "body",
+   "to": [
+    -2,
+    5,
+    6
+   ]
+  },
+  {
+   "colour": "white",
+   "from": [
+    2,
+    1,
+    -6
+   ],
+   "name": "hem2",
+   "parent": "body",
+   "to": [
+    6,
+    5,
+    6
+   ]
+  },
+  {
+   "colour": "#EEF2FF",
+   "from": [
+    -2,
+    2,
+    -6
+   ],
+   "name": "hem3",
+   "parent": "body",
+   "to": [
+    2,
+    5,
+    6
+   ]
+  },
+  {
+   "colour": "black",
+   "from": [
+    -4.0,
+    19.0,
+    -7.0
+   ],
+   "name": "eyeL",
+   "parent": "head",
+   "to": [
+    -1.0,
+    23.0,
+    -6.0
+   ]
+  },
+  {
+   "colour": "black",
+   "from": [
+    1.0,
+    19.0,
+    -7.0
+   ],
+   "name": "eyeR",
+   "parent": "head",
+   "pivot": [
+    2.5,
+    19.0,
+    -6.5
+   ],
+   "to": [
+    4.0,
+    23.0,
+    -6.0
+   ]
+  },
+  {
+   "colour": "white",
+   "from": [
+    -3.0,
+    22.0,
+    -8.0
+   ],
+   "name": "pupilL",
+   "parent": "head",
+   "to": [
+    -2.0,
+    23.0,
+    -7.0
+   ]
+  },
+  {
+   "colour": "white",
+   "from": [
+    2.0,
+    22.0,
+    -8.0
+   ],
+   "name": "pupilR",
+   "parent": "head",
+   "to": [
+    3.0,
+    23.0,
+    -7.0
+   ]
+  },
+  {
+   "colour": "black",
+   "from": [
+    -2.5,
+    17.5,
+    -7.3
+   ],
+   "name": "mouthL",
+   "parent": "head",
+   "to": [
+    -1.5,
+    18.5,
+    -6
+   ]
+  },
+  {
+   "colour": "black",
+   "from": [
+    -1.5,
+    17,
+    -7.3
+   ],
+   "name": "mouthM",
+   "parent": "head",
+   "to": [
+    1.5,
+    18,
+    -6
+   ]
+  },
+  {
+   "colour": "black",
+   "from": [
+    1.0,
+    18.0,
+    -7.0
+   ],
+   "name": "mouthR",
+   "parent": "head",
+   "pivot": [
+    1.5,
+    18.0,
+    -6.5
+   ],
+   "to": [
+    2.0,
+    19.0,
+    -6.0
+   ]
+  },
+  {
+   "colour": "pink",
+   "from": [
+    -5.0,
+    18.0,
+    -7.0
+   ],
+   "name": "cheekL",
+   "parent": "head",
+   "to": [
+    -3.0,
+    19.0,
+    -6.0
+   ]
+  },
+  {
+   "colour": "pink",
+   "from": [
+    3.0,
+    18.0,
+    -7.0
+   ],
+   "name": "cheekR",
+   "parent": "head",
+   "pivot": [
+    4.0,
+    18.0,
+    -6.5
+   ],
+   "to": [
+    5.0,
+    19.0,
+    -6.0
+   ]
+  },
+  {
+   "colour": "white",
+   "from": [
+    -8,
+    10,
+    -2
+   ],
+   "name": "armL",
+   "parent": "body",
+   "to": [
+    -5,
+    14,
+    2
+   ]
+  },
+  {
+   "colour": "white",
+   "from": [
+    5,
+    10,
+    -2
+   ],
+   "name": "armR",
+   "parent": "body",
+   "to": [
+    8,
+    14,
+    2
+   ]
+  }
+ ],
+ "powers": [
+  "friendly",
+  "flies",
+  "glowing"
+ ],
+ "scale": 0.8,
+ "status": "Sculpting your little ghost",
+ "voice": "allay"
+}

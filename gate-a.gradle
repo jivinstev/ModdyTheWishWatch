@@ -1,0 +1,614 @@
+// GATE A's own wiring: the adoption report and check, the per-class budget, testJunit unwired from `check`,
+// and the `test {}` task. It lives in its own file so a change to Gate A's configuration is GATE-A ONLY: Gate B's
+// selector (tools/gate-select.py) knows this file cannot change what a GameTest server runs, whereas any edit to
+// build.gradle is a full-tier Gate B. Applied from build.gradle with `apply from: 'gate-a.gradle'`, in the same place
+// these blocks used to sit, so the order of configuration is unchanged. Nothing here may define something
+// build.gradle or a GameTest run reads — if it would, it belongs back in build.gradle.
+
+// ADOPTION RUNS ON THE LADDER, NOT WHEN SOMEONE REMEMBERS.
+//
+// Seven capabilities in this project were built, wired, committed, believed -- and never called.
+// Every wiring test passed each time, because a wiring test proves a capability was OFFERED, not
+// TAKEN. tools/adoption-report.py has answered that for a while and only ever ran when somebody
+// thought to run it, which is the same failure one level up.
+//
+// So it is `finalizedBy test`: quiet when every watched field is being used, loud when one is not.
+// Deliberately NOT a failing gate. The log is machine-local and absent on a clean checkout, and a
+// build that fails because nobody has played recently teaches people to skip the build. The failing
+// form is `adoptionCheck`, for a schedule or CI, where an absent log is a configuration error
+// rather than a Tuesday.
+// GATE A'S PER-CLASS BUDGET. JUnit spreads work over the forks by CLASS, so one slow class is the floor of the
+// whole test phase. After every test run this prints the test phase's span (first class start to last class end, from
+// the XML reports) and the ten slowest classes, and names any class over the ceiling (30 s). Printing only by default;
+// MODDY_GATE_A_BUDGET=strict fails the build on one. docs/GATE_PERFORMANCE.md -> "Gate A".
+tasks.register('gateABudget') {
+    group = 'verification'
+    description = 'Print the test phase span and the slowest test classes; fail over 30 s a class when MODDY_GATE_A_BUDGET=strict'
+    // Both halves of Gate A: the public tests' reports are under publicTest, the rest under test.
+    def results = ['test', 'publicTest'].collect { layout.buildDirectory.dir("test-results/${it}") }
+    def strict = (System.getenv('MODDY_GATE_A_BUDGET') ?: '') == 'strict'
+    mustRunAfter 'test', 'publicTest'
+    doLast {
+        def files = results.collectMany { r ->
+            def dir = r.get().asFile
+            dir.isDirectory() ? dir.listFiles().findAll { it.name.startsWith('TEST-') && it.name.endsWith('.xml') } : []
+        }
+        if (files.isEmpty()) {
+            return
+        }
+        double ceiling = 30.0
+        def rows = []
+        long first = Long.MAX_VALUE
+        long last = Long.MIN_VALUE
+        files.each { f ->
+            def head = f.withReader('UTF-8') { r -> def b = new char[4096]; int n = r.read(b); n > 0 ? new String(b, 0, n) : '' }
+            def m = head =~ /<testsuite name="([^"]+)"[^>]*timestamp="([^"]+)"[^>]*time="([0-9.]+)"/
+            if (m.find()) {
+                double t = m.group(3) as double
+                def ts = m.group(2)
+                long start = (ts.endsWith('Z') ? java.time.Instant.parse(ts) : java.time.LocalDateTime.parse(ts).toInstant(java.time.ZoneOffset.UTC)).toEpochMilli()
+                first = Math.min(first, start)
+                last = Math.max(last, start + (long) (t * 1000))
+                rows << [m.group(1), t]
+            }
+        }
+        rows.sort { -it[1] }
+        // a test that passed only on its retry is SAID (mergeReruns writes a <flakyFailure> into its test case).
+        def retried = []
+        files.each { f ->
+            def xml = f.getText('UTF-8')
+            if (xml.contains('<flakyFailure') || xml.contains('<flakyError')) {
+                (xml =~ /(?s)<testcase name="([^"]*)" classname="([^"]*)"[^>]*?(?<!\/)>(.*?)<\/testcase>/).each { all, n, c, body ->
+                    if (body.contains('<flakyFailure') || body.contains('<flakyError')) {
+                        retried << "${c.tokenize('.').last()}.${n}"
+                    }
+                }
+            }
+        }
+        if (!retried.isEmpty()) {
+            println "Gate A: passed after retry: ${retried.unique().join(', ')}"
+        }
+        // phase 2: what the fingerprint ledger let this run skip (testing/ledger/GateLedger writes one row a check)
+        def ledgerDir = layout.buildDirectory.dir('gate-a-ledger/summary').get().asFile
+        if (ledgerDir.isDirectory()) {
+            def t = [variants: 0, ran: 0, skipped: 0, reverified: 0, stale: 0]
+            ledgerDir.listFiles().findAll { it.name.endsWith('.jsonl') }.each { f ->
+                f.eachLine('UTF-8') { line ->
+                    def row = new groovy.json.JsonSlurper().parseText(line)
+                    t.keySet().each { k -> t[k] += (row[k] ?: 0) as int }
+                }
+            }
+            println "gate A ledger: ${t.variants} fingerprinted variants, ${t.ran} ran, ${t.skipped} skipped (passed before)" +
+                    (t.reverified ? ", ${t.reverified} cached passes re-verified" : '') + (t.stale ? ", ${t.stale} STALE" : '') +
+                    ' -- -Pgate.ledger=off runs all (docs/GATE_PERFORMANCE.md -> "The fingerprint ledger")'
+        }
+        def over = rows.findAll { it[1] > ceiling }
+        println String.format('gate A budget: test phase %.0f s over %d classes; slowest:', (last - first) / 1000.0, rows.size())
+        rows.take(10).each { println String.format('  %7.1f s  %s', it[1], it[0]) }
+        if (!over.isEmpty()) {
+            def msg = "gate A budget: ${over.size()} class(es) over ${ceiling as int} s: " + over.collect { "${it[0]} (${String.format('%.0f', it[1])} s)" }.join(', ') +
+                    ' -- split it, or sample it (docs/GATE_PERFORMANCE.md -> "Gate A")'
+            if (strict) {
+                throw new GradleException(msg)
+            }
+            println msg
+        }
+    }
+}
+
+tasks.register('adoptionReport', Exec) {
+    group = 'verification'
+    description = 'What the agent actually USES — one line when nothing is wrong'
+    // The SAME path the onlyIf below tests. A gate that decided there was a log and then read a
+    // different file would be the worst of both: green because something was reported, about a
+    // machine nobody played on.
+    commandLine(['python3', "${projectDir}/tools/adoption-report.py"]
+            + (System.getenv('MODDINGFROMAMOD_HOME')
+                ? ["${System.getenv('MODDINGFROMAMOD_HOME')}/agent-actions.jsonl".toString()] : [])
+            + ['--quiet'])
+    ignoreExitValue = true
+    outputs.upToDateWhen { false }
+    // MODDINGFROMAMOD_HOME WINS, because the mod's own home is relocatable and this task used to
+    // read only the real $HOME. On a server the log is
+    // wherever -Dmoddingfromamod.home points, so the check that decides whether there is anything
+    // to report has to look in the same place the mod writes -- otherwise adoption is silently
+    // never reported on the one machine a child actually plays on.
+    onlyIf {
+        def home = System.getenv('MODDINGFROMAMOD_HOME')
+        def log = home ? file("$home/agent-actions.jsonl")
+                       : file("${System.getProperty('user.home')}/.moddingfromamod/agent-actions.jsonl")
+        // The public tree (tools/public-tree.py) has no tools/adoption-report.py: nothing to run, nothing to say.
+        log.exists() && file('tools/adoption-report.py').exists()
+    }
+}
+
+tasks.register('adoptionCheck', Exec) {
+    group = 'verification'
+    description = 'Fail if a field that is offered is effectively never taken'
+    commandLine 'python3', "${projectDir}/tools/adoption-report.py", '--check'
+    outputs.upToDateWhen { false }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// GATE A DOES NOT NEED MINECRAFT'S ASSETS. Unwire NeoGradle's `testJunit` from `check`.
+//
+// NeoGradle registers `testJunit` — a JUnit run that boots inside a Minecraft runtime — and wires
+// it into `check`. This project has never used it: every unit test here is deliberately hermetic
+// (see "GATE A IS HERMETIC" below), so `testJunit` reports **NO-SOURCE** and runs zero tests.
+//
+// It is not free, though. It is the ONLY thing that pulls `...DownloadAssets` + `ExtractNatives`
+// into the task graph, and on a cold container that download is **239 s of a 344 s `./gradlew
+// build`** — 69% of Gate A, spent fetching client textures and sounds so that a test task with no
+// tests can not-run. Measured 2026-09-01; `./gradlew check --dry-run` shows the edge.
+//
+// So `check` no longer depends on it. Nothing is lost: `testJunit` still exists and still runs on
+// demand (`./gradlew testJunit`), and Gate C/D still download assets when they actually boot a
+// client, which is when a client genuinely needs them.
+//
+// ⚠ IF YOU EVER ADD A UNIT TEST THAT MUST BOOT MINECRAFT, it belongs in `testJunit` — and you must
+// wire this back up, or it will silently never run. That is exactly the "green board that measured
+// nothing" failure this repo keeps paying for, so `gateAWiring` below fails the build if the task
+// stops being empty.
+// ─────────────────────────────────────────────────────────────────────────────
+// projectsEvaluated, NOT a plain configure block: NeoGradle adds this edge after our
+// configuration runs, so removing it earlier removes nothing and silently leaves the download in
+// place (measured — the first attempt at this looked correct and changed the graph not at all).
+gradle.projectsEvaluated {
+    tasks.named('check').configure {
+        setDependsOn(dependsOn.findAll { !it.toString().contains("task 'testJunit'") })
+    }
+}
+
+// The guard for the ⚠ above: if `testJunit` ever gains sources, this fails and says what to do.
+tasks.register('gateAWiring') {
+    group = 'verification'
+    description = 'Fail if the unwired testJunit run has gained tests that would silently not run'
+    doLast {
+        def t = tasks.findByName('testJunit')
+        if (t != null && t.enabled && !t.candidateClassFiles.isEmpty()) {
+            throw new GradleException(
+                "testJunit now has test classes, but it was unwired from `check` because it was "
+              + "empty (see the comment above it in build.gradle). Those tests are NOT running. "
+              + "Either re-wire it into `check` and accept the asset download, or move the tests "
+              + "into src/test (hermetic) where Gate A already runs them.")
+        }
+    }
+}
+tasks.named('check').configure { dependsOn 'gateAWiring' }
+tasks.named('test') { finalizedBy 'adoptionReport' }
+
+// A Gate A that PASSED whole (both halves, no --tests filter) is handed to tools/gate-plan.py, when that tool is in the
+// tree, which records it for a clean tree only (a dirty one, or a HEAD that moved during the run, is refused). The
+// record is how a planner can say a later commit that changed no file Gate A reads needs no second run.
+def gateAStart = ''
+try { gateAStart = ['git', 'rev-parse', 'HEAD'].execute(null, projectDir).text.trim() } catch (ignored) { }
+tasks.register('gateAPlanRecord') {
+    group = 'verification'
+    description = 'Record a whole, green Gate A for tools/gate-plan.py'
+    doLast {
+        def t = tasks.findByName('test')
+        def pt = tasks.findByName('publicTest')
+        def whole = t != null && t.filter.commandLineIncludePatterns.isEmpty()
+        def green = [t, pt].findAll { it != null }.every { it.state.executed && it.state.failure == null }
+        if (whole && green && file('tools/gate-plan.py').exists()) {
+            def p = ['python3', 'tools/gate-plan.py', 'record', 'A', '--start', gateAStart].execute(null, projectDir)
+            p.waitForProcessOutput(System.out, System.err)
+        }
+    }
+}
+tasks.named('test') { finalizedBy 'gateAPlanRecord' }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// GATE A BUILDS AND TESTS THE PUBLIC HALF ON ITS OWN, split by docs/public-repo/split.json with no file moved.
+//
+// The cut is read through tools/public-tree.py --gradle, the same decide() the mirror and public-build.sh use,
+// so the build and the published tree cannot disagree about a file. What it adds to `./gradlew build`:
+//   compilePublicJava       the public main files ALONE (private packages, private_files left out), on Minecraft's
+//                           classpath and no other: a public reference to a private class fails HERE, at the line,
+//                           before anything else compiles (compileJava must run after it).
+//   processPublicResources  src/main/resources minus private_resources (the private mixins config among them), the
+//                           plug-in list written EMPTY (TRANSFORMS), neoforge.mods.toml with no private mixins, and the
+//                           resources build.gradle's processResources adds from outside src/ (the creator list, the
+//                           world manifests: both private today) only where the reader calls them public.
+//   compilePublicTestJava   the public tests (private_tests and held_tests left out) against the public classes only.
+//   publicTest              THOSE tests, on that classpath and nothing private: no private class, no private resource,
+//                           no plug-in. A public test that reads a private resource or needs a private plug-in fails
+//                           Gate A by name. The full `compileJava` and `compileTestJava` are unchanged (the jar, the runs,
+//                           the IDE and every tool reading build/classes/java/main see the whole mod, as before).
+//   test                    depends on publicTest and runs only the test classes publicTest did NOT (private tests,
+//                           held tests, private packages' tests) on the full classpath. Each test runs exactly once.
+// So `./gradlew test` still means all of Gate A, `--tests X` reaches X in whichever half has it, `cleanTest` cleans both,
+// and `-x test` skips both. Public files that a test reads by PATH (docs/, tools/, corpus/) are on disk here either
+// way: only tools/public-build.sh, which builds the materialised tree, sees those (docs/TESTING.md → "Gate A").
+// In the public repo itself there is no split.json and no reader: its whole tree IS the public half, so these tasks are
+// switched off and `test` runs every test, as a plain Gradle build does.
+// ─────────────────────────────────────────────────────────────────────────────
+def splitPresent = file('tools/public-tree.py').exists() && file('docs/public-repo/split.json').exists()
+def publicSplitMemo = null
+def publicSplit = {
+    if (publicSplitMemo != null) {
+        return publicSplitMemo
+    }
+    def reader = file('tools/public-tree.py')
+    def worlds = fileTree('worlds') { include '*.json' }.files.collect { 'worlds/' + it.name }.sort()
+    def ask = ['corpus/creator-accounts.jsonl'] + worlds
+    if (!splitPresent) {
+        // The public tree: nothing in it is private (and the tasks reading this are switched off).
+        publicSplitMemo = [private   : [main_java: [], test_java: [], main_resources: [], test_resources: []],
+                           transforms: [:], ask: ask.collectEntries { [(it): true] }]
+        return publicSplitMemo
+    }
+    def out = new StringBuilder()
+    def err = new StringBuilder()
+    def proc = new ProcessBuilder(['python3', reader.absolutePath, '--gradle'] + ask).directory(projectDir).start()
+    proc.waitForProcessOutput(out, err)
+    if (proc.exitValue() != 0) {
+        throw new GradleException("tools/public-tree.py --gradle failed (#2506): ${err}")
+    }
+    publicSplitMemo = new groovy.json.JsonSlurper().parseText(out.toString())
+    return publicSplitMemo
+}
+// Gradle patterns treat * ? and ** specially; a literal file name never carries them here (PublicSplitTest names files).
+def asPatterns = { List<String> rels -> rels.collect { it.toString() } }
+
+def publicTransformsDir = layout.buildDirectory.dir('public-split/transforms')
+tasks.register('publicTransforms') {
+    enabled = splitPresent
+    description = 'Write the public cut\'s transformed files (the plug-in list, empty) for processPublicResources (#2506)'
+    def body = providers.provider { publicSplit().transforms as Map }
+    inputs.property('transforms', body)
+    outputs.dir(publicTransformsDir)
+    doLast {
+        def dir = publicTransformsDir.get().asFile
+        dir.deleteDir()
+        body.get().each { rel, text ->
+            def f = new File(dir, rel.toString())
+            f.parentFile.mkdirs()
+            f.setText(text.toString(), 'UTF-8')
+        }
+    }
+}
+
+tasks.register('processPublicResources', Sync) {
+    enabled = splitPresent
+    group = 'build'
+    description = 'The public cut\'s main resources: no private resource, an empty plug-in list (#2506)'
+    dependsOn 'publicTransforms'
+    def split = publicSplit()
+    from('src/main/resources') {
+        exclude asPatterns(split.private.main_resources)
+        exclude asPatterns(split.transforms.keySet() as List)
+    }
+    from('src/generated/resources') { exclude '**/.cache' }
+    from(publicTransformsDir)
+    // build.gradle's processResources adds these from outside src/: a new `from` there needs its line here too.
+    if (split.ask['corpus/creator-accounts.jsonl']) {
+        from('corpus/creator-accounts.jsonl') { into 'creators' }
+    }
+    def publicWorlds = split.ask.findAll { k, v -> k.startsWith('worlds/') && v }.collect { k, v -> k.substring('worlds/'.length()) }
+    if (publicWorlds) {
+        from('worlds') { include publicWorlds; into 'worlds' }
+    }
+    def props = modsTomlProperties(false)
+    inputs.properties props
+    filesMatching(['META-INF/neoforge.mods.toml']) { expand props }
+    into layout.buildDirectory.dir('resources/public')
+}
+
+tasks.register('processPublicTestResources', Sync) {
+    enabled = splitPresent
+    group = 'build'
+    description = 'The public cut\'s test resources (#2506)'
+    from('src/test/resources') { exclude asPatterns(publicSplit().private.test_resources) }
+    into layout.buildDirectory.dir('resources/publicTest')
+}
+
+def compilePublicJava = tasks.register('compilePublicJava', JavaCompile) {
+    enabled = splitPresent
+    group = 'build'
+    description = 'Compile the public main sources ALONE: a public reference to a private class fails here (#2506)'
+    source = fileTree('src/main/java') { exclude asPatterns(publicSplit().private.main_java) }
+    classpath = sourceSets.main.compileClasspath
+    destinationDirectory = layout.buildDirectory.dir('classes/java/public')
+    options.annotationProcessorPath = sourceSets.main.annotationProcessorPath
+    javaCompiler = javaToolchains.compilerFor { languageVersion = java.toolchain.languageVersion }
+}
+// "Compiles FIRST": in any build that runs both, the public half's compile errors come before the whole tree's.
+tasks.named('compileJava') { mustRunAfter compilePublicJava }
+
+def compilePublicTestJava = tasks.register('compilePublicTestJava', JavaCompile) {
+    enabled = splitPresent
+    group = 'build'
+    description = 'Compile the public tests against the public classes only (#2506)'
+    source = fileTree('src/test/java') { exclude asPatterns(publicSplit().private.test_java) }
+    classpath = files(compilePublicJava) + files(tasks.named('processPublicResources')) + configurations.testCompileClasspath
+    destinationDirectory = layout.buildDirectory.dir('classes/java/publicTest')
+    options.annotationProcessorPath = sourceSets.test.annotationProcessorPath
+    javaCompiler = javaToolchains.compilerFor { languageVersion = java.toolchain.languageVersion }
+}
+tasks.named('compileTestJava') { mustRunAfter compilePublicTestJava }
+
+// Which half runs a test class: publicTest runs every class compilePublicTestJava compiled EXCEPT one that reads a
+// private corpus through PrivateCorpora. Such a test is public and SKIPS in the materialised cut, by name; here
+// the corpus is required, so it runs in `test`, on the full classpath that carries it. Decided per top-level class
+// (its nested classes follow it), from the class files themselves, at the moment Gradle reads a task's inputs (after
+// compilePublicTestJava ran). Cached by each class file's timestamp, so a recompile is never answered from memory.
+def publicTestClasses = compilePublicTestJava.flatMap { it.destinationDirectory }
+// a CorpusSource reader goes the same way, and `test` hands it the REAL corpus (moddy.corpus.dir below); the
+// materialised cut and the public repo, which have no split.json, read its public fixture instead.
+def PRIVATE_CORPORA_REFS = ['com/moddingfromamod/PrivateCorpora', 'com/moddingfromamod/CorpusSource']
+def readsPrivateCorpora = [:]
+def namesPrivateCorpora = { File f ->
+    def key = f.path
+    def stamp = f.lastModified() + ':' + f.length()
+    def hit = readsPrivateCorpora[key]
+    if (hit == null || hit[0] != stamp) {
+        def text = new String(f.bytes, 'ISO-8859-1')
+        hit = [stamp, PRIVATE_CORPORA_REFS.any { text.contains(it) }]
+        readsPrivateCorpora[key] = hit
+    }
+    hit[1]
+}
+def runsInPublicHalf = { String rel ->
+    def dir = publicTestClasses.get().asFile
+    if (!new File(dir, rel).isFile()) {
+        return false
+    }
+    def slash = rel.lastIndexOf('/')
+    def pkg = new File(dir, slash < 0 ? '' : rel.substring(0, slash))
+    def top = rel.substring(slash + 1).replaceFirst(/(\$.*)?\.class$/, '')
+    def family = pkg.listFiles({ File x -> x.name == top + '.class' || x.name.startsWith(top + '$') } as FileFilter) ?: []
+    !family.any { namesPrivateCorpora(it) }
+}
+tasks.register('publicTest', Test) {
+    enabled = splitPresent
+    group = 'verification'
+    description = 'Gate A\'s public half: the public tests on the public classpath alone, no plug-in (#2506)'
+    testClassesDirs = files(compilePublicTestJava)
+    classpath = files(compilePublicTestJava) + files(tasks.named('processPublicTestResources')) +
+            files(compilePublicJava) + files(tasks.named('processPublicResources')) + configurations.testRuntimeClasspath
+    exclude { FileTreeElement e -> !e.directory && !runsInPublicHalf(e.relativePath.pathString) }
+}
+
+// `./gradlew test` is still all of Gate A: the public half first, then the rest. Every class the public half runs is
+// left out of `test`, by its class file, so nothing runs twice and nothing is missed (a held test, compiled only in the
+// full set, and a PrivateCorpora reader both run here).
+if (splitPresent) {
+    tasks.named('test') {
+        dependsOn 'publicTest', compilePublicTestJava
+        exclude { FileTreeElement e -> !e.directory && runsInPublicHalf(e.relativePath.pathString) }
+        // §1: the real corpus, for every test that reads through CorpusSource. -Pcorpus.fixture runs them on the
+        // public fixtures instead (corpus/fixtures/), as the public repo does.
+        if (!project.hasProperty('corpus.fixture')) {
+            systemProperty 'moddy.corpus.dir', [file('corpus'), file('src/main/resources/corpus')]*.absolutePath.join(File.pathSeparator)
+        }
+    }
+    tasks.named('cleanTest') { dependsOn 'cleanPublicTest' }
+}
+// `--tests X` is bound to the task named before it, and the tools here say `./gradlew test --tests X`: pass the filter
+// to the public half too. Either half may then match nothing; `test` fails only if NEITHER did (Gradle's own rule).
+gradle.taskGraph.whenReady { graph ->
+    def t = tasks.findByName('test')
+    def pt = tasks.findByName('publicTest')
+    if (!splitPresent || t == null || pt == null || !graph.hasTask(t)) {
+        return
+    }
+    def cli = t.filter.commandLineIncludePatterns
+    if (cli.isEmpty()) {
+        return
+    }
+    cli.each { pt.filter.includeTestsMatching(it) }
+    [t, pt].each { it.filter.failOnNoMatchingTests = false }
+    def matched = [0]
+    [t, pt].each { task ->
+        task.afterSuite { desc, result -> if (desc.parent == null) matched[0] += result.testCount }
+    }
+    t.doLast {
+        if (matched[0] == 0 && (pt.state.didWork || t.state.didWork)) {
+            throw new GradleException("No tests found for given includes: ${cli} (in test or publicTest, #2506)")
+        }
+    }
+}
+
+def GATE_A_TESTS = ['test', 'publicTest']
+tasks.withType(Test).matching { it.name in GATE_A_TESTS }.configureEach {
+    useJUnitPlatform()
+    finalizedBy 'gateABudget'
+
+    // ONE RETRY OF A FAILED TEST. A test that fails and then passes leaves the task green;
+    // the XML report keeps both outcomes (mergeReruns: a <flakyFailure> inside the test case) and gateABudget prints
+    // "Gate A: passed after retry: Class.method". A test failing twice fails as before; more than 5 failures in one
+    // task is something real breaking, so nothing is retried. -Pgate.retry=off asks for the raw failure (the nightly
+    // sampler's reproduction, a flake hunt).
+    def gateRetry = (project.findProperty('gate.retry') ?: 'on').toString() != 'off'
+    inputs.property('gate.retry', gateRetry)
+    retry {
+        maxRetries = gateRetry ? 1 : 0
+        maxFailures = 5
+        failOnPassedAfterRetry = false
+    }
+    reports.junitXml.mergeReruns = true
+
+    // seams: Gate A is the default; a test that samples MORE takes it only when asked (testing/GateTier).
+    // -Pgate.nightly: the nightly's larger samples. -Pgate.apprentice: what tools/apprentice-gate.sh runs.
+    ['gate.nightly': 'moddy.gate.nightly', 'gate.apprentice': 'moddy.gate.apprentice'].each { prop, sys ->
+        if (project.hasProperty(prop)) {
+            systemProperty sys, 'true'
+        }
+    }
+    // This run's ledger summary only (gateABudget prints it): the rows are one a check, a file a test JVM. publicTest
+    // runs first, so it clears it; `test` clears it only when publicTest did no work in this build.
+    def ledgerSummary = layout.buildDirectory.dir('gate-a-ledger/summary')
+    def gateTask = name
+    doFirst {
+        def pub = tasks.findByName('publicTest')
+        if (gateTask == 'publicTest' || pub == null || !pub.state.didWork) {
+            ledgerSummary.get().asFile.deleteDir()
+        }
+    }
+    // phase 2, the fingerprint ledger and the nightly sampler (testing/ledger, docs/GATE_PERFORMANCE.md):
+    // -Pgate.ledger=off runs every variant; -Pgate.reverify=all re-verifies every cached pass (a release);
+    // -Pgate.reverifyBudget=S the nightly's re-verification seconds a check; -Pgate.seed=S[:I] replays a sampler run.
+    ['gate.ledger': 'moddy.gate.ledger', 'gate.reverify': 'moddy.gate.reverify', 'gate.reverifyBudget': 'moddy.gate.reverifyBudget',
+     'gate.seed': 'moddy.gate.seed', 'gate.samplerLedger': 'moddy.gate.samplerLedger', 'gate.budget': 'moddy.gate.budget',
+     'gate.probe': 'moddy.gate.probe'].each { prop, sys ->   // gate.probe: testing/GateRetryProbeTest
+        if (project.hasProperty(prop)) {
+            systemProperty sys, project.property(prop).toString()
+        }
+    }
+
+    // RUN THE SUITE ON MORE THAN ONE CORE. Unset, Gradle forks a single JVM, so 2,480 tests ran
+    // serially on a 4-core box. Half the cores rather than all of them: Gradle's own daemon and the
+    // neoForm caches want the rest, and measured, the suite's critical path is one class
+    // (CbScriptCorpusTest, 35s of the 59s of test-body time), so forks beyond 2 buy nothing until
+    // that is split. JUnit distributes by CLASS, so a class is never split across forks and
+    // per-class statics stay per-fork.
+    // A/B seam: `./gradlew test -Ptestforks=N --no-build-cache` to re-measure. The default is
+    // set from a MEASUREMENT, not from "more cores must be faster" — see the table in the commit.
+    maxParallelForks = (project.findProperty('testforks')
+            ?: Math.max(1, Runtime.runtime.availableProcessors().intdiv(2))) as int
+
+    // GATE A IS HERMETIC. CharacterResolver shells out to the `claude` CLI to classify a wish, and
+    // it finds one even when `claude` is not on PATH (the VS Code extension ships a binary), so
+    // these "unit" tests were quietly making live model calls: intermittent failures, sensitivity
+    // to machine load, and a slow suite. The live behaviour keeps a home in CharacterResolverLiveTest,
+    // which is opt-in via MFAM_LIVE_CLASSIFIER. See.
+    systemProperty "${project.mod_id}.cli", 'none'
+    // The same for MUSE CODE (agent/MuseExec): a grader whose model is `muse:…` must not reach
+    // a real `muse` from a test. `none` is no binary, so a Muse grade falls back to the CLI above.
+    systemProperty "${project.mod_id}.muse.bin", 'none'
+
+    // THE PUBLIC HALF RUNS IN A RUNNER'S ENVIRONMENT, NOT OURS. A cloud session and a house carry
+    // MUSE_API_KEY, ANTHROPIC_*, CLAUDE_* and the GCP credentials; the public repo's Port CI (MMVU ci-gates on a
+    // GitHub runner) carries none of them. HelperRouteEndToEndTest passed publicTest here and failed 3 tests there,
+    // because three of its seams fell through to System.getenv and its fake `muse` recorded the key the JVM inherited.
+    // So publicTest (and `test` in the materialised public tree, where it IS the public half) runs with those
+    // variables removed: a public test that needs one fails HERE, at PR time. -Pgate.ambientEnv keeps them (the paid,
+    // opt-in smokes such as ModelFallbackRealSmokeTest need the real key).
+    // An input, so a run with the ambient environment is never replayed from cache as the scrubbed one, or back.
+    inputs.property('gate.ambientEnv', project.hasProperty('gate.ambientEnv'))
+    if ((name == 'publicTest' || !splitPresent) && !project.hasProperty('gate.ambientEnv')) {
+        def ambient = ~/^(MUSE_|META_|ANTHROPIC_|CLAUDE|GCP_|GOOGLE_|CLOUDSDK_).*|.*(_API_KEY|_TOKEN|_SECRET|_KEY_B64)$/
+        environment = environment.findAll { k, v -> !(k ==~ ambient) }
+    }
+
+    // GATE A NEVER WRITES A CHILD'S SHELF. A store test whose fixture carries an owner
+    // migrates it onto that owner's shelf, which defaults to ~/.moddingfromamod/players — measured
+    // on the first run, ItemIconSplitTest left a real `players/a1b2c3d4/` in the home directory.
+    // A test that wants a shelf of its own points the property at its temp folder.
+    systemProperty "${project.mod_id}.playersDir",
+            layout.buildDirectory.dir('test-players').get().asFile.absolutePath
+
+    // is Gate A's verdict independent of CLASS ORDER? `-Ptestorder=random` runs each fork's classes in a random
+    // order (JUnit logs the seed; `-Ptestorder=random:SEED` replays one), `-Ptestorder=reverse` in reverse name order.
+    // A test that passes only after (or only before) another class ran is a shared-static leak (an earlier issue's plug-ins).
+    if (project.hasProperty('testorder')) {
+        def order = project.property('testorder').toString()
+        if (order.startsWith('random')) {
+            systemProperty 'junit.jupiter.testclass.order.default', 'org.junit.jupiter.api.ClassOrderer$Random'
+            def seed = order.contains(':') ? order.substring(order.indexOf(':') + 1) : null
+            if (seed) systemProperty 'junit.jupiter.execution.order.random.seed', seed
+        } else if (order == 'reverse') {
+            systemProperty 'junit.jupiter.testclass.order.default', 'com.moddingfromamod.testing.ReverseClassOrder'
+        } else {
+            throw new GradleException("-Ptestorder is random, random:SEED or reverse, not '${order}'")
+        }
+        inputs.property('testorder', order)
+    }
+
+    // A/B seam for the parallel corpus replay: -Pcorpusthreads=1 restores the old one-at-a-time
+    // behaviour, so "did threading change the VERDICT?" is a question you can actually ask.
+    if (project.hasProperty('corpusthreads')) {
+        systemProperty "${project.mod_id}.corpusthreads", project.property('corpusthreads')
+    }
+
+
+
+    // THE EVAL REPORTS READ THEIR DATA FROM ENV VARS, AND GRADLE CANNOT SEE THAT.
+    //
+    // CreatureRunReportTest and CreatureRunCompareTest are driven by MFAM_SCULPT_DIR /
+    // MFAM_RUN_A / MFAM_RUN_B. None of those are task inputs, so pointing them at a NEW run
+    // leaves the cache key unchanged and Gradle happily replays the PREVIOUS run's numbers --
+    // "Task :test FROM-CACHE" with a full, plausible, stale report. That is a silent way to
+    // publish the wrong evaluation result, which is the one failure this project cannot afford.
+    //
+    // Declaring them as inputs makes a different directory a different task.
+    // MFAM_CORPUS drives CorpusBaselineTest and is on this list for exactly the same reason:
+    // the likeness baseline must never be replayed from cache against a corpus that has changed.
+    ['MFAM_SCULPT_DIR', 'MFAM_RUN_A', 'MFAM_RUN_B', 'MFAM_CORPUS'].each { key ->
+        inputs.property(key, System.getenv(key) ?: '')
+        // and the CONTENTS matter too: the same directory re-run has new sculpts in it.
+        def dir = System.getenv(key)
+        if (dir && file(dir).isDirectory()) {
+            inputs.dir(dir).withPathSensitivity(PathSensitivity.RELATIVE)
+        }
+    }
+
+    // ...AND THE SAME TRAP ONE DIRECTORY OVER. LauncherIsolationTest reads tools/run-*.command to
+    // prove no two client-test launchers share a lane, and a shell script is an input to NOTHING,
+    // so :test stayed UP-TO-DATE across an edit to one. Measured: a deliberate lane clash was
+    // reintroduced, the suite reported BUILD SUCCESSFUL in 598ms without running, and the guard
+    // looked like it had cleared the regression it was written for. A guard that cannot be seen to
+    // fail is worth nothing, which is exactly what the comment above says about stale reports.
+    inputs.files(fileTree('tools') { include '*.command'; include '*.sh' })
+            .withPropertyName('clientTestLaunchers')
+            .withPathSensitivity(PathSensitivity.RELATIVE)
+
+    // ...AND THE SAME TRAP A THIRD TIME, on the FIXTURES rather than the launchers.
+    // LessonsDoNotCoachTheFixturesTest reads tools/routing-fixtures.json and corpus/*.json to
+    // ask whether the tool description quotes the wishes it is graded on. Neither was an input,
+    // so a deliberately reintroduced leak -- a routing fixture using a wish the description quotes
+    // verbatim -- came back BUILD SUCCESSFUL from the build cache, `1 from cache`, twice, and only
+    // `--no-build-cache` showed the two red assertions. A coaching gate that can be stale is a
+    // coaching gate that certifies whatever was true last time.
+    inputs.files(fileTree('tools') { include '*.json' })
+            .withPropertyName('fixtureSets')
+            .withPathSensitivity(PathSensitivity.RELATIVE)
+    inputs.files(fileTree('corpus') { include '**/*.json'; include '**/*.jsonl' })
+            .withPropertyName('corpusFixtures')
+            .withPathSensitivity(PathSensitivity.RELATIVE)
+
+    // ...AND A FOURTH TIME, on the DOCS -- the biggest instance of the four, found only because a
+    // new test tripped over it. TWENTY Gate A tests read `docs/`: AgentKnowsTheTrapsTest asks
+    // whether a measured Create trap reached the agent's lessons, GuardrailMatrixTest reads the
+    // P1-P8 table, SourceRuleSweepTest turns LEARNINGS.md rules into checks, GateShardsTest
+    // checks the SMOKE table against the SMOKE set. None of it was an input, so a docs-only edit
+    // came back `:test UP-TO-DATE` and the docs certified themselves: you could delete the row a
+    // guard reads and the guard would report green without running.
+    //
+    // The whole tree, not a hand-kept list -- the previous three instances of this trap were each
+    // "one more directory nobody thought of", and a list is how you get a fifth.
+    inputs.files(fileTree('docs') { include '**/*.md' })
+            .withPropertyName('docsGuardsRead')
+            .withPathSensitivity(PathSensitivity.RELATIVE)
+
+    // ...AND A FIFTH, which is the "one more directory nobody thought of" the comment above
+    // predicted. LegacyDeliveryRegisterTest sweeps for `⚰️ LEGACY (…)` markers and
+    // fails on any tagged file with no row in docs/LEGACY_CREATURE_DELIVERY.md -- and two of the
+    // places it sweeps were inputs to nothing: tools/*.py (only *.sh, *.command and *.json were
+    // declared) and CLAUDE.md, which is not under docs/. Without these, tagging a python tool or
+    // adding a marker to CLAUDE.md comes back `:test UP-TO-DATE` and the orphan is never reported.
+    inputs.files(fileTree('tools') { include '*.py' })
+            .withPropertyName('toolScriptsGuardsRead')
+            .withPathSensitivity(PathSensitivity.RELATIVE)
+    // A fileTree, not inputs.file: the public tree (tools/public-tree.py) has no CLAUDE.md, and a missing
+    // declared input file fails the task's configuration before a single test runs.
+    inputs.files(fileTree('.') { include 'CLAUDE.md' })
+            .withPropertyName('rootGuideGuardsRead')
+            .withPathSensitivity(PathSensitivity.RELATIVE)
+
+    // ...AND A SIXTH. BedrockTilePicturesTest compiles the Geyser extension's picture lookup from its source
+    // and reads its tables, the site's stand-ins and the worlds' Builder lists; ModdyButtonChestsTest reads the
+    // extension's source too. None was an input, so an edit to the lookup came back `:test UP-TO-DATE` and the
+    // picture table the test writes (build/bedrock-tile-pictures.txt) described the code before the edit.
+    inputs.files(fileTree('bedrock/geyser-extension') { include 'src/**'; include 'resources/**'; include 'pack/ui/**' })
+            .withPropertyName('bedrockExtensionGuardsRead')
+            .withPathSensitivity(PathSensitivity.RELATIVE)
+    inputs.files(fileTree('tools/wishgrid') { include 'standins.json' }, fileTree('worlds') { include '*.json' })
+            .withPropertyName('tilePicturesGuardsRead')
+            .withPathSensitivity(PathSensitivity.RELATIVE)
+}
+
+// §5: the TEST KIT, a second artifact for the house mod. Its own file, because it must name the GameTests it
+// leaves out, and this file must name nothing a GameTest server reads (tools/test-gate-select.py checks both).
+apply from: 'test-kit.gradle'

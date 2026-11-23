@@ -1,0 +1,1181 @@
+{
+  "_comment": "Ready-made ITEMS the agent selects instead of authoring. docs/ITEM_CATALOGUE_PLAN.md. Every entry is one EFFECT; the SHAPE it is wrapped in (held/thrown/placed) is the other axis and lives in shape_*.cbs, so 16 effects x 3 shapes is 19 files rather than 48. The 12 CORE effects were mined from real wishes; the 4 marked coverage have zero mined hits and are here on the icon library's argument -- 57 wishes is a small sample and those four have the weakest keyword lists in the set.",
+  "version": 1,
+  "_no_defaults": "NOT ONE PARAMETER HAS A DEFAULT, deliberately, and this is the single most important thing about this file. A default is a silent decision made after the wish text is gone: TRIGGER's default was deliberate, documented and well-argued, and it still built the wrong ability for 3 of 8 wishes because a default cannot tell an ambiguous wish from an explicit one. Every param carries an `ask` -- what to look for in the child's own words -- and the tool refuses without it. Playbook 4f.",
+  "_applies_to": "self = the effect lands on whoever used it (heal me, make ME giant). target = it lands on what they point at, what the throw hits, or what stands near the placed thing. world = it happens at the PLACE and takes no target. This is the axis the shape wrappers vary along, and getting it wrong is the quietest possible bug: a `hurt` wand that heals the player, or a `heal` potion that heals the zombie in front of them.",
+  "effects": [
+    {
+      "id": "summon",
+      "core": true,
+      "applies_to": "world",
+      "aim": "ahead",
+      "summary": "Creatures appear. The biggest item wish there is by a distance: every spawn egg, every 'egg you throw that makes the fighters come out', every 'put down my airplane'.",
+      "who": "nothing — the creatures appear at the spot",
+      "when": "the moment it is used, thrown or put down",
+      "child_when": "Creatures pop out of it!",
+      "aka": [
+        "spawn",
+        "conjure",
+        "summon_mob",
+        "make_mob"
+      ],
+      "template": "summon.cbs",
+      "params": {
+        "MOB": {
+          "type": "string",
+          "doc": "which creature, as an entity id like minecraft:zombie or examplemod:wither_storm",
+          "ask": "the creature he named — 'the WITHER STORM' is examplemod:wither_storm"
+        },
+        "COUNT": {
+          "type": "int",
+          "doc": "how many appear each time, 1 to 20",
+          "ask": "a number if he gave one ('10 zombies'), otherwise 1 — do NOT guess a crowd"
+        },
+        "AS": {
+          "type": "string",
+          "doc": "what the creatures are LIKE when they appear: plain, baby, or charged",
+          "ask": "his own word for it — 'baby mobs' is baby, 'already-electric' or 'charged' is charged, and if he said nothing about it, plain"
+        }
+      },
+      "derived": [
+        "TARGET",
+        "SUMMONS"
+      ],
+      "wishes": [
+        "a egg that hatches the WITHER STORM",
+        "an egg you throw that makes the fighters come out",
+        "spawn eggs for all my baby mobs",
+        "eggs that pop out already-electric mobs"
+      ]
+    },
+    {
+      "id": "food",
+      "core": true,
+      "applies_to": "self",
+      "aim": "self",
+      "summary": "Eating or drinking it fills you up and gives you a boost. Every slushie, ice cream, coffee and 'bottle of butt cheek water'.",
+      "who": "whoever used it",
+      "when": "the moment it is drunk or eaten",
+      "child_when": "You drink it and it makes you feel GREAT.",
+      "aka": [
+        "eat",
+        "drink",
+        "feed",
+        "snack",
+        "nourish"
+      ],
+      "template": "food.cbs",
+      "params": {
+        "BONUS": {
+          "type": "string",
+          "doc": "the boost it gives, as a vanilla effect id like minecraft:speed",
+          "ask": "what he said it does — 'makes you fast' is minecraft:speed, 'makes you jump' is minecraft:jump_boost"
+        },
+        "SECONDS": {
+          "type": "int",
+          "doc": "how long the boost lasts",
+          "ask": "a time if he gave one, otherwise 30 is a good drink"
+        }
+      },
+      "derived": [
+        "TARGET"
+      ],
+      "wishes": [
+        "a bottle of butt cheek water",
+        "i want a slushie machine i can put down"
+      ]
+    },
+    {
+      "id": "hurt",
+      "core": true,
+      "applies_to": "target",
+      "aim": "ahead",
+      "summary": "It damages whatever it is aimed at. Every weapon wish — the Bloop Slayer trident, a sword, a zapper.",
+      "who": "what he points at, what the throw hits, or what walks near the placed thing",
+      "when": "the moment it is used, thrown or stepped near",
+      "child_when": "It HURTS whatever you point it at.",
+      "aka": [
+        "damage",
+        "harm",
+        "wound",
+        "injure",
+        "hit"
+      ],
+      "template": "hurt.cbs",
+      "params": {
+        "HEARTS": {
+          "type": "number",
+          "doc": "how many hearts of damage, 1 to 100",
+          "ask": "how strong he said it is — 'kills a Bloop in one hit' is a big number like 60, 'a bit of a poke' is 2"
+        }
+      },
+      "derived": [
+        "TARGET",
+        "DAMAGE"
+      ],
+      "wishes": [
+        "a trident that kills bloops"
+      ]
+    },
+    {
+      "id": "place",
+      "core": true,
+      "applies_to": "world",
+      "aim": "ahead",
+      "summary": "It puts a block down where it is aimed or where it lands. Buckets, block-droppers, and 'a bottle you throw that makes water'.",
+      "who": "nothing — the block appears at the spot",
+      "when": "the moment it is used, thrown or put down",
+      "child_when": "It puts a block down wherever you use it.",
+      "aka": [
+        "block",
+        "put",
+        "put_block",
+        "pour",
+        "spill",
+        "fill"
+      ],
+      "template": "place.cbs",
+      "params": {
+        "BLOCK": {
+          "type": "string",
+          "doc": "which block, as a block id like minecraft:water or examplemod:green_lava. Several, one per use, is a list with how to choose in front: \"random: minecraft:poppy, minecraft:dandelion\" or \"cycle: ...\" (up to 16)",
+          "ask": "the thing he wants to appear — 'buckets for my green lava' is examplemod:green_lava"
+        }
+      },
+      "derived": [
+        "TARGET",
+        "PLACES"
+      ],
+      "wishes": [
+        "buckets for my green lava"
+      ]
+    },
+    {
+      "id": "status",
+      "core": false,
+      "applies_to": "self",
+      "aim": "self",
+      "summary": "It puts a KIND status effect on him: breathing underwater, night vision, invisible, floating down slowly, fire resistance (which also lets him see in lava), and a few more. WORN, it lasts as long as he wears it; HELD, for a while after he uses it. \"Breathe underwater\" is water_breathing here, for as long as he wears it \u2014 not the respiration enchantment or a turtle helmet, which only make his breath last a little longer.",
+      "who": "whoever used it, or whoever wears it",
+      "when": "the moment it is used, or all the time it is worn",
+      "child_when": "You get a special power!",
+      "aka": [
+        "potion",
+        "potion_effect",
+        "status_effect",
+        "buff",
+        "effect_give",
+        "water_breathing",
+        "breathe_underwater",
+        "night_vision",
+        "invisibility",
+        "invisible",
+        "slow_falling",
+        "float_down",
+        "fire_resistance",
+        "see_in_lava",
+        "lava_vision"
+      ],
+      "template": "status.cbs",
+      "params": {
+        "EFFECT": {
+          "type": "string",
+          "doc": "which one: water_breathing, night_vision, invisibility, slow_falling, fire_resistance, dolphins_grace, conduit_power, speed, jump_boost, strength, resistance, regeneration, haste, luck, health_boost, absorption, saturation or glowing",
+          "ask": "the power he named \u2014 'breathe underwater' is water_breathing, 'see in the dark' is night_vision, 'see in lava' is fire_resistance, 'float down slowly' is slow_falling. Only these kind ones: nothing that hurts or blinds him."
+        },
+        "LEVEL": {
+          "type": "int",
+          "doc": "0 is normal; up to 3 for the ones that have strengths (speed, jump_boost, haste, health_boost, absorption), 2 for strength, resistance, regeneration and luck; the rest only 0",
+          "ask": "0 unless he said SUPER"
+        },
+        "SECONDS": {
+          "type": "int",
+          "doc": "how long it lasts after he uses a held one (1 to 600); for a worn one, how often it is renewed",
+          "ask": "a time if he gave one, otherwise 30"
+        }
+      },
+      "derived": [
+        "TARGET",
+        "DURATION"
+      ],
+      "wishes": [
+        "a crown for seeing in the dark"
+      ]
+    },
+    {
+      "id": "turn_into",
+      "core": true,
+      "applies_to": "world",
+      "aim": "block",
+      "summary": "It TURNS ONE THING INTO ANOTHER — a block in the world, or a thing he carries. You name what changes (FROM) and what it becomes (TO); WHICH it works on comes from the shape, never from you: a MACHINE takes one FROM from his inventory and gives him the TO (a grinder, a recycler, a machine that turns rocks into diamonds); a THROWN, shot or swung thing changes the matching blocks where it lands; a HELD thing changes the block he points at if it matches FROM, and otherwise turns a FROM in his inventory into the TO — never both in one use. Only blocks that match FROM change, so it never eats his house. It works on BLOCKS and THINGS HE CARRIES, never on a creature: 'turns zombies into chickens' is not this (no ready-made effect changes a mob). One thing in, one thing out: a machine that needs SEVERAL things in, makes sizes, takes add-ins or fills a chest is load_and_pour instead.",
+      "who": "what he points at or where it lands, or him — what he is carrying",
+      "when": "the moment it is used, thrown, hits, or he works the machine",
+      "child_when": "It turns one thing into another — point it at a block, or use it on what you carry!",
+      "aka": [
+        "transform",
+        "recipe",
+        "make_from",
+        "process",
+        "refine",
+        "transmute",
+        "turn_block",
+        "change_block_into",
+        "replace_block",
+        "remove_block",
+        "delete_block",
+        "vanish_block",
+        "block_changer",
+        "transform_block",
+        "vanish",
+        "break_block",
+        "break_blocks",
+        "erase_block",
+        "delete_blocks",
+        "convert_block",
+        "break",
+        "replace_blocks",
+        "convert",
+        "change_block"
+      ],
+      "template": "turn_into.cbs",
+      "params": {
+        "FROM": {
+          "type": "string",
+          "doc": "what changes: one or a list (comma separated, or a JSON array) of block or item ids (minecraft:stone), tags (#minecraft:logs), things he made (the id make_item handed back), or any_block — every ordinary ground and building block, never a chest, bedrock or a portal, and never a thing in his bag. A machine takes the first one in the list he has, one per use.",
+          "ask": "the first noun in what he described — 'turns stone into gold' is minecraft:stone; 'turns wheat into cake' is minecraft:wheat. If he said 'blocks' or 'anything', any_block. It can be a game item, a mod's item, or SOMETHING YOU MADE: name a made one by the id make_item handed back (roasted_beans_plain) and it looks for that exact item, not any old one that looks like it.\nTHAT IS HOW YOU CHAIN MACHINES, and a wish for a several-step process needs it: the second machine's FROM is the first machine's TO, named the same way.\nNO DEFAULT: a thing whose FROM you guessed is one he cannot work."
+        },
+        "TO": {
+          "type": "string",
+          "doc": "what it becomes: ONE block or item. A material is both — gold is a gold block when a block changes and a gold ingot in his hand (iron, diamond, emerald, copper, coal… likewise; glass, stone and sand are the same both ways). minecraft:air makes blocks disappear. furnace makes each FROM whatever a furnace makes of it (raw iron → iron ingot, sand → glass, a log → charcoal). Several blocks, one per use, is a list with how to choose in front: \"cycle: minecraft:red_wool, minecraft:orange_wool, ...\" is the next one each time, \"random: ...\" a different one each time (up to 16)",
+          "ask": "the second noun — 'turns stone into gold' is gold; 'turns wheat into cake' is minecraft:cake; 'disappear', 'vanish', 'delete' is minecraft:air; 'smelts', 'cooks it like a furnace' is furnace. If what comes out is not in the game, make_item it FIRST and name it here by the id make_item hands back (hot_coffee_plain, not moddingfromamod:hot_coffee_plain). A made thing is something he holds, never a block: on a thrown thing that is refused. 'Rainbow' or 'all the colours' is ONE item with a cycle: list of the colours in rainbow order. NO DEFAULT, and answering with the sensible output instead of the one he asked for is the commonest way to miss this wish."
+        },
+        "RADIUS": {
+          "type": "int",
+          "doc": "how many blocks around change: 0 = just the block he points at (held only); 1 = a 3x3x3 patch; up to 3. Not needed on a machine, which never touches a block.",
+          "ask": "0 for a held thing unless he said it changes LOTS of blocks or a big area. A thrown or swung thing lands beside a block, so it needs at least 1."
+        }
+      },
+      "derived": [
+        "TARGET",
+        "ACTS",
+        "HELPERS"
+      ],
+      "wishes": [
+        "a wand that turns stone into gold",
+        "a machine that turns rocks into diamonds"
+      ],
+      "_mode_table": "The mode is DERIVED (datapack/TurnInto), never a parameter. machine → his INVENTORY (one FROM taken, the TO given; 'You need … in your inventory'). held, on_use_done → AIM: the first solid block he points at decides — in FROM, that block (RADIUS around it) changes; anything else, or the air, works on his inventory; never both in one use. Every other shape (thrown, arrow, on_throw_land, on_hit, on_shot, on_block, on_consume, on_mine, placed, magic_block, worn) → BLOCKS where it acts: a worn thing runs on a clock, and in his bag it would eat a stack while he walks. Then narrowed by the arguments: a TO with no block form (a made item) is inventory-only on a held thing and refused on a blocks-only shape; a TO with no item form (minecraft:air) or a FROM of only any_block is blocks-only, and refused on a machine.",
+      "_target_note": "TARGET is declared and deliberately unused. Every effect is handed one from its own applies_to; make_item hands this one @s (machine) or the shape's world selector. The template addresses @s and the blocks at the place directly."
+    },
+    {
+      "id": "load_and_pour",
+      "core": true,
+      "applies_to": "self",
+      "aim": "self",
+      "summary": "A machine he FILLS UP, then it POURS: hold the ingredients and pull the handle to load them, pull again to pour what they make — bigger for more of the main ingredient, named after any extras that went in, into his hand or into a chest beside the machine. This is a slushie machine, a popcorn machine, a coffee maker, a juicer, a factory that bottles something: anything where he puts several things IN (or lots of one thing) before something comes OUT. One thing in and one thing out in a single pull is turn_into. Put it on the machine shape. It explains itself: the sign shows the recipe, every pull says how full it is and what is still missing, and sneaking while pulling prints how to use it.",
+      "who": "him — what he is carrying goes in; what comes out goes to him or the chest",
+      "when": "each pull of the handle: loads what he holds, or pours when nothing new went in",
+      "child_when": "Hold the ingredients and pull the handle to fill it, then pull again to pour!",
+      "aka": [
+        "load",
+        "dispense",
+        "fill_up",
+        "brew",
+        "bottle",
+        "make_with"
+      ],
+      "template": "load_and_pour.cbs",
+      "params": {
+        "INGREDIENTS": {
+          "type": "string",
+          "doc": "what goes IN, comma separated: 1 to 3 item ids like 'minecraft:ice, minecraft:sugar'. THE FIRST ONE DECIDES THE SIZE: it fills up to MAX and more of it makes a bigger one. Every other one is needed once.",
+          "ask": "the things he said go in. Whatever he said makes it BIGGER goes FIRST: 'more ice makes it bigger' is 'minecraft:ice, minecraft:sugar'. A thing not in the game is make_item FIRST and named here by the id make_item hands back, exactly as turn_into's FROM. NO DEFAULT: a machine whose ingredients you guessed is one he cannot fill."
+        },
+        "EXTRAS": {
+          "type": "string",
+          "doc": "optional add-ins that go in the NAME of what comes out, comma separated item ids (up to 2), or 'none'. Never one of the INGREDIENTS, and they never change the size.",
+          "ask": "toppings, flavours, 'with whipped cream', 'a shot of espresso' — the things he said you CAN add. 'none' unless he named some."
+        },
+        "MAX": {
+          "type": "int",
+          "doc": "how many of the FIRST ingredient it holds, 1 to 8. At 3 or more the sizes already work by themselves: for 5, 1-2 is Small, 3-4 Medium and 5 Big",
+          "ask": "5 if he talked about sizes or about more going in making more, otherwise 1"
+        },
+        "WHERE": {
+          "type": "string",
+          "doc": "'hand' to hand it to him, or 'chest' to pour it into a chest standing next to the machine",
+          "ask": "'chest' only if he said a chest or 'not in my pockets'; otherwise 'hand'"
+        },
+        "OUTPUT": {
+          "type": "string",
+          "doc": "what comes OUT, as an item id",
+          "ask": "the thing it makes. If it is not in the game, make_item it FIRST and name it here by the id make_item hands back, so the cup says 'Slushie' in his colour: something to eat or drink is shape on_consume with effect food, anything else plain. NO DEFAULT."
+        }
+      },
+      "derived": [
+        "TARGET",
+        "MACHINE",
+        "OBJECTIVES",
+        "INIT",
+        "LOAD_CALLS",
+        "LOAD_FUNCS",
+        "READY",
+        "EMPTY",
+        "PROGRESS",
+        "READY_LINE",
+        "FULL_LINE",
+        "STILL_NEEDS",
+        "NEEDS",
+        "EMPTY_LINE",
+        "HELP",
+        "FIND_CHEST",
+        "CHEST_POLICY",
+        "DELIVER",
+        "SLOTS",
+        "SLOT_FUNCS",
+        "PICK",
+        "OUT_FUNCS",
+        "EMPTY_IT"
+      ],
+      "wishes": [
+        "a machine that takes two things and then pours out a treat"
+      ],
+      "_target_note": "TARGET is declared and unused, as for turn_into on a machine: what goes in and what comes out are HIS. MACHINE is the feature id, supplied by make_item, so the load lives on this machine's own anchor."
+    },
+    {
+      "id": "ignite",
+      "core": true,
+      "applies_to": "target",
+      "aim": "ahead",
+      "summary": "It sets things on fire. 'A sword that sets things on fire the moment it hits', fire bombs, flame wands.",
+      "who": "what he points at, what the throw hits, or what walks near the placed thing",
+      "when": "the moment it is used, thrown or stepped near",
+      "child_when": "Whatever you point it at CATCHES FIRE.",
+      "aka": [
+        "burn",
+        "fire",
+        "flame",
+        "set_on_fire",
+        "incinerate"
+      ],
+      "template": "ignite.cbs",
+      "params": {
+        "SECONDS": {
+          "type": "int",
+          "doc": "how long the fire burns",
+          "ask": "a time if he gave one, otherwise 8 seconds reads as properly on fire"
+        }
+      },
+      "derived": [
+        "TARGET",
+        "FIRE_TICKS"
+      ],
+      "wishes": [
+        "a sword that sets things on fire the moment it hits"
+      ]
+    },
+    {
+      "id": "teleport",
+      "core": true,
+      "applies_to": "self",
+      "aim": "ahead",
+      "summary": "It moves you to where you are POINTING. The ender-pearl shape, without the throw. Not home: \"teleports me home\", \"takes me back to my house\" or \"to my bed\" is teleport_home, which knows where home is; this one has no destination to give.",
+      "who": "whoever used it",
+      "when": "the moment it is used",
+      "child_when": "ZAP — you are standing where you were pointing.",
+      "aka": [
+        "warp",
+        "tp",
+        "blink",
+        "port"
+      ],
+      "template": "teleport.cbs",
+      "params": {
+        "SAFE": {
+          "type": "string",
+          "doc": "yes or no — yes refuses to drop you inside a solid block",
+          "ask": "yes, unless he specifically asked to go THROUGH walls"
+        }
+      },
+      "derived": [
+        "TARGET",
+        "SAFE_GUARD"
+      ],
+      "wishes": []
+    },
+    {
+      "id": "grow",
+      "core": true,
+      "applies_to": "self",
+      "aim": "self",
+      "summary": "It changes your size, then puts you back after a while. 'A drink that makes me GIANT', and shrinking too.",
+      "who": "whoever used it",
+      "when": "the moment it is drunk, and it wears off",
+      "child_when": "You get HUGE — and after a while you go back to normal.",
+      "aka": [
+        "size",
+        "resize",
+        "shrink",
+        "giant",
+        "scale",
+        "embiggen"
+      ],
+      "template": "grow.cbs",
+      "params": {
+        "SCALE": {
+          "type": "number",
+          "doc": "how big, where 1 is normal — 4 is giant, 0.3 is tiny. 0.1 to 10",
+          "ask": "how big he said — 'GIANT' is about 4, 'a bit bigger' is 1.5, 'tiny' is 0.3"
+        },
+        "SECONDS": {
+          "type": "int",
+          "doc": "how long before it wears off",
+          "ask": "a time if he gave one, otherwise 60 — long enough to enjoy, short enough to end"
+        }
+      },
+      "derived": [
+        "TARGET",
+        "GROW_TICKS"
+      ],
+      "wishes": [
+        "a drink that makes me GIANT"
+      ]
+    },
+    {
+      "id": "rich",
+      "core": true,
+      "applies_to": "self",
+      "aim": "self",
+      "summary": "It hands over treasure. 'Give me 10000 dollars', loot bags, prize boxes.",
+      "who": "the nearest player",
+      "when": "the moment it is used, thrown or put down",
+      "child_when": "TREASURE, straight to you.",
+      "aka": [
+        "give",
+        "treasure",
+        "loot",
+        "money",
+        "riches",
+        "reward",
+        "gift"
+      ],
+      "template": "rich.cbs",
+      "params": {
+        "ITEM": {
+          "type": "string",
+          "doc": "what the treasure is, as an item id like minecraft:diamond",
+          "ask": "what he asked for — Minecraft has no dollars, so money is minecraft:emerald and he should be told that"
+        },
+        "COUNT": {
+          "type": "int",
+          "doc": "how many, 1 to 2304 (that is a full inventory)",
+          "ask": "his number if he gave one — '10000 dollars' is a LOT, so cap it and say so"
+        }
+      },
+      "derived": [
+        "TARGET"
+      ],
+      "wishes": [
+        "give me 10000 dollars"
+      ]
+    },
+    {
+      "id": "lightning",
+      "core": true,
+      "applies_to": "world",
+      "aim": "ahead",
+      "summary": "Lightning strikes where it is aimed. The classic wand wish.",
+      "who": "nothing — it strikes the spot, and the strike itself hurts what is there",
+      "when": "the moment it is used or thrown",
+      "child_when": "LIGHTNING comes down where you point!",
+      "aka": [
+        "thunder",
+        "strike",
+        "zap",
+        "bolt",
+        "electrocute"
+      ],
+      "template": "lightning.cbs",
+      "params": {
+        "STRIKES": {
+          "type": "int",
+          "doc": "how many bolts, 1 to 10",
+          "ask": "1 unless he asked for a storm"
+        }
+      },
+      "derived": [
+        "TARGET",
+        "BOLTS"
+      ],
+      "wishes": [
+        "i want a magic wand that shoots lightning"
+      ]
+    },
+    {
+      "id": "light",
+      "core": true,
+      "applies_to": "world",
+      "aim": "ahead",
+      "summary": "It lights the place up. Torch-throwers and glow wands, for caves.",
+      "who": "nothing — the light appears at the spot",
+      "when": "the moment it is used, thrown or put down",
+      "child_when": "It makes light wherever you use it.",
+      "aka": [
+        "glow",
+        "torch",
+        "illuminate",
+        "brighten",
+        "lamp"
+      ],
+      "template": "light.cbs",
+      "params": {
+        "GLOW_SECONDS": {
+          "type": "int",
+          "doc": "how long nearby creatures also glow so you can see them through walls, 0 for none",
+          "ask": "0 unless he asked to SEE things — 'so i can find the mobs' wants a number"
+        }
+      },
+      "derived": [
+        "TARGET",
+        "GLOW"
+      ],
+      "wishes": []
+    },
+    {
+      "id": "freeze",
+      "core": true,
+      "applies_to": "target",
+      "aim": "ahead",
+      "summary": "It freezes whatever it touches — the powder-snow shiver, and they cannot move.",
+      "who": "what he points at, what the throw hits, or what walks near the placed thing",
+      "when": "the moment it is used, thrown or stepped near",
+      "child_when": "Whatever it hits FREEZES SOLID.",
+      "aka": [
+        "frost",
+        "ice",
+        "chill",
+        "snow"
+      ],
+      "template": "freeze.cbs",
+      "params": {
+        "SECONDS": {
+          "type": "int",
+          "doc": "how long they stay frozen",
+          "ask": "a time if he gave one, otherwise 6 seconds is a good freeze"
+        }
+      },
+      "derived": [
+        "TARGET",
+        "FREEZE_TICKS"
+      ],
+      "wishes": [
+        "a snowball that freezes whatever it hits"
+      ]
+    },
+    {
+      "id": "aggro",
+      "core": true,
+      "applies_to": "target",
+      "aim": "ahead",
+      "summary": "It makes whatever it touches turn on somebody and FIGHT. The pearl that starts a brawl — 'a pearl that makes two mobs go for each other', 'make the zombie chase me'.",
+      "who": "what he points at, what the throw hits, or what walks near the placed thing",
+      "when": "the moment it is used, thrown or stepped near",
+      "child_when": "Whatever it hits turns round and ATTACKS.",
+      "aka": [
+        "anger",
+        "angry",
+        "enrage",
+        "provoke",
+        "taunt",
+        "fight",
+        "turn_on"
+      ],
+      "template": "aggro.cbs",
+      "params": {
+        "FIGHTS": {
+          "type": "string",
+          "doc": "who the thing it hits turns on: me, or mob",
+          "ask": "his own word for it — 'fight ME' and 'chase me' are me; 'fight a mob', 'fight the zombie' and 'fight each other' are mob. NO DEFAULT: these build opposite toys and the sentence always says which."
+        }
+      },
+      "derived": [
+        "TARGET",
+        "AGGRESSOR"
+      ],
+      "wishes": [
+        "a pearl that starts a brawl between two creatures"
+      ]
+    },
+    {
+      "id": "launch",
+      "core": true,
+      "applies_to": "target",
+      "aim": "ahead",
+      "summary": "It flings things into the sky, and they land safely. The knockback-hammer shape.",
+      "who": "what he points at, what the throw hits, or what walks near the placed thing",
+      "when": "the moment it is used, thrown or stepped near",
+      "child_when": "It sends things FLYING up into the sky.",
+      "aka": [
+        "knockback",
+        "fling",
+        "punt",
+        "yeet",
+        "catapult",
+        "toss"
+      ],
+      "template": "launch.cbs",
+      "params": {
+        "POWER": {
+          "type": "string",
+          "doc": "in words: nudge, shove, launch or huge. Never a number",
+          "ask": "how hard he said — 'way up in the SKY' is huge, 'a little hop' is nudge"
+        }
+      },
+      "derived": [
+        "TARGET",
+        "MOTION",
+        "LIFT"
+      ],
+      "wishes": []
+    },
+    {
+      "id": "fly",
+      "core": true,
+      "applies_to": "self",
+      "aim": "self",
+      "summary": "It LIFTS HIM OFF THE GROUND. Rockets, jetpacks, hover boots — the whole family of wishes about going UP. Nothing else here can move the child at all: launch flings other things, and teleport only blinks him from place to place.",
+      "who": "whoever used it — this is the one effect that moves the CHILD",
+      "when": "the moment it is used, and it lasts",
+      "child_when": "You FLY UP into the sky — and you float back down safely.",
+      "aka": [
+        "levitate",
+        "jetpack",
+        "lift",
+        "hover",
+        "boost"
+      ],
+      "template": "fly.cbs",
+      "params": {
+        "SECONDS": {
+          "type": "int",
+          "doc": "how long he keeps rising, 1 to 30",
+          "ask": "a time if he gave one, otherwise 5 — that is about 20 blocks up at RATE 4, which is high enough to see the whole build"
+        },
+        "RATE": {
+          "type": "int",
+          "doc": "how fast he climbs, 0 to 9. Each step is about another 0.9 blocks a second, so height is RATE x SECONDS",
+          "ask": "how fast he said — 'to the MOON' or 'super high' is 8, 'a little hop' is 1"
+        }
+      },
+      "derived": [
+        "TARGET",
+        "FALL_SECONDS"
+      ],
+      "wishes": [
+        "a roket i can shoot off"
+      ]
+    },
+    {
+      "id": "jump",
+      "core": true,
+      "applies_to": "self",
+      "aim": "self",
+      "summary": "A SUPER BOUNCE that lands soft: he jumps much higher for a while, and landing from his own jump never hurts. Bouncy boots, springy shoes, super-jump. It is NOT flying (that is fly) and NOT a true double jump, which nothing can detect.",
+      "who": "whoever used it, or whoever WEARS it",
+      "when": "the moment it is used, and it lasts — or, worn, for as long as he wears it",
+      "child_when": "You can jump REALLY high — and you land softly.",
+      "aka": [
+        "bounce",
+        "bouncy",
+        "hop",
+        "spring",
+        "springy",
+        "superjump",
+        "leap",
+        "double_jump",
+        "doublejump"
+      ],
+      "template": "jump.cbs",
+      "params": {
+        "SECONDS": {
+          "type": "int",
+          "doc": "how long the bounce lasts, 1 to 600. On a worn thing it renews itself, so this is only how often",
+          "ask": "a time if he gave one, otherwise 30 — worn, 30 is fine because it keeps renewing while he wears it"
+        },
+        "LEVEL": {
+          "type": "int",
+          "doc": "how high, 0 to 4: 0 is about 1.8 blocks, 2 about 3.3, 4 about 5 blocks. Every level still lands soft",
+          "ask": "how high he said — 'REALLY high' or 'super' is 3, 'a little bouncy' is 0"
+        }
+      },
+      "derived": [
+        "TARGET"
+      ],
+      "wishes": [
+        "boots that let me DOUBLE JUMP!!!"
+      ]
+    },
+    {
+      "id": "heal",
+      "core": false,
+      "applies_to": "self",
+      "aim": "self",
+      "summary": "COVERAGE (no mined wishes). It heals you right up and keeps healing for a bit.",
+      "who": "whoever used it",
+      "when": "the moment it is used",
+      "child_when": "It heals you all the way up!",
+      "aka": [
+        "regen",
+        "regenerate",
+        "cure",
+        "health",
+        "mend"
+      ],
+      "template": "heal.cbs",
+      "params": {
+        "SECONDS": {
+          "type": "int",
+          "doc": "how long the healing glow keeps going after the top-up",
+          "ask": "a time if he gave one, otherwise 6"
+        }
+      },
+      "derived": [
+        "TARGET"
+      ],
+      "wishes": []
+    },
+    {
+      "id": "explode",
+      "core": false,
+      "applies_to": "world",
+      "aim": "ahead",
+      "summary": "COVERAGE (no mined wishes, and the plan says do not read that as nobody wanting it — this is a wish nobody would bet against). It blows up where it lands.",
+      "who": "nothing — the blast is at the spot and hurts what is near it",
+      "when": "the moment it is used, thrown or put down",
+      "child_when": "BOOM — it explodes where it lands.",
+      "aka": [
+        "explosion",
+        "boom",
+        "blow_up",
+        "tnt",
+        "detonate"
+      ],
+      "template": "explode.cbs",
+      "params": {
+        "SIZE": {
+          "type": "int",
+          "doc": "how big, 1 to 8. Each step is another stick of TNT going off together",
+          "ask": "how big he said — 'a bomb' is 1, 'the BIGGEST explosion' is 8"
+        },
+        "BREAKS_BLOCKS": {
+          "type": "string",
+          "doc": "yes or no. no still makes the bang, the fire and the damage, but leaves the world standing",
+          "ask": "yes if he wants a crater, no if he is throwing it round his own base"
+        }
+      },
+      "derived": [
+        "TARGET",
+        "BLAST"
+      ],
+      "wishes": [
+        "make me a bomb i can throw that explodes"
+      ]
+    },
+    {
+      "id": "speed",
+      "core": false,
+      "applies_to": "self",
+      "aim": "self",
+      "summary": "COVERAGE (no mined wishes). It makes you fast.",
+      "who": "whoever used it",
+      "when": "the moment it is used",
+      "child_when": "You go SUPER FAST.",
+      "aka": [
+        "fast",
+        "haste",
+        "swift",
+        "sprint",
+        "quick"
+      ],
+      "template": "speed.cbs",
+      "params": {
+        "SECONDS": {
+          "type": "int",
+          "doc": "how long it lasts",
+          "ask": "a time if he gave one, otherwise 30"
+        },
+        "LEVEL": {
+          "type": "int",
+          "doc": "0 is fast, 1 is very fast, 4 is absurd. 0 to 9",
+          "ask": "how fast he said — 'SUPER fast' is about 3"
+        }
+      },
+      "derived": [
+        "TARGET"
+      ],
+      "wishes": []
+    },
+    {
+      "id": "protect",
+      "core": false,
+      "applies_to": "self",
+      "aim": "self",
+      "summary": "COVERAGE (no mined wishes). It makes you hard to hurt — a shield, an amulet, magic armour.",
+      "who": "whoever used it",
+      "when": "the moment it is used",
+      "child_when": "Nothing can hurt you much while it lasts.",
+      "aka": [
+        "shield",
+        "armor",
+        "armour",
+        "resist",
+        "defend",
+        "guard"
+      ],
+      "template": "protect.cbs",
+      "params": {
+        "SECONDS": {
+          "type": "int",
+          "doc": "how long it lasts",
+          "ask": "a time if he gave one, otherwise 30"
+        },
+        "LEVEL": {
+          "type": "int",
+          "doc": "0 to 3. 3 is very nearly untouchable, 4 would be COMPLETELY immune and is not allowed",
+          "ask": "how safe he said — 'nothing can hurt me' is 3"
+        }
+      },
+      "derived": [
+        "TARGET"
+      ],
+      "wishes": []
+    },
+    {
+      "id": "reflect",
+      "core": false,
+      "applies_to": "self",
+      "aim": "self",
+      "summary": "A blocked arrow goes BACK: the moment his shield stops one, it flies off the way he is facing, as if he fired it. Only a shield does this \u2014 build it on base_item minecraft:shield with shape on_block.",
+      "who": "the arrow he blocked",
+      "when": "the moment his shield blocks it",
+      "child_when": "Block an arrow and it bounces right back!",
+      "aka": [
+        "reflect_projectiles",
+        "bounce_back",
+        "deflect",
+        "reflect_arrows",
+        "return_arrows",
+        "mirror"
+      ],
+      "template": "reflect.cbs",
+      "params": {},
+      "derived": [
+        "TARGET"
+      ],
+      "wishes": []
+    },
+    {
+      "id": "call_pets",
+      "core": false,
+      "applies_to": "self",
+      "aim": "self",
+      "summary": "HIS OWN pets come to him: every wolf, cat, parrot or horse he tamed, or a creature or crowd he WISHED (KIND creature_<id> / event_<id>), that is anywhere near enough to be in the world is stood up and brought to his side. A rideable creature already came with its own named horn; make one for anything else he asks to call, and NAME it for what it calls (\"Call the Fierce Red Dragon\"). Never a new animal and never somebody else's. On a real goat horn build it with shape on_use_done (he blows the horn, they come); on a made whistle or bell, held.",
+      "who": "his own tamed pets",
+      "when": "the moment it is used",
+      "child_when": "Call them and your pets come running!",
+      "aka": [
+        "call_pet",
+        "recall_pets",
+        "pet_call",
+        "pets_come",
+        "come_here",
+        "whistle_pets"
+      ],
+      "template": "call_pets.cbs",
+      "params": {
+        "KIND": {
+          "type": "string",
+          "doc": "which of his pets come: any, wolf, cat, parrot or horse; creature_<id> for ONE creature he wished (its id, e.g. creature_fierce_red_dragon); event_<id> for a crowd a stage_event brought him (the id its reply gave)",
+          "ask": "the pet he named \u2014 'my wolf' or 'my dog' is wolf, 'my horse' is horse, 'all my pets' is any, 'my dragon' (a creature he wished) is creature_<its id>, 'my wolf pack' (a crowd he wished) is event_<its id>"
+        }
+      },
+      "derived": [
+        "TARGET"
+      ],
+      "wishes": []
+    },
+    {
+      "id": "teleport_home",
+      "core": false,
+      "applies_to": "self",
+      "aim": "self",
+      "summary": "He goes HOME: to the bed he last slept in (or his respawn point), or the world's spawn if he has never set one. On a real ender pearl build it with shape on_throw_land: the pearl still flies, and where it lands he goes home instead of to the pearl (no pearl damage). On a made thing he clicks, held. Home is his bed, so tell him: sleep in a bed to set where home is.",
+      "who": "whoever used it",
+      "when": "the moment it is used, or where the thrown pearl lands",
+      "child_when": "WHOOSH \u2014 you're home!",
+      "aka": [
+        "go_home",
+        "home",
+        "recall",
+        "warp_home",
+        "tp_home",
+        "return_home",
+        "home_teleport"
+      ],
+      "template": "teleport_home.cbs",
+      "params": {},
+      "derived": [
+        "TARGET"
+      ],
+      "wishes": []
+    },
+    {
+      "id": "locate",
+      "core": false,
+      "applies_to": "self",
+      "aim": "self",
+      "summary": "His COMPASS points at the nearest PLACE he named: a village, an ancient city, a stronghold, a temple, a jungle, the ocean, a cave... It is vanilla's own search (/locate), so it finds a real one. On a real compass (base_item minecraft:compass, shape held) the needle turns to it and stays there; he is also told how far it is and shown the way in a line of sparkles. Nothing close enough is said plainly, never faked.",
+      "who": "him, and the compass in his hand",
+      "when": "the moment it is used",
+      "child_when": "Use it and it shows you the way!",
+      "aka": [
+        "find",
+        "finder",
+        "locator",
+        "point_to",
+        "points_to",
+        "compass",
+        "find_village",
+        "find_structure",
+        "find_biome",
+        "treasure_finder",
+        "nearest"
+      ],
+      "template": "locate.cbs",
+      "params": {
+        "PLACE": {
+          "type": "string",
+          "doc": "which place: village, ancient_city, stronghold, mineshaft, temple, desert_temple, jungle_temple, woodland_mansion, ocean_monument, shipwreck, ruined_portal, pillager_outpost, igloo, trial_chambers, buried_treasure, nether_fortress, bastion, plains, jungle, desert, ocean, mountain, forest, taiga, savanna, badlands, swamp, snow, mushroom_island, cherry_grove, cave, lush_cave — or player:<name> (another player; player alone is the nearest), only on a world that lets players visit each other: it re-points at their current spot every click and never touches them",
+          "ask": "the place he named — 'villages' is village, 'the nearest jungle' is jungle, 'a cave' is cave, 'an ancient city' is ancient_city. Only these: a place not in the list is said plainly, never swapped for another."
+        }
+      },
+      "derived": [
+        "TARGET"
+      ],
+      "wishes": []
+    },
+    {
+      "id": "sort_inventory",
+      "core": false,
+      "applies_to": "self",
+      "aim": "self",
+      "summary": "His BAG tidies itself: like things are stacked together and laid out in groups — blocks, then food, then tools, then everything else, each group on its own row where they fit. His hotbar is never moved. Build it on a real bundle or any bag-like thing he clicks, shape held.",
+      "who": "him, and what he carries",
+      "when": "the moment it is used",
+      "child_when": "Use it and your bag sorts itself!",
+      "aka": [
+        "sort",
+        "organise",
+        "organize",
+        "tidy",
+        "sort_bag",
+        "organise_inventory",
+        "auto_sort"
+      ],
+      "template": "sort_inventory.cbs",
+      "params": {},
+      "derived": [
+        "TARGET"
+      ],
+      "wishes": []
+    },
+    {
+      "id": "drop_junk",
+      "core": false,
+      "applies_to": "self",
+      "aim": "self",
+      "summary": "His bag THROWS OUT THE JUNK: dirt, cobblestone, gravel, netherrack, rotten flesh, seeds and the like are dropped at his feet (never destroyed). The list is fixed — say so if he means something else by junk. For a bag that does it BY ITSELF when it is full, use the drops_junk property instead of this.",
+      "who": "him, and what he carries",
+      "when": "the moment it is used",
+      "child_when": "Use it and the junk falls out!",
+      "aka": [
+        "junk",
+        "throw_junk",
+        "clear_junk",
+        "trash",
+        "empty_junk"
+      ],
+      "template": "drop_junk.cbs",
+      "params": {},
+      "derived": [
+        "TARGET"
+      ],
+      "wishes": []
+    },
+    {
+      "id": "grapple",
+      "core": false,
+      "applies_to": "self",
+      "aim": "self",
+      "summary": "A GRAPPLING HOOK: he throws a real throwable (base_item a snowball, an egg, a trident… with shape on_throw_land) and where it lands he is PULLED there through the air in one swing, landing without fall damage. Up to 48 blocks. On a fishing rod the bobber cannot pull him — build the hook as a thrown thing.",
+      "who": "him",
+      "when": "the moment what he threw lands",
+      "child_when": "Throw it, and it pulls you there!",
+      "aka": [
+        "grappling_hook",
+        "grapple_hook",
+        "hook",
+        "swing",
+        "zipline",
+        "pull_me",
+        "yank"
+      ],
+      "template": "grapple.cbs",
+      "params": {},
+      "derived": [
+        "TARGET"
+      ],
+      "wishes": []
+    },
+    {
+      "id": "pull",
+      "core": true,
+      "applies_to": "target",
+      "aim": "self",
+      "summary": "It PULLS things in toward it, a little on every go — strongest close in and nothing past its reach. On a magic_block that goes off every half second it is a thing that sucks everything nearby into it; held, it drags what is near him toward him. It moves players too.",
+      "who": "what is near it — on a magic_block, whoever `block.who` names within `block.radius`",
+      "when": "every time it goes off; on a magic_block, on its beat",
+      "child_when": "It SUCKS things in toward it!",
+      "aka": [
+        "suck",
+        "suck_in",
+        "vacuum",
+        "magnet",
+        "draw_in"
+      ],
+      "template": "pull.cbs",
+      "params": {
+        "STRENGTH": {
+          "type": "string",
+          "doc": "in words: gentle, strong or huge. Never a number",
+          "ask": "how hard he said — 'sucks EVERYTHING in' is huge, 'slowly drags' is gentle, otherwise strong"
+        },
+        "REACH": {
+          "type": "int",
+          "doc": "how far it pulls from, in blocks, 2 to 16. On a magic_block use the same number as block.radius",
+          "ask": "how far he said, otherwise 8"
+        }
+      },
+      "derived": [
+        "TARGET",
+        "PULLS"
+      ],
+      "wishes": [
+        "a block that pulls things toward it"
+      ]
+    },
+    {
+      "id": "fill_blocks",
+      "core": true,
+      "applies_to": "world",
+      "aim": "ahead",
+      "summary": "The space around it FILLS with a block or a liquid — water, snow, cobwebs, honey — but only into empty air, so it never eats anything that is already there. Up to 3 blocks each way. Undoing the item takes every fill back out again.",
+      "who": "nothing — the air around the spot fills",
+      "when": "every time it goes off",
+      "child_when": "The space around it FILLS UP with stuff!",
+      "aka": [
+        "flood",
+        "cover",
+        "fill_area"
+      ],
+      "template": "fill_blocks.cbs",
+      "params": {
+        "BLOCK": {
+          "type": "string",
+          "doc": "what it fills with, as a block id like minecraft:water, minecraft:snow_block or minecraft:cobweb. Never a block that holds things (a chest, a furnace)",
+          "ask": "the stuff he named — 'rain water everywhere' is minecraft:water"
+        },
+        "RADIUS": {
+          "type": "int",
+          "doc": "how far it fills each way, 1 to 3. 1 is a 3x3x3 splash, 3 a 7x7x7 pond",
+          "ask": "1 for a splash or a puddle, 2 unless he said a LOT, 3 for 'everywhere'"
+        }
+      },
+      "derived": [
+        "TARGET",
+        "FEATURE",
+        "FILL_RADIUS"
+      ],
+      "wishes": []
+    },
+    {
+      "id": "outcome_table",
+      "core": true,
+      "applies_to": "world",
+      "aim": "self",
+      "summary": "A SURPRISE each time: it rolls, and out comes one of the presents he named most of the time, now and then a creature, and very rarely a small bang. The odds are fixed so it always feels lucky: at least 3 in 4 are presents, it is never completely safe, and a bang is under 1 in 20. The lucky-block effect — on a magic_block that goes off when broken.",
+      "who": "nothing — the prize appears at the spot",
+      "when": "every time it goes off",
+      "child_when": "Something DIFFERENT pops out every time — mostly presents!",
+      "aka": [
+        "surprise",
+        "random",
+        "mystery",
+        "gamble",
+        "prize_roll"
+      ],
+      "template": "outcome_table.cbs",
+      "params": {
+        "PRESENTS": {
+          "type": "string",
+          "doc": "the presents, comma separated, 1 to 8 real item ids, each with an optional count: 'minecraft:diamond*3, minecraft:cake, minecraft:golden_apple'",
+          "ask": "the treasures he named, otherwise a handful of good ones (diamonds, a cake, an enchanted golden apple, emeralds)"
+        },
+        "SURPRISES": {
+          "type": "string",
+          "doc": "creatures that can pop out instead, comma separated, 0 to 4 entity ids — or none",
+          "ask": "a silly one like minecraft:chicken, and a scary one like minecraft:zombie only if he wanted danger"
+        },
+        "BOOM": {
+          "type": "string",
+          "doc": "yes or no: whether a small explosion is one of the outcomes (always rare)",
+          "ask": "yes if he said it can blow up or be dangerous, otherwise no"
+        }
+      },
+      "derived": [
+        "TARGET",
+        "OUTCOMES"
+      ],
+      "wishes": []
+    },
+    {
+      "id": "event",
+      "applies_to": "world",
+      "aim": "ahead",
+      "summary": "It sets off a WORLD EVENT he wished for \u2014 a wave, a meteor, a flood, a quake \u2014 where it is aimed. The event is a design kept with stage_event (now: false) first; the item only names it, and the world puts itself back as the event says.",
+      "who": "the world where it is aimed",
+      "when": "every time it goes off",
+      "child_when": "It sets off your event right there!",
+      "aka": [
+        "world_event",
+        "set_off_event",
+        "disaster"
+      ],
+      "template": "event.cbs",
+      "params": {
+        "DESIGN": {
+          "type": "string",
+          "doc": "the NAME of an event design already kept with stage_event (now: false), like tidal_wave",
+          "ask": "the event he wants it to set off \u2014 stage that design first, then name it here"
+        }
+      },
+      "derived": [
+        "TARGET"
+      ],
+      "wishes": []
+    }
+  ],
+  "_shapes_note": "held/thrown/placed live in shape_held.cbs, shape_thrown.cbs and shape_placed.cbs. Each supplies ${TARGET} to the effect body and positions it: held at what the child is pointing at, thrown at the impact, placed around the marker on a clock. Every effect works in every shape, so the matrix is 48 cells and all of them are compiled by ItemMatrixGameTest.",
+  "_aim": "WHERE the effect happens, which is NOT the same question as who it lands on, and conflating them shipped a broken teleport: it lands on SELF, so the held wrapper called it without stepping forward, and `tp @s ~ ~ ~` moved the child to exactly where he already stood. self = at the player. ahead = a few blocks along his line of sight, which is what 'where you are pointing' means for a wand, a bomb, or a blink.",
+  "_aka": "WHAT THE CHILD (and the agent) CALLS IT. Measured, not decorative: at opus/low x8 on 'a pearl that makes the zombie attack the cow' the agent guessed `anger` five times and reached the real `aggro` once, and MakeItemTool's own source already records it inventing `give` for `rich`. Every one of those calls is refused today, and 2 of 8 runs answered the refusal by abandoning the catalogue for author_datapack -- after being shown every effect and what it does. An alias is a LOOKUP and never a guess: each one points at exactly one effect, is validated unique against every id and every other alias at load, and is canonicalised the moment it is read, so the datapack, the stored spec and inspect_item all say `aggro`. `attack` is deliberately absent from every list -- said of a sword it means hurt and said of a pearl it means aggro, and a lookup that has to guess is not a lookup."
+}

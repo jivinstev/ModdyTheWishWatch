@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "facing=north": { "model": "moddingfromamod:block/paint_panel" },
+    "facing=south": { "model": "moddingfromamod:block/paint_panel", "y": 180 },
+    "facing=west":  { "model": "moddingfromamod:block/paint_panel", "y": 270 },
+    "facing=east":  { "model": "moddingfromamod:block/paint_panel", "y": 90 }
+  }
+}

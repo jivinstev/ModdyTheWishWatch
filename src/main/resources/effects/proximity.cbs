@@ -1,0 +1,6 @@
+# TRIGGER: proximity — continuously, to whatever is near this creature.
+#
+# 5 of 32 abilities. Cheapest and most reliable: no scoreboard, no timer, no damage detection.
+clock tick
+    /execute as @e[tag=${TAG}] at @s run ${COMMAND}
+end

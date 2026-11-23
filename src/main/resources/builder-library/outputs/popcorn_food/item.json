@@ -1,0 +1,17 @@
+{
+ "base_item": "minecraft:cookie",
+ "count": 4,
+ "effects": [
+  "food"
+ ],
+ "id": "popcorn_food",
+ "name": "Popcorn",
+ "params": {
+  "BONUS": "minecraft:jump_boost",
+  "SECONDS": "15"
+ },
+ "parts": [],
+ "properties": {},
+ "shape": "on_consume",
+ "variants": []
+}

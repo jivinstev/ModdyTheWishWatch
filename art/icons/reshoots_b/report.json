@@ -1,0 +1,58 @@
+[
+ {
+  "cluster": "reshoots_b",
+  "name": "fishing_rod",
+  "verdict": "WARN",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [
+   "fill 23% (want 30-85%)"
+  ],
+  "stats": {
+   "fill": 0.234,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "accent": 3,
+   "body": 60,
+   "fixed": 52,
+   "line": 120,
+   "shine": 5
+  }
+ },
+ {
+  "cluster": "reshoots_b",
+  "name": "panda",
+  "verdict": "PASS",
+  "kind": "fixed",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.422,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "fixed": 206,
+   "line": 223,
+   "shine": 3
+  }
+ },
+ {
+  "cluster": "reshoots_b",
+  "name": "giraffe",
+  "verdict": "PASS",
+  "kind": "fixed",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.355,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "accent": 36,
+   "fixed": 233,
+   "line": 91,
+   "shine": 4
+  }
+ }
+]

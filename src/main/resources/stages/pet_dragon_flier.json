@@ -1,0 +1,23 @@
+[
+ {
+  "tool": "sculpt_creature",
+  "args": {
+   "id": "staged_pet_dragon_flier",
+   "name": "Small flying dragon",
+   "start_from": "pet_dragon",
+   "parts": [],
+   "palette": [
+    {"colour": "red", "percent": 80},
+    {"colour": "yellow", "percent": 20}
+   ],
+   "note": "A small flying dragon as filmed on 2026-11-12: it hovers by its child.",
+   "scale": 1.0,
+   "powers": ["friendly", "flies"],
+   "spawn": true
+  }
+ },
+ {
+  "tool": "finish_building",
+  "args": {"label": "Small flying dragon"}
+ }
+]

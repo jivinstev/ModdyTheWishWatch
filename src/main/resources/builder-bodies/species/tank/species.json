@@ -1,0 +1,22 @@
+{
+ "vehicle": true,
+ "armor": 0.0,
+ "behaves": "vehicle",
+ "body": "humanoid",
+ "damage": 0.0,
+ "health": 100.0,
+ "id": "tank",
+ "knockbackResistance": 0.0,
+ "modelKey": "tank",
+ "name": "Green Army Tank",
+ "powers": [
+  "friendly",
+  "rideable",
+  "persistent"
+ ],
+ "scale": 1.3,
+ "speed": 0.3,
+ "texture": "zombie",
+ "tint": "#FFFFFF",
+ "voice": "iron_golem"
+}

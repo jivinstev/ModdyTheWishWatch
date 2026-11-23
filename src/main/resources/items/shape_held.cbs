@@ -1,0 +1,34 @@
+# HELD — the child holds it and RIGHT-CLICKS to use it. The commonest shape by far.
+#
+# WishOnUse runs the named function AS the player and AT the player, so this wrapper's only real job
+# is deciding WHERE the effect happens:
+#
+#   an effect that lands on YOU (heal, grow, speed) runs right here, at the player;
+#   an effect that lands on SOMETHING ELSE, or on a place, is pushed a few blocks along the line of
+#   sight first, so it happens where the child is pointing.
+#
+# That is the AIM line, filled by MakeItemTool from the entry's own applies_to. Getting it backwards
+# is the quietest bug this catalogue can have: a healing potion that heals the zombie you are
+# looking at, or a damage wand that hurts you. Both build clean and say nothing.
+#
+# (Note for anyone editing these files: a placeholder written in a COMMENT is still a placeholder.
+# The renderer scans the whole source, so prose that names one either gets substituted or refuses to
+# render at all. Spell them out in words here instead — MakeItemTool.HELD_REACH is the real value.)
+#
+# HONEST LIMIT: this is a fixed reach, not a raycast. Vanilla has no "the block I am looking at" in
+# 1.21.1, so pointing at a wall one block away still puts the effect several blocks out, possibly
+# inside it. The throwable shape has no such problem — it lands where it lands — so a wish about
+# aiming at something far away is better served by `thrown`.
+import common
+
+function give()
+${GIVES}
+    /tellraw @s {"text":"${GIVE_MESSAGE}","color":"${HEX}"}
+end
+
+function act()
+    ${AIM}
+${YIELD}
+end
+
+${EFFECT_BLOCK}

@@ -1,0 +1,17 @@
+{
+ "base_item": "minecraft:cookie",
+ "count": 4,
+ "effects": [
+  "food"
+ ],
+ "id": "donut_food",
+ "name": "Donut",
+ "params": {
+  "BONUS": "minecraft:speed",
+  "SECONDS": "30"
+ },
+ "parts": [],
+ "properties": {},
+ "shape": "on_consume",
+ "variants": []
+}

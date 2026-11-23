@@ -1,0 +1,16 @@
+{
+  "name": "tidal_wave",
+  "motion": "moving_front",
+  "size": "big",
+  "material": "minecraft:water",
+  "catch": [
+    {
+      "where": "inside",
+      "do": [
+        "carry",
+        "lift"
+      ]
+    }
+  ],
+  "title": "TIDAL WAVE!"
+}

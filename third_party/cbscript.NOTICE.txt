@@ -1,0 +1,10 @@
+CBScript, by SethBling (https://github.com/SethBling/cbscript), is bundled inside this mod's jar as tools/cbscript.zip,
+through Moddy's fork, jivinstev/moddy-cbscript. Moddy uses it to compile the datapacks behind an item's or a creature's
+powers.
+
+CBScript carries no open-source licence. It is used in Moddy, and modified for it, with its author's permission
+(given verbally, November 2026). The original code remains the copyright of its author. Moddy's own changes in the fork
+are licensed under the Mozilla Public License 2.0, like the rest of Moddy.
+
+The zip also carries PLY (Python Lex-Yacc) 3.11 by David M. Beazley (Dabeaz LLC), under the BSD 3-Clause licence;
+its copyright notice and licence text are kept at the top of each of its files (ply/*.py), as that licence requires.

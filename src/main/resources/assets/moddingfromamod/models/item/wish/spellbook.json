@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "moddingfromamod:item/wish/spellbook",
+    "layer1": "moddingfromamod:item/wish/spellbook_accent",
+    "layer2": "moddingfromamod:item/wish/spellbook_detail"
+  }
+}

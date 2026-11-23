@@ -1,0 +1,78 @@
+[
+ {
+  "cluster": "1d",
+  "name": "bear",
+  "verdict": "WARN",
+  "n": 32,
+  "problems": [],
+  "warnings": [
+   "closed 2 outline gap(s) automatically"
+  ],
+  "stats": {
+   "fill": 0.583,
+   "dark_body": 0.342,
+   "pieces": 1,
+   "accent": 98,
+   "body": 339,
+   "fixed": 28,
+   "line": 130,
+   "shine": 2
+  }
+ },
+ {
+  "cluster": "1d",
+  "name": "dice",
+  "verdict": "PASS",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.629,
+   "dark_body": 0.324,
+   "pieces": 1,
+   "body": 457,
+   "fixed": 61,
+   "line": 124,
+   "shine": 2
+  }
+ },
+ {
+  "cluster": "1d",
+  "name": "game_controller",
+  "verdict": "PASS",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.588,
+   "dark_body": 0.308,
+   "pieces": 1,
+   "accent": 48,
+   "body": 312,
+   "fixed": 20,
+   "line": 220,
+   "shine": 2
+  }
+ },
+ {
+  "cluster": "1d",
+  "name": "octopus",
+  "verdict": "WARN",
+  "n": 32,
+  "problems": [],
+  "warnings": [
+   "closed 3 outline gap(s) automatically",
+   "body is 65% dark grey: tinted it goes muddy"
+  ],
+  "stats": {
+   "fill": 0.553,
+   "dark_body": 0.652,
+   "pieces": 1,
+   "accent": 37,
+   "body": 290,
+   "fixed": 15,
+   "line": 222,
+   "shine": 2
+  }
+ }
+]

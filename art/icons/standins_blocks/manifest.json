@@ -1,0 +1,119 @@
+{
+ "cluster": "standins_blocks",
+ "order": [
+  "chest",
+  "purple_shulker_box",
+  "torch",
+  "candle",
+  "bell",
+  "tnt",
+  "cobweb",
+  "glass",
+  "ice",
+  "sand",
+  "dirt",
+  "stone",
+  "cobblestone",
+  "glowstone",
+  "gold_block",
+  "iron_block"
+ ],
+ "icons": [
+  {
+   "name": "chest",
+   "status": "ok",
+   "attempts": 1,
+   "note": "Passed after mechanical row-length fixes (missing K's); no artistic redraw needed."
+  },
+  {
+   "name": "purple_shulker_box",
+   "status": "ok",
+   "attempts": 1,
+   "note": "Passed after mechanical row-length fixes (missing K's); no artistic redraw needed."
+  },
+  {
+   "name": "torch",
+   "status": "ok",
+   "attempts": 1,
+   "note": "Passed after mechanical row-length fixes (missing K's); no artistic redraw needed."
+  },
+  {
+   "name": "candle",
+   "status": "ok",
+   "attempts": 1,
+   "note": "Passed after mechanical row-length fixes (missing K's); no artistic redraw needed."
+  },
+  {
+   "name": "bell",
+   "status": "ok",
+   "attempts": 3,
+   "note": "Redrawn twice: v1 too small with outline leaks; v2 symmetric but 28% coverage; v3 wider, passes."
+  },
+  {
+   "name": "tnt",
+   "status": "ok",
+   "attempts": 1,
+   "note": "Passed after mechanical row-length fixes (missing K's); no artistic redraw needed."
+  },
+  {
+   "name": "cobweb",
+   "status": "ok",
+   "attempts": 1,
+   "note": "Passed after mechanical row-length fixes (missing K's); no artistic redraw needed."
+  },
+  {
+   "name": "glass",
+   "status": "ok",
+   "attempts": 1,
+   "note": "Passed after mechanical row-length fixes (missing K's); no artistic redraw needed."
+  },
+  {
+   "name": "ice",
+   "status": "ok",
+   "attempts": 1,
+   "note": "Passed after mechanical row-length fixes (missing K's); no artistic redraw needed."
+  },
+  {
+   "name": "sand",
+   "status": "ok",
+   "attempts": 1,
+   "note": "Passed after mechanical row-length fixes (missing K's); no artistic redraw needed."
+  },
+  {
+   "name": "dirt",
+   "status": "ok",
+   "attempts": 1,
+   "note": "Passed after mechanical row-length fixes (missing K's); no artistic redraw needed."
+  },
+  {
+   "name": "stone",
+   "status": "ok",
+   "attempts": 1,
+   "note": "Passed after mechanical row-length fixes (missing K's); no artistic redraw needed."
+  },
+  {
+   "name": "cobblestone",
+   "status": "ok",
+   "attempts": 1,
+   "note": "Passed after mechanical row-length fixes (missing K's); no artistic redraw needed."
+  },
+  {
+   "name": "glowstone",
+   "status": "ok",
+   "attempts": 1,
+   "note": "Passed after mechanical row-length fixes (missing K's); no artistic redraw needed."
+  },
+  {
+   "name": "gold_block",
+   "status": "ok",
+   "attempts": 1,
+   "note": "Passed after mechanical row-length fixes (missing K's); no artistic redraw needed."
+  },
+  {
+   "name": "iron_block",
+   "status": "ok",
+   "attempts": 1,
+   "note": "Passed after mechanical row-length fixes (missing K's); no artistic redraw needed."
+  }
+ ]
+}

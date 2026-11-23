@@ -1,0 +1,126 @@
+{
+ "cluster": "standins_tools_treasure",
+ "order": [
+  "arrow",
+  "shield",
+  "fishing_rod",
+  "crossbow",
+  "brush",
+  "compass",
+  "recovery_compass",
+  "clock",
+  "diamond_pickaxe",
+  "diamond_boots",
+  "diamond",
+  "emerald",
+  "amethyst_shard",
+  "potion",
+  "glass_bottle",
+  "book",
+  "enchanted_book"
+ ],
+ "icons": [
+  {
+   "name": "arrow",
+   "status": "ok",
+   "attempts": 1,
+   "note": ""
+  },
+  {
+   "name": "shield",
+   "status": "ok",
+   "attempts": 1,
+   "note": ""
+  },
+  {
+   "name": "fishing_rod",
+   "status": "ok",
+   "attempts": 2,
+   "note": "line came out straighter than the curving-droop brief; still reads as a fishing rod"
+  },
+  {
+   "name": "crossbow",
+   "status": "ok",
+   "attempts": 2,
+   "note": ""
+  },
+  {
+   "name": "brush",
+   "status": "ok",
+   "attempts": 3,
+   "note": ""
+  },
+  {
+   "name": "compass",
+   "status": "ok",
+   "attempts": 1,
+   "note": ""
+  },
+  {
+   "name": "recovery_compass",
+   "status": "ok",
+   "attempts": 3,
+   "note": ""
+  },
+  {
+   "name": "clock",
+   "status": "ok",
+   "attempts": 3,
+   "note": ""
+  },
+  {
+   "name": "diamond_pickaxe",
+   "status": "ok",
+   "attempts": 2,
+   "note": ""
+  },
+  {
+   "name": "diamond_boots",
+   "status": "ok",
+   "attempts": 2,
+   "note": ""
+  },
+  {
+   "name": "diamond",
+   "status": "ok",
+   "attempts": 3,
+   "note": ""
+  },
+  {
+   "name": "emerald",
+   "status": "ok",
+   "attempts": 2,
+   "note": ""
+  },
+  {
+   "name": "amethyst_shard",
+   "status": "ok",
+   "attempts": 1,
+   "note": ""
+  },
+  {
+   "name": "potion",
+   "status": "ok",
+   "attempts": 2,
+   "note": "white highlight streak trimmed from 8 to 5 cells to meet the 1-5 sparkle rule"
+  },
+  {
+   "name": "glass_bottle",
+   "status": "ok",
+   "attempts": 3,
+   "note": "white highlight streak trimmed from 8 to 5 cells to meet the 1-5 sparkle rule"
+  },
+  {
+   "name": "book",
+   "status": "ok",
+   "attempts": 1,
+   "note": ""
+  },
+  {
+   "name": "enchanted_book",
+   "status": "ok",
+   "attempts": 1,
+   "note": "violet rune pattern is 23 cells (violet is the uncapped magic accent, not the 1-5 gold/white sparkle)"
+  }
+ ]
+}

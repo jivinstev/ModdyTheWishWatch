@@ -1,0 +1,16 @@
+{
+  "base_item": "minecraft:diamond_sword",
+  "count": 1,
+  "effects": [
+    "lightning"
+  ],
+  "id": "lightning_sword_lightning",
+  "name": "Lightning Sword",
+  "params": {
+    "STRIKES": "1"
+  },
+  "parts": [],
+  "properties": {},
+  "shape": "on_hit",
+  "variants": []
+}

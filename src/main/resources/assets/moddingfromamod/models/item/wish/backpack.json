@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "moddingfromamod:item/wish/backpack",
+    "layer1": "moddingfromamod:item/wish/backpack_accent",
+    "layer2": "moddingfromamod:item/wish/backpack_detail"
+  }
+}

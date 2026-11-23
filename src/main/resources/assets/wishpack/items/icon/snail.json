@@ -1,0 +1,195 @@
+{
+  "model": {
+    "type": "minecraft:composite",
+    "models": [
+      {
+        "type": "minecraft:model",
+        "model": "moddingfromamod:item/fx/backing_glow",
+        "tints": [
+          {
+            "type": "minecraft:dye",
+            "default": -8080
+          }
+        ]
+      },
+      {
+        "type": "minecraft:model",
+        "model": "moddingfromamod:item/fx/backing_twinkle"
+      },
+      {
+        "type": "minecraft:model",
+        "model": "moddingfromamod:item/wish/snail",
+        "tints": [
+          {
+            "type": "minecraft:dye",
+            "default": -6265536
+          }
+        ]
+      },
+      {
+        "type": "minecraft:select",
+        "property": "minecraft:custom_model_data",
+        "index": 0,
+        "cases": [
+          {
+            "when": "boom",
+            "model": {
+              "type": "minecraft:model",
+              "model": "moddingfromamod:item/overlay/boom"
+            }
+          },
+          {
+            "when": "bubbles",
+            "model": {
+              "type": "minecraft:model",
+              "model": "moddingfromamod:item/overlay/bubbles"
+            }
+          },
+          {
+            "when": "coins",
+            "model": {
+              "type": "minecraft:model",
+              "model": "moddingfromamod:item/overlay/coins"
+            }
+          },
+          {
+            "when": "flame",
+            "model": {
+              "type": "minecraft:model",
+              "model": "moddingfromamod:item/overlay/flame"
+            }
+          },
+          {
+            "when": "frost",
+            "model": {
+              "type": "minecraft:model",
+              "model": "moddingfromamod:item/overlay/frost"
+            }
+          },
+          {
+            "when": "glow",
+            "model": {
+              "type": "minecraft:model",
+              "model": "moddingfromamod:item/overlay/glow"
+            }
+          },
+          {
+            "when": "hearts",
+            "model": {
+              "type": "minecraft:model",
+              "model": "moddingfromamod:item/overlay/hearts"
+            }
+          },
+          {
+            "when": "leaves",
+            "model": {
+              "type": "minecraft:model",
+              "model": "moddingfromamod:item/overlay/leaves"
+            }
+          },
+          {
+            "when": "moon",
+            "model": {
+              "type": "minecraft:model",
+              "model": "moddingfromamod:item/overlay/moon"
+            }
+          },
+          {
+            "when": "music",
+            "model": {
+              "type": "minecraft:model",
+              "model": "moddingfromamod:item/overlay/music"
+            }
+          },
+          {
+            "when": "rain",
+            "model": {
+              "type": "minecraft:model",
+              "model": "moddingfromamod:item/overlay/rain"
+            }
+          },
+          {
+            "when": "rainbow",
+            "model": {
+              "type": "minecraft:model",
+              "model": "moddingfromamod:item/overlay/rainbow"
+            }
+          },
+          {
+            "when": "shadow",
+            "model": {
+              "type": "minecraft:model",
+              "model": "moddingfromamod:item/overlay/shadow"
+            }
+          },
+          {
+            "when": "shield",
+            "model": {
+              "type": "minecraft:model",
+              "model": "moddingfromamod:item/overlay/shield"
+            }
+          },
+          {
+            "when": "slime",
+            "model": {
+              "type": "minecraft:model",
+              "model": "moddingfromamod:item/overlay/slime"
+            }
+          },
+          {
+            "when": "smoke",
+            "model": {
+              "type": "minecraft:model",
+              "model": "moddingfromamod:item/overlay/smoke"
+            }
+          },
+          {
+            "when": "sparkle",
+            "model": {
+              "type": "minecraft:model",
+              "model": "moddingfromamod:item/overlay/sparkle"
+            }
+          },
+          {
+            "when": "sparks",
+            "model": {
+              "type": "minecraft:model",
+              "model": "moddingfromamod:item/overlay/sparks"
+            }
+          },
+          {
+            "when": "stars",
+            "model": {
+              "type": "minecraft:model",
+              "model": "moddingfromamod:item/overlay/stars"
+            }
+          },
+          {
+            "when": "sun",
+            "model": {
+              "type": "minecraft:model",
+              "model": "moddingfromamod:item/overlay/sun"
+            }
+          },
+          {
+            "when": "swirl",
+            "model": {
+              "type": "minecraft:model",
+              "model": "moddingfromamod:item/overlay/swirl"
+            }
+          },
+          {
+            "when": "wind",
+            "model": {
+              "type": "minecraft:model",
+              "model": "moddingfromamod:item/overlay/wind"
+            }
+          }
+        ],
+        "fallback": {
+          "type": "minecraft:empty"
+        }
+      }
+    ]
+  }
+}

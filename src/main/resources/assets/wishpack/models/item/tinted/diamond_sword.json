@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:item/diamond_sword",
+  "textures": {
+    "layer0": "wishpack:item/tinted/diamond_sword_tint",
+    "layer1": "wishpack:item/tinted/diamond_sword_keep"
+  }
+}

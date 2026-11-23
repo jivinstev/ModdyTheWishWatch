@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:item/crossbow_firework",
+  "textures": {
+    "layer0": "wishpack:item/tinted/crossbow_firework_tint",
+    "layer1": "wishpack:item/tinted/crossbow_firework_keep"
+  }
+}

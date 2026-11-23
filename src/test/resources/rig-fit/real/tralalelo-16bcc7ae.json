@@ -1,0 +1,462 @@
+{
+ "id": "tralalelo",
+ "name": "Tralalelo Tralalala",
+ "scale": 1.8,
+ "powers": [
+  "friendly",
+  "persistent"
+ ],
+ "parts": [
+  {
+   "name": "body",
+   "from": [
+    -8,
+    14,
+    -14
+   ],
+   "to": [
+    8,
+    28,
+    20
+   ],
+   "colour": "#6E8FA8",
+   "inflate": 1
+  },
+  {
+   "name": "head",
+   "from": [
+    -8,
+    15,
+    -30
+   ],
+   "to": [
+    8,
+    28,
+    -14
+   ],
+   "colour": "#6E8FA8",
+   "inflate": 1
+  },
+  {
+   "name": "snout",
+   "from": [
+    -6,
+    17,
+    -37
+   ],
+   "to": [
+    6,
+    26,
+    -30
+   ],
+   "colour": "#6E8FA8",
+   "parent": "head",
+   "rotation": [
+    8,
+    0,
+    0
+   ]
+  },
+  {
+   "name": "belly",
+   "from": [
+    -10,
+    11,
+    -30
+   ],
+   "to": [
+    10,
+    17,
+    18
+   ],
+   "colour": "white"
+  },
+  {
+   "name": "mouthdark",
+   "from": [
+    -7,
+    13,
+    -35
+   ],
+   "to": [
+    7,
+    15,
+    -28
+   ],
+   "colour": "black",
+   "parent": "head"
+  },
+  {
+   "name": "mouthmid",
+   "from": [
+    -5,
+    14,
+    -36
+   ],
+   "to": [
+    5,
+    17,
+    -29
+   ],
+   "colour": "white",
+   "parent": "head"
+  },
+  {
+   "name": "mouthcornerL",
+   "from": [
+    -8,
+    16,
+    -34
+   ],
+   "to": [
+    -4,
+    19,
+    -28
+   ],
+   "colour": "white",
+   "parent": "head"
+  },
+  {
+   "name": "mouthcornerR",
+   "from": [
+    4,
+    16,
+    -34
+   ],
+   "to": [
+    8,
+    19,
+    -28
+   ],
+   "colour": "white",
+   "parent": "head"
+  },
+  {
+   "name": "eyeL",
+   "from": [
+    -10,
+    22,
+    -29
+   ],
+   "to": [
+    -6,
+    26,
+    -24
+   ],
+   "colour": "white",
+   "parent": "head"
+  },
+  {
+   "name": "eyeR",
+   "from": [
+    6,
+    22,
+    -29
+   ],
+   "to": [
+    10,
+    26,
+    -24
+   ],
+   "colour": "white",
+   "parent": "head"
+  },
+  {
+   "name": "pupilL",
+   "from": [
+    -11,
+    23,
+    -28
+   ],
+   "to": [
+    -9,
+    25,
+    -25
+   ],
+   "colour": "black",
+   "parent": "head"
+  },
+  {
+   "name": "pupilR",
+   "from": [
+    9,
+    23,
+    -28
+   ],
+   "to": [
+    11,
+    25,
+    -25
+   ],
+   "colour": "black",
+   "parent": "head"
+  },
+  {
+   "name": "finPecL",
+   "from": [
+    -16,
+    18,
+    -8
+   ],
+   "to": [
+    -9,
+    19,
+    2
+   ],
+   "colour": "#4E6B80",
+   "parent": "body",
+   "rotation": [
+    0,
+    0,
+    25
+   ]
+  },
+  {
+   "name": "finPecR",
+   "from": [
+    9,
+    18,
+    -8
+   ],
+   "to": [
+    16,
+    19,
+    2
+   ],
+   "colour": "#4E6B80",
+   "parent": "body",
+   "rotation": [
+    0,
+    0,
+    -25
+   ]
+  },
+  {
+   "name": "gillL",
+   "from": [
+    -10,
+    18,
+    -12
+   ],
+   "to": [
+    -9,
+    26,
+    -4
+   ],
+   "colour": "#4E6B80",
+   "parent": "body",
+   "pattern": "stripes",
+   "pattern_colour": "#6E8FA8"
+  },
+  {
+   "name": "gillR",
+   "from": [
+    9,
+    18,
+    -12
+   ],
+   "to": [
+    10,
+    26,
+    -4
+   ],
+   "colour": "#4E6B80",
+   "parent": "body",
+   "pattern": "stripes",
+   "pattern_colour": "#6E8FA8"
+  },
+  {
+   "name": "legL",
+   "from": [
+    -8,
+    5,
+    -6
+   ],
+   "to": [
+    -2,
+    16,
+    0
+   ],
+   "colour": "#6E8FA8"
+  },
+  {
+   "name": "legR",
+   "from": [
+    2,
+    5,
+    -6
+   ],
+   "to": [
+    8,
+    16,
+    0
+   ],
+   "colour": "#6E8FA8"
+  },
+  {
+   "name": "legC",
+   "from": [
+    -3,
+    5,
+    10
+   ],
+   "to": [
+    3,
+    16,
+    16
+   ],
+   "colour": "#6E8FA8"
+  },
+  {
+   "name": "shoeL",
+   "from": [
+    -10,
+    2,
+    -11
+   ],
+   "to": [
+    -1,
+    7,
+    2
+   ],
+   "colour": "#2A5CC8",
+   "parent": "legL"
+  },
+  {
+   "name": "shoeR",
+   "from": [
+    1,
+    2,
+    -11
+   ],
+   "to": [
+    10,
+    7,
+    2
+   ],
+   "colour": "#2A5CC8",
+   "parent": "legR"
+  },
+  {
+   "name": "shoeC",
+   "from": [
+    -5,
+    2,
+    5
+   ],
+   "to": [
+    5,
+    7,
+    18
+   ],
+   "colour": "#2A5CC8",
+   "parent": "legC"
+  },
+  {
+   "name": "soleL",
+   "from": [
+    -11,
+    0,
+    -12
+   ],
+   "to": [
+    0,
+    2,
+    3
+   ],
+   "colour": "white",
+   "parent": "legL"
+  },
+  {
+   "name": "soleR",
+   "from": [
+    0,
+    0,
+    -12
+   ],
+   "to": [
+    11,
+    2,
+    3
+   ],
+   "colour": "white",
+   "parent": "legR"
+  },
+  {
+   "name": "soleC",
+   "from": [
+    -6,
+    0,
+    4
+   ],
+   "to": [
+    6,
+    2,
+    19
+   ],
+   "colour": "white",
+   "parent": "legC"
+  },
+  {
+   "name": "swooshL",
+   "from": [
+    -11,
+    3,
+    -8
+   ],
+   "to": [
+    -10,
+    6,
+    -1
+   ],
+   "colour": "white",
+   "parent": "legL"
+  },
+  {
+   "name": "swooshR",
+   "from": [
+    10,
+    3,
+    -8
+   ],
+   "to": [
+    11,
+    6,
+    -1
+   ],
+   "colour": "white",
+   "parent": "legR"
+  },
+  {
+   "name": "lacesL",
+   "from": [
+    -8,
+    6,
+    -9
+   ],
+   "to": [
+    -3,
+    8,
+    -5
+   ],
+   "colour": "white",
+   "parent": "legL"
+  },
+  {
+   "name": "lacesR",
+   "from": [
+    3,
+    6,
+    -9
+   ],
+   "to": [
+    8,
+    8,
+    -5
+   ],
+   "colour": "white",
+   "parent": "legR"
+  }
+ ],
+ "source": "corpus/tier-experiment/tralalelo-arm0/sculpt.json"
+}

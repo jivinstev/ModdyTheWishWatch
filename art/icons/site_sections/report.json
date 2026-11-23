@@ -1,0 +1,146 @@
+[
+ {
+  "cluster": "site_sections",
+  "name": "creature_egg",
+  "verdict": "PASS",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.458,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "body": 70,
+   "fixed": 325,
+   "line": 69,
+   "shine": 5
+  }
+ },
+ {
+  "cluster": "site_sections",
+  "name": "bricks",
+  "verdict": "PASS",
+  "kind": "fixed",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.491,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "fixed": 253,
+   "line": 249,
+   "shine": 1
+  }
+ },
+ {
+  "cluster": "site_sections",
+  "name": "nether_star",
+  "verdict": "PASS",
+  "kind": "fixed",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.346,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "fixed": 221,
+   "line": 128,
+   "shine": 5
+  }
+ },
+ {
+  "cluster": "site_sections",
+  "name": "painting",
+  "verdict": "PASS",
+  "kind": "fixed",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.469,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "fixed": 318,
+   "line": 160,
+   "shine": 2
+  }
+ },
+ {
+  "cluster": "site_sections",
+  "name": "command_block",
+  "verdict": "PASS",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.649,
+   "dark_body": 0.037,
+   "pieces": 1,
+   "body": 403,
+   "fixed": 126,
+   "line": 131,
+   "shine": 5
+  }
+ },
+ {
+  "cluster": "site_sections",
+  "name": "piston",
+  "verdict": "WARN",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [
+   "silhouette 88% the same as minecart"
+  ],
+  "stats": {
+   "fill": 0.562,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "body": 345,
+   "fixed": 53,
+   "line": 176,
+   "shine": 1
+  }
+ },
+ {
+  "cluster": "site_sections",
+  "name": "minecart",
+  "verdict": "WARN",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [
+   "silhouette 88% the same as piston"
+  ],
+  "stats": {
+   "fill": 0.556,
+   "dark_body": 0.071,
+   "pieces": 1,
+   "body": 322,
+   "fixed": 28,
+   "line": 215,
+   "shine": 4
+  }
+ },
+ {
+  "cluster": "site_sections",
+  "name": "armor_stand",
+  "verdict": "PASS",
+  "kind": "fixed",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.318,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "fixed": 173,
+   "line": 150,
+   "shine": 3
+  }
+ }
+]

@@ -1,0 +1,17 @@
+{
+  "base_item": "minecraft:cookie",
+  "count": 8,
+  "effects": [
+    "grow"
+  ],
+  "id": "tiny_cookie_grow",
+  "name": "Tiny Cookie",
+  "params": {
+    "SCALE": "0.3",
+    "SECONDS": "60"
+  },
+  "parts": [],
+  "properties": {},
+  "shape": "on_consume",
+  "variants": []
+}

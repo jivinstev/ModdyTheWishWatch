@@ -1,0 +1,188 @@
+{
+ "behaves_like": "vehicle",
+ "damage": 0,
+ "health": 80,
+ "id": "boat",
+ "name": "Speed Boat",
+ "note": "Sleek red/white speed boat: white hull with red stripe, pointed bow wedge, blue windshield, black outboard motor at back. Vehicle life, rideable.",
+ "palette": [
+  {
+   "colour": "white",
+   "percent": 55
+  },
+  {
+   "colour": "red",
+   "percent": 25
+  },
+  {
+   "colour": "black",
+   "percent": 8
+  }
+ ],
+ "parts": [
+  {
+   "colour": "white",
+   "from": [
+    -10,
+    0,
+    -14
+   ],
+   "name": "body",
+   "pattern": "gradient",
+   "pattern_colour": "#C9D3DD",
+   "to": [
+    10,
+    8,
+    18
+   ]
+  },
+  {
+   "colour": "red",
+   "from": [
+    -11,
+    4,
+    -14
+   ],
+   "name": "stripe",
+   "parent": "body",
+   "pattern": "gradient",
+   "pattern_colour": "#A01010",
+   "to": [
+    11,
+    6,
+    18
+   ]
+  },
+  {
+   "colour": "white",
+   "from": [
+    -7,
+    1,
+    -22
+   ],
+   "name": "bow",
+   "parent": "body",
+   "pattern": "gradient",
+   "pattern_colour": "#C9D3DD",
+   "to": [
+    7,
+    8,
+    -13
+   ]
+  },
+  {
+   "colour": "red",
+   "from": [
+    -3,
+    2,
+    -27
+   ],
+   "name": "bow_tip",
+   "parent": "body",
+   "to": [
+    3,
+    8,
+    -21
+   ]
+  },
+  {
+   "colour": "#8B5A2B",
+   "from": [
+    -9,
+    8,
+    -12
+   ],
+   "name": "deck",
+   "parent": "body",
+   "to": [
+    9,
+    9,
+    6
+   ]
+  },
+  {
+   "colour": "#7FD4FF",
+   "from": [
+    -8,
+    9,
+    -8
+   ],
+   "name": "windshield",
+   "parent": "body",
+   "to": [
+    8,
+    15,
+    -6
+   ]
+  },
+  {
+   "colour": "red",
+   "from": [
+    -5,
+    9,
+    0
+   ],
+   "name": "seat",
+   "parent": "body",
+   "to": [
+    5,
+    12,
+    6
+   ]
+  },
+  {
+   "colour": "red",
+   "from": [
+    -10,
+    8,
+    6
+   ],
+   "name": "stern",
+   "parent": "body",
+   "to": [
+    10,
+    10,
+    18
+   ]
+  },
+  {
+   "colour": "black",
+   "from": [
+    -3,
+    6,
+    17
+   ],
+   "name": "motor",
+   "parent": "body",
+   "to": [
+    3,
+    16,
+    22
+   ]
+  },
+  {
+   "colour": "gray",
+   "from": [
+    -4,
+    0,
+    19
+   ],
+   "name": "propeller",
+   "parent": "motor",
+   "to": [
+    4,
+    3,
+    21
+   ]
+  }
+ ],
+ "powers": [
+  "rideable",
+  "friendly",
+  "persistent"
+ ],
+ "scale": 1.5,
+ "speed": 0.5,
+ "status": "Building your speed boat",
+ "voice": "silent"
+}

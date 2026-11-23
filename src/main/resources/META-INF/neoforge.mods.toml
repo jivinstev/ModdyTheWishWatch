@@ -1,0 +1,54 @@
+modLoader="javafml"
+loaderVersion="${loader_version_range}"
+license="${mod_license}"
+
+[[mods]]
+modId="${mod_id}"
+version="${mod_version}"
+displayName="${mod_name}"
+authors="${mod_authors}"
+description='''
+${mod_description}
+'''
+
+[[dependencies.${mod_id}]]
+    modId="neoforge"
+    type="required"
+    versionRange="[21.1,)"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.${mod_id}]]
+    modId="minecraft"
+    type="required"
+    versionRange="${minecraft_version_range}"
+    ordering="NONE"
+    side="BOTH"
+
+# ── Integrating with another mod? Declare it OPTIONAL and resolve its content by
+# ── ResourceLocation at runtime (never a compile-time dependency), so your mod
+# ── still loads when that mod isn't installed. Example:
+# [[dependencies.${mod_id}]]
+#     modId="some_other_mod"
+#     type="optional"
+#     versionRange="[1.0.0,)"
+#     ordering="AFTER"
+#     side="BOTH"
+
+# GeckoLib is REQUIRED (not optional) when uses_geckolib=true, since you compile
+# against it. It's bundled via JarJar, so players don't install it separately.
+# [[dependencies.${mod_id}]]
+#     modId="geckolib"
+#     type="required"
+#     versionRange="[4.8,)"
+#     ordering="AFTER"
+#     side="BOTH"
+
+# The not-on-the-allowlist refusal in our own words (net/JoinWords, mixin/PlayerListMixin).
+# Named literally, not "${mod_id}.mixins.json": MMVU's Port CI (the public repo) checks every mixin config is
+# declared here by reading this file as written.
+[[mixins]]
+config="moddingfromamod.mixins.json"
+# The private side's own mixins (Bedrock, a proxy's player identity, client input): registered only when
+# its config is in the tree (build.gradle sets private_mixins), so a public cut that drops the file loads cleanly.
+${private_mixins}

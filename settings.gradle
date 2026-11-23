@@ -1,0 +1,24 @@
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+        maven { url = 'https://maven.neoforged.net/releases' }
+        // Required on some setups (notably macOS) to resolve Minecraft's own libraries.
+        maven { url = 'https://libraries.minecraft.net' }
+    }
+}
+
+plugins {
+    id 'org.gradle.toolchains.foojay-resolver-convention' version '1.0.0'
+}
+
+dependencyResolutionManagement {
+    repositories {
+        mavenCentral()
+        maven { url = 'https://maven.neoforged.net/releases' }
+        maven { url = 'https://libraries.minecraft.net' }
+        maven { name = 'GeckoLib'; url = 'https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/' }
+    }
+}
+
+// Keep in sync with mod_id in gradle.properties.
+rootProject.name = 'moddingfromamod'

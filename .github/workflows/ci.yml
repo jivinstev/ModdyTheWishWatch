@@ -1,0 +1,159 @@
+# Moddy the Wish Watch: continuous integration.
+#
+# Five jobs:
+#   changes          what the pull request touches. A PR whose files are ALL in paths no build or test reads
+#                    (tools/client-validation/: the scripted client checks of a released jar; .github/port-publish/:
+#                    the store page text) runs the scan only; Gate A and Gate B are skipped. Any other file, this
+#                    workflow included, runs everything. A docs file is NOT in the list: unit tests read many of them.
+#   no-private-work  the leak scan's built-in rules over every tracked file: emails, routable IPs, bucket URLs, keys
+#                    and tokens, a child's-data file by its name, and the structural markers of server-side work
+#                    that does not belong in this single-player mod; then tools/secret-scan.py over every file and
+#                    every commit in the history (the credential shapes of tools/secret_patterns.py). It prints nothing it matched.
+#   gate-a           compile, the unit tests, the mod jar and its checks (./gradlew build).
+#   gate-b-ci        a headless game server running the `ci` shard: one GameTest per wish class, MCP, two wishes at
+#                    once. Every pull request and every push to main.
+#   gate-b-tier      the whole default tier (`ci,default`). Pushes to main only: it is the long one.
+#
+# Pull requests run it (every pull request to main gets the leak scan, Gate A and the ci shard: what a PR merges on).
+# Pushes to main do not, for now: the repo has little Actions quota, so the default tier runs only when started by hand
+# (Actions → CI → Run workflow). The first run (2026-11-18) passed the leak scan, Gate A and the ci shard.
+#
+# A push to main also writes the Gradle cache that every pull request restores (a pull_request run may read only its
+# own cache and its base branch's), so without the push trigger each PR pays the cold Minecraft decompile (~9 minutes
+# instead of ~3). Turning push back on buys warm PRs for one run per merge.
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  # push:
+  #   branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  changes:
+    name: What changed
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      code: ${{ steps.classify.outputs.code }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - id: classify
+        env:
+          BASE: ${{ github.event.pull_request.base.sha }}
+        run: |
+          if [ "${{ github.event_name }}" != "pull_request" ]; then echo "code=true" >> "$GITHUB_OUTPUT"; exit 0; fi
+          files="$(git diff --name-only "$BASE...HEAD")"
+          printf '%s\n' "$files"
+          # Paths no build, unit test or game test reads. Keep this list short and literal.
+          other="$(printf '%s\n' "$files" | grep -v -E '^(tools/client-validation/|\.github/port-publish/)' | grep -v '^$' || true)"
+          if [ -z "$other" ]; then
+            echo "Only scripted client checks or store page text changed: the scan runs, Gate A and Gate B are skipped."
+            echo "code=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "code=true" >> "$GITHUB_OUTPUT"
+          fi
+
+  no-private-work:
+    name: No private work
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+      - name: The leak scan's rules can still go red
+        run: python3 tools/test-leak-scan.py
+      - name: Scan every tracked file
+        run: python3 tools/leak-scan.py --tree
+      - name: The secret scanner's rules can still go red
+        run: python3 tools/test-secret-scan.py
+      - name: No API key or token in any tracked file, or in any commit of the history
+        run: |
+          git fetch --quiet --unshallow || true
+          python3 tools/secret-scan.py --tree
+          python3 tools/secret-scan.py --history
+
+  gate-a:
+    name: Gate A (build and unit tests)
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '21'
+      - &gradle-cache
+        name: Cache Gradle and the NeoForm decompile
+        uses: actions/cache@v6
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+            build/neoForm
+          key: gradle-${{ runner.os }}-${{ hashFiles('gradle.properties', 'build.gradle', 'versions/*.properties', 'gradle/wrapper/gradle-wrapper.properties') }}
+      - &ply
+        name: The datapack compiler's Python dependency
+        run: python3 -m pip install --break-system-packages ply
+      - name: ./gradlew build
+        run: ./gradlew build --console=plain
+      - name: Test reports
+        if: failure()
+        uses: actions/upload-artifact@v5
+        with:
+          name: gate-a-reports
+          path: build/reports/tests/
+          retention-days: 7
+
+  gate-b-ci:
+    name: Gate B (the ci shard)
+    needs: changes
+    if: needs.changes.outputs.code == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      SHARD: ci
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '21'
+      - *gradle-cache
+      - *ply
+      - &gameTests
+        name: Run the game tests
+        run: |
+          set -o pipefail
+          ./gradlew runGameTestServer -Pshard="$SHARD" -Prundir=gt-run --console=plain 2>&1 | tee gametest.log
+          line="$(grep -Eo '[0-9]+ required tests (passed|failed)' gametest.log | tail -1)"
+          echo "result: ${line:-no result line (the server never ran the tests)}"
+          grep -Eq 'required tests passed' <<<"$line" && ! grep -q 'required tests failed' gametest.log
+
+  gate-b-tier:
+    name: Gate B (the default tier)
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      SHARD: ci,default
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '21'
+      - *gradle-cache
+      - *ply
+      - *gameTests

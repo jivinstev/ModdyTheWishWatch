@@ -1,0 +1,49 @@
+{
+ "cluster": "shapes_redraw",
+ "order": [
+  "lump",
+  "boat",
+  "head",
+  "horse_armor",
+  "shovel",
+  "hoe"
+ ],
+ "icons": [
+  {
+   "name": "lump",
+   "status": "ok",
+   "attempts": 1,
+   "note": "Angular faceted rock chunk with cyan specks; not round, not a blob."
+  },
+  {
+   "name": "boat",
+   "status": "ok",
+   "attempts": 3,
+   "note": "Side-view boat: long shallow pointed hull with the oar lying flat along it."
+  },
+  {
+   "name": "head",
+   "status": "ok",
+   "attempts": 1,
+   "note": "Blocky mob head in 3/4 view with big square eyes and a wide mouth on the front face."
+  },
+  {
+   "name": "horse_armor",
+   "status": "ok",
+   "attempts": 3,
+   "note": "Whole horse in side view wearing armour plates; brown fixed horse."
+  },
+  {
+   "name": "shovel",
+   "status": "ok",
+   "attempts": 2,
+   "note": "Diagonal garden spade: brown fixed handle, rounded blade along the handle's line."
+  },
+  {
+   "name": "hoe",
+   "status": "ok",
+   "attempts": 4,
+   "note": "Diagonal garden hoe: brown fixed handle with a flat blade sticking out sideways at a right angle."
+  }
+ ]
+}

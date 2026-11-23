@@ -1,0 +1,19 @@
+{
+ "count": 1,
+ "effects": [
+  "turn_into"
+ ],
+ "id": "ice_cream_machine_convert",
+ "name": "Ice Cream Machine",
+ "params": {
+  "FROM": "minecraft:snowball",
+  "TO": "ice_cream_food",
+  "_kit": {
+   "items": "minecraft:snowball 32"
+  }
+ },
+ "parts": [],
+ "properties": {},
+ "shape": "machine",
+ "variants": []
+}

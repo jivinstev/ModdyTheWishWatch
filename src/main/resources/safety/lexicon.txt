@@ -1,0 +1,55 @@
+# THE FLOOR, NOT THE FILTER  (docs/CHILD_SAFETY_PLAN.md §3 L0)
+#
+# Deterministic, instant, and deliberately TINY. It exists for the two moments the model cannot
+# cover: before a grade has come back, and when no grader is available at all. Everything
+# nuanced belongs to the model; everything here must be unambiguous enough that a 7-year-old
+# could not have meant anything else.
+#
+# FORMAT   AXIS<TAB>term[<TAB>REASON]        # comment
+#   AXIS    VIOLENCE | SEXUAL | HATE | DANGER  -> CLEARLY on that axis
+#           WELLBEING                          -> the grown-up note, and NOTHING else: no band,
+#                                                 no block. Blocking a child in distress is the
+#                                                 worst answer available (§1).
+#   term    matched whole-word after NFKC folding and lower-casing. Never a substring, so
+#           "assassin", "Scunthorpe" and "grape" are safe by construction. Spaces in a term
+#           match any run of whitespace.
+#   REASON  one of SafetyVerdict.Reason. Defaults to OTHER.
+#
+# Override the whole file at <gameDir>/moddingfromamod/safety/lexicon.txt — a term that turns
+# out to fire on a real wish can be removed tonight, without a rebuild.
+#
+# ⚠ NO SLURS ARE LISTED HERE, on purpose. Which words those are is a maintainer's decision and not a
+# thing to improvise into a checked-in file; the model covers them in the meantime. The HATE axis
+# is present in the format for when that list is written.
+
+# ── sexual: explicit only. Nothing a gross-out wish could reach for by accident. ──────────────
+SEXUAL	porn	SEXUAL
+SEXUAL	pornhub	SEXUAL
+SEXUAL	hentai	SEXUAL
+SEXUAL	blowjob	SEXUAL
+SEXUAL	handjob	SEXUAL
+SEXUAL	cumshot	SEXUAL
+SEXUAL	creampie	SEXUAL
+SEXUAL	dildo	SEXUAL
+SEXUAL	masturbate	SEXUAL
+SEXUAL	masturbating	SEXUAL
+SEXUAL	have sex	SEXUAL
+SEXUAL	having sex	SEXUAL
+SEXUAL	sex with	SEXUAL
+SEXUAL	rape	SEXUAL
+SEXUAL	raping	SEXUAL
+
+# ── danger: named hard drugs. "beer", "potion", "poison" and "dynamite" are NOT here and must
+# ── not be: they are ordinary Minecraft, and §9 grades a beer machine MAYBE, not blocked.
+DANGER	cocaine	DRUGS
+DANGER	heroin	DRUGS
+DANGER	fentanyl	DRUGS
+DANGER	meth	DRUGS
+
+# ── wellbeing: real-life distress. A NOTE, never a block.
+# ── "kill me" and "kill myself" are deliberately ABSENT: in Minecraft they are respawn requests,
+# ── "kill me" is in the real corpus, and a note that fires on every respawn is a note nobody reads.
+WELLBEING	commit suicide	SELF_HARM
+WELLBEING	cut myself	SELF_HARM
+WELLBEING	hurt myself	SELF_HARM
+WELLBEING	end my life	SELF_HARM

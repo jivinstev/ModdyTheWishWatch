@@ -1,0 +1,13 @@
+# TRIGGER: periodic — every N seconds, whatever else is happening.
+#
+# 7 of 32 abilities. The shape behind "big fire every 15-30 seconds", summoning waves, and roars.
+reset
+    /scoreboard objectives add mfam_clock dummy
+    /scoreboard players set #tick mfam_clock 0
+end
+
+clock tick
+    /scoreboard players add #tick mfam_clock 1
+    /execute if score #tick mfam_clock matches ${PERIOD_TICKS}.. as @e[tag=${TAG}] at @s run ${COMMAND}
+    /execute if score #tick mfam_clock matches ${PERIOD_TICKS}.. run scoreboard players set #tick mfam_clock 0
+end

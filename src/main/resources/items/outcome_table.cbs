@@ -1,0 +1,20 @@
+# OUTCOME_TABLE — one roll, and something different comes out each time: a present most of
+# the time, now and then a creature, and very rarely a small bang.
+#
+# THE ODDS ARE NOT HIS TO SET, and that is the point. MagicBlock.table fixes them so it FEELS like a
+# lucky thing (a mod repo's rules, measured on the block a child actually played with): at least three in
+# four goes are a present, it is never completely safe, and a bang is under one in twenty. What he
+# chooses is WHAT the presents and surprises are.
+#
+# The roll lands on @s — the block's own anchor, or the player holding it — so two of them never
+# share a number. `/random value` is vanilla since 1.20.2.
+reset
+    /scoreboard objectives add mfam_luck dummy
+end
+
+function effect()
+    /execute store result score @s mfam_luck run random value 1..100
+${OUTCOMES}
+    /particle minecraft:happy_villager ~ ~0.5 ~ 0.4 0.4 0.4 0.1 20 force
+    /playsound minecraft:entity.player.levelup master @a[distance=..16] ~ ~ ~ 0.8 1.4
+end

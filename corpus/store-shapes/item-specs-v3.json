@@ -1,0 +1,1 @@
+{"store":"item-specs","v":3,"specs":[{"id":"grinder_convert","name":"Grinder","shape":"machine","count":1,"effects":["turn_into"],"params":{"FROM":"minecraft:wheat","TO":"minecraft:cake"},"variants":[],"properties":{},"parts":[],"ownerId":"a1b2c3d4"}]}

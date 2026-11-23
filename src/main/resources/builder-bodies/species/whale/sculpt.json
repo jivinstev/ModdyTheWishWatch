@@ -1,0 +1,210 @@
+{
+ "behaves_like": "swimmer",
+ "damage": 0,
+ "health": 300,
+ "id": "whale",
+ "name": "Big Blue Whale",
+ "note": "Blue whale lookalike (no mod has one): long blue speckled body, pale belly/chin, wide fluke; scale 4 for 'big', friendly gentle giant.",
+ "palette": [
+  {
+   "colour": "#2F6FD0",
+   "percent": 75
+  },
+  {
+   "colour": "#BFD8F0",
+   "percent": 20
+  }
+ ],
+ "parts": [
+  {
+   "colour": "#2F6FD0",
+   "from": [
+    -8,
+    2,
+    -14
+   ],
+   "name": "body",
+   "pattern": "speckle",
+   "pattern_colour": "#255AA8",
+   "to": [
+    8,
+    14,
+    10
+   ]
+  },
+  {
+   "colour": "#BFD8F0",
+   "from": [
+    -7,
+    1,
+    -13
+   ],
+   "name": "belly",
+   "parent": "body",
+   "to": [
+    7,
+    4,
+    9
+   ]
+  },
+  {
+   "colour": "#2F6FD0",
+   "from": [
+    -7,
+    3,
+    -24
+   ],
+   "name": "head",
+   "pattern": "speckle",
+   "pattern_colour": "#255AA8",
+   "to": [
+    7,
+    13,
+    -13
+   ]
+  },
+  {
+   "colour": "#BFD8F0",
+   "from": [
+    -6,
+    2,
+    -23
+   ],
+   "name": "chin",
+   "parent": "head",
+   "to": [
+    6,
+    5,
+    -13
+   ]
+  },
+  {
+   "colour": "black",
+   "from": [
+    7,
+    8,
+    -21
+   ],
+   "name": "eyeL",
+   "parent": "head",
+   "to": [
+    8,
+    10,
+    -19
+   ]
+  },
+  {
+   "colour": "black",
+   "from": [
+    -8,
+    8,
+    -21
+   ],
+   "name": "eyeR",
+   "parent": "head",
+   "to": [
+    -7,
+    10,
+    -19
+   ]
+  },
+  {
+   "colour": "#2F6FD0",
+   "from": [
+    -5,
+    4,
+    9
+   ],
+   "name": "tail1",
+   "parent": "body",
+   "to": [
+    5,
+    11,
+    20
+   ]
+  },
+  {
+   "colour": "#2F6FD0",
+   "from": [
+    -3,
+    5,
+    19
+   ],
+   "name": "tail2",
+   "parent": "tail1",
+   "to": [
+    3,
+    9,
+    28
+   ]
+  },
+  {
+   "colour": "#255AA8",
+   "from": [
+    -11,
+    6,
+    26
+   ],
+   "name": "tail_fluke",
+   "parent": "tail2",
+   "to": [
+    11,
+    8,
+    33
+   ]
+  },
+  {
+   "colour": "#255AA8",
+   "from": [
+    7,
+    3,
+    -10
+   ],
+   "name": "finL",
+   "parent": "body",
+   "to": [
+    15,
+    5,
+    -4
+   ]
+  },
+  {
+   "colour": "#255AA8",
+   "from": [
+    -15,
+    3,
+    -10
+   ],
+   "name": "finR",
+   "parent": "body",
+   "to": [
+    -7,
+    5,
+    -4
+   ]
+  },
+  {
+   "colour": "#255AA8",
+   "from": [
+    -1,
+    13,
+    2
+   ],
+   "name": "fin_back",
+   "parent": "body",
+   "to": [
+    1,
+    16,
+    6
+   ]
+  }
+ ],
+ "powers": [
+  "friendly",
+  "persistent"
+ ],
+ "scale": 4,
+ "speed": 0.2,
+ "status": "Sculpting your big blue whale",
+ "voice": "dolphin"
+}

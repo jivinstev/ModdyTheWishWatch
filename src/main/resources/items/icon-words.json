@@ -1,0 +1,1220 @@
+{
+ "_about": "#2250: what a child calls each library icon, model-written (not a player's words) and reviewed. BuilderLooks adds the name itself, its plural and its joined form; living things (animals, creatures) never get their bare name, which is the creature's (a cat is a cat, a cat plush is this).",
+ "words": {
+  "airplane": [
+   "airplanes",
+   "jet plane",
+   "toy plane"
+  ],
+  "alien": [
+   "alien plush",
+   "alien toy",
+   "alien charm"
+  ],
+  "astronaut_helmet": [
+   "astronaut helmet",
+   "astronaut helmets",
+   "astronauthelmet",
+   "space helmet",
+   "astronaut hat",
+   "spaceman helmet"
+  ],
+  "axolotl_plush": [
+   "axolotl plush",
+   "axolotl toy",
+   "stuffed axolotl",
+   "axolotl charm"
+  ],
+  "baby_dragon": [
+   "baby dragon plush",
+   "dragon plush",
+   "dragon toy"
+  ],
+  "backpack": [
+   "backpack",
+   "backpacks",
+   "back pack",
+   "rucksack",
+   "school bag"
+  ],
+  "balloon": [
+   "balloons",
+   "party balloon",
+   "balloon look"
+  ],
+  "banana": [
+   "banana look",
+   "banana icon",
+   "banana picture"
+  ],
+  "basketball": [
+   "basketball",
+   "basketballs",
+   "basket ball",
+   "hoops ball"
+  ],
+  "bat": [
+   "bat plush",
+   "bat toy",
+   "stuffed bat",
+   "bat charm"
+  ],
+  "bear": [
+   "bear toy",
+   "bear charm",
+   "bear look"
+  ],
+  "bee": [
+   "bee plush",
+   "bee toy",
+   "stuffed bee",
+   "bee charm"
+  ],
+  "binoculars": [
+   "binoculars",
+   "field glasses",
+   "spy glasses"
+  ],
+  "blaster": [
+   "blaster",
+   "blasters",
+   "laser gun",
+   "ray gun",
+   "laser blaster",
+   "space gun"
+  ],
+  "boba_tea": [
+   "boba teas",
+   "bobatea",
+   "milk tea"
+  ],
+  "boomerang": [
+   "boomerang",
+   "boomerangs",
+   "throwing stick"
+  ],
+  "bunny": [
+   "bunny plush",
+   "bunny toy",
+   "stuffed bunny",
+   "bunny charm"
+  ],
+  "burger": [
+   "burgers",
+   "burger look",
+   "burger icon"
+  ],
+  "butterfly": [
+   "butterfly plush",
+   "butterfly toy",
+   "stuffed butterfly",
+   "butterfly charm"
+  ],
+  "camera": [
+   "camera",
+   "cameras",
+   "photo camera",
+   "camera thing"
+  ],
+  "candy_cane": [
+   "candycane",
+   "candy stick",
+   "peppermint stick"
+  ],
+  "cape": [
+   "cape",
+   "capes",
+   "cloak",
+   "superhero cape",
+   "hero cape"
+  ],
+  "capybara": [
+   "capybara plush",
+   "capybara toy",
+   "stuffed capybara",
+   "capybara charm"
+  ],
+  "car": [
+   "cars",
+   "motor car",
+   "auto"
+  ],
+  "cat": [
+   "cat plush",
+   "cat toy",
+   "stuffed cat",
+   "cat charm"
+  ],
+  "cherry": [
+   "cherry fruit",
+   "cherry look",
+   "cherry icon"
+  ],
+  "chocolate_bar": [
+   "chocolate bars",
+   "chocolatebar",
+   "choc bar"
+  ],
+  "cloud_puff": [
+   "cloud",
+   "fluffy cloud",
+   "cloud plush"
+  ],
+  "cotton_candy": [
+   "cotton candies",
+   "cottoncandy",
+   "cotton candy look"
+  ],
+  "cow": [
+   "cow plush",
+   "cow toy",
+   "stuffed cow",
+   "cow charm"
+  ],
+  "crab": [
+   "crab plush",
+   "crab toy",
+   "stuffed crab",
+   "crab charm"
+  ],
+  "crown": [
+   "crown",
+   "crowns",
+   "king crown",
+   "queen crown",
+   "tiara",
+   "royal crown"
+  ],
+  "crystal_ball": [
+   "crystal ball",
+   "crystal balls",
+   "crystalball",
+   "fortune ball",
+   "magic ball",
+   "seeing ball"
+  ],
+  "cupcake": [
+   "cup cake",
+   "fairy cake",
+   "cupcake look"
+  ],
+  "dice": [
+   "dice",
+   "dices",
+   "rolling dice"
+  ],
+  "dog": [
+   "dog plush",
+   "dog toy",
+   "stuffed dog",
+   "dog charm"
+  ],
+  "dollar_bill": [
+   "dollar bill",
+   "dollar bills",
+   "dollarbill",
+   "money",
+   "cash",
+   "dollar"
+  ],
+  "dolphin": [
+   "dolphin plush",
+   "dolphin toy",
+   "dolphin charm"
+  ],
+  "donut": [
+   "doughnuts",
+   "donut look",
+   "donut icon"
+  ],
+  "dragon": [
+   "dragon charm",
+   "dragon badge",
+   "dragon emblem"
+  ],
+  "drum": [
+   "drum",
+   "drums",
+   "drum kit",
+   "snare drum"
+  ],
+  "drumstick": [
+   "drumsticks",
+   "turkey leg",
+   "chicken drumstick"
+  ],
+  "duck": [
+   "duck plush",
+   "duck toy",
+   "stuffed duck",
+   "duck charm"
+  ],
+  "elephant": [
+   "elephant plush",
+   "elephant toy",
+   "stuffed elephant",
+   "elephant charm"
+  ],
+  "fire_truck": [
+   "fire trucks",
+   "firetruck",
+   "fire engine"
+  ],
+  "fox": [
+   "fox plush",
+   "fox toy",
+   "stuffed fox",
+   "fox charm"
+  ],
+  "fries": [
+   "fry",
+   "fries look",
+   "fries icon"
+  ],
+  "frog": [
+   "frog plush",
+   "frog toy",
+   "stuffed frog",
+   "frog charm"
+  ],
+  "game_console": [
+   "game console",
+   "game consoles",
+   "gameconsole",
+   "console",
+   "video game console",
+   "games console"
+  ],
+  "game_controller": [
+   "game controller",
+   "game controllers",
+   "gamecontroller",
+   "controller",
+   "gamepad",
+   "joystick"
+  ],
+  "genie_lamp": [
+   "genie lamp",
+   "genie lamps",
+   "genielamp",
+   "magic lamp",
+   "aladdin lamp",
+   "genie"
+  ],
+  "ghost_plush": [
+   "ghost plush",
+   "ghost toy",
+   "spooky ghost plush"
+  ],
+  "gift_box": [
+   "gift box",
+   "gift boxes",
+   "giftbox",
+   "present",
+   "gift",
+   "birthday present"
+  ],
+  "giraffe": [
+   "giraffe plush",
+   "giraffe toy",
+   "stuffed giraffe",
+   "giraffe charm"
+  ],
+  "gorilla": [
+   "gorilla plush",
+   "gorilla toy",
+   "stuffed gorilla",
+   "gorilla charm"
+  ],
+  "grappling_hook": [
+   "grappling hook",
+   "grappling hooks",
+   "grapplinghook",
+   "grapple",
+   "grappling gun",
+   "hook shot"
+  ],
+  "guitar": [
+   "guitar",
+   "guitars",
+   "electric guitar"
+  ],
+  "gummy_bear": [
+   "gummybear",
+   "jelly bear",
+   "gummy bear look"
+  ],
+  "handheld_console": [
+   "handheld console",
+   "handheld consoles",
+   "handheldconsole",
+   "handheld",
+   "handheld game",
+   "portable console"
+  ],
+  "headphones": [
+   "headphones",
+   "head phones",
+   "earphones",
+   "headset"
+  ],
+  "hedgehog": [
+   "hedgehog plush",
+   "hedgehog toy",
+   "stuffed hedgehog",
+   "hedgehog charm"
+  ],
+  "helicopter": [
+   "helicopters",
+   "heli",
+   "helicopter look"
+  ],
+  "horse": [
+   "horse plush",
+   "horse toy",
+   "stuffed horse",
+   "horse charm"
+  ],
+  "hot_dog": [
+   "hot dogs",
+   "sausage in a bun",
+   "frankfurter"
+  ],
+  "ice_pop": [
+   "ice pops",
+   "icepop",
+   "ice block"
+  ],
+  "jellyfish": [
+   "jellyfish plush",
+   "jellyfish toy",
+   "jelly fish charm"
+  ],
+  "jetpack": [
+   "jetpacks",
+   "jet pack",
+   "rocket pack",
+   "rocket backpack"
+  ],
+  "koala": [
+   "koala plush",
+   "koala toy",
+   "stuffed koala",
+   "koala charm"
+  ],
+  "laptop": [
+   "laptop",
+   "laptops",
+   "computer",
+   "notebook computer",
+   "pc"
+  ],
+  "lemon": [
+   "lemon look",
+   "lemon icon",
+   "lemon picture"
+  ],
+  "lightning_bolt": [
+   "thunderbolt",
+   "lightning bolt charm",
+   "zig zag bolt"
+  ],
+  "lion": [
+   "lion plush",
+   "lion toy",
+   "stuffed lion",
+   "lion charm"
+  ],
+  "lollipop": [
+   "lollipops",
+   "lollypop",
+   "lollipop look"
+  ],
+  "magic_ring": [
+   "magic ring",
+   "magic rings",
+   "magicring",
+   "ring",
+   "gold ring",
+   "power ring"
+  ],
+  "marshmallow": [
+   "mallow",
+   "marshmallow look",
+   "marshmallow icon"
+  ],
+  "microphone": [
+   "microphone",
+   "microphones",
+   "mic",
+   "mike",
+   "karaoke mic"
+  ],
+  "monkey": [
+   "monkey plush",
+   "monkey toy",
+   "stuffed monkey",
+   "monkey charm"
+  ],
+  "moon": [
+   "moons",
+   "moon look",
+   "moon icon"
+  ],
+  "narwhal": [
+   "narwhal plush",
+   "narwhal toy",
+   "unicorn of the sea"
+  ],
+  "octopus": [
+   "octopus plush",
+   "octopus toy",
+   "octopus charm"
+  ],
+  "owl": [
+   "owl plush",
+   "owl toy",
+   "stuffed owl",
+   "owl charm"
+  ],
+  "pancake": [
+   "hotcake",
+   "pancake look",
+   "pancake icon"
+  ],
+  "panda": [
+   "panda plush",
+   "panda toy",
+   "stuffed panda",
+   "panda charm"
+  ],
+  "parrot": [
+   "parrot plush",
+   "parrot toy",
+   "stuffed parrot",
+   "parrot charm"
+  ],
+  "penguin": [
+   "penguin plush",
+   "penguin toy",
+   "stuffed penguin",
+   "penguin charm"
+  ],
+  "phoenix": [
+   "phoenix feather",
+   "fire bird charm",
+   "phoenix charm"
+  ],
+  "phone": [
+   "phone",
+   "phones",
+   "mobile phone",
+   "cell phone",
+   "smartphone"
+  ],
+  "pig": [
+   "pig plush",
+   "pig toy",
+   "stuffed pig",
+   "pig charm"
+  ],
+  "pineapple": [
+   "pineapple look",
+   "pineapple icon",
+   "pineapple picture"
+  ],
+  "pirate_ship": [
+   "pirate ships",
+   "pirateship",
+   "pirate ship look"
+  ],
+  "pizza": [
+   "whole pizza",
+   "pizza pie",
+   "pizza look"
+  ],
+  "pizza_slice": [
+   "pizza slice",
+   "pizza slices",
+   "pizzaslice",
+   "slice of pizza",
+   "pizza piece"
+  ],
+  "planet": [
+   "planet",
+   "planets",
+   "world globe",
+   "earth"
+  ],
+  "platypus": [
+   "platypus plush",
+   "platypus toy",
+   "stuffed platypus",
+   "platypus charm"
+  ],
+  "police_car": [
+   "police cars",
+   "policecar",
+   "cop car",
+   "police cruiser"
+  ],
+  "popcorn": [
+   "popcorns",
+   "popcorn bucket",
+   "popcorn look"
+  ],
+  "raccoon": [
+   "raccoon plush",
+   "raccoon toy",
+   "stuffed raccoon",
+   "raccoon charm"
+  ],
+  "race_car": [
+   "race cars",
+   "racing car",
+   "sports car"
+  ],
+  "rainbow": [
+   "rainbow charm",
+   "rainbow look",
+   "rainbow icon"
+  ],
+  "ramen": [
+   "ramens",
+   "noodle bowl",
+   "ramen bowl"
+  ],
+  "ringed_planet": [
+   "ringed planet",
+   "ringed planets",
+   "ringedplanet",
+   "saturn",
+   "planet with rings"
+  ],
+  "rooster": [
+   "rooster plush",
+   "rooster toy",
+   "stuffed rooster",
+   "rooster charm"
+  ],
+  "rubber_duck": [
+   "rubber duck",
+   "rubber ducks",
+   "rubberduck",
+   "rubber ducky",
+   "bath duck"
+  ],
+  "ruby": [
+   "ruby",
+   "rubies",
+   "red gem",
+   "red jewel"
+  ],
+  "sapphire": [
+   "sapphire",
+   "sapphires",
+   "blue gem",
+   "blue jewel",
+   "jewel"
+  ],
+  "shark": [
+   "shark plush",
+   "shark toy",
+   "shark tooth"
+  ],
+  "sheep": [
+   "sheep plush",
+   "sheep toy",
+   "stuffed sheep",
+   "sheep charm"
+  ],
+  "skateboard": [
+   "skateboard",
+   "skateboards",
+   "skate board",
+   "skate"
+  ],
+  "snow_globe": [
+   "snow globe",
+   "snow globes",
+   "snowglobe",
+   "snow ball globe"
+  ],
+  "snowflake": [
+   "snow flake",
+   "ice crystal",
+   "snowflake look"
+  ],
+  "soccer_ball": [
+   "soccer ball",
+   "soccer balls",
+   "soccerball",
+   "football",
+   "soccer",
+   "kick ball"
+  ],
+  "spaceship": [
+   "spaceship",
+   "spaceships",
+   "starship"
+  ],
+  "strawberry": [
+   "strawberry look",
+   "strawberry icon",
+   "strawberry picture"
+  ],
+  "submarine": [
+   "underwater boat",
+   "submarine look",
+   "submarine icon"
+  ],
+  "sundae": [
+   "sundaes",
+   "ice cream sundae",
+   "ice cream bowl"
+  ],
+  "sunglasses": [
+   "sunglasses",
+   "shades",
+   "sun glasses",
+   "cool glasses"
+  ],
+  "surfboard": [
+   "surfboard",
+   "surfboards",
+   "surf board",
+   "surfing board"
+  ],
+  "sushi": [
+   "sushis",
+   "maki",
+   "sushi look"
+  ],
+  "t_rex": [
+   "t rex plush",
+   "dino plush",
+   "dinosaur toy"
+  ],
+  "taco": [
+   "taco shell",
+   "taco look",
+   "taco icon"
+  ],
+  "teddy_bear": [
+   "teddy bears",
+   "teddybear",
+   "teddy",
+   "stuffed bear",
+   "bear plush"
+  ],
+  "ticket": [
+   "ticket",
+   "tickets",
+   "golden ticket",
+   "pass",
+   "admit one"
+  ],
+  "tiger": [
+   "tiger plush",
+   "tiger toy",
+   "stuffed tiger",
+   "tiger charm"
+  ],
+  "top_hat": [
+   "top hat",
+   "top hats",
+   "tophat",
+   "fancy hat",
+   "magician hat",
+   "tall hat",
+   "cowboy hat",
+   "cowgirl hat"
+  ],
+  "toy_car": [
+   "toy car",
+   "toy cars",
+   "toycar",
+   "toy truck",
+   "little car",
+   "matchbox car"
+  ],
+  "toy_robot": [
+   "toy robot",
+   "toy robots",
+   "toyrobot",
+   "robot toy",
+   "wind up robot"
+  ],
+  "triceratops": [
+   "triceratops plush",
+   "three horn dino toy",
+   "dino toy"
+  ],
+  "trophy": [
+   "trophy",
+   "trophies",
+   "cup trophy",
+   "gold trophy"
+  ],
+  "turtle": [
+   "turtle plush",
+   "turtle toy",
+   "stuffed turtle",
+   "turtle charm"
+  ],
+  "tv": [
+   "tv",
+   "tvs",
+   "television",
+   "telly",
+   "tv set"
+  ],
+  "ufo": [
+   "ufos",
+   "ufo look",
+   "ufo icon"
+  ],
+  "unicorn": [
+   "unicorn plush",
+   "unicorn toy",
+   "stuffed unicorn",
+   "unicorn charm"
+  ],
+  "waffle": [
+   "belgian waffle",
+   "waffle look",
+   "waffle icon"
+  ],
+  "water_gun": [
+   "water gun",
+   "water guns",
+   "watergun",
+   "squirt gun",
+   "water pistol",
+   "super soaker"
+  ],
+  "whale": [
+   "whale plush",
+   "whale toy",
+   "whale charm"
+  ],
+  "wizard_hat": [
+   "wizard hat",
+   "wizard hats",
+   "wizardhat",
+   "witch hat",
+   "magic hat",
+   "pointy hat",
+   "sorcerer hat"
+  ],
+  "wrapped_candy": [
+   "wrapped candy",
+   "wrapped candies",
+   "wrappedcandy",
+   "sweet",
+   "toffee"
+  ],
+  "yeti": [
+   "yeti plush",
+   "bigfoot toy",
+   "abominable snowman plush"
+  ],
+  "yo_yo": [
+   "yo yo",
+   "yo yos",
+   "yoyo",
+   "yo yo toy"
+  ],
+  "alarm_clock": [
+   "alarm clock",
+   "alarm clocks",
+   "alarmclock",
+   "clock",
+   "alarm",
+   "wake up clock"
+  ],
+  "apple": [
+   "apple look",
+   "apple icon",
+   "apple picture"
+  ],
+  "battery": [
+   "battery",
+   "batteries",
+   "power cell"
+  ],
+  "bread_loaf": [
+   "bread loaf",
+   "bread loaves",
+   "breadloaf"
+  ],
+  "bubble_wand": [
+   "bubble wand",
+   "bubble wands",
+   "bubblewand",
+   "bubble blower",
+   "bubbles",
+   "bubble stick"
+  ],
+  "butterfly_net": [
+   "butterfly net",
+   "butterfly nets",
+   "butterflynet",
+   "bug net",
+   "net"
+  ],
+  "cactus": [
+   "cactus",
+   "cacti",
+   "prickly cactus"
+  ],
+  "campfire": [
+   "campfire",
+   "campfires",
+   "camp fire",
+   "bonfire",
+   "fire pit"
+  ],
+  "carrot": [
+   "orange carrot",
+   "carrot look",
+   "carrot icon"
+  ],
+  "cheese": [
+   "cheeses",
+   "cheese wedge",
+   "swiss cheese"
+  ],
+  "chick": [
+   "chick plush",
+   "chick toy",
+   "stuffed chick",
+   "chick charm"
+  ],
+  "compass": [
+   "compass",
+   "compass needle",
+   "direction finder"
+  ],
+  "cookie_jar": [
+   "cookie jar",
+   "cookie jars",
+   "cookiejar",
+   "jar of cookies",
+   "biscuit jar"
+  ],
+  "deer": [
+   "deer plush",
+   "deer toy",
+   "stuffed deer",
+   "deer charm"
+  ],
+  "dynamite": [
+   "dynamite",
+   "dynamites",
+   "tnt stick",
+   "explosive stick",
+   "dynamite stick"
+  ],
+  "envelope": [
+   "envelope",
+   "envelopes",
+   "letter",
+   "mail",
+   "card"
+  ],
+  "firework": [
+   "rocket firework",
+   "sparkler",
+   "firework look"
+  ],
+  "flamingo": [
+   "flamingo plush",
+   "flamingo toy",
+   "stuffed flamingo",
+   "flamingo charm"
+  ],
+  "flashlight": [
+   "flashlights",
+   "torch light",
+   "flash light",
+   "torchlight"
+  ],
+  "flower": [
+   "daisy",
+   "rose",
+   "flower look"
+  ],
+  "frying_pan": [
+   "frying pan",
+   "frying pans",
+   "fryingpan",
+   "pan",
+   "skillet",
+   "fry pan"
+  ],
+  "hamster": [
+   "hamster plush",
+   "hamster toy",
+   "stuffed hamster",
+   "hamster charm"
+  ],
+  "heart": [
+   "heart look",
+   "heart icon",
+   "heart picture"
+  ],
+  "juice_box": [
+   "juice boxes",
+   "juicebox",
+   "juice carton",
+   "apple juice"
+  ],
+  "kite": [
+   "kite",
+   "kites",
+   "flying kite"
+  ],
+  "ladybug": [
+   "ladybug plush",
+   "ladybug toy",
+   "stuffed ladybug",
+   "ladybug charm"
+  ],
+  "magnet": [
+   "magnet",
+   "magnets",
+   "horseshoe magnet"
+  ],
+  "medal": [
+   "medal",
+   "medals",
+   "gold medal",
+   "medallion",
+   "award"
+  ],
+  "mermaid": [
+   "mermaid doll",
+   "mermaid toy",
+   "mermaid tail"
+  ],
+  "milkshake": [
+   "milkshakes",
+   "thickshake",
+   "milkshake look"
+  ],
+  "mouse": [
+   "mouse plush",
+   "mouse toy",
+   "stuffed mouse",
+   "mouse charm"
+  ],
+  "mushroom": [
+   "mushroom",
+   "mushrooms",
+   "toadstool"
+  ],
+  "music_note": [
+   "music note",
+   "music notes",
+   "musicnote",
+   "note",
+   "musical note"
+  ],
+  "paint_can": [
+   "paint can",
+   "paint cans",
+   "paintcan",
+   "paint pot",
+   "tin of paint",
+   "paint bucket"
+  ],
+  "paintbrush": [
+   "paintbrush",
+   "paintbrushes",
+   "paint brush",
+   "brush"
+  ],
+  "party_hat": [
+   "party hat",
+   "party hats",
+   "partyhat",
+   "birthday hat",
+   "party cone",
+   "cone hat"
+  ],
+  "peacock": [
+   "peacock plush",
+   "peacock toy",
+   "stuffed peacock",
+   "peacock charm"
+  ],
+  "pickaxe": [
+   "pickaxes",
+   "pick",
+   "pickaxe look"
+  ],
+  "pickle": [
+   "pickle look",
+   "pickle icon",
+   "pickle picture"
+  ],
+  "potion": [
+   "potion",
+   "potions",
+   "magic potion",
+   "potion bottle",
+   "elixir"
+  ],
+  "robot_dog": [
+   "robo dog",
+   "robot puppy",
+   "mechanical dog"
+  ],
+  "sandwich": [
+   "sarnie",
+   "sub sandwich",
+   "sandwich look"
+  ],
+  "seal": [
+   "seal plush",
+   "seal toy",
+   "stuffed seal",
+   "seal charm"
+  ],
+  "shovel": [
+   "shovel",
+   "shovels",
+   "spade",
+   "digger"
+  ],
+  "slime": [
+   "slime ball",
+   "gooey slime",
+   "slime look"
+  ],
+  "smoothie": [
+   "fruit smoothie",
+   "smoothie look",
+   "smoothie icon"
+  ],
+  "snail": [
+   "snail plush",
+   "snail toy",
+   "stuffed snail",
+   "snail charm"
+  ],
+  "snake": [
+   "snake plush",
+   "snake toy",
+   "stuffed snake",
+   "snake charm"
+  ],
+  "soup_bowl": [
+   "soup bowl",
+   "soup bowls",
+   "soupbowl",
+   "bowl of soup"
+  ],
+  "spellbook": [
+   "spellbook",
+   "spellbooks",
+   "spell book",
+   "magic book",
+   "book of spells"
+  ],
+  "spider": [
+   "spider plush",
+   "spider toy",
+   "stuffed spider",
+   "spider charm"
+  ],
+  "squirrel": [
+   "squirrel plush",
+   "squirrel toy",
+   "stuffed squirrel",
+   "squirrel charm"
+  ],
+  "star": [
+   "star look",
+   "star icon",
+   "star picture"
+  ],
+  "sun": [
+   "suns",
+   "sunny",
+   "sun look"
+  ],
+  "teapot": [
+   "teapot",
+   "teapots",
+   "tea pot",
+   "kettle",
+   "tea"
+  ],
+  "toaster": [
+   "toaster",
+   "toasters",
+   "toast maker",
+   "bread toaster"
+  ],
+  "treasure_chest": [
+   "treasure chest",
+   "treasure chests",
+   "treasurechest",
+   "treasure",
+   "pirate chest",
+   "loot chest"
+  ],
+  "treasure_map": [
+   "treasure map",
+   "treasure maps",
+   "treasuremap",
+   "pirate map",
+   "map",
+   "old map"
+  ],
+  "tree": [
+   "tree",
+   "trees",
+   "oak tree",
+   "little tree"
+  ],
+  "umbrella": [
+   "umbrella",
+   "umbrellas",
+   "brolly",
+   "parasol"
+  ],
+  "volcano": [
+   "volcano",
+   "volcanoes",
+   "lava mountain",
+   "erupting volcano"
+  ],
+  "watermelon": [
+   "watermelons",
+   "melon slice",
+   "watermelon look"
+  ],
+  "wolf": [
+   "wolf plush",
+   "wolf toy",
+   "stuffed wolf",
+   "wolf charm"
+  ],
+  "wrench": [
+   "wrench",
+   "wrenches",
+   "spanner",
+   "monkey wrench"
+  ],
+  "fishing_rod": [
+   "fishing rod",
+   "fishing rods",
+   "fishingrod",
+   "fishing pole",
+   "rod"
+  ]
+ }
+}

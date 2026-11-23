@@ -1,0 +1,18 @@
+# PULL — things are drawn in toward it, a little on every go.
+#
+# STRONGEST CLOSE IN, NOTHING AT THE EDGE. A datapack cannot compute a smooth falloff, so the pull
+# is cut into rings (MagicBlock.pullBands): the inner ring moves a thing furthest, each ring out
+# moves it less, and past the reach it is not touched at all. A pull with no edge tugs faintly at
+# the whole world, which reads as the world being broken rather than as a thing that pulls.
+#
+# HOW IT MOVES A PLAYER. Motion written by a command does nothing to a player (the client owns its
+# own movement), so each go TELEPORTS a thing one step along the line to the centre. `facing entity`
+# from the centre points AT the thing; stepping BACK along that line from where the thing stands is
+# a step toward the centre. It never steps into a solid block, and it stops just short of the centre
+# so nothing is pulled into the block itself.
+#
+# Inner rings are done first, so a thing moved inward this go is never moved a second time.
+function effect()
+${PULLS}
+    /particle minecraft:portal ~ ~0.5 ~ 1.5 1 1.5 0.4 25 force
+end

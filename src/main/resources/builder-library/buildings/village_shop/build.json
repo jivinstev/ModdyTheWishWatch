@@ -1,0 +1,243 @@
+{
+ "id": "village_shop",
+ "name": "Your Village Shop",
+ "shapes": [
+  {
+   "block": "minecraft:spruce_planks",
+   "depth": 9,
+   "dx": 0,
+   "dy": 0,
+   "dz": 0,
+   "height": 1,
+   "hollow": false,
+   "kind": "box",
+   "name": "floor",
+   "width": 9
+  },
+  {
+   "block": "minecraft:oak_planks",
+   "depth": 9,
+   "dx": 0,
+   "dy": 1,
+   "dz": 0,
+   "height": 4,
+   "hollow": true,
+   "kind": "box",
+   "name": "walls",
+   "width": 9
+  },
+  {
+   "block": "minecraft:spruce_log",
+   "depth": 1,
+   "dx": 0,
+   "dy": 1,
+   "dz": 0,
+   "height": 4,
+   "hollow": false,
+   "kind": "box",
+   "name": "corner1",
+   "width": 1
+  },
+  {
+   "block": "minecraft:spruce_log",
+   "depth": 1,
+   "dx": 8,
+   "dy": 1,
+   "dz": 0,
+   "height": 4,
+   "hollow": false,
+   "kind": "box",
+   "name": "corner2",
+   "width": 1
+  },
+  {
+   "block": "minecraft:spruce_log",
+   "depth": 1,
+   "dx": 0,
+   "dy": 1,
+   "dz": 8,
+   "height": 4,
+   "hollow": false,
+   "kind": "box",
+   "name": "corner3",
+   "width": 1
+  },
+  {
+   "block": "minecraft:spruce_log",
+   "depth": 1,
+   "dx": 8,
+   "dy": 1,
+   "dz": 8,
+   "height": 4,
+   "hollow": false,
+   "kind": "box",
+   "name": "corner4",
+   "width": 1
+  },
+  {
+   "block": "minecraft:air",
+   "depth": 7,
+   "dx": 1,
+   "dy": 1,
+   "dz": 1,
+   "height": 3,
+   "hollow": false,
+   "kind": "box",
+   "name": "room",
+   "width": 7
+  },
+  {
+   "block": "minecraft:spruce_planks",
+   "depth": 9,
+   "dx": 0,
+   "dy": 5,
+   "dz": 0,
+   "height": 1,
+   "hollow": false,
+   "kind": "box",
+   "name": "ceiling",
+   "width": 9
+  },
+  {
+   "block": "minecraft:red_terracotta",
+   "depth": 11,
+   "dx": -1,
+   "dy": 6,
+   "dz": -1,
+   "height": 4,
+   "hollow": false,
+   "kind": "pyramid",
+   "name": "roof",
+   "width": 11
+  },
+  {
+   "block": "minecraft:air",
+   "depth": 1,
+   "dx": 4,
+   "dy": 1,
+   "dz": 0,
+   "height": 2,
+   "hollow": false,
+   "kind": "box",
+   "name": "door",
+   "width": 1
+  },
+  {
+   "block": "minecraft:glass_pane",
+   "depth": 1,
+   "dx": 1,
+   "dy": 2,
+   "dz": 0,
+   "height": 2,
+   "hollow": false,
+   "kind": "box",
+   "name": "window_l",
+   "width": 2
+  },
+  {
+   "block": "minecraft:glass_pane",
+   "depth": 1,
+   "dx": 6,
+   "dy": 2,
+   "dz": 0,
+   "height": 2,
+   "hollow": false,
+   "kind": "box",
+   "name": "window_r",
+   "width": 2
+  },
+  {
+   "block": "minecraft:barrel",
+   "depth": 1,
+   "dx": 1,
+   "dy": 1,
+   "dz": 4,
+   "height": 1,
+   "hollow": false,
+   "kind": "box",
+   "name": "counter",
+   "width": 7
+  },
+  {
+   "block": "minecraft:air",
+   "depth": 1,
+   "dx": 7,
+   "dy": 1,
+   "dz": 4,
+   "height": 1,
+   "hollow": false,
+   "kind": "box",
+   "name": "counter_gap",
+   "width": 1
+  },
+  {
+   "block": "minecraft:spruce_slab",
+   "depth": 1,
+   "dx": 1,
+   "dy": 2,
+   "dz": 4,
+   "height": 1,
+   "hollow": false,
+   "kind": "box",
+   "name": "counter_top",
+   "width": 6
+  },
+  {
+   "block": "minecraft:bookshelf",
+   "depth": 1,
+   "dx": 1,
+   "dy": 1,
+   "dz": 7,
+   "height": 3,
+   "hollow": false,
+   "kind": "box",
+   "name": "shelves_back",
+   "width": 7
+  },
+  {
+   "block": "minecraft:chiseled_bookshelf",
+   "depth": 2,
+   "dx": 1,
+   "dy": 1,
+   "dz": 5,
+   "height": 3,
+   "hollow": false,
+   "kind": "box",
+   "name": "shelves_side",
+   "width": 1
+  },
+  {
+   "block": "minecraft:lantern[hanging=true]",
+   "depth": 1,
+   "dx": 4,
+   "dy": 4,
+   "dz": 3,
+   "height": 1,
+   "hollow": false,
+   "kind": "box",
+   "name": "lantern",
+   "width": 1
+  },
+  {
+   "block": "minecraft:bell[attachment=floor,facing=south]",
+   "depth": 1,
+   "dx": 3,
+   "dy": 3,
+   "dz": 4,
+   "height": 1,
+   "hollow": false,
+   "kind": "box",
+   "name": "bell",
+   "width": 1
+  }
+ ],
+ "spots": [
+  {
+   "dx": 4,
+   "dy": 2,
+   "dz": 5,
+   "facing": "north",
+   "name": "counter"
+  }
+ ]
+}

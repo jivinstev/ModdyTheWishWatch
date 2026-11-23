@@ -1,0 +1,7 @@
+# DROP_JUNK — his bag throws out the junk: dirt, cobblestone, gravel, rotten flesh,
+# seeds and the rest of TidyRule.JUNK are dropped at his feet — dropped, never destroyed, so a thing
+# he wanted after all is still on the ground. The choosing is Java's (Tidy).
+function effect()
+    /execute as ${TARGET} run tag @s add mfam_drop_junk
+    /playsound minecraft:item.bundle.drop_contents master @a ~ ~ ~ 1 1.0
+end

@@ -1,0 +1,236 @@
+{
+  "id": "dolphin",
+  "name": "Dolphin",
+  "status": "Sculpting your dolphin",
+  "powers": [
+    "friendly"
+  ],
+  "damage": 0,
+  "health": 20,
+  "palette": [
+    {
+      "colour": "#6E8CA8",
+      "percent": 65
+    },
+    {
+      "colour": "#DCE4EA",
+      "percent": 28
+    }
+  ],
+  "parts": [
+    {
+      "name": "body",
+      "from": [
+        -5,
+        2,
+        -12
+      ],
+      "to": [
+        5,
+        11,
+        12
+      ],
+      "colour": "#6E8CA8",
+      "pattern": "gradient",
+      "pattern_colour": "#5A7590"
+    },
+    {
+      "name": "belly",
+      "from": [
+        -4,
+        1,
+        -11
+      ],
+      "to": [
+        4,
+        4,
+        11
+      ],
+      "colour": "#DCE4EA",
+      "parent": "body"
+    },
+    {
+      "name": "head",
+      "from": [
+        -4,
+        3,
+        -20
+      ],
+      "to": [
+        4,
+        10,
+        -11
+      ],
+      "colour": "#6E8CA8",
+      "parent": "body",
+      "pattern": "gradient",
+      "pattern_colour": "#5A7590"
+    },
+    {
+      "name": "head_belly",
+      "from": [
+        -3,
+        2,
+        -19
+      ],
+      "to": [
+        3,
+        4,
+        -11
+      ],
+      "colour": "#DCE4EA",
+      "parent": "head"
+    },
+    {
+      "name": "beak",
+      "from": [
+        -2,
+        3,
+        -25
+      ],
+      "to": [
+        2,
+        6,
+        -19
+      ],
+      "colour": "#7F9BB5",
+      "parent": "head"
+    },
+    {
+      "name": "beak_under",
+      "from": [
+        -2,
+        2,
+        -24
+      ],
+      "to": [
+        2,
+        4,
+        -19
+      ],
+      "colour": "#DCE4EA",
+      "parent": "head"
+    },
+    {
+      "name": "eyeL",
+      "from": [
+        3,
+        6,
+        -17
+      ],
+      "to": [
+        5,
+        8,
+        -15
+      ],
+      "colour": "#1A1A1A",
+      "parent": "head"
+    },
+    {
+      "name": "eyeR",
+      "from": [
+        -5,
+        6,
+        -17
+      ],
+      "to": [
+        -3,
+        8,
+        -15
+      ],
+      "colour": "#1A1A1A",
+      "parent": "head"
+    },
+    {
+      "name": "fin_dorsal",
+      "from": [
+        -1,
+        10,
+        -3
+      ],
+      "to": [
+        1,
+        16,
+        3
+      ],
+      "colour": "#5A7590",
+      "parent": "body",
+      "rotation": [
+        -25,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "finL",
+      "from": [
+        4,
+        2,
+        -8
+      ],
+      "to": [
+        10,
+        4,
+        -3
+      ],
+      "colour": "#5A7590",
+      "parent": "body",
+      "rotation": [
+        0,
+        0,
+        -20
+      ]
+    },
+    {
+      "name": "finR",
+      "from": [
+        -10,
+        2,
+        -8
+      ],
+      "to": [
+        -4,
+        4,
+        -3
+      ],
+      "colour": "#5A7590",
+      "parent": "body",
+      "rotation": [
+        0,
+        0,
+        20
+      ]
+    },
+    {
+      "name": "tail",
+      "from": [
+        -3,
+        4,
+        11
+      ],
+      "to": [
+        3,
+        9,
+        21
+      ],
+      "colour": "#6E8CA8",
+      "parent": "body"
+    },
+    {
+      "name": "tail_fluke",
+      "from": [
+        -8,
+        5,
+        19
+      ],
+      "to": [
+        8,
+        7,
+        25
+      ],
+      "colour": "#5A7590",
+      "parent": "tail"
+    }
+  ],
+  "note": "Plain base dolphin: blue-grey back with gradient skin, pale belly/underjaw, short beak, curved dorsal fin, side flippers, tail + horizontal fluke. Parts named body/head/beak/fin*/tail* so swim animation works and later edits can target them; no accessories by request."
+}

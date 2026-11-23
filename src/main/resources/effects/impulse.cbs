@@ -1,0 +1,66 @@
+# IMPULSE — push, launch or pull, spread over several ticks so a child can SEE it happen.
+#
+# WHY THIS IS NOT ONE BIG SHOVE. A single large Motion set moves the victim the whole distance in
+# one tick. There is no motion to watch: you were here, now you are there, and a seven-year-old
+# reads that as the game glitching rather than as the monster hitting them. Real games ramp it, and
+# the difference between "it teleported me" and "it PUNCHED me" is entirely in those few frames.
+#
+# So the movement is applied as a SLICE PER TICK for RAMP_TICKS ticks, counted down on the victim
+# itself. That needs per-victim state, which is why impulse earns a template instead of riding the
+# COMMAND parameter like every other effect so far.
+#
+# MOVE and VICTIM_SELECTOR are built by apply_effect from friendly words (direction, strength,
+# feel, target), because the child says "so hard i fly backwards" and not "0.8 blocks per tick".
+#
+# THE SOURCE CARRIES ITS OWN CLOCK (mfam_impt) so "every 5 seconds" is a parameter rather than a
+# different template: with PERIOD_TICKS=100 it is a stomp every five seconds. Tier 3.5 found this
+# gap by reading the description: impulse offered no timed trigger at all, so "Spikor knocks
+# everyone back every 5 seconds" collapsed to a continuous proximity push.
+#
+# A SOURCE FIRES ONLY WHEN ITS TRIGGER IS MET (FIRE_IF), and only a source that fired telegraphs
+#. FIRE_IF is empty for periodic — the timer IS the trigger, so a stomp every five seconds
+# still stomps with nobody near. For proximity and on_hit it is "something is in reach". This used
+# to telegraph on the CLOCK alone, and proximity/on_hit ran the clock at PERIOD_TICKS=1 — so a
+# creature given "knock back whatever comes near" played 60 particles and a knockback sound EVERY
+# TICK, forever, with nothing anywhere near it: on a live world, a T-Rex that never stopped
+# stomping. The clock resets only when a source fires, so for proximity PERIOD_TICKS is a RE-ARM: it
+# fires the moment something comes into reach, then waits PERIOD_TICKS before it can again, so a
+# mob standing beside it is shoved once a second rather than held down twenty times a second.
+reset
+    /scoreboard objectives add mfam_imp dummy
+    /scoreboard objectives add mfam_impt dummy
+    /scoreboard objectives add mfam_noop dummy
+end
+
+clock tick
+    # 1. the source's own clock.
+    /execute as @e[tag=${TAG}] run scoreboard players add @s mfam_impt 1
+    # 2. FIRE: the clock is up AND the trigger is met
+    /execute as @e[tag=${TAG},scores={mfam_impt=${PERIOD_TICKS}..}] at @s ${FIRE_IF}run tag @s add mfam_impf
+    # 3. whoever the trigger catches starts a countdown — and wears mfam_imp_on while it runs, so
+    #    steps 6 and 7 find the few being pushed by TAG instead of looking at every entity in the
+    #    world every tick (a wished creature is dozens of entities)
+    #    VICTIM_SELECTOR is evaluated ONCE (into mfam_impn), so a selector that picks at random
+    #    cannot give the score to one mob and the tag to another
+    /execute as @e[tag=${TAG},tag=mfam_impf] at @s run execute as ${VICTIM_SELECTOR} run tag @s add mfam_impn
+    /execute as @e[tag=mfam_impn] run scoreboard players set @s mfam_imp ${RAMP_TICKS}
+    /tag @e[tag=mfam_impn] add mfam_imp_on
+    /tag @e[tag=mfam_impn] remove mfam_impn
+    # 4. TELEGRAPH: something has to happen where the push starts, or the movement has no cause —
+    #    and only where a push started, or it is noise with no cause
+    /execute unless entity @e[tag=${TAG},tag=mfam_veiled,limit=1] as @e[tag=${TAG},tag=mfam_impf] at @s run particle ${PARTICLE} ~ ~0.2 ~ ${RADIUS} 0.2 ${RADIUS} 0.06 60 force
+    /execute if entity @e[tag=${TAG},tag=mfam_veiled,limit=1] as @e[tag=${TAG},tag=mfam_impf] at @s run particle ${PARTICLE} ~ ~0.2 ~ ${RADIUS} 0.2 ${RADIUS} 0.06 60 force @a[tag=!mfam_veil_blind]
+    /execute unless entity @e[tag=${TAG},tag=mfam_veiled,limit=1] as @e[tag=${TAG},tag=mfam_impf] at @s run playsound ${SOUND} master @a ~ ~ ~ 1 1
+    /execute if entity @e[tag=${TAG},tag=mfam_veiled,limit=1] as @e[tag=${TAG},tag=mfam_impf] at @s run playsound ${SOUND} master @a[tag=!mfam_veil_blind] ~ ~ ~ 1 1
+    # 5. re-arm: only a source that fired starts its clock again
+    /execute as @e[tag=${TAG},tag=mfam_impf] run scoreboard players set @s mfam_impt 0
+    /tag @e[tag=${TAG},tag=mfam_impf] remove mfam_impf
+    # 6. LANDING: a big upward launch is lethal on the way down, which is not what anybody wished
+    #    for. For up-launches this hands out slow falling; otherwise it is a no-op.
+    /execute as @e[tag=mfam_imp_on,scores={mfam_imp=${RAMP_TICKS}}] at @s run ${LANDING}
+    # 7. one slice of the movement per tick, so it READS as a shove rather than a teleport
+    /execute as @e[tag=mfam_imp_on,scores={mfam_imp=1..}] at @s run ${MOVE}
+    /execute as @e[tag=mfam_imp_on,scores={mfam_imp=1..}] run scoreboard players remove @s mfam_imp 1
+    # 8. the push is over: the tag comes off with it, so nothing wears it once it has landed
+    /execute as @e[tag=mfam_imp_on] unless score @s mfam_imp matches 1.. run tag @s remove mfam_imp_on
+end

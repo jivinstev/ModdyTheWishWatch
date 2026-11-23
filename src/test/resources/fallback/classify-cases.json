@@ -1,0 +1,116 @@
+{
+ "_comment": "#2536: one set of worker-log tails, read by BOTH decisions. tools/muse-cli-shim.py's _classify must give `shim` (null: nothing) and `shimResetsAt`; agent/ModelFallback.classify must give `java` and `javaResetsAt` (0: none). Where the shim names a kind, Java names the same one; Java's extra rows (the Claude CLI's wording, a plain rate limit) are ones the shim does not read. Tested by agent/ModelFallbackTest and tools/test-muse-cli-shim.py.",
+ "cases": [
+  {
+   "name": "Muse Code's measured 5-hour window ",
+   "text": "agent loop failed: model failed: API error 429 [request_id=abc]: Subscription quota exhausted. Your usage window resets at 2026-10-14T21:03:28Z. (rate_limit_error)",
+   "shim": "quota",
+   "shimResetsAt": "2026-10-14T21:03:28Z",
+   "java": "QUOTA",
+   "javaResetsAt": "2026-10-14T21:03:28Z"
+  },
+  {
+   "name": "the weekly cap, days away, taken as written",
+   "text": "starting\nagent loop failed: model failed: API error 429: Subscription quota exhausted. Your usage window resets at 2026-10-19T00:00:00Z.",
+   "shim": "quota",
+   "shimResetsAt": "2026-10-19T00:00:00Z",
+   "java": "QUOTA",
+   "javaResetsAt": "2026-10-19T00:00:00Z"
+  },
+  {
+   "name": "a quota with a changed message and no reset time",
+   "text": "Subscription quota exhausted.",
+   "shim": "quota",
+   "shimResetsAt": null,
+   "java": "QUOTA",
+   "javaResetsAt": null
+  },
+  {
+   "name": "the plan does not serve the model, though the line also says 403",
+   "text": "model failed: API error 403: model `muse-ember-1.0` does not exist or you lack access",
+   "shim": "model",
+   "java": "NOT_SERVED"
+  },
+  {
+   "name": "no active subscription",
+   "text": "No active subscription — you're on pay-as-you-go.",
+   "shim": "nosub",
+   "java": "NO_SUBSCRIPTION"
+  },
+  {
+   "name": "a 402",
+   "text": "model failed: API error 402 Payment Required",
+   "shim": "nosub",
+   "java": "NO_SUBSCRIPTION"
+  },
+  {
+   "name": "a dead Muse Code sign-in",
+   "text": "error: still unauthorized after a token refresh",
+   "shim": "login",
+   "java": "LOGIN"
+  },
+  {
+   "name": "never signed in",
+   "text": "No Meta credentials were found. Run `muse login` first.",
+   "shim": "login",
+   "java": "LOGIN"
+  },
+  {
+   "name": "no sign-in at all, as Muse Code 1.4.23 says it (measured 2026-11-18)",
+   "text": "missing meta credentials: run `muse login` or set META_API_KEY, or save credentials at /home/p/.config/muse/auth.json",
+   "shim": "login",
+   "java": "LOGIN"
+  },
+  {
+   "name": "a 401",
+   "text": "model failed: API error 401 unauthorized",
+   "shim": "login",
+   "java": "LOGIN"
+  },
+  {
+   "name": "the NEWEST line decides: a quota after an old login failure",
+   "text": "API error 401\nok, signed in again\nSubscription quota exhausted. Your usage window resets at 2026-11-18T18:00:00Z.",
+   "shim": "quota",
+   "shimResetsAt": "2026-11-18T18:00:00Z",
+   "java": "QUOTA",
+   "javaResetsAt": "2026-11-18T18:00:00Z"
+  },
+  {
+   "name": "a healthy log",
+   "text": "muse exec: session 01a1 started\ntool call await_wish\ntool call finish_wish",
+   "shim": null,
+   "java": "OTHER"
+  },
+  {
+   "name": "a wish's own error is not the account's",
+   "text": "model failed: API error 500 internal server error",
+   "shim": null,
+   "java": "OTHER"
+  },
+  {
+   "name": "the Claude CLI's usage limit (not read by the shim)",
+   "text": "Claude AI usage limit reached|1795030000",
+   "shim": null,
+   "java": "QUOTA",
+   "javaResetsAt": "2026-11-18T19:26:40Z"
+  },
+  {
+   "name": "the Claude CLI signed out (not read by the shim)",
+   "text": "Invalid API key · Please run /login",
+   "shim": null,
+   "java": "LOGIN"
+  },
+  {
+   "name": "a plain rate limit (not read by the shim)",
+   "text": "API Error: 429 {\"type\":\"error\",\"error\":{\"type\":\"rate_limit_error\"}} retry after 30s",
+   "shim": null,
+   "java": "RATE_LIMITED"
+  },
+  {
+   "name": "no key where API-key mode needs one",
+   "text": "could not start wish agent 1 on Muse Code: API-key mode needs MUSE_API_KEY where Minecraft starts",
+   "shim": null,
+   "java": "LOGIN"
+  }
+ ]
+}

@@ -1,0 +1,14 @@
+{
+  "$comment": "THE TYPED BOUNDARY between the library nudger and this mod (docs/PATTERNS.md). Keys only: ReadyMadeNudge.parse keeps a pick only when it is a key of the very menu the model was shown, so no string the model writes can reach the builder except a menu line the mod itself wrote. additionalProperties is false because one unclaimed string is all an injected instruction needs.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "picks": {
+      "type": "array",
+      "description": "Menu keys copied exactly, best first, or empty when nothing on the menu is what this wish needs. At most three for a wish, five for a search.",
+      "maxItems": 5,
+      "items": {"type": "string", "maxLength": 80}
+    }
+  },
+  "required": ["picks"]
+}

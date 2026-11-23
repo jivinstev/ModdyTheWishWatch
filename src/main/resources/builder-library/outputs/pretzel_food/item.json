@@ -1,0 +1,17 @@
+{
+ "base_item": "minecraft:cookie",
+ "count": 4,
+ "effects": [
+  "food"
+ ],
+ "id": "pretzel_food",
+ "name": "Pretzel",
+ "params": {
+  "BONUS": "minecraft:saturation",
+  "SECONDS": "5"
+ },
+ "parts": [],
+ "properties": {},
+ "shape": "on_consume",
+ "variants": []
+}

@@ -1,0 +1,52 @@
+# AGGRO — the thing you hit starts FIGHTING something.
+#
+# "give me a pearl that makes a noob fight a mob". This is the one effect in the catalogue that
+# does not damage, move or change anything — it changes who a creature is ANGRY at, which is the
+# whole content of the wish.
+#
+# HOW IT WORKS, and why it is a nudge of damage rather than a target-setter. A command cannot set a
+# mob's target: goal-based mobs take a Java setTarget and brain-based ones take ANGRY_AT/
+# ATTACK_TARGET memories, and neither is reachable from a function. What IS reachable is
+# `/damage <them> ... by <someone>`, which sets lastHurtByMob and trips HurtByTargetGoal — the goal
+# nearly every hostile mob in the game has. So one half-heart delivered BY the aggressor starts a
+# real fight, and the aggressor fights back the moment the victim swings at it.
+#
+# THE TAG IS LOAD-BEARING, not tidiness. Without it the "nearest creature" is the victim itself,
+# standing at the impact point, and the effect makes a mob fight itself — which looks exactly like
+# doing nothing. Tag first, select excluding the tag, untag after.
+#
+# AND IT TAKES TWO TAGS, WHICH IS THE SECOND THING A GATE B RUN HAD TO TELL ME. TARGET is a SET,
+# not an entity — the thrown shape's is everything within three blocks — so tagging it and then
+# excluding the tag removes the whole huddle from the running, INCLUDING the creature the child
+# meant it to fight. A pearl thrown into a group then picked an aggressor from outside the group,
+# or found nobody at all and did nothing. So: tag the set, narrow to the ONE nearest, drop the set
+# tag so everybody else is eligible again. This wish is about one creature; the narrowing is the
+# effect saying so.
+#
+# The tag name is FIXED rather than per-item, and that is forced: an effect template is filled with
+# its own parameters only, so the per-feature id the shape wrappers get does not reach here. It is
+# safe because the tag never outlives one function call — a function runs to completion inside a
+# single tick, so two aggro items cannot hold it at once. The opening clear covers the one case that
+# could strand it, a server stopped between the two lines, and costs nothing.
+#
+# ONE DIRECTION ONLY. Hurting the aggressor back would mean hurting the CHILD whenever he asked for
+# "make it fight ME", which is the opposite of a toy.
+#
+# THE 24-BLOCK BOUND IS LOAD-BEARING, and a Gate B run is what found that out. `sort=nearest` with
+# no `distance` searches the whole loaded world, so the "nearest creature" can be one hundreds of
+# blocks away: the damage is attributed to something that cannot possibly walk over, and the fight
+# the child was promised never starts. In the test world the pearl picked a creature belonging to
+# another test entirely. Nothing about that failure is visible in a real game — the pearl lands,
+# the particles play, and nothing happens — which is exactly the shape of bug this effect is most
+# prone to, because its whole result is invisible.
+function effect()
+    /tag @e[tag=mfam_aggro_noob] remove mfam_aggro_noob
+    /tag @e[tag=mfam_aggro_one] remove mfam_aggro_one
+    /tag ${TARGET} add mfam_aggro_noob
+    /tag @e[tag=mfam_aggro_noob,limit=1,sort=nearest] add mfam_aggro_one
+    /tag @e[tag=mfam_aggro_noob] remove mfam_aggro_noob
+    /execute as @e[tag=mfam_aggro_one] run damage @s 1.0 minecraft:mob_attack by @e[tag=!mfam_aggro_one,${AGGRESSOR},distance=..24,limit=1,sort=nearest]
+    /particle minecraft:angry_villager ~ ~1 ~ 0.5 0.5 0.5 0.1 20 force
+    /playsound minecraft:entity.wolf.growl master @a ~ ~ ~ 1 0.8
+    /tag @e[tag=mfam_aggro_one] remove mfam_aggro_one
+end

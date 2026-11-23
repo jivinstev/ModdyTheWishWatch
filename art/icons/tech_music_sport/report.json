@@ -1,0 +1,271 @@
+[
+ {
+  "cluster": "tech_music_sport",
+  "name": "game_console",
+  "verdict": "PASS",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.462,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "accent": 9,
+   "body": 286,
+   "fixed": 8,
+   "line": 165,
+   "shine": 5
+  }
+ },
+ {
+  "cluster": "tech_music_sport",
+  "name": "handheld_console",
+  "verdict": "PASS",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.68,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "accent": 143,
+   "body": 328,
+   "line": 220,
+   "shine": 5
+  }
+ },
+ {
+  "cluster": "tech_music_sport",
+  "name": "phone",
+  "verdict": "PASS",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.422,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "accent": 190,
+   "body": 158,
+   "line": 81,
+   "shine": 3
+  }
+ },
+ {
+  "cluster": "tech_music_sport",
+  "name": "tv",
+  "verdict": "PASS",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.457,
+   "dark_body": 0.008,
+   "pieces": 1,
+   "accent": 172,
+   "body": 122,
+   "line": 170,
+   "shine": 4
+  }
+ },
+ {
+  "cluster": "tech_music_sport",
+  "name": "camera",
+  "verdict": "PASS",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.401,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "accent": 66,
+   "body": 230,
+   "line": 112,
+   "shine": 3
+  }
+ },
+ {
+  "cluster": "tech_music_sport",
+  "name": "laptop",
+  "verdict": "PASS",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.349,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "accent": 145,
+   "body": 84,
+   "line": 123,
+   "shine": 5
+  }
+ },
+ {
+  "cluster": "tech_music_sport",
+  "name": "guitar",
+  "verdict": "PASS",
+  "kind": "fixed",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.35,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "fixed": 255,
+   "line": 101,
+   "shine": 2
+  }
+ },
+ {
+  "cluster": "tech_music_sport",
+  "name": "drum",
+  "verdict": "PASS",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.322,
+   "dark_body": 0.103,
+   "pieces": 1,
+   "body": 39,
+   "fixed": 159,
+   "line": 127,
+   "shine": 5
+  }
+ },
+ {
+  "cluster": "tech_music_sport",
+  "name": "microphone",
+  "verdict": "PASS",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.373,
+   "dark_body": 0.006,
+   "pieces": 1,
+   "body": 160,
+   "line": 220,
+   "shine": 2
+  }
+ },
+ {
+  "cluster": "tech_music_sport",
+  "name": "skateboard",
+  "verdict": "PASS",
+  "kind": "fixed",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.496,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "fixed": 289,
+   "line": 214,
+   "shine": 5
+  }
+ },
+ {
+  "cluster": "tech_music_sport",
+  "name": "surfboard",
+  "verdict": "PASS",
+  "kind": "fixed",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.301,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "accent": 28,
+   "fixed": 217,
+   "line": 62,
+   "shine": 1
+  }
+ },
+ {
+  "cluster": "tech_music_sport",
+  "name": "trophy",
+  "verdict": "PASS",
+  "kind": "fixed",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.47,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "fixed": 292,
+   "line": 184,
+   "shine": 5
+  }
+ },
+ {
+  "cluster": "tech_music_sport",
+  "name": "medal",
+  "verdict": "FAIL",
+  "kind": "fixed",
+  "n": 32,
+  "problems": [
+   "touches the edge (needs a 1px margin)"
+  ],
+  "warnings": [],
+  "stats": {
+   "fill": 0.567,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "fixed": 420,
+   "line": 156,
+   "shine": 5
+  }
+ },
+ {
+  "cluster": "tech_music_sport",
+  "name": "binoculars",
+  "verdict": "PASS",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.717,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "accent": 46,
+   "body": 426,
+   "line": 259,
+   "shine": 3
+  }
+ },
+ {
+  "cluster": "tech_music_sport",
+  "name": "snow_globe",
+  "verdict": "PASS",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.547,
+   "dark_body": 0.056,
+   "pieces": 1,
+   "accent": 301,
+   "body": 36,
+   "fixed": 36,
+   "line": 182,
+   "shine": 5
+  }
+ }
+]

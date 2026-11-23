@@ -1,0 +1,303 @@
+[
+ {
+  "cluster": "recolour",
+  "name": "wizard_hat",
+  "verdict": "PASS",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.44,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "accent": 32,
+   "body": 264,
+   "fixed": 13,
+   "line": 138,
+   "shine": 4
+  }
+ },
+ {
+  "cluster": "recolour",
+  "name": "top_hat",
+  "verdict": "PASS",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.633,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "accent": 88,
+   "body": 390,
+   "line": 165,
+   "shine": 5
+  }
+ },
+ {
+  "cluster": "recolour",
+  "name": "cape",
+  "verdict": "PASS",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.613,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "accent": 67,
+   "body": 369,
+   "fixed": 14,
+   "line": 173,
+   "shine": 5
+  }
+ },
+ {
+  "cluster": "recolour",
+  "name": "backpack",
+  "verdict": "PASS",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.469,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "accent": 74,
+   "body": 245,
+   "line": 158,
+   "shine": 3
+  }
+ },
+ {
+  "cluster": "recolour",
+  "name": "car",
+  "verdict": "PASS",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.457,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "accent": 32,
+   "body": 244,
+   "fixed": 33,
+   "line": 154,
+   "shine": 5
+  }
+ },
+ {
+  "cluster": "recolour",
+  "name": "skateboard",
+  "verdict": "PASS",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.418,
+   "dark_body": 0.134,
+   "pieces": 1,
+   "accent": 72,
+   "body": 209,
+   "fixed": 30,
+   "line": 114,
+   "shine": 3
+  }
+ },
+ {
+  "cluster": "recolour",
+  "name": "surfboard",
+  "verdict": "PASS",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.359,
+   "dark_body": 0.145,
+   "pieces": 1,
+   "accent": 40,
+   "body": 255,
+   "line": 70,
+   "shine": 3
+  }
+ },
+ {
+  "cluster": "recolour",
+  "name": "yo_yo",
+  "verdict": "FAIL",
+  "kind": "tint",
+  "n": 32,
+  "problems": [
+   "outline has 2 gap(s)",
+   "touches the edge (needs a 1px margin)"
+  ],
+  "warnings": [],
+  "stats": {
+   "fill": 0.439,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "body": 333,
+   "fixed": 16,
+   "line": 99,
+   "shine": 2
+  }
+ },
+ {
+  "cluster": "recolour",
+  "name": "teddy_bear",
+  "verdict": "PASS",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.316,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "accent": 43,
+   "body": 169,
+   "fixed": 27,
+   "line": 80,
+   "shine": 5
+  }
+ },
+ {
+  "cluster": "recolour",
+  "name": "gummy_bear",
+  "verdict": "PASS",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.493,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "accent": 23,
+   "body": 356,
+   "line": 122,
+   "shine": 4
+  }
+ },
+ {
+  "cluster": "recolour",
+  "name": "water_gun",
+  "verdict": "PASS",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.341,
+   "dark_body": 0.058,
+   "pieces": 1,
+   "accent": 49,
+   "body": 171,
+   "line": 126,
+   "shine": 3
+  }
+ },
+ {
+  "cluster": "recolour",
+  "name": "guitar",
+  "verdict": "FAIL",
+  "kind": "tint",
+  "n": 32,
+  "problems": [
+   "touches the edge (needs a 1px margin)"
+  ],
+  "warnings": [],
+  "stats": {
+   "fill": 0.378,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "body": 217,
+   "fixed": 48,
+   "line": 121,
+   "shine": 1
+  }
+ },
+ {
+  "cluster": "recolour",
+  "name": "sunglasses",
+  "verdict": "FAIL",
+  "kind": "tint",
+  "n": 32,
+  "problems": [
+   "touches the edge (needs a 1px margin)"
+  ],
+  "warnings": [],
+  "stats": {
+   "fill": 0.357,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "body": 116,
+   "fixed": 103,
+   "line": 142,
+   "shine": 5
+  }
+ },
+ {
+  "cluster": "recolour",
+  "name": "magic_ring",
+  "verdict": "PASS",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.38,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "accent": 8,
+   "body": 259,
+   "line": 120,
+   "shine": 2
+  }
+ },
+ {
+  "cluster": "recolour",
+  "name": "wrapped_candy",
+  "verdict": "PASS",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.306,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "accent": 64,
+   "body": 154,
+   "line": 92,
+   "shine": 3
+  }
+ },
+ {
+  "cluster": "recolour",
+  "name": "cupcake",
+  "verdict": "PASS",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.56,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "accent": 157,
+   "body": 259,
+   "fixed": 20,
+   "line": 135,
+   "shine": 2
+  }
+ }
+]

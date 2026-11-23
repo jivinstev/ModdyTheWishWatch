@@ -1,0 +1,185 @@
+{
+ "behaves_like": "vehicle",
+ "damage": 0,
+ "health": 100,
+ "id": "flying_saucer",
+ "name": "Flying Saucer",
+ "note": "Classic silver saucer disc with cyan glass dome and coloured rim lights; vehicle+flies+rideable so he pilots it.",
+ "palette": [
+  {
+   "colour": "#B0B8C0",
+   "percent": 60
+  },
+  {
+   "colour": "#7FE0FF",
+   "percent": 25
+  },
+  {
+   "colour": "#606870",
+   "percent": 10
+  }
+ ],
+ "parts": [
+  {
+   "colour": "#B0B8C0",
+   "from": [
+    -24,
+    6,
+    -24
+   ],
+   "name": "body",
+   "pattern": "gradient",
+   "pattern_colour": "#707880",
+   "to": [
+    24,
+    10,
+    24
+   ]
+  },
+  {
+   "colour": "#8890A0",
+   "from": [
+    -28,
+    7,
+    -28
+   ],
+   "name": "rim",
+   "parent": "body",
+   "to": [
+    28,
+    9,
+    28
+   ]
+  },
+  {
+   "colour": "#606870",
+   "from": [
+    -14,
+    3,
+    -14
+   ],
+   "name": "underside",
+   "parent": "body",
+   "to": [
+    14,
+    7,
+    14
+   ]
+  },
+  {
+   "colour": "lime",
+   "from": [
+    -6,
+    1,
+    -6
+   ],
+   "name": "light_bottom",
+   "parent": "body",
+   "to": [
+    6,
+    4,
+    6
+   ]
+  },
+  {
+   "colour": "#7FE0FF",
+   "from": [
+    -12,
+    9,
+    -12
+   ],
+   "name": "dome",
+   "parent": "body",
+   "to": [
+    12,
+    18,
+    12
+   ]
+  },
+  {
+   "colour": "#A0F0FF",
+   "from": [
+    -7,
+    17,
+    -7
+   ],
+   "name": "dome_top",
+   "parent": "body",
+   "to": [
+    7,
+    21,
+    7
+   ]
+  },
+  {
+   "colour": "yellow",
+   "from": [
+    -29,
+    7,
+    -3
+   ],
+   "name": "light1",
+   "parent": "body",
+   "to": [
+    -26,
+    10,
+    3
+   ]
+  },
+  {
+   "colour": "yellow",
+   "from": [
+    26,
+    7,
+    -3
+   ],
+   "name": "light2",
+   "parent": "body",
+   "to": [
+    29,
+    10,
+    3
+   ]
+  },
+  {
+   "colour": "red",
+   "from": [
+    -3,
+    7,
+    -29
+   ],
+   "name": "light3",
+   "parent": "body",
+   "to": [
+    3,
+    10,
+    -26
+   ]
+  },
+  {
+   "colour": "red",
+   "from": [
+    -3,
+    7,
+    26
+   ],
+   "name": "light4",
+   "parent": "body",
+   "to": [
+    3,
+    10,
+    29
+   ]
+  }
+ ],
+ "powers": [
+  "friendly",
+  "flies",
+  "rideable",
+  "persistent"
+ ],
+ "scale": 1.5,
+ "speed": 0.5,
+ "status": "Building your flying saucer",
+ "voice": "silent"
+}

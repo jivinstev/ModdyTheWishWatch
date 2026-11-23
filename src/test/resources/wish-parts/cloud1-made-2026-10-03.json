@@ -1,0 +1,804 @@
+{
+ "_comment": [
+  "#1359: every `made` record of real play on one server, 2026-09-25 .. 2026-10-03 (agent-actions.jsonl, test:false),",
+  "ids only \u2014 no wish text. `made` is newest first, as ActionLog.made writes it. `removed` = a successful remove_*",
+  "inside the wish; `existedBefore` = made by an EARLIER record here (what ShelfTimes.madeAt answers at runtime);",
+  "`taught` = the wish's successful add_template calls, replay commands only. `source`: TYPED = typed by a player;",
+  "COMMAND = sent by a session (a batch of synthetic-corpus wishes); stand-in = a test account."
+ ],
+ "records": [
+  {
+   "wish": "d37e6483",
+   "day": "2026-09-25",
+   "source": "stand-in",
+   "made": [
+    {
+     "kind": "creature",
+     "id": "tiny_purple_dragon"
+    }
+   ]
+  },
+  {
+   "wish": "444bd68f",
+   "day": "2026-09-25",
+   "source": "stand-in",
+   "made": [
+    {
+     "kind": "creature",
+     "id": "witch_sparkle_cat"
+    }
+   ],
+   "taught": [
+    {
+     "id": "witch_sparkle_cat",
+     "commands": [
+      "wishmob spawn witch_sparkle_cat"
+     ]
+    }
+   ]
+  },
+  {
+   "wish": "633a6b9a",
+   "day": "2026-09-25",
+   "source": "stand-in",
+   "made": [
+    {
+     "kind": "creature",
+     "id": "slime_frog"
+    }
+   ],
+   "taught": [
+    {
+     "id": "slime_frog",
+     "commands": [
+      "wishmob spawn slime_frog"
+     ]
+    }
+   ]
+  },
+  {
+   "wish": "b65bb198",
+   "day": "2026-09-25",
+   "source": "stand-in",
+   "made": [
+    {
+     "kind": "creature",
+     "id": "cactus_dog"
+    },
+    {
+     "kind": "item",
+     "id": "cactus_flower_plain"
+    }
+   ],
+   "taught": [
+    {
+     "id": "cactus_dog",
+     "commands": [
+      "wishmob spawn cactus_dog"
+     ]
+    }
+   ]
+  },
+  {
+   "wish": "798aec38",
+   "day": "2026-09-25",
+   "source": "stand-in",
+   "made": [
+    {
+     "kind": "build",
+     "id": "spooky_clock_tower"
+    }
+   ],
+   "taught": [
+    {
+     "id": "spooky_clock_tower",
+     "commands": [
+      "wishbuild spooky_clock_tower"
+     ]
+    }
+   ]
+  },
+  {
+   "wish": "d1f3731c",
+   "day": "2026-09-25",
+   "source": "stand-in",
+   "made": [
+    {
+     "kind": "build",
+     "id": "snow_castle_ice_throne"
+    }
+   ],
+   "taught": [
+    {
+     "id": "snow_castle_ice_throne",
+     "commands": [
+      "wishbuild snow_castle_ice_throne"
+     ]
+    }
+   ]
+  },
+  {
+   "wish": "fd9dd4e5",
+   "day": "2026-09-25",
+   "source": "stand-in",
+   "made": [
+    {
+     "kind": "painting",
+     "id": "rainbow_castle"
+    }
+   ],
+   "taught": [
+    {
+     "id": "rainbow_castle_pic",
+     "commands": [
+      "wishpaint rainbow_castle"
+     ]
+    }
+   ]
+  },
+  {
+   "wish": "369750b1",
+   "day": "2026-09-25",
+   "source": "stand-in",
+   "made": [
+    {
+     "kind": "item",
+     "id": "cave_light_pickaxe_light"
+    }
+   ]
+  },
+  {
+   "wish": "1687741d",
+   "day": "2026-09-25",
+   "source": "TYPED",
+   "made": [
+    {
+     "kind": "mob",
+     "id": "@llama"
+    },
+    {
+     "kind": "datapack",
+     "id": "spikor_fire"
+    },
+    {
+     "kind": "creature",
+     "id": "spikor"
+    }
+   ],
+   "taught": [
+    {
+     "id": "spikor",
+     "commands": [
+      "wishmob spawn spikor"
+     ]
+    }
+   ]
+  },
+  {
+   "wish": "4fa51570",
+   "day": "2026-09-25",
+   "source": "TYPED",
+   "made": [
+    {
+     "kind": "datapack",
+     "id": "spikor_fire"
+    }
+   ],
+   "existedBefore": [
+    {
+     "kind": "datapack",
+     "id": "spikor_fire"
+    }
+   ]
+  },
+  {
+   "wish": "8e552c2f",
+   "day": "2026-09-25",
+   "source": "TYPED",
+   "made": [
+    {
+     "kind": "mob",
+     "id": "@llama2"
+    }
+   ]
+  },
+  {
+   "wish": "7d13bc7f",
+   "day": "2026-09-25",
+   "source": "TYPED",
+   "made": [
+    {
+     "kind": "creature",
+     "id": "pickleball_player"
+    },
+    {
+     "kind": "build",
+     "id": "pickleball_court"
+    }
+   ]
+  },
+  {
+   "wish": "2d2a2a1c",
+   "day": "2026-09-25",
+   "source": "TYPED",
+   "made": [
+    {
+     "kind": "item",
+     "id": "mighty_laser_bow_hurt"
+    }
+   ]
+  },
+  {
+   "wish": "57d38868",
+   "day": "2026-09-25",
+   "source": "TYPED",
+   "made": [
+    {
+     "kind": "datapack",
+     "id": "mighty_laser_bow_hurt"
+    }
+   ]
+  },
+  {
+   "wish": "42173367",
+   "day": "2026-09-28",
+   "source": "TYPED",
+   "made": [
+    {
+     "kind": "item",
+     "id": "mighty_laser_bow_hurt"
+    }
+   ],
+   "existedBefore": [
+    {
+     "kind": "item",
+     "id": "mighty_laser_bow_hurt"
+    }
+   ]
+  },
+  {
+   "wish": "1c5fd691",
+   "day": "2026-09-28",
+   "source": "COMMAND",
+   "made": [
+    {
+     "kind": "item",
+     "id": "diamond_catcher_rod_plain"
+    }
+   ]
+  },
+  {
+   "wish": "e7b84c19",
+   "day": "2026-09-28",
+   "source": "COMMAND",
+   "made": [
+    {
+     "kind": "item",
+     "id": "lightning_sword_lightning"
+    }
+   ]
+  },
+  {
+   "wish": "27008793",
+   "day": "2026-09-28",
+   "source": "COMMAND",
+   "made": [
+    {
+     "kind": "item",
+     "id": "auto_sort_backpack_plain"
+    }
+   ]
+  },
+  {
+   "wish": "e17bfecc",
+   "day": "2026-09-28",
+   "source": "COMMAND",
+   "made": [
+    {
+     "kind": "item",
+     "id": "food_only_backpack_plain"
+    }
+   ]
+  },
+  {
+   "wish": "dbed69d2",
+   "day": "2026-09-28",
+   "source": "COMMAND",
+   "made": [
+    {
+     "kind": "item",
+     "id": "cake_fork_heal"
+    },
+    {
+     "kind": "item",
+     "id": "cake_fork_plain"
+    },
+    {
+     "kind": "item",
+     "id": "cake_fork_hurt"
+    }
+   ],
+   "removed": [
+    {
+     "kind": "item",
+     "id": "cake_fork_hurt"
+    },
+    {
+     "kind": "item",
+     "id": "cake_fork_plain"
+    }
+   ]
+  },
+  {
+   "wish": "b113cf81",
+   "day": "2026-09-28",
+   "source": "COMMAND",
+   "made": [
+    {
+     "kind": "item",
+     "id": "cave_compass_locate"
+    },
+    {
+     "kind": "item",
+     "id": "diamond_map_plain"
+    }
+   ]
+  },
+  {
+   "wish": "5bc6c22f",
+   "day": "2026-09-28",
+   "source": "COMMAND",
+   "made": [
+    {
+     "kind": "item",
+     "id": "nightfury_sword_plain"
+    }
+   ]
+  },
+  {
+   "wish": "7f940d7b",
+   "day": "2026-09-28",
+   "source": "COMMAND",
+   "made": [
+    {
+     "kind": "item",
+     "id": "grappling_hook_plain"
+    }
+   ]
+  },
+  {
+   "wish": "82d26b7c",
+   "day": "2026-09-28",
+   "source": "COMMAND",
+   "made": [
+    {
+     "kind": "item",
+     "id": "flame_trail_sword_plain"
+    }
+   ]
+  },
+  {
+   "wish": "1131f2d4",
+   "day": "2026-09-28",
+   "source": "COMMAND",
+   "made": [
+    {
+     "kind": "item",
+     "id": "grappling_hook_grapple"
+    }
+   ]
+  },
+  {
+   "wish": "e544ae70",
+   "day": "2026-09-29",
+   "source": "TYPED",
+   "made": [
+    {
+     "kind": "item",
+     "id": "cappuccino_machine_convert"
+    },
+    {
+     "kind": "item",
+     "id": "vanilla_cappuccino_heal"
+    }
+   ],
+   "taught": [
+    {
+     "id": "cappuccino_machine_4_flavors",
+     "commands": [
+      "wishdatapack cappuccino_machine_convert give",
+      "wishdatapack vanilla_cappuccino_heal give"
+     ]
+    }
+   ]
+  },
+  {
+   "wish": "bc92bb53",
+   "day": "2026-09-30",
+   "source": "TYPED",
+   "made": [
+    {
+     "kind": "build",
+     "id": "upside_down_world"
+    }
+   ],
+   "taught": [
+    {
+     "id": "upside_down_world",
+     "commands": [
+      "wishbuild upside_down_world"
+     ]
+    }
+   ]
+  },
+  {
+   "wish": "779b6631",
+   "day": "2026-09-30",
+   "source": "TYPED",
+   "made": [
+    {
+     "kind": "mob",
+     "id": "@pegasus"
+    },
+    {
+     "kind": "creature",
+     "id": "pegasus"
+    }
+   ],
+   "taught": [
+    {
+     "id": "pegasus",
+     "commands": [
+      "wishmob spawn pegasus"
+     ]
+    }
+   ]
+  },
+  {
+   "wish": "203d5953",
+   "day": "2026-10-02",
+   "source": "TYPED",
+   "made": [
+    {
+     "kind": "mob",
+     "id": "@submarine"
+    },
+    {
+     "kind": "creature",
+     "id": "submarine"
+    }
+   ],
+   "taught": [
+    {
+     "id": "submarine",
+     "commands": [
+      "wishmob spawn submarine"
+     ]
+    }
+   ]
+  },
+  {
+   "wish": "177d8719",
+   "day": "2026-10-02",
+   "source": "TYPED",
+   "made": [
+    {
+     "kind": "build",
+     "id": "ginormous_spikors_castle"
+    }
+   ],
+   "taught": [
+    {
+     "id": "ginormous_spikors_castle",
+     "commands": [
+      "wishbuild ginormous_spikors_castle"
+     ]
+    }
+   ]
+  },
+  {
+   "wish": "66571075",
+   "day": "2026-10-02",
+   "source": "TYPED",
+   "made": [
+    {
+     "kind": "datapack",
+     "id": "player_tracker"
+    }
+   ]
+  },
+  {
+   "wish": "490bed7a",
+   "day": "2026-10-02",
+   "source": "COMMAND",
+   "made": [
+    {
+     "kind": "event",
+     "id": "tidal_wave_poundcake_7_43839"
+    }
+   ]
+  },
+  {
+   "wish": "632107ff",
+   "day": "2026-10-02",
+   "source": "COMMAND",
+   "made": [
+    {
+     "kind": "build",
+     "id": "secret_treehouse"
+    }
+   ]
+  },
+  {
+   "wish": "6577766d",
+   "day": "2026-10-02",
+   "source": "TYPED",
+   "made": [
+    {
+     "kind": "painting",
+     "id": "blockybob_ginormous"
+    }
+   ],
+   "taught": [
+    {
+     "id": "blockybob_ginormous",
+     "commands": [
+      "wishpaint blockybob_ginormous"
+     ]
+    }
+   ]
+  },
+  {
+   "wish": "3e9a2a28",
+   "day": "2026-10-03",
+   "source": "TYPED",
+   "made": [
+    {
+     "kind": "creature",
+     "id": "dragon_shark"
+    }
+   ],
+   "taught": [
+    {
+     "id": "dragon_shark",
+     "commands": [
+      "wishmob spawn dragon_shark"
+     ]
+    }
+   ]
+  },
+  {
+   "wish": "55dc6ddf",
+   "day": "2026-10-03",
+   "source": "TYPED",
+   "made": [
+    {
+     "kind": "item",
+     "id": "tropical_oasis_bar_convert"
+    },
+    {
+     "kind": "item",
+     "id": "tropical_oasis_drink_heal"
+    },
+    {
+     "kind": "build",
+     "id": "tropical_oasis"
+    }
+   ],
+   "taught": [
+    {
+     "id": "tropical_oasis",
+     "commands": [
+      "wishbuild tropical_oasis",
+      "wishdatapack tropical_oasis_drink_heal give",
+      "wishdatapack tropical_oasis_bar_convert give"
+     ]
+    }
+   ]
+  },
+  {
+   "wish": "0ea8a940",
+   "day": "2026-10-03",
+   "source": "TYPED",
+   "made": [
+    {
+     "kind": "build",
+     "id": "flat_plain"
+    }
+   ]
+  },
+  {
+   "wish": "f998e7c3",
+   "day": "2026-10-03",
+   "source": "TYPED",
+   "made": [
+    {
+     "kind": "creature",
+     "id": "hotwheels_trex"
+    },
+    {
+     "kind": "build",
+     "id": "hotwheels_garage"
+    }
+   ],
+   "taught": [
+    {
+     "id": "hotwheels_garage",
+     "commands": [
+      "wishbuild hotwheels_garage",
+      "wishmob spawn hotwheels_trex"
+     ]
+    }
+   ]
+  },
+  {
+   "wish": "d0fd4c58",
+   "day": "2026-10-03",
+   "source": "TYPED",
+   "made": [
+    {
+     "kind": "item",
+     "id": "hot_wheels_stunt_car_plain"
+    }
+   ]
+  },
+  {
+   "wish": "22a85e7d",
+   "day": "2026-10-03",
+   "source": "TYPED",
+   "made": [
+    {
+     "kind": "build",
+     "id": "hotwheels_carwash"
+    }
+   ],
+   "taught": [
+    {
+     "id": "hotwheels_carwash",
+     "commands": [
+      "wishbuild hotwheels_carwash"
+     ]
+    }
+   ]
+  },
+  {
+   "wish": "0bc44a2f",
+   "day": "2026-10-03",
+   "source": "TYPED",
+   "made": [
+    {
+     "kind": "build",
+     "id": "hotwheels_carwash"
+    },
+    {
+     "kind": "build",
+     "id": "hotwheels_garage"
+    }
+   ],
+   "existedBefore": [
+    {
+     "kind": "build",
+     "id": "hotwheels_carwash"
+    },
+    {
+     "kind": "build",
+     "id": "hotwheels_garage"
+    }
+   ]
+  },
+  {
+   "wish": "e2d09664",
+   "day": "2026-10-03",
+   "source": "TYPED",
+   "made": [
+    {
+     "kind": "build",
+     "id": "multi_loop_track"
+    }
+   ],
+   "taught": [
+    {
+     "id": "multi_loop_track",
+     "commands": [
+      "wishbuild multi_loop_track"
+     ]
+    }
+   ]
+  },
+  {
+   "wish": "79f64e72",
+   "day": "2026-10-03",
+   "source": "TYPED",
+   "made": [
+    {
+     "kind": "build",
+     "id": "giant_sky_stunt_track"
+    }
+   ],
+   "taught": [
+    {
+     "id": "giant_sky_stunt_track",
+     "commands": [
+      "wishbuild giant_sky_stunt_track"
+     ]
+    }
+   ]
+  },
+  {
+   "wish": "0207d465",
+   "day": "2026-10-03",
+   "source": "TYPED",
+   "made": [
+    {
+     "kind": "build",
+     "id": "racy_cars_parking"
+    }
+   ],
+   "taught": [
+    {
+     "id": "racy_cars_parking",
+     "commands": [
+      "wishbuild racy_cars_parking"
+     ]
+    }
+   ]
+  },
+  {
+   "wish": "e3423f8f",
+   "day": "2026-10-03",
+   "source": "TYPED",
+   "made": [
+    {
+     "kind": "mob",
+     "id": "@spikor"
+    }
+   ],
+   "taught": [
+    {
+     "id": "spikor",
+     "commands": [
+      "wishmob spawn spikor"
+     ]
+    }
+   ]
+  },
+  {
+   "wish": "e97f29eb",
+   "day": "2026-10-03",
+   "source": "TYPED",
+   "made": [
+    {
+     "kind": "item",
+     "id": "gun_hurt"
+    }
+   ],
+   "taught": [
+    {
+     "id": "gun",
+     "commands": [
+      "wishdatapack gun_hurt give"
+     ]
+    }
+   ]
+  },
+  {
+   "wish": "81dbb518",
+   "day": "2026-10-03",
+   "source": "TYPED",
+   "made": [
+    {
+     "kind": "creature",
+     "id": "snaper"
+    }
+   ],
+   "taught": [
+    {
+     "id": "snaper",
+     "commands": [
+      "wishmob spawn snaper"
+     ]
+    }
+   ]
+  }
+ ]
+}

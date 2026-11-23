@@ -1,0 +1,25 @@
+{
+  "_comment": "Which VANILLA item model draws each icon-library sprite (vanilla reads better than our own sprites). A sprite not listed keeps its own dyed picture (no vanilla item fits: cone, cup, drink, machine, pad, pile, shield — the shield's own model is special-rendered — and egg, which the panel colours per creature). Every model named must be a FLAT item model (parent item/generated or item/handheld) on 1.21.4 and 26.2; NativeItemModelsTest reads this file, and tools/gen-carrier-model.py writes the jar's copy from it.",
+  "bases": {
+    "axe": "minecraft:item/iron_axe",
+    "bag": "minecraft:item/bundle",
+    "block": "minecraft:item/brick",
+    "bomb": "minecraft:item/fire_charge",
+    "bottle": "minecraft:item/honey_bottle",
+    "bow": "minecraft:item/bow",
+    "bucket": "minecraft:item/bucket",
+    "coin": "minecraft:item/gold_nugget",
+    "food_round": "minecraft:item/cookie",
+    "hammer": "minecraft:item/mace",
+    "helmet": "minecraft:item/iron_helmet",
+    "key": "minecraft:item/trial_key",
+    "lamp": "minecraft:item/lantern",
+    "orb": "minecraft:item/heart_of_the_sea",
+    "rocket": "minecraft:item/firework_rocket",
+    "snowball": "minecraft:item/snowball",
+    "spear": "minecraft:item/trident",
+    "sword": "minecraft:item/iron_sword",
+    "vehicle": "minecraft:item/minecart",
+    "wand": "minecraft:item/blaze_rod"
+  }
+}

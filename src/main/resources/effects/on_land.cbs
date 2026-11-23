@@ -1,0 +1,24 @@
+# ON LAND — it comes back down after being in the air: a stomp that shakes the ground, a splash, a
+# puff of dust. chunk 3: wishes for a ground-shaking landing, on a mount he jumps or on its own,
+# had no trigger to say WHEN, so agents gave it a slam, which fires whether
+# or not it ever left the ground, and the quake went off every time it stood near a monster.
+#
+# The landing is the creature's own: OnGround turning true after at least ten ticks in the air (a
+# jump is about twelve; stepping off a one-block ledge is about seven, and is not a landing). It
+# fires for his jump on its back, its own leap, a fall.
+#
+# The final executor is each VICTIM, near where it landed: write @s in COMMAND to mean "whoever it
+# lands near". WHO can be a victim is TARGET (default: everything but players), filled in as VICTIMS.
+reset
+    /scoreboard objectives add mfam_landair dummy
+end
+
+clock tick
+    /execute as @e[tag=${TAG},nbt={OnGround:0b}] run scoreboard players add @s mfam_landair 1
+    /execute unless entity @e[tag=${TAG},tag=mfam_veiled,limit=1] as @e[tag=${TAG},nbt={OnGround:1b},scores={mfam_landair=10..}] at @s run particle ${PARTICLE} ~ ~0.2 ~ 1.2 0.1 1.2 0.05 30 force
+    /execute if entity @e[tag=${TAG},tag=mfam_veiled,limit=1] as @e[tag=${TAG},nbt={OnGround:1b},scores={mfam_landair=10..}] at @s run particle ${PARTICLE} ~ ~0.2 ~ 1.2 0.1 1.2 0.05 30 force @a[tag=!mfam_veil_blind]
+    /execute unless entity @e[tag=${TAG},tag=mfam_veiled,limit=1] as @e[tag=${TAG},nbt={OnGround:1b},scores={mfam_landair=10..}] at @s run playsound ${SOUND} master @a ~ ~ ~ 1.2 0.8
+    /execute if entity @e[tag=${TAG},tag=mfam_veiled,limit=1] as @e[tag=${TAG},nbt={OnGround:1b},scores={mfam_landair=10..}] at @s run playsound ${SOUND} master @a[tag=!mfam_veil_blind] ~ ~ ~ 1.2 0.8
+    /execute as @e[tag=${TAG},nbt={OnGround:1b},scores={mfam_landair=10..}] at @s as @e[distance=..${RADIUS},tag=!${TAG},tag=!mfam_flank${VICTIMS}] run ${COMMAND}
+    /execute as @e[tag=${TAG},nbt={OnGround:1b}] run scoreboard players set @s mfam_landair 0
+end

@@ -1,0 +1,9 @@
+# SUMMON — creatures appear. The single biggest item wish there is.
+#
+# The summon line below is repeated COUNT times, built by the tool rather than looped here: COUNT
+# arrives as text at render time, so there is nothing to loop over yet.
+function effect()
+${SUMMONS}
+    /particle minecraft:poof ~ ~0.5 ~ 0.5 0.5 0.5 0.02 30 force
+    /playsound minecraft:entity.illusioner_cast_spell master @a ~ ~ ~ 1 1
+end

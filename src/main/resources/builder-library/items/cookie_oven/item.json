@@ -1,0 +1,19 @@
+{
+ "count": 1,
+ "effects": [
+  "turn_into"
+ ],
+ "id": "cookie_oven_convert",
+ "name": "Cookie Oven",
+ "params": {
+  "FROM": "minecraft:wheat",
+  "TO": "minecraft:cookie",
+  "_kit": {
+   "items": "minecraft:wheat 32"
+  }
+ },
+ "parts": [],
+ "properties": {},
+ "shape": "machine",
+ "variants": []
+}

@@ -1,0 +1,19 @@
+# LAUNCH — it flings things into the sky, and they survive the landing.
+#
+# SLOW FALLING IS NOT OPTIONAL. "make the monster launch me way up in the SKY" is a wish for the
+# flight, not for the death at the end of it, and at POWER=huge the drop is lethal. The effect
+# catalogue learned this the same way.
+#
+# HOW IT MOVES A PLAYER. Motion set by command does nothing to a PLAYER — the client simulates its
+# own movement and overwrites it — so a launch pad went off with a poof and left the child standing
+# on it (found by filming a real client; every server-side test passed, because a mock
+# player DOES take Motion). A player gets a one-second LEVITATION burst instead: the client runs
+# status effects itself, so it lifts a stock client too. LIFT is sized from POWER to throw a player
+# about as high as MOTION throws a mob. Mobs keep Motion, which moves them properly.
+function effect()
+    /execute as ${TARGET} unless entity @s[type=minecraft:player] run data modify entity @s Motion set value [0.0d,${MOTION}d,0.0d]
+    /execute as ${TARGET} if entity @s[type=minecraft:player] run effect give @s minecraft:levitation 1 ${LIFT} true
+    /execute as ${TARGET} run effect give @s minecraft:slow_falling 12 0 true
+    /particle minecraft:cloud ~ ~0.2 ~ 0.5 0.1 0.5 0.05 30 force
+    /playsound minecraft:entity.breeze.jump master @a ~ ~ ~ 1 1
+end

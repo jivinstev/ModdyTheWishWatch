@@ -1,0 +1,1194 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// NeoForge mod (Minecraft 1.21.8) — build, deploy, and TEST system.
+//
+// Everything here is parameterized by gradle.properties (mod_id, versions, flags),
+// so you can rename the mod without touching this file. The three test gates:
+//
+//   ./gradlew test                 # Gate A — pure JUnit (no Minecraft boot)
+//   ./gradlew runGameTestServer    # Gate B — headless dedicated server @GameTests
+//   ./tools/run-client-test.command # Gate C — real client (see tools/ + docs/TESTING.md)
+//
+// Build + install to your live instance:  ./gradlew deployToMods
+// ─────────────────────────────────────────────────────────────────────────────
+plugins {
+    id 'java-library'
+    id 'maven-publish'
+    id 'net.neoforged.gradle.userdev' version '7.1.39'
+    // Gate A retries a failed test ONCE (gate-a.gradle: maxRetries 1, maxFailures 5, recorded, never hidden)
+    id 'org.gradle.test-retry' version '1.6.6'
+}
+
+// ── ONE TARGET: Minecraft 1.21.8 (was 1.21.4, D13). The 1.21.1 compat build, its rename pipeline and Create
+// were PARKED on 2026-10-15 (branch parked/create-trains-mc1.21.1, docs/PARKED_CREATE_TRAINS_1211.md).
+// The version keys live in versions/1.21.8.properties; `mcDefault` stays the one place the target is
+// NAMED, because other tools read it from this file.
+ext.mcDefault = '1.21.8'
+ext.mcTarget = ext.mcDefault
+if (project.hasProperty('mc') && project.property('mc').toString() != ext.mcDefault) {
+    throw new GradleException("-Pmc=${project.property('mc')}: this tree builds Minecraft ${ext.mcDefault} only. " +
+        "The 1.21.1 compat build (and Create, which needs it) is parked on branch parked/create-trains-mc1.21.1 (#1584).")
+}
+def mcProps = new Properties()
+file("versions/${ext.mcTarget}.properties").withInputStream { mcProps.load(it) }
+mcProps.each { k, v -> ext.set(k.toString(), v.toString()) }
+logger.lifecycle("moddingfromamod -> Minecraft ${minecraft_version} (NeoForge ${neo_version}, Java ${java_version})")
+
+// the STORE jar from a plain build. The public repo's gradle.properties says store_jar=true
+// (tools/public-tree.py writes it; this repo says false), so there `./gradlew build` -- which is all MMVU's Port CI runs --
+// makes the jar tools/store-release.sh checks: version <mod_version>+mc<minecraft_version> (D25) and the Apprentice's
+// sentence model inside (D13, the storeApprenticeModel task below). -Pstore_jar=false builds a plain jar there.
+// A mod_version that already carries a '+' (store-release.sh passes -Pmod_version=1.0.0+mc1.21.8) is left as it is.
+ext.storeJar = (project.findProperty('store_jar') ?: 'false').toString() == 'true'
+if (ext.storeJar && !mod_version.toString().contains('+')) {
+    ext.set('mod_version', "${mod_version}+mc${minecraft_version}".toString())
+}
+version = mod_version
+group = mod_group_id
+
+base {
+    archivesName = mod_id
+}
+
+java.toolchain.languageVersion = JavaLanguageVersion.of(java_version as int)
+
+// javac PRINTS only 100 errors by default, so a port's real backlog reads as exactly "100" and a
+// burn-down measured against it means nothing (migrator section X5/X6). Costs nothing when green.
+tasks.withType(JavaCompile).configureEach { options.compilerArgs += ['-Xmaxerrs', '5000'] }
+
+sourceSets.main.resources {
+    srcDir('src/generated/resources')
+    exclude("src/generated/**/.cache")
+}
+
+// TRANSITIONAL: private packages move into house/ while still shipping in THIS jar. The root build compiles
+// house/src/main/java and house/src/test/java into the core's own source sets, and processResources copies
+// house/src/main/resources, so where a private file lives changes nothing the jar carries. What is the house mod's
+// OWN (its @Mod and plug-in in com/moddingfromamod/house/, its mods.toml, services entry and mixin config) is left
+// out: that is for house/'s own build, and a second @Mod in the core jar would be a second mod. The public half
+// (gate-a.gradle's compilePublicJava, publicTest) reads src/ only, so it never sees house/. A package must not be
+// split between src/ and house/ once house/ is its own jar (house/README.md); while the core compiles both, it may.
+//
+// The same holds for each LEVEL jar (levels/<name>/): its packages ship in this jar until
+// the flip, its own @Mod class (com/moddingfromamod/levels/**), mods.toml, services entry and mixin config do not.
+def HOUSE_OWN_JAVA = ['com/moddingfromamod/house/**', 'com/moddingfromamod/levels/**']
+def HOUSE_OWN_RESOURCES = ['META-INF/**', 'moddyhouse.mixins.json', 'moddy*.mixins.json']
+def LEVEL_TREES = (file('levels').listFiles() ?: [] as File[]).findAll { new File(it, 'src').isDirectory() }
+        .sort { it.name }.collect { "levels/${it.name}" }
+def EXTRA_TREES = ['house'] + LEVEL_TREES
+sourceSets.main.java {
+    EXTRA_TREES.each { srcDir("${it}/src/main/java") }
+    exclude(HOUSE_OWN_JAVA)
+}
+sourceSets.test.java {
+    EXTRA_TREES.each { srcDir("${it}/src/test/java") }
+}
+
+repositories {
+    maven { name = 'NeoForged'; url = 'https://maven.neoforged.net/releases' }
+    maven { name = 'Minecraft Libraries'; url = 'https://libraries.minecraft.net' }
+    maven { name = 'GeckoLib'; url = 'https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/' }
+    mavenCentral()
+}
+
+// Shell out to git for the gate-history provenance, and NEVER fail the build over it: a checkout
+// with no .git (a tarball, a release zip) must still be able to run its gates.
+def gitOrEmpty(List<String> cmd) {
+    try {
+        def out = new ByteArrayOutputStream()
+        def err = new ByteArrayOutputStream()
+        def p = new ProcessBuilder(cmd).directory(projectDir).start()
+        p.waitForProcessOutput(out, err)
+        return p.exitValue() == 0 ? out.toString().trim() : ''
+    } catch (Exception ignored) {
+        return ''
+    }
+}
+
+// ──: the Apprentice's sentence model on LOCAL installs and dev runs ─────────────────────────
+// The trained layer reads a ~90 MB model that is NOT in the jar. A dedicated server's install fetches
+// it; nothing here did, so a
+// singleplayer world, `runClient` and every Gate C film answered with keywords alone and said so only in
+// a log line. One machine-wide cache, filled by the sha-pinned tools/fetch-apprentice-model.sh:
+//   ./gradlew apprenticeModel     fill it (deployToMods does too)
+// `runClient` and `runServer` read it when it is there. `runGameTestServer` does NOT, on purpose: Gate B
+// must not depend on a download (ApprenticeGameTest has its own reader). MODDY_APPRENTICE_MODEL=off (env or
+// .env.local) turns all of it off; MODDY_APPRENTICE_MODEL_CACHE moves the cache.
+def apprenticeModelOff() {
+    return (System.getenv('MODDY_APPRENTICE_MODEL') ?: readEnvLocal('MODDY_APPRENTICE_MODEL') ?: '') == 'off'
+}
+def apprenticeModelCache() {
+    def v = System.getenv('MODDY_APPRENTICE_MODEL_CACHE') ?: readEnvLocal('MODDY_APPRENTICE_MODEL_CACHE')
+    return new File(v ?: "${System.getProperty('user.home')}/.cache/moddy/apprentice-model")
+}
+/** tools/fetch-apprentice-model.sh DIR, with URL as its source when given; [exit code, its last line]. Never throws. */
+def fetchApprenticeModel(File dir, String url) {
+    try {
+        def pb = new ProcessBuilder('bash', file('tools/fetch-apprentice-model.sh').absolutePath, dir.absolutePath)
+        pb.directory(projectDir)
+        pb.redirectErrorStream(true)
+        if (url) {
+            pb.environment().put('MODDY_APPRENTICE_MODEL_URL', url)
+        }
+        def proc = pb.start()
+        def out = proc.inputStream.getText('UTF-8').trim()
+        def rc = proc.waitFor()
+        def lines = out.readLines()
+        return [rc, lines ? lines[-1] : '']
+    } catch (Exception e) {
+        return [2, "could not run tools/fetch-apprentice-model.sh: ${e.message}"]
+    }
+}
+
+runs {
+    configureEach {
+        // ONNX Runtime is a plain library, not a mod: it must be put on each RUN's classpath by name.
+        // `implementation` alone compiles and then fails at run time with NoClassDefFoundError; so does jarJar alone.
+        dependencies { runtime "com.microsoft.onnxruntime:onnxruntime:1.32.0" }
+        systemProperty 'forge.logging.markers', 'REGISTRIES'
+        systemProperty 'forge.logging.console.level', 'debug'
+        // PARALLEL RUNS. Every run otherwise shares run/<name> — the same options.txt, the same
+        // saves folder, the same latest.log — so two clients at once quietly corrupt each other's
+        // world and interleave their logs. -Prundir gives a run its own directory.
+        //
+        // Set HERE rather than inside the client block on purpose: configureEach is applied when
+        // each run is realised, so an override in the block below could be undone depending on
+        // ordering. One place, no ambiguity.
+        //
+        // The agent port needed no equivalent flag — a test run already defaults to an OS-assigned
+        // ephemeral port (McpHttpServer#portFor), which was designed for exactly this.
+        workingDirectory project.layout.projectDirectory.dir('run')
+                .dir(project.hasProperty('rundir') ? project.property('rundir').toString() : name)
+        modSource project.sourceSets.main
+        // the GameTest harness's own mixins (testing/mixin: one test's crash fails that test, a timeout is also
+        // wall-clock) are a TEST-ONLY config, registered on every dev run by FML's --fml.mixinConfig and never in
+        // neoforge.mods.toml. The jar leaves the config and the classes out (SHIP_EXCLUDES, checked by NEVER_SHIP),
+        // so a player's game, a house and a store jar never carry them; Gate B (runGameTestServer) always does.
+        // It sits in gametest/, below the resources root: a mixin-config check that reads top-level configs and counts
+        // only neoforge.mods.toml declarations (the Port CI kit's) would take this dev-run config for one that never loads.
+        arguments.addAll '--fml.mixinConfig', "gametest/${project.mod_id}.gametest.mixins.json".toString()
+    }
+
+    client {
+        // the Apprentice's trained layer, as a dedicated server has it (never for gameTestServer, see above).
+        if (!apprenticeModelOff() && new File(apprenticeModelCache(), 'model.onnx').isFile()) {
+            systemProperty 'moddingfromamod.apprenticeModelDir', apprenticeModelCache().absolutePath
+        }
+        systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+
+        // Agent port: this run needs NO mcp.port flag. RunContext sees -Pboottest and WishAgent
+        // defaults the endpoint to an OS-assigned ephemeral port, NOT the live-game DEFAULT_PORT
+        // (25585) — so a client test running the real agent can never contend for the port a child's
+        // live session holds, and several branches can run client tests at once without colliding.
+        // (A live play session isn't a test run, so it keeps 25585.)
+
+        // ── Gate C: client-test hook ──────────────────────────────────────────
+        // Some bugs only exist on a REAL client (sounds, rendering, GUIs, creative
+        // tabs) or only in SINGLEPLAYER (client + integrated server in one process).
+        // A headless GameTest structurally cannot see those. These -P flags become
+        // "${mod_id}.*" system properties that a @EventBusSubscriber(Dist.CLIENT)
+        // test reads to activate itself. WITHOUT this mapping the test never runs and
+        // the client just sits at the title screen (a silent hang — easy to miss).
+        //
+        //   -Pboottest              activate the client test
+        //   -Ptestmode=<mode>       which scenario to run
+        //   -Psigdir=<dir>          where to write PASS/FAIL + captured data
+        //   -Pexpectmods="a,b"      what this run MEANT to boot -> ${mod_id}.expectmods
+        //   -Ptestprops="a=1,b=2"   ARBITRARY extra knobs -> ${mod_id}.a, ${mod_id}.b
+        //                           (use for per-feature toggles/A-B seams; no build.gradle
+        //                            edit needed when you add a new test)
+        // ── -Pquickjoin=host:port ─────────────────────────────────────────────
+        // Send the DEV client straight into a multiplayer server on launch, so a "does a
+        // modded and an unmodded client work in the same world" run does not need a human
+        // to click through the server list. Vanilla's own launcher argument; absent, the
+        // client behaves exactly as before. Added 's mixed-session question.
+        if (project.hasProperty('quickjoin')) {
+            argument '--quickPlayMultiplayer'
+            argument project.property('quickjoin').toString()
+        }
+        // ── -Pquickplay=<world> ───────────────────────────────────────────────
+        // The same for SINGLE-PLAYER: straight into the save `run/saves/<world>` (vanilla's own launcher argument), so a
+        // build with no client harness at all — the public cut, — can be shown opening a world.
+        if (project.hasProperty('quickplay')) {
+            argument '--quickPlaySingleplayer'
+            argument project.property('quickplay').toString()
+        }
+        // ── -Pwindow=<w>x<h> ──────────────────────────────────────────────────
+        // The client window's size in points, through vanilla's own --width/--height launch
+        // arguments (options.txt's overrideWidth does not size the window). A camera client
+        // films a portrait 9:16 short at 540x960 (1080x1920 on a 2x display).
+        if (project.hasProperty('window')) {
+            def wh = project.property('window').toString().split('x')
+            argument '--width'
+            argument wh[0]
+            argument '--height'
+            argument wh[1]
+        }
+        // ── -Pusername=<name> ─────────────────────────────────────────────────
+        // TWO modded clients in one world need two names: NeoGradle's dev client is always
+        // "Dev", and a server refuses a second player with a name and UUID it already has —
+        // so without this the second child is not a second child, it is a failed login. Added
+        // (two children, one world).
+        if (project.hasProperty('username')) {
+            argument '--username'
+            argument project.property('username').toString()
+        }
+        if (project.hasProperty('boottest')) systemProperty "${project.mod_id}.boottest", 'true'
+        if (project.hasProperty('testmode')) systemProperty "${project.mod_id}.testmode", project.property('testmode')
+        if (project.hasProperty('sigdir'))   systemProperty "${project.mod_id}.sigdir", project.property('sigdir')
+        // WHAT THIS RUN MEANT TO BOOT. Its own property rather than a testprops key
+        // because the value is a comma-separated LIST and testprops splits on commas.
+        if (project.hasProperty('expectmods')) {
+            systemProperty "${mod_id}.expectmods", project.expectmods.toString()
+        }
+        if (project.hasProperty('testprops')) {
+            project.testprops.split(',').each { pair ->
+                def kv = pair.trim().split('=', 2)
+                if (kv.length == 2 && kv[0]) {
+                    systemProperty "${project.mod_id}.${kv[0].trim()}", kv[1].trim()
+                }
+            }
+        }
+    }
+
+    server {
+        // the Apprentice's trained layer, as a dedicated server has it (never for gameTestServer, see above).
+        if (!apprenticeModelOff() && new File(apprenticeModelCache(), 'model.onnx').isFile()) {
+            systemProperty 'moddingfromamod.apprenticeModelDir', apprenticeModelCache().absolutePath
+        }
+        systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+        argument '--nogui'
+        // The SAME arbitrary-knob mapping the client and gameTestServer runs have. Without it a
+        // real dedicated server is the ONE run config that cannot be configured, which is exactly
+        // the run the headless wish rung needs (HeadlessWishProbe): it wants a wish, a signal dir
+        // and -Pagent=on, and a GameTest server cannot host that rung because it ticks as fast as
+        // it can and a real agent takes minutes of wall-clock.
+        //   ./gradlew runServer -Ptestprops="agent=on,headlesswish=<base64>,headlesswishsig=/tmp/x"
+        // WHAT THIS RUN MEANT TO BOOT. Its own property rather than a testprops key
+        // because the value is a comma-separated LIST and testprops splits on commas.
+        if (project.hasProperty('expectmods')) {
+            systemProperty "${mod_id}.expectmods", project.expectmods.toString()
+        }
+        if (project.hasProperty('testprops')) {
+            project.testprops.split(',').each { pair ->
+                def kv = pair.trim().split('=', 2)
+                if (kv.length == 2 && kv[0]) {
+                    systemProperty "${project.mod_id}.${kv[0].trim()}", kv[1].trim()
+                }
+            }
+        }
+    }
+
+    // Gate B — boots a GAME TEST server (a dedicated one until 1.21.4), runs every @GameTest, exits non-zero on failure.
+    gameTestServer {
+        // SHARDING. Gate B's batches are strictly sequential inside one server (runBatch(i) starts
+        // i+1 only when i finishes), so the only way to overlap them is to boot two servers over
+        // disjoint namespaces. -Pshard picks one; absent, every shard runs, so a bare
+        // `./gradlew runGameTestServer` keeps meaning "the whole suite". Pair it with -Prundir
+        // (configureEach, above) when running two at once — they cannot share run/, and a second
+        // server in the same directory dies on session.lock while Gradle still prints BUILD
+        // SUCCESSFUL with zero tests executed. tools/gate-b.sh does both for you.
+        //   ./gradlew runGameTestServer                       # everything, one server
+        //   ./gradlew runGameTestServer -Pshard=ci -Prundir=gtCi
+        // See com.moddingfromamod.testing.GateShards and docs/GATE_PERFORMANCE.md. (removed
+        // the `trains` and `create` shards with the Create mod; the parked branch
+        // parked/create-trains-mc1.21.1 still has them.)
+        def shardNames = ['default': 'moddingfromamod', 'ci': 'moddingfromamod_ci']
+        // -Pshard takes a COMMA-SEPARATED LIST: `ci,default` is ONE server running both
+        // namespaces, one boot rather than two.
+        def wanted = project.hasProperty('shard') ? project.property('shard').toString().trim() : ''
+        if (wanted && wanted != 'all') {
+            def picked = wanted.split(',').collect { it.trim() }.findAll { it }
+            def unknown = picked.findAll { !shardNames.containsKey(it) }
+            if (unknown) {
+                throw new GradleException("unknown -Pshard=${unknown.join(',')}; expected any of "
+                        + shardNames.keySet().join(', ') + " (comma-separated), or 'all'")
+            }
+            systemProperty 'neoforge.enabledGameTestNamespaces',
+                    picked.collect { shardNames[it] }.join(',')
+        } else {
+            systemProperty 'neoforge.enabledGameTestNamespaces', shardNames.values().join(',')
+        }
+        // -Pgametests=A,B,C runs only those GameTest classes (GameTestClassFilter, via
+        // GameTestRegistryMixin). tools/gate-b.sh passes gate-select.py --policy targeted's list.
+        if (project.hasProperty('gametests')) {
+            systemProperty "${project.mod_id}.gameTestClasses", project.property('gametests').toString()
+        }
+        // G2: the branch's gate-relevant patch id (gate-select.py --patch-id), recorded so a
+        // green run of the same patch is REUSED after a base merge instead of re-run.
+        // The flake register's tests, left out of a release/main run (tools/gate-flakes.py, GameTestClassFilter.EXCLUDE).
+        if (project.hasProperty('gateexclude')) {
+            systemProperty "${project.mod_id}.gameTestExclude", project.property('gateexclude').toString()
+        }
+        // -Pbedrockonly=a,b — of the Bedrock batch, only these cases (the coverage map's pick for a change).
+        if (project.hasProperty('bedrockonly')) {
+            systemProperty "${project.mod_id}.bedrockOnly", project.property('bedrockonly').toString()
+        }
+        // -Pgateprobe=DIR switches on ops/GateRetryProbeGameTest (fails once / always / hangs once), the
+        // real-server proof of gate-b.sh's one retry and hang watchdog. Never set by a gate; inert without it.
+        if (project.hasProperty('gateprobe')) {
+            systemProperty "${project.mod_id}.gateprobe", project.property('gateprobe').toString()
+        }
+        if (project.hasProperty('gatepatch')) {
+            systemProperty "${project.mod_id}.gatepatch", project.property('gatepatch').toString()
+        }
+        // The coverage-mapping run (tools/gate-covmap.sh, docs/GATE_COVERAGE_MAP.md): -Pcovagent is the
+        // JaCoCo agent jar, -Pcovmap the directory testing.gt.CoverageMap writes one .exec per
+        // GameTest class into. output=none: the mod dumps at class boundaries, the agent never does.
+        if (project.hasProperty('covagent')) {
+            jvmArguments.add("-javaagent:${project.property('covagent')}=output=none,includes=com.moddingfromamod.*")
+            systemProperty "${project.mod_id}.covmap", project.property('covmap').toString()
+        }
+        // THE HEAP IS NAMED, AND RUNNING OUT OF IT ENDS THE RUN (2026-11-20, docs/GATE_FLAKES_2026-11-20.md §3). With no
+        // -Xmx the JVM takes a quarter of the machine: 2 GB on the release builder (E2_HIGHCPU_8, 8 GB), beside Gradle
+        // and the Bedrock stack, against 3.9 GB in a 15 GB dev container. The 11-18 nightly ran out there: a light worker
+        // died of an OutOfMemoryError and the Server thread waited for its chunk until the build's 80-minute bound,
+        // which read as a hang with no cause. One size everywhere, so a run here measures what the builder gets, and an
+        // OOM exits the JVM at once (gate-b.sh prints the line) instead of leaving a dead worker behind. -Pgateheap
+        // overrides; -Pgclog=FILE writes the GC log a sizing decision is read from.
+        jvmArguments.add("-Xmx${project.findProperty('gateheap') ?: '3g'}")
+        jvmArguments.add('-XX:+ExitOnOutOfMemoryError')
+        if (project.hasProperty('gclog')) {
+            jvmArguments.add("-Xlog:gc:file=${project.property('gclog')}:time,uptime")
+        }
+        // Ephemeral agent port: a FIXED port can't be bound twice, so without this the gates fail
+        // spuriously whenever a real game is already running. Tests read the actual bound port.
+        systemProperty "${project.mod_id}.mcp.port", '0'
+
+        // PROVENANCE FOR THE HISTORY ROW. Which commit a result belongs to has to be captured when
+        // the gate RUNS, not when the row is later folded in — those can be hours and several
+        // commits apart. Absent (a tarball, no git), the record writes null rather than guessing:
+        // a history that quietly attributes a failure to the wrong commit is worse than one that
+        // admits it does not know. See docs/GATE_HISTORY.md.
+        systemProperty "${project.mod_id}.gitcommit", gitOrEmpty(['git', 'rev-parse', 'HEAD'])
+        systemProperty "${project.mod_id}.gitdirty",
+                gitOrEmpty(['git', 'status', '--porcelain']).isEmpty() ? 'false' : 'true'
+        // Run ONE corpus case with the staged runner to itself. See StressGameTest: it is how you
+        // tell "the runner's environment breaks this machine" from "one of the five machines
+        // sharing its column does".
+        if (project.hasProperty('onlycase')) {
+            systemProperty "${project.mod_id}.onlycase", project.property('onlycase')
+        }
+        // GATE B IS HERMETIC TOO -- the same rule Gate A has carried since, and Gate B never
+        // did. CharacterResolver shells out to the `claude` CLI, and ClaudeCli.resolve() finds one
+        // even when `claude` is not on PATH (the VS Code extension ships a binary that a developer
+        // machine has whether or not anybody asked for it), so a Gate B run could make live model
+        // calls: intermittent reds, sensitivity to machine load, and a suite whose duration depends
+        // on somebody else's API latency.
+        //
+        // It is NOT firing today -- measured 2026-09-01, CharacterResolver ran 0 times in a
+        // full run -- which is exactly why it is worth closing now rather than after the first
+        // agent GameTest that does reach it. A gate that is hermetic by accident stops being
+        // hermetic the day someone adds a test, and the symptom then is a flake in an unrelated
+        // file. `aMissingCliIsSurvivable` already asserts the null path is fine.
+        //
+        // Set BEFORE the testprops loop so `-Ptestprops="cli=/path/to/claude"` still wins, which is
+        // how you deliberately run the real thing.
+        systemProperty "${project.mod_id}.cli", 'none'
+        // The same for MUSE CODE (agent/MuseExec): a grader whose model is `muse:…` must not reach
+        // a real `muse` from a test. `none` is no binary, so a Muse grade falls back to the CLI above.
+        systemProperty "${project.mod_id}.muse.bin", 'none'
+
+        // The SAME arbitrary-knob mapping the client run has. Gate B needs it for the concurrency
+        // A/B seam: -Ptestprops="wishslots=3" must reach a headless run too, or a concurrency bug
+        // can only ever be reproduced in a 15-minute client test.
+        // WHAT THIS RUN MEANT TO BOOT. Its own property rather than a testprops key
+        // because the value is a comma-separated LIST and testprops splits on commas.
+        if (project.hasProperty('expectmods')) {
+            systemProperty "${mod_id}.expectmods", project.expectmods.toString()
+        }
+        if (project.hasProperty('testprops')) {
+            project.testprops.split(',').each { pair ->
+                def kv = pair.trim().split('=', 2)
+                if (kv.length == 2 && kv[0]) {
+                    systemProperty "${project.mod_id}.${kv[0].trim()}", kv[1].trim()
+                }
+            }
+        }
+    }
+
+}
+// The datagen run's TYPE is per target: NeoForge 21.4 split `data` into clientData/serverData
+// (migrator U1 -- on 1.21.4 an unknown type fails at CONFIGURATION, reading like noise).
+project.data_run_types.split(',').each { String rt ->
+    runs.register(rt.trim()) {
+        arguments.addAll '--mod', project.mod_id, '--all',
+            '--output', file('src/generated/resources/').getAbsolutePath(),
+            '--existing', file('src/main/resources/').getAbsolutePath()
+    }
+}
+
+// ---------------------------------------------------------------------------------------------
+// The Gate-B world is EPHEMERAL, so start every run from an empty one.
+//
+// It is never cleared otherwise, and it does not grow gently: the suite plants its tests at
+// coordinates millions of blocks apart, so a run touches ~1220 fresh region files that each cost a
+// minimum allocation -- about 500MB per run, accumulating forever. Left alone it reached 26GB here
+// and filled the disk.
+//
+// What that looked like is the reason this is worth a task rather than a note in a README. It did
+// NOT present as "out of disk". It presented as one contraption test failing, on a suite that had
+// slowed from 2 minutes to 48 -- because every chunk save was failing and retrying -- and the
+// failure was convincing enough to be filed as a code bug against the wrong commit. The
+// runtime IS the symptom: if Gate B takes dramatically longer than ~2 minutes, suspect the disk.
+//
+// Deliberately BEFORE the run, not after: the world from the run that just failed is still there to
+// examine, while growth is bounded at one run instead of unbounded. Deliberately gameTestServer
+// ONLY -- runClient/runServer worlds are dev worlds someone may have built something in, and this
+// is not entitled to delete those.
+//
+// Safe to wipe wholesale: nothing carries over between runs. Verified by deleting the full 26GB
+// world and watching all 233 tests pass.
+// ---------------------------------------------------------------------------------------------
+tasks.matching { it.name == 'runGameTestServer' }.configureEach { runTask ->
+    doFirst {
+        // Ask the RUN where its world is; do not hardcode run/gameTestServer. `-Prundir` moves the
+        // working directory (see the runs block, where parallel runs each get their own), and a
+        // hardcoded path under it would clear an absent directory, report nothing, and leave the
+        // real world growing -- the silent no-op this task exists to prevent, reintroduced by the
+        // task itself.
+        def base = runTask.hasProperty('workingDir') && runTask.workingDir
+                ? runTask.workingDir
+                : file('run/gameTestServer')
+        // NeoForge 21.4 ran Gate B on a DEDICATED server, which writes server.properties at
+        // boot, and DeploymentGuard's checks read it (HomeOpsGameTest asserts they ran). 21.8 runs a
+        // vanilla GameTestServer, which writes nothing — so seed the file the dedicated server left,
+        // with RCON off, as a fresh dedicated server's own defaults have it.
+        base.mkdirs()
+        def props = new File(base, 'server.properties')
+        if (!props.exists()) {
+            props.text = "# seeded by build.gradle for Gate B (#1786): what a dedicated server wrote on 1.21.4\n" +
+                    "enable-rcon=false\nonline-mode=true\n"
+        }
+        def world = new File(base, 'world')
+        if (!world.exists()) {
+            return
+        }
+        // -Pkeepworld: boot on the world the LAST run left (an earlier issue's two-process restart proof,
+        // docs/WISH_STORES.md §21). Opt-in and loud; never on a gate's own run.
+        if (project.hasProperty('keepworld')) {
+            logger.lifecycle("Gate B: KEEPING ${world} (-Pkeepworld) — this run boots on the last run's world")
+            return
+        }
+        long bytes = 0
+        world.eachFileRecurse { f -> if (f.isFile()) { bytes += f.length() } }
+        long mb = bytes >> 20
+        delete world
+        // Loud on purpose, and it names the directory: a silent reclaim of several GB is
+        // indistinguishable from a task that has quietly stopped matching, and a reclaim from the
+        // WRONG directory is indistinguishable from a correct one unless the path is printed.
+        logger.lifecycle("Gate B: cleared ${world} (${mb} MB reclaimed)")
+    }
+}
+
+// ---------------------------------------------------------------------------------------------
+// A DEV SERVER MUST NOT PAUSE WHEN EMPTY (T11, 1.21.4).
+//
+// 1.21.2 added `pause-when-empty-seconds` (default 60): a dedicated server with nobody in the
+// player list stops TICKING. Queued tasks still run, so a wish is still granted, but every tick
+// handler goes quiet. Every headless rung here has nobody online by construction (the
+// HeadlessWishProbe's submitter is a FakePlayer, which is not in the player list). Measured on
+// the first 1.21.4 Gate C½: the log said `Server empty for 60 seconds, pausing` at 00:05:15, the
+// wish reached DONE in the book at 00:05:31, and the probe's tick-driven watcher never ran again,
+// so no verdict was written and the run looked hung for fifteen minutes.
+//
+// Seeded before every runServer. This is the DEV run only. A real server's own server.properties may keep vanilla's
+// default (pausing an empty server) — and the mod itself keeps an empty server ticking
+// while a wish is unsettled (KeepTicking), so such a server no longer pauses mid-wish.
+// `-PpauseWhenEmpty=N` seeds N instead of 0, to reproduce such a server's setting (the A/B for that fix: `-PpauseWhenEmpty=5`).
+// ---------------------------------------------------------------------------------------------
+tasks.matching { it.name == 'runServer' }.configureEach { runTask ->
+    doFirst {
+        def base = runTask.hasProperty('workingDir') && runTask.workingDir
+                ? runTask.workingDir
+                : file("run/server")
+        base.mkdirs()
+        def props = new File(base, 'server.properties')
+        def key = 'pause-when-empty-seconds'
+        def want = project.hasProperty('pauseWhenEmpty') ? project.property('pauseWhenEmpty').toString() : '0'
+        def lines = props.exists() ? props.readLines() : []
+        def kept = lines.findAll { !it.startsWith(key + '=') }
+        if (lines.contains(key + '=' + want) && kept.size() == lines.size() - 1) {
+            return
+        }
+        props.text = (kept + [key + '=' + want]).join(System.lineSeparator()) + System.lineSeparator()
+        logger.lifecycle("runServer: set ${key}=${want} in ${props}"
+                + (want == '0' ? " (a headless rung has nobody online)" : " (-PpauseWhenEmpty)"))
+    }
+}
+
+configurations {
+    // The seam that lets us boot OTHER prebuilt mod jars alongside ours (see -Psmokejars).
+    runtimeClasspath.extendsFrom localRuntime
+}
+
+// a bundled jar's native DEBUG data never ships. jarJar resolves its configuration through an artifact view, so
+// asking that configuration for NATIVE_DEBUG_STRIPPED=true makes Gradle run every nested jar through this transform
+// (artifactTypes marks plain jars false). A jar with no *.dSYM/ entry passes through untouched; one with them is
+// rewritten without them, under its own file name, every other entry (natives, classes, licence and notice files, the
+// manifest) copied byte for byte in its original order. The module identity jarJar's metadata reads is unchanged.
+def NATIVE_DEBUG_STRIPPED = Attribute.of('moddingfromamod.nativeDebugStripped', Boolean)
+abstract class StripNativeDebugInfo implements TransformAction<org.gradle.api.artifacts.transform.TransformParameters.None> {
+    static final java.util.regex.Pattern DEBUG = ~/(^|.*\/)[^\/]+\.dSYM(\/.*)?$/
+    @InputArtifact @PathSensitive(PathSensitivity.NAME_ONLY)
+    abstract Provider<FileSystemLocation> getInputArtifact()
+    @Override
+    void transform(TransformOutputs outputs) {
+        File input = inputArtifact.get().asFile
+        boolean any = false
+        new java.util.zip.ZipFile(input).withCloseable { z -> any = z.entries().any { e -> DEBUG.matcher(e.name).matches() } }
+        if (!any) { outputs.file(inputArtifact); return }
+        File out = outputs.file(input.name)
+        new java.util.zip.ZipFile(input).withCloseable { z ->
+            new java.util.zip.ZipOutputStream(new FileOutputStream(out)).withCloseable { zo ->
+                zo.setLevel(java.util.zip.Deflater.BEST_COMPRESSION)
+                z.entries().each { e ->
+                    if (DEBUG.matcher(e.name).matches()) return
+                    def copy = new java.util.zip.ZipEntry(e.name)
+                    copy.time = e.time
+                    zo.putNextEntry(copy)
+                    if (!e.directory) z.getInputStream(e).withCloseable { zo << it }
+                    zo.closeEntry()
+                }
+            }
+        }
+    }
+}
+
+dependencies {
+    implementation "net.neoforged:neoforge:${neo_version}"
+
+    // GeckoLib (optional — flip uses_geckolib=true in gradle.properties).
+    // Compiled against AND bundled via JarJar, so the shipped jar runs without the
+    // player installing GeckoLib separately.
+    if (project.uses_geckolib.toBoolean()) {
+        implementation "software.bernie.geckolib:geckolib-neoforge-${minecraft_version}:${geckolib_version}"
+        jarJar("software.bernie.geckolib:geckolib-neoforge-${minecraft_version}") {
+            version {
+                strictly "[${geckolib_version},)"
+                prefer "${geckolib_version}"
+            }
+        }
+    }
+
+    // A WEBP DECODER. Compiled against AND bundled via JarJar, so a player's jar can read
+    // the artwork without installing anything. See gradle.properties for why this is not
+    // optional: every Fandom-hosted wiki serves WebP, which is where the meme characters
+    // are, and ReferenceImages.TYPES intersects with what ImageIO can actually decode --
+    // so with no reader the format is dropped silently and the palette is never measured.
+    implementation "com.twelvemonkeys.imageio:imageio-webp:${twelvemonkeys_version}"
+    for (String lib : ['imageio-webp', 'imageio-core', 'imageio-metadata']) {
+        jarJar("com.twelvemonkeys.imageio:${lib}") {
+            version {
+                strictly "[${twelvemonkeys_version},)"
+                prefer "${twelvemonkeys_version}"
+            }
+        }
+    }
+    // imageio-core pulls these two; JarJar needs them named to nest them.
+    for (String lib : ['common-lang', 'common-io', 'common-image']) {
+        jarJar("com.twelvemonkeys.common:${lib}") {
+            version {
+                strictly "[${twelvemonkeys_version},)"
+                prefer "${twelvemonkeys_version}"
+            }
+        }
+    }
+
+    // The Apprentice's trained layer: ONNX Runtime's Java package runs the frozen sentence model on the
+    // server. A JNI library, MIT; its natives are inside its jar (resources apprentice/onnxruntime.NOTICE.txt). Three declarations are
+    // needed and each one alone fails differently: this one compiles, the `runs` one above puts it on a dev run's
+    // classpath, and jarJar ships it inside our jar (it needs a version RANGE or the metadata task refuses it).
+    implementation "com.microsoft.onnxruntime:onnxruntime:1.32.0"
+    jarJar("com.microsoft.onnxruntime:onnxruntime") {
+        version {
+            strictly "[1.31.1,)"
+            prefer "1.31.1"
+        }
+    }
+    // what jarJar nests goes through StripNativeDebugInfo (below), which drops native DEBUG bundles (*.dSYM/)
+    // from a bundled jar. ONNX Runtime's osx-aarch64 natives ship theirs: 60 MB raw, 11.8 MB of the store jar, read
+    // only by someone symbolicating a native crash. Every library, class and licence file is kept.
+    attributesSchema { attribute(NATIVE_DEBUG_STRIPPED) }
+    artifactTypes.getByName('jar').attributes.attribute(NATIVE_DEBUG_STRIPPED, false)
+    registerTransform(StripNativeDebugInfo) {
+        from.attribute(NATIVE_DEBUG_STRIPPED, false).attribute(org.gradle.api.artifacts.type.ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIBUTE, 'jar')
+        to.attribute(NATIVE_DEBUG_STRIPPED, true).attribute(org.gradle.api.artifacts.type.ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIBUTE, 'jar')
+    }
+
+    testImplementation platform('org.junit:junit-bom:6.1.3')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+    // Extra prebuilt mod jars for integration tests, loaded off their own
+    // neoforge.mods.toml with NO source compile:
+    //   -Psmokejars="/abs/other-mod.jar,/abs/its-dep.jar"
+    // Use when a test needs a real mob/item from another mod. Pass every REQUIRED
+    // dep too — this runtime is isolated from your live instance, so a dep that's
+    // installed there is NOT on this classpath (else: NoClassDefFoundError).
+    // Never affects the shipped jar.
+    // ⚠ A COMPANION HAS EXACTLY ONE MINECRAFT (migrator §W15): FML refuses a jar built for another
+    // version at LOAD, after the whole build, in a log that reads as a broken mod. So the check is
+    // here, at the one choke point every companion passes through, and it fails with the cause named.
+    def companionMc = { File jar ->
+        try {
+            def zip = new java.util.zip.ZipFile(jar)
+            try {
+                def e = zip.getEntry('META-INF/neoforge.mods.toml')
+                if (e == null) return null
+                def toml = zip.getInputStream(e).getText('UTF-8')
+                def m = (toml =~ /(?s)modId\s*=\s*"minecraft".*?versionRange\s*=\s*"\[?([0-9][0-9.]*)/)
+                return m.find() ? m.group(1) : null
+            } finally { zip.close() }
+        } catch (Exception ignored) { return null }
+    }
+    def requireSameMc = { File jar, String how ->
+        def mc = companionMc(jar)
+        if (mc != null && mc != minecraft_version) {
+            throw new GradleException("${how}: ${jar.name} is for Minecraft ${mc}, and this build is " +
+                "${minecraft_version}.\n  FML would refuse it at load; leave the jar off.")
+        }
+    }
+    if (project.hasProperty('smokejars')) {
+        project.smokejars.split(',').each { j ->
+            def t = j.trim()
+            if (t) {
+                requireSameMc(file(t), '-Psmokejars')
+                localRuntime files(t); logger.lifecycle("test mod jar -> ${t}")
+            }
+        }
+    }
+
+    // -Pcreate is gone with Create itself: refuse it by name rather than ignore it.
+    if (project.hasProperty('create')) {
+        throw new GradleException("-Pcreate: Create support was removed from this tree (#1584). " +
+            "It is parked, working, on branch parked/create-trains-mc1.21.1.")
+    }
+}
+
+// Pre-resolve one character's reference into the cache, through the mod's OWN researcher.
+// See tools/warm-reference-cache.sh and: fetching live during an eval adds a latency confound
+// to one arm, makes the run unreproducible, and silently degrades creatures when a fetch fails.
+tasks.register('resolveCorpus', JavaExec) {
+    group = 'verification'
+    description = 'Run the character resolver over every corpus wish and score it'
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'com.moddingfromamod.reference.ResolveCorpus'
+}
+
+tasks.register('warmReference', JavaExec) {
+    group = 'verification'
+    description = 'Resolve a character reference into the cache: -Pcharacter="Spikor"'
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'com.moddingfromamod.reference.WarmCache'
+    if (project.hasProperty('character')) {
+        args project.property('character').toString()
+    }
+}
+
+// SCORING IS A SEPARATE PASS OVER A STORED RUN, and deliberately NOT a JUnit report.
+//
+// It used to be one: a test driven by MFAM_SCULPT_DIR whose numbers were recovered by scraping
+// stdout with sed line ranges between banner strings. Environment variables are not task inputs,
+// so pointing it at a new run left the cache key unchanged and Gradle replayed the PREVIOUS run's
+// report -- complete, plausible and stale. The `test` block below still declares those vars as
+// inputs to contain that, but the real fix is not to route scoring through a cacheable test.
+//
+// Takes the run as an ARGUMENT and is never up-to-date, so a re-score is always a real pass.
+tasks.register('scoreRun', JavaExec) {
+    group = 'verification'
+    description = 'Score an archived run into scores.jsonl: -Prun=mfam-armb [-Proot=<archive>]'
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'com.moddingfromamod.eval.RunScorer'
+    outputs.upToDateWhen { false }
+    doFirst {
+        if (!project.hasProperty('run')) {
+            throw new GradleException('which run? e.g. ./gradlew scoreRun -Prun=mfam-armb')
+        }
+    }
+    args((project.findProperty('root')
+            ?: "${System.getProperty('user.home')}/mfam-eval-corpus").toString(),
+         (project.findProperty('run') ?: '').toString(),
+         (project.hasProperty('force') ? 'force' : ''))
+}
+
+// IS THE REVEAL LINE WHAT THE PHOTOGRAPH SHOWS? An offline screen over archived wishes,
+// never on the wish path: tools/reveal-photo-cases.py gathers {wishId, said, photos}, this judges
+// each with the walled VisionJudge runner and prints the mismatch rate with its n and interval.
+tasks.register('revealCheck', JavaExec) {
+    group = 'verification'
+    description = 'Reveal line vs reveal photo, over gathered cases: -Pcases=FILE -Pout=FILE [-Plimit=N]'
+    classpath = sourceSets.main.runtimeClasspath
+    mainClass = 'com.moddingfromamod.judge.RevealCheckRun'
+    outputs.upToDateWhen { false }
+    args((project.findProperty('cases') ?: '').toString(),
+         (project.findProperty('out') ?: '').toString(),
+         (project.findProperty('limit') ?: '').toString())
+}
+
+// THE PRECOMPILED READY-MADES: compile the skeletons ReadyMadePrecompileGameTest recorded into
+// src/main/resources/precompiled/, so no Builder or Apprentice power needs Python at run time. Run through
+// ./tools/precompile-ready-mades.sh, which records them first; -Pskeletons=store recompiles what the store holds.
+tasks.register('precompileReadyMades', JavaExec) {
+    group = 'build'
+    description = 'Compile recorded ready-made skeletons into the precompiled store: -Pskeletons=DIR|store'
+    dependsOn 'testClasses'
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'com.moddingfromamod.datapack.PrecompiledPacksBuild'
+    workingDir = projectDir
+    outputs.upToDateWhen { false }
+    args((project.findProperty('skeletons') ?: '').toString())
+}
+
+// Gate A's adoption report, budget, testJunit unwiring and the `test {}` task: gate-a.gradle.
+apply from: 'gate-a.gradle'
+
+// When bundling nested libs via JarJar, the bundled jar must be the PRIMARY artifact
+// (NeoGradle otherwise emits it with an '-all'-style classifier), or you'd ship the
+// plain jar without its embedded libs. Plain jar -> 'slim'; jarJar takes the main name.
+// The WebP decoder is ALWAYS bundled, so this is unconditional now -- it used to be gated
+// on uses_geckolib, and leaving that gate in place would have shipped the plain jar (with no
+// nested libs) while every test that runs on the dev classpath stayed green.
+// the eval corpora under src/main/resources/corpus/ are DEV AND TEST data, never shipped.
+// They include real-wishes.jsonl (sentences a child typed, verbatim) and safety-wishes.jsonl (the
+// labelled safety set), and a jar is public once it leaves our machines. Nothing in production
+// reads them: their readers (WishCorpus, CreatureCorpus, RealBuilds) serve GameTests, unit tests
+// and dev tools (scoreRun, ResolveCorpus), which all run from build/resources/main, never from the
+// jar. So they are dropped at PACKAGING only, and the source tree keeps them where they are.
+// GameTests are TEST code — they run in Gate B from the build's classes (runGameTestServer never reads the
+// jar) and never ship: every *GameTest class (and its inner classes) and the `test` package. NeoForge finds GameTests
+// by the jar's own annotation scan (testing/gt/GameTestAdapter), so a jar without them simply registers none. The
+// `testing` harness leaves too: what shipped code needed from it moved to `film/` (the film camera and its
+// path) and `seam/` (the marks a test sets and shipped code reads), and the mod boots the harness by name through
+// seam/TestHarness, which finds nothing in a jar.
+// and the GameTest harness's test-only mixin config (its classes are under testing/, above).
+def SHIP_EXCLUDES = ['corpus/**', 'com/moddingfromamod/test/**', 'com/moddingfromamod/testing/**',
+                     '**/?*GameTest.class', '**/?*GameTest$*.class', '**/*.gametest.mixins.json']
+// What must never be in a shipped jar, wherever a future move puts it. Checked on the built jar's
+// entry names (nested jarJar libraries are opaque entries under META-INF/jarjar/ and never match).
+def NEVER_SHIP = ~/(^|.*\/)[^\/]+\.gametest\.mixins\.json$|^corpus\/.*|(^|.*\/)(real-wishes|safety-wishes|real-tool-calls)[^\/]*\.jsonl$|^com\/moddingfromamod\/(test|testing)\/.*|.*\/[^\/]+GameTest(\$[^\/]*)?\.class$/
+// a shipped class may name only mod classes the jar carries. A reference to one left out (the harness, a
+// GameTest, or, in the public cut, a private class) is a NoClassDefFoundError waiting for the line that runs it.
+// The one deliberate exception is a dev-only driver reached only behind seam/TestHarness.present(); list it here.
+def HARNESS_GUARDED = ['com/moddingfromamod/isle/IsleWalkthrough']
+
+jar {
+    archiveClassifier = 'slim'
+    exclude SHIP_EXCLUDES
+    // store_jar: build/libs holds the player's jar alone -- MMVU's Port CI releases every jar there, and its publish
+    // step uploads the one a release carries (the slim jar is an input of jarJar, never shipped)
+    if (storeJar) destinationDirectory = layout.buildDirectory.dir('slim-jar')
+}
+// the licence files go in every jar's META-INF/ (the public repo has them at its root; this repo stages them in
+// docs/public-repo/). The STORE release also carries the Apprentice's sentence model (D13): -PbundleApprenticeModel=DIR
+// (tools/store-release.sh passes the fetched, sha-checked folder), copied out at first start by apprentice/BundledModel.
+def LICENSE_FILES = ['LICENSE', 'NOTICE.md', 'THIRD_PARTY_NOTICES.md', 'LICENSE-ASSETS.md', 'TRADEMARKS.md']
+// What a store jar must carry (the jarJar task refuses one without; the same list as tools/store-release.sh's).
+def STORE_JAR_REQUIRED = LICENSE_FILES.collect { "META-INF/${it}".toString() } + [
+        'apprentice/sentence-model.NOTICE.txt', 'apprentice/sentence-model.LICENSE.txt', 'apprentice/onnxruntime.NOTICE.txt',
+        'apprentice/english-words.NOTICE.txt', 'licenses/twelvemonkeys.LICENSE.txt', 'licenses/cbscript.NOTICE.txt',
+        'apprentice/model/model.onnx', 'apprentice/model/vocab.txt', 'apprentice/layer.json']
+// store_jar with no -PbundleApprenticeModel: the machine-wide cache, filled (and sha-checked) by storeApprenticeModel
+// before jarJar reads it. Unlike `apprenticeModel` for dev runs, a store jar without its model is a FAILED build.
+def BUNDLE_MODEL = project.findProperty('bundleApprenticeModel')?.toString() ?: (storeJar ? apprenticeModelCache().absolutePath : null)
+tasks.register('storeApprenticeModel') {
+    group = 'build'
+    description = "Fetch the sentence model a store jar carries (D13) into the machine-wide cache, sha-checked"
+    onlyIf { storeJar && !project.hasProperty('bundleApprenticeModel') }
+    doLast {
+        def got = fetchApprenticeModel(apprenticeModelCache(), null)
+        if (got[0] != 0) throw new GradleException("store jar: no sentence model -- ${got[1]} (-Pstore_jar=false builds without it)")
+    }
+}
+configurations.named('jarJar') { attributes.attribute(NATIVE_DEBUG_STRIPPED, true) }  //, see StripNativeDebugInfo
+tasks.named('jarJar') {
+    dependsOn 'storeApprenticeModel'
+    archiveClassifier = ''
+    exclude SHIP_EXCLUDES
+    LICENSE_FILES.each { n ->
+        def f = file(n).isFile() ? file(n) : file("docs/public-repo/${n}")
+        if (f.isFile()) from(f) { into 'META-INF' }
+    }
+    // each bundled component's full licence text (the public repo's third_party/, staged here under root/)
+    def thirdParty = file('third_party').isDirectory() ? file('third_party') : file('docs/public-repo/root/third_party')
+    if (thirdParty.isDirectory()) from(thirdParty) { into 'META-INF/third_party' }
+    if (BUNDLE_MODEL) {
+        def dir = file(BUNDLE_MODEL)
+        // checked when jarJar runs, after storeApprenticeModel has filled the cache
+        doFirst {
+            ['model.onnx', 'vocab.txt'].each { n ->
+                if (!new File(dir, n).isFile()) throw new GradleException("model ${dir}: no ${n} there (tools/fetch-apprentice-model.sh DIR)")
+            }
+        }
+        from(dir) { include 'model.onnx', 'vocab.txt'; into 'apprentice/model' }
+    }
+    // The check reads the FINISHED jar, not the task's inputs: a jar is what leaves the machine.
+    doLast {
+        def jarFile = archiveFile.get().asFile
+        def leaked = []
+        new java.util.zip.ZipFile(jarFile).withCloseable { z ->
+            z.entries().each { e -> if (!e.directory && e.name ==~ NEVER_SHIP) leaked << e.name }
+        }
+        // and no nested library carries native debug data (StripNativeDebugInfo took it out before nesting)
+        new java.util.zip.ZipFile(jarFile).withCloseable { z ->
+            z.entries().findAll { e -> e.name ==~ /META-INF\/jarjar\/[^\/]+\.jar/ }.each { e ->
+                new java.util.zip.ZipInputStream(z.getInputStream(e)).withCloseable { nested ->
+                    for (def n = nested.nextEntry; n != null; n = nested.nextEntry) {
+                        if (StripNativeDebugInfo.DEBUG.matcher(n.name).matches()) leaked << "${e.name}!${n.name}"
+                    }
+                }
+            }
+        }
+        // a STORE jar is refused here too, not only by tools/store-release.sh, because the jar the stores get is
+        // the one MMVU's Port CI builds with a plain `./gradlew build` (store_jar=true): no plug-in listed in
+        // META-INF/services, no private mixin config, and every licence file and the model present.
+        if (storeJar) {
+            def storeWhy = []
+            new java.util.zip.ZipFile(jarFile).withCloseable { z ->
+                def names = z.entries().collect { it.name } as Set
+                STORE_JAR_REQUIRED.each { n -> if (!names.contains(n)) storeWhy << "no ${n}" }
+                if (names.contains("${mod_id}.private.mixins.json".toString())) storeWhy << "the private mixin config"
+                names.findAll { it.startsWith('META-INF/services/') && !it.endsWith('/') }.each { s ->
+                    def listed = z.getInputStream(z.getEntry(s)).text.readLines()
+                            .collect { it.replaceAll(/#.*/, '').trim() }.findAll { it }
+                    if (listed) storeWhy << "a listed service (a public jar ships no plug-in): ${s} -> ${listed.join(', ')}"
+                }
+            }
+            if (!storeWhy.isEmpty()) {
+                throw new GradleException("${jarFile.name} is not a store jar (#2514; tools/store-release.sh checks the same): " +
+                    storeWhy.join('; '))
+            }
+        }
+        if (!leaked.isEmpty()) {
+            throw new GradleException("${jarFile.name} contains files that must never ship (#2353, #2309): " +
+                leaked.take(10).join(', ') + (leaked.size() > 10 ? " … (${leaked.size()} in all)" : ''))
+        }
+        // Dangling references: every com/moddingfromamod/ class named in a shipped class's constant pool must be in
+        // the jar. Read as ISO-8859-1 so the modified-UTF-8 names come through byte for byte.
+        def shipped = [] as Set
+        def refs = [:]
+        def ref = ~/com\/moddingfromamod\/[A-Za-z0-9_\/$]+/
+        new java.util.zip.ZipFile(jarFile).withCloseable { z ->
+            z.entries().each { e ->
+                if (e.directory || !e.name.endsWith('.class') || !e.name.startsWith('com/moddingfromamod/')) return
+                def name = e.name[0..-7]
+                shipped << name
+                def body = new String(z.getInputStream(e).bytes, 'ISO-8859-1')
+                body.findAll(ref).each { r -> refs.computeIfAbsent(r) { [] as Set } << name }
+            }
+        }
+        def dangling = []
+        refs.each { r, from ->
+            if (shipped.contains(r)) return
+            // a package name or a resource-like path (no class there at all) is not a class reference
+            if (!(r ==~ /.*\/[A-Z][A-Za-z0-9_$]*/)) return
+            def users = from.findAll { f -> !HARNESS_GUARDED.any { g -> f == g || f.startsWith(g + '$') } }
+            if (!users.isEmpty()) dangling << "${r} (from ${users.sort().take(3).join(', ')})"
+        }
+        if (!dangling.isEmpty()) {
+            throw new GradleException("${jarFile.name}: shipped classes name mod classes the jar does not carry (#2309); " +
+                "move what shipped code needs out of the left-out package, or reach it through a seam: " +
+                dangling.sort().take(15).join('; ') + (dangling.size() > 15 ? " … (${dangling.size()} in all)" : ''))
+        }
+    }
+}
+
+// the private mixins (Bedrock, front-door identity, client input) live in their own config, which only the
+// private repo has. It is registered in neoforge.mods.toml only when the file is present, so the public cut drops
+// the file and nothing else.
+// gate-a.gradle's public resources (processPublicResources) expand the same template with withPrivate=false.
+def PRIVATE_MIXINS = file("src/main/resources/${mod_id}.private.mixins.json")
+ext.modsTomlProperties = { boolean withPrivate ->
+    [
+            private_mixins         : withPrivate && PRIVATE_MIXINS.exists() ? ("[[mixins]]\nconfig=\"" + mod_id + ".private.mixins.json\"") : "",
+            minecraft_version      : minecraft_version,
+            minecraft_version_range: minecraft_version_range,
+            neo_version            : neo_version,
+            loader_version_range   : loader_version_range,
+            mod_id                 : mod_id,
+            mod_name               : mod_name,
+            mod_license            : mod_license,
+            mod_version            : mod_version,
+            mod_authors            : mod_authors,
+            mod_description        : mod_description
+    ]
+}
+tasks.withType(ProcessResources).configureEach {
+    var replaceProperties = modsTomlProperties(true)
+    inputs.properties replaceProperties
+    filesMatching(['META-INF/neoforge.mods.toml']) {
+        expand replaceProperties
+    }
+}
+
+// the generated creator list lives in corpus/ (tools/gen-creator-accounts.py writes it and a
+// monthly PR diff reviews it) and ships in the jar as /creators/creator-accounts.jsonl, which
+// reference/CreatorAccounts reads. A release-scope check counts the file as a mod change.
+// a new `from` here needs its line in gate-a.gradle's processPublicResources too (the public half's resources).
+tasks.named('processResources') {
+    from('corpus/creator-accounts.jsonl') { into 'creators' }
+    // The world manifests (worlds/<id>.json, top level only — not rules/) ship in the jar as
+    // /worlds/<id>.json, so the mod reads its own world's name, access mode and first-join intro
+    // (world/WorldFacts) by the id a server's launcher passes (-Dmoddingfromamod.world.id).
+    // A release carries a manifest's words with it; release-scope.py counts the files as a mod change.
+    from('worlds') { include '*.json'; into 'worlds' }
+    // TRANSITIONAL: private resources that moved into house/ still ship here (see HOUSE_OWN_JAVA above).
+    EXTRA_TREES.each { tree -> from("${tree}/src/main/resources") { exclude HOUSE_OWN_RESOURCES } }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}
+
+/** Read a key from .env.local (gitignored), expanding a leading ~. Null if absent. */
+def readEnvLocal(String key) {
+    def envFile = file('.env.local')
+    if (!envFile.exists()) return null
+    def value = null
+    envFile.eachLine { line ->
+        def m = (line =~ /^\s*${key}=(.*)$/)
+        if (m) value = m[0][1].trim()
+    }
+    if (value != null && value.startsWith('~')) {
+        value = System.getProperty('user.home') + value.substring(1)
+    }
+    return value
+}
+
+/** The jar we ship: JarJar's bundled one when enabled, else the plain jar. */
+def deployedJarName() {
+    return "${mod_id}-${mod_version}.jar"
+}
+
+// ── Deploy: build + install into your live Minecraft instance ────────────────
+// ATOMIC on purpose: it stages to a temp file in the target dir and then MOVES it
+// into place. Overwriting a jar in-place while Minecraft is RUNNING corrupts the
+// live game (ZipException / ClassNotFoundException / purple textures), because the
+// game holds the jar open and reads it lazily. An atomic move means the game either
+// sees the whole old jar or the whole new one — never a half-written file.
+// (Still restart Minecraft to actually load the new build.)
+// Deploy writes into ONE shared mods folder that every worktree on this machine points at, and the
+// live game reads it. Two guards, both added after each failure happened for real.
+//
+// The guards deliberately behave differently depending on whether a HUMAN ASKED to deploy. Skipping
+// is the right answer on a machine with no Minecraft install (CI, a fresh clone) where the task only
+// ran as somebody's dependency; it is the WRONG answer when the whole point of the command was to
+// deploy. So an explicit `./gradlew deployToMods` fails loudly, and an incidental one stays quiet.
+tasks.register('deployToMods') {
+    dependsOn 'build'
+    doLast {
+        // Did somebody type this task's name?
+        def askedFor = gradle.startParameter.taskNames.any { it == 'deployToMods' || it.endsWith(':deployToMods') }
+        def refuse = { String why, String fix ->
+            if (askedFor) {
+                throw new GradleException("deploy refused: ${why}\n  ${fix}")
+            }
+            println "skipping deploy: ${why}"
+        }
+
+        def modsDir = readEnvLocal('MINECRAFT_MODS_DIR')
+        if (!modsDir) {
+            // This printed "WARNING ... skipping" and exited ZERO, so `./gradlew deployToMods` said
+            // BUILD SUCCESSFUL and deployed nothing. .env.local is gitignored, so no fresh worktree
+            // has ever had it — every worktree-based session hits this, and only notices if it
+            // happens to grep the jar afterwards.
+            refuse("MINECRAFT_MODS_DIR is not set",
+                   "copy .env.local from another worktree, or add MINECRAFT_MODS_DIR=<your mods folder>")
+            return
+        }
+        def target = new File(modsDir)
+        if (!target.isDirectory()) {
+            refuse("MINECRAFT_MODS_DIR is not a directory: ${modsDir}",
+                   "check the path in .env.local")
+            return
+        }
+
+        // Is this branch behind main? Deploying from a stale branch silently REMOVES other people's
+        // work from the live game -- a 261-commits-behind worktree would take today's items and
+        // icons straight back out, and nothing would say so. Compared against the last-known
+        // origin/main; no network here, so `git fetch` first for a current answer.
+        def behind = 0
+        try {
+            def proc = ['git', 'rev-list', '--count', 'HEAD..origin/main'].execute(null, projectDir)
+            proc.waitForOrKill(5000)
+            if (proc.exitValue() == 0) {
+                behind = proc.text.trim().toInteger()
+            }
+        } catch (ignored) {
+            behind = 0   // not a git checkout, or no origin/main — not a reason to block a deploy
+        }
+        if (behind > 0 && System.getenv('MFAM_DEPLOY_STALE') != '1') {
+            throw new GradleException(
+                "deploy refused: this branch is ${behind} commit(s) behind origin/main.\n" +
+                "  The mods folder is SHARED. Deploying from here would overwrite the live jar with a\n" +
+                "  build that is missing whatever landed in those ${behind} commits, and nothing would\n" +
+                "  report it -- the game would just quietly lose features.\n" +
+                "    git fetch origin && git merge origin/main    (then deploy)\n" +
+                "  or, if you really mean to deploy a stale build:  MFAM_DEPLOY_STALE=1 ./gradlew deployToMods")
+        }
+        def src = layout.buildDirectory.file("libs/${deployedJarName()}").get().asFile
+        if (!src.exists()) {
+            throw new GradleException("built jar not found: ${src}")
+        }
+        def dest = new File(target, deployedJarName())
+        def tmp = new File(target, deployedJarName() + ".tmp-" + System.nanoTime())
+        try {
+            java.nio.file.Files.copy(src.toPath(), tmp.toPath(),
+                    java.nio.file.StandardCopyOption.REPLACE_EXISTING)
+            try {
+                java.nio.file.Files.move(tmp.toPath(), dest.toPath(),
+                        java.nio.file.StandardCopyOption.REPLACE_EXISTING,
+                        java.nio.file.StandardCopyOption.ATOMIC_MOVE)
+            } catch (java.nio.file.AtomicMoveNotSupportedException ignored) {
+                java.nio.file.Files.move(tmp.toPath(), dest.toPath(),
+                        java.nio.file.StandardCopyOption.REPLACE_EXISTING)
+            }
+            println "Deployed ${deployedJarName()} -> ${modsDir}"
+            println "(restart Minecraft to load it)"
+            println "verify it really carries your work:  unzip -l '${dest}' | grep <YourClass>"
+        } finally {
+            if (tmp.exists()) tmp.delete()
+        }
+        installApprenticeModel(target)
+    }
+}
+
+// fill the machine-wide cache, then put the model where the instance's game reads it
+// (<instance>/moddingfromamod/apprentice-model, RuntimeConfig.apprenticeModelDir's default). The instance is
+// MINECRAFT_INSTANCE_DIR when set, else the mods folder's parent. NEVER fatal: no model means keywords only,
+// as on any server without it, so a failed fetch is one line and the jar is deployed all the same.
+def installApprenticeModel(File modsDir) {
+    if (apprenticeModelOff()) {
+        println "apprentice model: off (MODDY_APPRENTICE_MODEL=off) -- the Apprentice answers with keywords only"
+        return
+    }
+    def cache = apprenticeModelCache()
+    def got = fetchApprenticeModel(cache, null)
+    if (got[0] != 0) {
+        println "apprentice model: NOT installed -- ${got[1]}"
+        println "  The game still runs; the Apprentice answers with keywords only. Retry: ./gradlew apprenticeModel"
+        return
+    }
+    def inst = readEnvLocal('MINECRAFT_INSTANCE_DIR')
+    def gameDir = inst ? new File(inst) : modsDir.absoluteFile.parentFile
+    def dest = new File(gameDir, 'moddingfromamod/apprentice-model')
+    // The cache is the source, as a file:// folder: the same script copies and re-checks both hashes.
+    def put = fetchApprenticeModel(dest, cache.toURI().toString())
+    if (put[0] != 0) {
+        println "apprentice model: NOT installed in ${dest} -- ${put[1]}"
+        return
+    }
+    println "apprentice model: in ${dest} (sha256 ok)"
+    println "  on the next start, latest.log says 'apprentice layer: on'. 'off, keywords only' there means the"
+    println "  model is present and ONNX Runtime did not load on this machine."
+}
+
+tasks.register('apprenticeModel') {
+    group = 'build setup'
+    description = "Fetch the Apprentice's sentence model into the machine-wide cache runClient/runServer read (#2168)"
+    doLast {
+        def cache = apprenticeModelCache()
+        def got = fetchApprenticeModel(cache, null)
+        println got[1]
+        if (got[0] != 0) {
+            throw new GradleException("apprentice model: not fetched -- ${got[1]}")
+        }
+        println "runClient and runServer now read it from ${cache} (runGameTestServer never does)"
+    }
+}
+
+// ── Import vetted third-party mod jars into the same instance ────────────────
+// ── companionJars — build the OTHER mods a real-agent test needs ────────────────────
+//
+// A wish granted in a world without the child's own mod is not the run you think you made,
+// and nothing says so: the agent substitutes the nearest vanilla block and the run PASSES.
+// MEASURED — "lands BUTT CHEEK WATER wherever it hits" resolved to `minecraft:water`
+// without the Mod Repo and the mod's own `butt_cheek_water` with it.
+//
+// DELIBERATELY NOT wired into `build` or `test`. Building a companion mod is minutes
+// (one measured 3m41s cold), and the vast majority of this repo's gates —
+// every unit test, every GameTest that is not agent-driven — neither need it nor should
+// pay for it. tools/client-test.sh calls the same resolver automatically for the runs that
+// DO need it (`agent=on`), which is the narrow set where a missing jar changes the answer.
+//
+// The work lives in the shell script, not here, because client-test.sh and ratchet.sh are
+// shell and would otherwise each need their own copy of the resolution order. One
+// definition, three callers.
+tasks.register('companionJars') {
+    group = 'verification'
+    description = 'Build/resolve companion mod jars from MOD_REPO + COMPANION_REPOS in .env.local'
+    doLast {
+        def script = file('tools/companion-jars.sh')
+        if (!script.exists()) {
+            throw new GradleException("tools/companion-jars.sh is missing")
+        }
+        // Plain ProcessBuilder, NOT Gradle's exec {}: that was removed from task actions in
+        // Gradle 9 ("Could not find method exec()"), and ExecOperations would need injection
+        // into a task class. Shelling out directly is immune to both.
+        def pb = new ProcessBuilder('bash', script.absolutePath, '--build')
+        pb.directory(projectDir)
+        pb.redirectErrorStream(false)
+        pb.redirectError(ProcessBuilder.Redirect.INHERIT)   // the resolver's notes reach the console
+        def proc = pb.start()
+        def jars = proc.inputStream.getText('UTF-8').trim()
+        def rc = proc.waitFor()
+        if (rc != 0) {
+            throw new GradleException("companion-jars.sh exited $rc")
+        }
+        if (jars.isEmpty()) {
+            // NOT a failure. A checkout with no MOD_REPO configured is a perfectly normal
+            // state (a fresh clone, or someone who only runs the unit gates), and failing
+            // the build over it would make an optional companion feel mandatory.
+            println "companionJars: nothing resolved — set MOD_REPO in .env.local if you want one."
+        } else {
+            println "companionJars: ${jars.split(',').length} jar(s):"
+            jars.split(',').each { println "  $it" }
+            println "companionJars: pass to a run with -Psmokejars=\"$jars\""
+        }
+    }
+}
+
+// Optional dev helper, driven entirely by .env.local (MODS_SOURCE_DIR — e.g. a
+// CurseForge instance you use to vet mods). A no-op on machines that don't set it,
+// so it's safe to leave checked in. Our own jar is skipped (deployToMods owns it).
+tasks.register('importMods') {
+    doLast {
+        def srcDir = readEnvLocal('MODS_SOURCE_DIR')
+        def modsDir = readEnvLocal('MINECRAFT_MODS_DIR')
+        if (!srcDir || !modsDir) {
+            println "importMods: set MODS_SOURCE_DIR and MINECRAFT_MODS_DIR in .env.local — skipping"
+            return
+        }
+        def src = file(srcDir)
+        if (!src.isDirectory()) {
+            println "importMods: source folder not found: ${srcDir} — skipping"
+            return
+        }
+        // Optional allowlist: -PmodsFilter="a,b" or MODS_IMPORT_FILTER in .env.local
+        // copies only jars whose filename contains one of the substrings.
+        def filter = project.findProperty('modsFilter') ?: readEnvLocal('MODS_IMPORT_FILTER')
+        def needles = filter ? filter.split(',').collect { it.trim() }.findAll { it } : null
+        def jars = src.listFiles({ f ->
+            f.isFile() && f.name.endsWith('.jar') && !f.name.startsWith(mod_id) &&
+                    (needles == null || needles.any { f.name.contains(it) })
+        } as FileFilter)
+        if (!jars) {
+            println "importMods: no matching third-party .jar files in ${srcDir}" +
+                    (needles ? " (filter: ${needles})" : "")
+            return
+        }
+        jars.each { jar ->
+            copy { from jar; into modsDir }
+            println "  imported ${jar.name}"
+        }
+        println "importMods: copied ${jars.length} mod jar(s) -> ${modsDir}"
+    }
+}
+
+// A plain classpath file, so a long-running reference lookup can be driven directly with its own
+// output visible. Gradle drowns a JavaExec's stdout in several thousand lines of dependency
+// resolution, which is how a 3-minute live lookup came back with nothing readable in the log.
+tasks.register('classpathFile') {
+    def out = layout.buildDirectory.file('runtime-classpath.txt')
+    outputs.file(out)
+    doLast { out.get().asFile.text = sourceSets.main.runtimeClasspath.asPath }
+}

@@ -1,0 +1,12 @@
+{
+ "_comment": "The PUBLIC FIXTURE's floor, not the real chooser's: corpus/fixtures/behaviour-choice/. Its labels are a stand-in labeller, the hand-written rule (tools/behaviour-score.py rules) asked twice, so the floor records how often the committed model agrees with that rule on these 80 made-up creatures. It exercises the same check as the real floor (corpus/behaviour-choice/floor.json, Sonnet's labels), with its own numbers.",
+ "final_set": "fx",
+ "gap_max": 20.8,
+ "drop_max": 2.0,
+ "final": {
+  "set": "fx",
+  "specs": 80,
+  "agree": 65,
+  "pct": 81.2
+ }
+}

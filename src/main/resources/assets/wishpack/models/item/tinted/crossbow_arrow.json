@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:item/crossbow_arrow",
+  "textures": {
+    "layer0": "wishpack:item/tinted/crossbow_arrow_tint",
+    "layer1": "wishpack:item/tinted/crossbow_arrow_keep"
+  }
+}

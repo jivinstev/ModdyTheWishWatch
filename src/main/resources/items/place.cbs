@@ -1,0 +1,11 @@
+# PLACE — it puts a block down where it is used or where it lands.
+#
+# ONLY into replaceable space (air, grass, water). Without that guard a thrown bucket eats whatever
+# it hits, which turns "buckets for my green lava" into a tool that deletes your house.
+#
+# The setblock line is rendered by the tool (PLACES): BLOCK may be a LIST picked from each use.
+function effect()
+${PLACES}
+    /particle minecraft:cloud ~ ~0.5 ~ 0.3 0.3 0.3 0.01 10 force
+    /playsound minecraft:block.stone.place master @a ~ ~ ~ 1 1
+end

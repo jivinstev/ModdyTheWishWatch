@@ -1,0 +1,38 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.moddingfromamod.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "AnvilNameMixin",
+    "BatRideMixin",
+    "BookTextMixin",
+    "CarrierGlowFlagMixin",
+    "DisplayLightInvoker",
+    "DisplayPoseInvoker",
+    "ItemDisplayItemInvoker",
+    "FunctionNoiseMixin",
+    "ExecutionContextHardStopMixin",
+    "FunctionSpawnScopeMixin",
+    "GiveCommandMixin",
+    "ItemCombinerMenuAccessor",
+    "ParticleNoiseMixin",
+    "PlaySoundNoiseMixin",
+    "ProjectileHitInvoker",
+    "ProxyProjectileMixin",
+    "RigMoveRotationMixin",
+    "RigTrackerCadenceMixin",
+    "RigDisplayEaseMixin",
+    "ItemDisplayLookKeys",
+    "RigWalkAnimationMixin",
+    "SignTextMixin",
+    "EntityTagSetMixin",
+    "EntityLookupIndexMixin",
+    "SelectorParserTagsMixin",
+    "SelectorIndexMixin",
+    "LevelEntityGetterAdapterAccessor"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "moddingfromamod:item/wish/_blank",
+    "layer1": "moddingfromamod:item/wish/fire_truck_accent",
+    "layer2": "moddingfromamod:item/wish/fire_truck_detail"
+  }
+}

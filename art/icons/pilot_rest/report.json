@@ -1,0 +1,110 @@
+[
+ {
+  "cluster": "pilot_rest",
+  "name": "lollipop",
+  "verdict": "PASS",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.404,
+   "dark_body": 0.026,
+   "pieces": 1,
+   "accent": 138,
+   "body": 193,
+   "line": 80,
+   "shine": 3
+  }
+ },
+ {
+  "cluster": "pilot_rest",
+  "name": "gift_box",
+  "verdict": "PASS",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.517,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "accent": 182,
+   "body": 237,
+   "line": 108,
+   "shine": 2
+  }
+ },
+ {
+  "cluster": "pilot_rest",
+  "name": "ringed_planet",
+  "verdict": "PASS",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.537,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "accent": 160,
+   "body": 231,
+   "line": 156,
+   "shine": 3
+  }
+ },
+ {
+  "cluster": "pilot_rest",
+  "name": "balloon",
+  "verdict": "PASS",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.452,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "accent": 2,
+   "body": 379,
+   "line": 77,
+   "shine": 5
+  }
+ },
+ {
+  "cluster": "pilot_rest",
+  "name": "rooster",
+  "verdict": "PASS",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.438,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "body": 247,
+   "fixed": 57,
+   "line": 142,
+   "shine": 2
+  }
+ },
+ {
+  "cluster": "pilot_rest",
+  "name": "octopus",
+  "verdict": "PASS",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.585,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "accent": 17,
+   "body": 428,
+   "line": 149,
+   "shine": 5
+  }
+ }
+]

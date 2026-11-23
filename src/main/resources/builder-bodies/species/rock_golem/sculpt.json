@@ -1,0 +1,314 @@
+{
+ "base": "guardian",
+ "behaves_like": "bruiser",
+ "damage": 0,
+ "health": 200,
+ "id": "rock_golem",
+ "name": "Rock Golem",
+ "note": "Big friendly stone golem: grey speckled stone body, chunky wide torso, long arms, moss patches, glowing cyan eyes and a small calm mouth so it reads gentle-giant not scary. Friendly guardian so it fights monsters for him.",
+ "palette": [
+  {
+   "colour": "#8A8A8A",
+   "percent": 80
+  },
+  {
+   "colour": "#5E5E5E",
+   "percent": 12
+  },
+  {
+   "colour": "#4A7A2A",
+   "percent": 4
+  }
+ ],
+ "parts": [
+  {
+   "colour": "#8A8A8A",
+   "from": [
+    -10,
+    16,
+    -6
+   ],
+   "name": "body",
+   "pattern": "speckle",
+   "pattern_colour": "#6A6A6A",
+   "to": [
+    10,
+    34,
+    6
+   ]
+  },
+  {
+   "colour": "#4A7A2A",
+   "from": [
+    -6,
+    32,
+    -4
+   ],
+   "name": "moss",
+   "parent": "body",
+   "to": [
+    6,
+    35,
+    4
+   ]
+  },
+  {
+   "colour": "#7E7E7E",
+   "from": [
+    -5,
+    33,
+    -5
+   ],
+   "name": "head",
+   "pattern": "speckle",
+   "pattern_colour": "#5E5E5E",
+   "to": [
+    5,
+    42,
+    4
+   ]
+  },
+  {
+   "colour": "#5E5E5E",
+   "from": [
+    -5,
+    39,
+    -6
+   ],
+   "name": "brow",
+   "parent": "head",
+   "to": [
+    5,
+    41,
+    -4
+   ]
+  },
+  {
+   "colour": "#40E0FF",
+   "from": [
+    -4,
+    36,
+    -6
+   ],
+   "name": "eyeL",
+   "parent": "head",
+   "to": [
+    -1,
+    38,
+    -4
+   ]
+  },
+  {
+   "colour": "#40E0FF",
+   "from": [
+    1,
+    36,
+    -6
+   ],
+   "name": "eyeR",
+   "parent": "head",
+   "to": [
+    4,
+    38,
+    -4
+   ]
+  },
+  {
+   "colour": "#3A3A3A",
+   "from": [
+    -2,
+    34,
+    -6
+   ],
+   "name": "mouthM",
+   "parent": "head",
+   "to": [
+    2,
+    35,
+    -4
+   ]
+  },
+  {
+   "colour": "#3A3A3A",
+   "from": [
+    -3,
+    35,
+    -6
+   ],
+   "name": "mouthL",
+   "parent": "head",
+   "to": [
+    -2,
+    36,
+    -4
+   ]
+  },
+  {
+   "colour": "#3A3A3A",
+   "from": [
+    2,
+    35,
+    -6
+   ],
+   "name": "mouthR",
+   "parent": "head",
+   "to": [
+    3,
+    36,
+    -4
+   ]
+  },
+  {
+   "colour": "#7A7A7A",
+   "from": [
+    10,
+    8,
+    -4
+   ],
+   "name": "armL",
+   "pattern": "speckle",
+   "pattern_colour": "#5A5A5A",
+   "pivot": [
+    13,
+    32,
+    0
+   ],
+   "to": [
+    16,
+    34,
+    4
+   ]
+  },
+  {
+   "colour": "#5E5E5E",
+   "from": [
+    9,
+    2,
+    -5
+   ],
+   "name": "fistL",
+   "parent": "armL",
+   "to": [
+    17,
+    9,
+    5
+   ]
+  },
+  {
+   "colour": "#7A7A7A",
+   "from": [
+    -16,
+    8,
+    -4
+   ],
+   "name": "armR",
+   "pattern": "speckle",
+   "pattern_colour": "#5A5A5A",
+   "pivot": [
+    -13,
+    32,
+    0
+   ],
+   "to": [
+    -10,
+    34,
+    4
+   ]
+  },
+  {
+   "colour": "#5E5E5E",
+   "from": [
+    -17,
+    2,
+    -5
+   ],
+   "name": "fistR",
+   "parent": "armR",
+   "to": [
+    -9,
+    9,
+    5
+   ]
+  },
+  {
+   "colour": "#4A7A2A",
+   "from": [
+    10,
+    32,
+    -3
+   ],
+   "name": "shoulderMossL",
+   "parent": "armL",
+   "to": [
+    16,
+    35,
+    3
+   ]
+  },
+  {
+   "colour": "#6E6E6E",
+   "from": [
+    2,
+    0,
+    -4
+   ],
+   "name": "legL",
+   "pattern": "speckle",
+   "pattern_colour": "#555555",
+   "pivot": [
+    5,
+    16,
+    0
+   ],
+   "to": [
+    9,
+    17,
+    4
+   ]
+  },
+  {
+   "colour": "#6E6E6E",
+   "from": [
+    -9,
+    0,
+    -4
+   ],
+   "name": "legR",
+   "pattern": "speckle",
+   "pattern_colour": "#555555",
+   "pivot": [
+    -5,
+    16,
+    0
+   ],
+   "to": [
+    -2,
+    17,
+    4
+   ]
+  },
+  {
+   "colour": "#9A9A9A",
+   "from": [
+    -6,
+    22,
+    -7
+   ],
+   "name": "chestRock",
+   "parent": "body",
+   "to": [
+    6,
+    30,
+    -5
+   ]
+  }
+ ],
+ "powers": [
+  "friendly",
+  "persistent"
+ ],
+ "scale": 2.2,
+ "speed": 0.2,
+ "status": "Sculpting your rock golem",
+ "voice": "iron_golem"
+}

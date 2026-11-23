@@ -1,0 +1,19 @@
+{
+ "count": 1,
+ "effects": [
+  "turn_into"
+ ],
+ "id": "taco_maker_convert",
+ "name": "Taco Maker",
+ "params": {
+  "FROM": "minecraft:beef",
+  "TO": "taco_food",
+  "_kit": {
+   "items": "minecraft:beef 32"
+  }
+ },
+ "parts": [],
+ "properties": {},
+ "shape": "machine",
+ "variants": []
+}

@@ -1,0 +1,56 @@
+{
+ "cluster": "shapes_gear",
+ "order": [
+  "chestplate",
+  "leggings",
+  "shovel",
+  "horse_armor",
+  "disc",
+  "tablet",
+  "head"
+ ],
+ "icons": [
+  {
+   "name": "chestplate",
+   "status": "ok",
+   "attempts": 1,
+   "note": "Front-view vest with shoulder straps, neck dip and armour band lines."
+  },
+  {
+   "name": "leggings",
+   "status": "ok",
+   "attempts": 1,
+   "note": "Waistband with belt line and two separated legs, darker toward the feet."
+  },
+  {
+   "name": "shovel",
+   "status": "ok",
+   "attempts": 2,
+   "note": "Chunky diagonal shovel: brown fixed handle, big rounded blade at bottom-right."
+  },
+  {
+   "name": "horse_armor",
+   "status": "ok",
+   "attempts": 1,
+   "note": "Front-view horse barding: two ears, cyan accent eyes, flared neck guard."
+  },
+  {
+   "name": "disc",
+   "status": "ok",
+   "attempts": 1,
+   "note": "Music record with ink grooves and a cyan accent label."
+  },
+  {
+   "name": "tablet",
+   "status": "ok",
+   "attempts": 1,
+   "note": "Chunky rounded slab with inset border lines and a cyan carved mark."
+  },
+  {
+   "name": "head",
+   "status": "ok",
+   "attempts": 1,
+   "note": "Blocky mob head in 3/4 view, three faces, cyan accent face details."
+  }
+ ]
+}

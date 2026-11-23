@@ -1,0 +1,23 @@
+{
+ "vehicle": true,
+ "armor": 0.0,
+ "behaves": "vehicle",
+ "body": "humanoid",
+ "damage": 0.0,
+ "health": 100.0,
+ "id": "hot_air_balloon",
+ "knockbackResistance": 0.0,
+ "modelKey": "hot_air_balloon",
+ "name": "Hot Air Balloon",
+ "powers": [
+  "friendly",
+  "rideable",
+  "flies",
+  "persistent"
+ ],
+ "scale": 1.5,
+ "speed": 0.3,
+ "texture": "zombie",
+ "tint": "#FFFFFF",
+ "voice": "silent"
+}

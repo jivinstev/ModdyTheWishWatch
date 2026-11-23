@@ -1,0 +1,23 @@
+{
+  "abilityPacks": [
+    "breath_cone_pet_dragon"
+  ],
+  "armor": 0.0,
+  "base": "companion",
+  "body": "humanoid",
+  "damage": 0.0,
+  "health": 60.0,
+  "id": "pet_dragon",
+  "knockbackResistance": 0.0,
+  "modelKey": "pet_dragon",
+  "name": "Pet Dragon",
+  "powers": [
+    "friendly",
+    "fireproof"
+  ],
+  "scale": 1.2,
+  "speed": 0.35,
+  "texture": "zombie",
+  "tint": "#FFFFFF",
+  "voice": "ender_dragon"
+}

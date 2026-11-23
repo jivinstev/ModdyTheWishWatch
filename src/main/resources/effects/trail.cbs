@@ -1,0 +1,42 @@
+# TRAIL — it leaves something behind it as it goes: snow, flowers, a carpet of colour.
+#
+# THE WISHES: "a snow fox that leaves ice behind it", "a snail that leaves a trail of flowers", "a
+# horse that leaves rainbow hoofprints". Each is a thing left at a PLACE, so like a zone it needs a
+# marker to remember where -- and it has to FADE, or a pet's daily walk becomes a world of carpet.
+#
+# IT CANNOT DESTROY ANYTHING, the same two rules as an eruption:
+#   - it only ever fills AIR at the creature's feet, over real ground (not water, not a drop), so a
+#     garden, a path or a chest is never replaced;
+#   - when a mark fades it removes ONLY its own block, so if he picked the flower or built there,
+#     what is there now stays.
+# BLOCK is a thin thing it can walk on (a snow layer, a carpet, a flower): apply_effect refuses a
+# full block, which would be placed round the creature's own feet.
+#
+# IT STOPS. At most MOST marks are down at once; a creature pacing in a pen does not tile the world.
+# A creature standing still leaves one mark, because the next tick its feet are not in air.
+reset
+    /scoreboard objectives add mfam_trail dummy
+    /scoreboard objectives add mfam_trailt dummy
+    /scoreboard objectives add mfam_trailn dummy
+end
+
+clock tick
+    # 1. every few ticks, a mark where it stands -- only into air, over solid ground, under the cap
+    /execute as @e[tag=${TAG}] run scoreboard players add @s mfam_trailt 1
+    /execute store result score #trail_${TAG} mfam_trailn if entity @e[tag=mfam_tr_${TAG}]
+    /execute unless score #trail_${TAG} mfam_trailn matches ${MOST}.. as @e[tag=${TAG},scores={mfam_trailt=${STEP_TICKS}..}] at @s if block ~ ~ ~ minecraft:air unless block ~ ~-1 ~ minecraft:air unless block ~ ~-1 ~ minecraft:water unless block ~ ~-1 ~ minecraft:lava run summon minecraft:armor_stand ~ ~ ~ {Tags:["mfam_tr_${TAG}","mfam_trn_${TAG}"],Invisible:1b,Marker:1b,NoGravity:1b,Invulnerable:1b}
+    /execute as @e[tag=${TAG},scores={mfam_trailt=${STEP_TICKS}..}] run scoreboard players set @s mfam_trailt 0
+
+    # 2. a new mark puts its block down, sparkles once, and starts its life
+    /execute as @e[tag=mfam_trn_${TAG}] at @s run setblock ~ ~ ~ ${BLOCK} keep
+    /execute unless entity @e[tag=${TAG},tag=mfam_veiled,limit=1] as @e[tag=mfam_trn_${TAG}] at @s run particle ${PARTICLE} ~ ~0.3 ~ 0.25 0.2 0.25 0.01 4 force
+    /execute if entity @e[tag=${TAG},tag=mfam_veiled,limit=1] as @e[tag=mfam_trn_${TAG}] at @s run particle ${PARTICLE} ~ ~0.3 ~ 0.25 0.2 0.25 0.01 4 force @a[tag=!mfam_veil_blind]
+    /execute as @e[tag=mfam_trn_${TAG}] run scoreboard players set @s mfam_trail ${LASTS_TICKS}
+    /tag @e[tag=mfam_trn_${TAG}] remove mfam_trn_${TAG}
+
+    # 3. and then it fades -- ONLY our own block, never anything that is there now
+    /execute as @e[tag=mfam_tr_${TAG},scores={mfam_trail=1..}] run scoreboard players remove @s mfam_trail 1
+    /execute as @e[tag=mfam_tr_${TAG},scores={mfam_trail=0}] at @s if block ~ ~ ~ ${BLOCK} run setblock ~ ~ ~ minecraft:air
+    /execute as @e[tag=mfam_tr_${TAG},scores={mfam_trail=0}] run tp @s ~ -300 ~
+    /kill @e[tag=mfam_tr_${TAG},scores={mfam_trail=0}]
+end

@@ -1,0 +1,239 @@
+{
+  "id": "robot",
+  "name": "Robot",
+  "status": "Sculpting your robot",
+  "powers": [
+    "friendly"
+  ],
+  "damage": 0,
+  "health": 30,
+  "parts": [
+    {
+      "name": "legL",
+      "from": [
+        -4,
+        0,
+        -2
+      ],
+      "to": [
+        -1,
+        12,
+        2
+      ],
+      "colour": "#7A7F87",
+      "pattern": "checker",
+      "pattern_colour": "#6A6F77"
+    },
+    {
+      "name": "legR",
+      "from": [
+        1,
+        0,
+        -2
+      ],
+      "to": [
+        4,
+        12,
+        2
+      ],
+      "colour": "#7A7F87",
+      "pattern": "checker",
+      "pattern_colour": "#6A6F77"
+    },
+    {
+      "name": "body",
+      "from": [
+        -5,
+        11,
+        -3
+      ],
+      "to": [
+        5,
+        24,
+        3
+      ],
+      "colour": "#A9B0B8",
+      "pattern": "gradient",
+      "pattern_colour": "#8A9199"
+    },
+    {
+      "name": "chest_panel",
+      "parent": "body",
+      "from": [
+        -3,
+        15,
+        -4
+      ],
+      "to": [
+        3,
+        21,
+        -2
+      ],
+      "colour": "#3A7BD5"
+    },
+    {
+      "name": "armL",
+      "from": [
+        -8,
+        12,
+        -2
+      ],
+      "to": [
+        -5,
+        23,
+        2
+      ],
+      "colour": "#7A7F87"
+    },
+    {
+      "name": "armR",
+      "from": [
+        5,
+        12,
+        -2
+      ],
+      "to": [
+        8,
+        23,
+        2
+      ],
+      "colour": "#7A7F87"
+    },
+    {
+      "name": "head",
+      "from": [
+        -4,
+        23,
+        -4
+      ],
+      "to": [
+        4,
+        31,
+        4
+      ],
+      "colour": "#B8BFC7",
+      "pattern": "gradient",
+      "pattern_colour": "#9AA1A9"
+    },
+    {
+      "name": "eyeL",
+      "parent": "head",
+      "from": [
+        -3,
+        27,
+        -5
+      ],
+      "to": [
+        -1,
+        29,
+        -3
+      ],
+      "colour": "#33E0FF"
+    },
+    {
+      "name": "eyeR",
+      "parent": "head",
+      "from": [
+        1,
+        27,
+        -5
+      ],
+      "to": [
+        3,
+        29,
+        -3
+      ],
+      "colour": "#33E0FF"
+    },
+    {
+      "name": "mouth_mid",
+      "parent": "head",
+      "from": [
+        -1,
+        24,
+        -5
+      ],
+      "to": [
+        1,
+        25,
+        -3
+      ],
+      "colour": "#2A2D33"
+    },
+    {
+      "name": "mouth_left",
+      "parent": "head",
+      "from": [
+        -3,
+        25,
+        -5
+      ],
+      "to": [
+        -1,
+        26,
+        -3
+      ],
+      "colour": "#2A2D33"
+    },
+    {
+      "name": "mouth_right",
+      "parent": "head",
+      "from": [
+        1,
+        25,
+        -5
+      ],
+      "to": [
+        3,
+        26,
+        -3
+      ],
+      "colour": "#2A2D33"
+    },
+    {
+      "name": "antenna",
+      "parent": "head",
+      "from": [
+        -0.5,
+        30,
+        -0.5
+      ],
+      "to": [
+        0.5,
+        34,
+        0.5
+      ],
+      "colour": "#5A5F67"
+    },
+    {
+      "name": "antenna_tip",
+      "parent": "head",
+      "from": [
+        -1,
+        33,
+        -1
+      ],
+      "to": [
+        1,
+        35,
+        1
+      ],
+      "colour": "#FF4040"
+    }
+  ],
+  "palette": [
+    {
+      "colour": "#A9B0B8",
+      "percent": 45
+    },
+    {
+      "colour": "#7A7F87",
+      "percent": 40
+    },
+    {
+      "colour": "#3A7BD5",
+      "percent": 3
+    }
+  ],
+  "note": "Plain base robot: silver body/head, darker grey limbs, blue chest panel, cyan eyes, small smile (3 boxes) and antenna. Standard part names for animation; friendly, 0 damage, no accessories so it can be extended via start_from."
+}

@@ -1,0 +1,226 @@
+{
+ "behaves_like": "buzzer",
+ "damage": 0,
+ "health": 20,
+ "id": "jellyfish",
+ "name": "Glowing Pink Jellyfish",
+ "note": "Invented jellyfish: pink dome bell with gradient skin, six dangling hot-pink tentacles, cute eyes; flies (floats) friendly, glowing power for the glow.",
+ "palette": [
+  {
+   "colour": "pink",
+   "percent": 70
+  },
+  {
+   "colour": "hot_pink",
+   "percent": 25
+  }
+ ],
+ "parts": [
+  {
+   "colour": "#FF8AD0",
+   "from": [
+    -8,
+    16,
+    -8
+   ],
+   "name": "body",
+   "pattern": "gradient",
+   "pattern_colour": "#FFC8EA",
+   "to": [
+    8,
+    26,
+    8
+   ]
+  },
+  {
+   "colour": "#FF9AD8",
+   "from": [
+    -6,
+    25,
+    -6
+   ],
+   "name": "head",
+   "parent": "body",
+   "pattern": "gradient",
+   "pattern_colour": "#FFD6F0",
+   "to": [
+    6,
+    30,
+    6
+   ]
+  },
+  {
+   "colour": "black",
+   "from": [
+    -5,
+    19,
+    -9
+   ],
+   "name": "eyeL",
+   "parent": "body",
+   "to": [
+    -2,
+    22,
+    -7
+   ]
+  },
+  {
+   "colour": "black",
+   "from": [
+    2,
+    19,
+    -9
+   ],
+   "name": "eyeR",
+   "parent": "body",
+   "to": [
+    5,
+    22,
+    -7
+   ]
+  },
+  {
+   "colour": "#C0306A",
+   "from": [
+    -1,
+    17,
+    -9
+   ],
+   "name": "mouthM",
+   "parent": "body",
+   "to": [
+    1,
+    18,
+    -7
+   ]
+  },
+  {
+   "colour": "#C0306A",
+   "from": [
+    -3,
+    18,
+    -9
+   ],
+   "name": "mouthL",
+   "parent": "body",
+   "to": [
+    -1,
+    19,
+    -7
+   ]
+  },
+  {
+   "colour": "#C0306A",
+   "from": [
+    1,
+    18,
+    -9
+   ],
+   "name": "mouthR",
+   "parent": "body",
+   "to": [
+    3,
+    19,
+    -7
+   ]
+  },
+  {
+   "colour": "hot_pink",
+   "from": [
+    -6,
+    2,
+    -6
+   ],
+   "name": "tentacle1",
+   "parent": "body",
+   "to": [
+    -4,
+    17,
+    -4
+   ]
+  },
+  {
+   "colour": "hot_pink",
+   "from": [
+    4,
+    4,
+    -6
+   ],
+   "name": "tentacle2",
+   "parent": "body",
+   "to": [
+    6,
+    17,
+    -4
+   ]
+  },
+  {
+   "colour": "hot_pink",
+   "from": [
+    -6,
+    3,
+    4
+   ],
+   "name": "tentacle3",
+   "parent": "body",
+   "to": [
+    -4,
+    17,
+    6
+   ]
+  },
+  {
+   "colour": "hot_pink",
+   "from": [
+    4,
+    1,
+    4
+   ],
+   "name": "tentacle4",
+   "parent": "body",
+   "to": [
+    6,
+    17,
+    6
+   ]
+  },
+  {
+   "colour": "hot_pink",
+   "from": [
+    -1,
+    0,
+    -1
+   ],
+   "name": "tentacle5",
+   "parent": "body",
+   "to": [
+    1,
+    17,
+    1
+   ]
+  },
+  {
+   "colour": "hot_pink",
+   "from": [
+    -1,
+    5,
+    5
+   ],
+   "name": "tentacle6",
+   "parent": "body",
+   "to": [
+    1,
+    17,
+    7
+   ]
+  }
+ ],
+ "powers": [
+  "friendly",
+  "flies",
+  "glowing",
+  "persistent"
+ ],
+ "status": "Sculpting your pink jellyfish",
+ "voice": "silent"
+}

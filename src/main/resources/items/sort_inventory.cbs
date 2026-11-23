@@ -1,0 +1,7 @@
+# SORT_INVENTORY — his bag tidies itself. Like things are stacked together and laid out
+# in groups: blocks, then food, then tools, then everything else. His hotbar is never touched. The
+# sorting is Java's (Tidy): a function cannot read an inventory's stacks and put them back in order.
+function effect()
+    /execute as ${TARGET} run tag @s add mfam_sort_inventory
+    /playsound minecraft:item.bundle.insert master @a ~ ~ ~ 1 1.2
+end

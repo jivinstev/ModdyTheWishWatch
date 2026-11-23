@@ -1,0 +1,12 @@
+{
+  "model": {
+    "model": "wishpack:item/tinted/potion",
+    "tints": [
+      {
+        "default": -1,
+        "type": "minecraft:dye"
+      }
+    ],
+    "type": "minecraft:model"
+  }
+}

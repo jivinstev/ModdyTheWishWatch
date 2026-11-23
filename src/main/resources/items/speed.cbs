@@ -1,0 +1,6 @@
+# SPEED — you go fast.
+function effect()
+    /execute as ${TARGET} run effect give @s minecraft:speed ${SECONDS} ${LEVEL}
+    /particle minecraft:firework ~ ~1 ~ 0.3 0.5 0.3 0.05 25 force
+    /playsound minecraft:entity.firework_rocket.launch master @a ~ ~ ~ 1 1.4
+end

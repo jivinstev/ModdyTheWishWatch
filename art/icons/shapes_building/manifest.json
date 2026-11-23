@@ -1,0 +1,70 @@
+{
+ "cluster": "shapes_building",
+ "order": [
+  "door",
+  "trapdoor",
+  "fence",
+  "sign",
+  "plate",
+  "boat",
+  "bed",
+  "banner",
+  "rail"
+ ],
+ "icons": [
+  {
+   "name": "door",
+   "status": "ok",
+   "attempts": 2,
+   "note": "Tall door with a panel and a dark fixed handle."
+  },
+  {
+   "name": "trapdoor",
+   "status": "ok",
+   "attempts": 3,
+   "note": "Square hatch lying flat, 3 cells thick, handle on top."
+  },
+  {
+   "name": "fence",
+   "status": "ok",
+   "attempts": 3,
+   "note": "Fence post with two rails."
+  },
+  {
+   "name": "sign",
+   "status": "ok",
+   "attempts": 1,
+   "note": "Sign board on a post, board blank."
+  },
+  {
+   "name": "plate",
+   "status": "ok",
+   "attempts": 2,
+   "note": "Thin square slab, 2 cells tall."
+  },
+  {
+   "name": "boat",
+   "status": "ok",
+   "attempts": 2,
+   "note": "Small rowing boat in side view with an oar."
+  },
+  {
+   "name": "bed",
+   "status": "ok",
+   "attempts": 1,
+   "note": "Bed in side view: blanket, white fixed pillow, brown fixed frame."
+  },
+  {
+   "name": "banner",
+   "status": "ok",
+   "attempts": 1,
+   "note": "Cloth banner hanging from a brown fixed crossbar pole."
+  },
+  {
+   "name": "rail",
+   "status": "ok",
+   "attempts": 1,
+   "note": "Short piece of track with two rails and brown fixed sleepers."
+  }
+ ]
+}

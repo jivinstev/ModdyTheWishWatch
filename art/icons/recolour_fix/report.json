@@ -1,0 +1,74 @@
+[
+ {
+  "cluster": "recolour_fix",
+  "name": "yo_yo",
+  "verdict": "PASS",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.491,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "body": 360,
+   "line": 138,
+   "shine": 5
+  }
+ },
+ {
+  "cluster": "recolour_fix",
+  "name": "guitar",
+  "verdict": "PASS",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.333,
+   "dark_body": 0.173,
+   "pieces": 1,
+   "body": 173,
+   "fixed": 58,
+   "line": 107,
+   "shine": 3
+  }
+ },
+ {
+  "cluster": "recolour_fix",
+  "name": "sunglasses",
+  "verdict": "PASS",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.329,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "body": 91,
+   "fixed": 95,
+   "line": 146,
+   "shine": 5
+  }
+ },
+ {
+  "cluster": "recolour_fix",
+  "name": "teddy_bear",
+  "verdict": "PASS",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.532,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "accent": 56,
+   "body": 297,
+   "fixed": 10,
+   "line": 177,
+   "shine": 5
+  }
+ }
+]

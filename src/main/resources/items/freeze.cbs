@@ -1,0 +1,14 @@
+# FREEZE — the powder-snow shiver, and they cannot chase you.
+#
+# TicksFrozen is the visual (the blue vignette and the ice crust) and slowness is what actually
+# stops them. Both, because either alone is half the wish: frozen-looking things that still catch
+# you, or things that crawl with no sign of why.
+#
+# TicksFrozen is /data, so it does nothing to a PLAYER — vanilla refuses to modify one. The slowness
+# still lands, which is the half that matters when the victim is the child.
+function effect()
+    /execute as ${TARGET} at @s run data modify entity @s TicksFrozen set value ${FREEZE_TICKS}
+    /execute as ${TARGET} run effect give @s minecraft:slowness ${SECONDS} 5
+    /particle minecraft:snowflake ~ ~1 ~ 0.5 0.5 0.5 0.05 40 force
+    /playsound minecraft:block.glass.break master @a ~ ~ ~ 1 0.6
+end

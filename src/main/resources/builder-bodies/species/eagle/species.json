@@ -1,0 +1,21 @@
+{
+  "vehicle": false,
+  "armor": 0.0,
+  "body": "humanoid",
+  "createdAt": 1793197995347,
+  "damage": 0.0,
+  "health": 20.0,
+  "id": "eagle",
+  "knockbackResistance": 0.0,
+  "modelKey": "eagle",
+  "name": "Eagle",
+  "powers": [
+    "flies",
+    "friendly"
+  ],
+  "scale": 1.0,
+  "speed": 0.25,
+  "texture": "zombie",
+  "tint": "#FFFFFF",
+  "updatedAt": 1793197995347
+}

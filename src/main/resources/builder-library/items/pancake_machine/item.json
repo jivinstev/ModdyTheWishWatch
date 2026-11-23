@@ -1,0 +1,19 @@
+{
+ "count": 1,
+ "effects": [
+  "turn_into"
+ ],
+ "id": "pancake_machine_convert",
+ "name": "Pancake Machine",
+ "params": {
+  "FROM": "minecraft:wheat",
+  "TO": "pancake_food",
+  "_kit": {
+   "items": "minecraft:wheat 32"
+  }
+ },
+ "parts": [],
+ "properties": {},
+ "shape": "machine",
+ "variants": []
+}

@@ -1,0 +1,82 @@
+[
+ {
+  "tool": "sculpt_creature",
+  "args": {
+   "id": "staged_pet_dragon_spider",
+   "name": "Pet Dragon spider",
+   "start_from": "pet_dragon",
+   "parts": [],
+   "palette": [
+    {
+     "colour": "green",
+     "percent": 73
+    },
+    {
+     "colour": "tan/orange",
+     "percent": 21
+    },
+    {
+     "colour": "yellow",
+     "percent": 6
+    }
+   ],
+   "note": "Builder make: Pet Dragon spider from the ready-made species/pet_dragon.",
+   "scale": 3.0,
+   "recolour": {
+    "body": "#F5C518",
+    "belly": "#B8860B",
+    "head": "#F5C518",
+    "snout": "#F5C518",
+    "legL": "#F5C518",
+    "legR": "#F5C518",
+    "legBL": "#F5C518",
+    "legBR": "#F5C518",
+    "kit_wing0": "#FFE680",
+    "kit_wing1": "#FFE680",
+    "kit_wing2": "#FFE680",
+    "kit_wing3": "#FFE680",
+    "kit_wing4": "#FFE680",
+    "kit_wing5": "#FFE680",
+    "kit_tail10": "#F5C518",
+    "kit_tail11": "#F5C518",
+    "kit_tail12": "#F5C518",
+    "kit_tail13": "#F5C518",
+    "kit_spike_row20": "#FFE680",
+    "kit_spike_row21": "#FFE680",
+    "kit_spike_row22": "#FFE680",
+    "kit_spike_row23": "#FFE680",
+    "kit_spike_row24": "#FFE680",
+    "kit_spike_row25": "#FFE680",
+    "kit_spike_row26": "#FFE680",
+    "kit_spike_row27": "#FFE680",
+    "kit_spike_row28": "#FFE680",
+    "kit_spike_row29": "#FFE680",
+    "kit_horn30": "#B8860B",
+    "kit_horn31": "#B8860B",
+    "kit_horn32": "#B8860B",
+    "kit_horn33": "#B8860B",
+    "kit_horn34": "#B8860B",
+    "kit_horn35": "#B8860B"
+   },
+   "powers": [
+    "friendly",
+    "rideable"
+   ],
+   "spawn": true,
+   "kits": [
+    {
+     "kit": "leg_row",
+     "on": "body",
+     "count": 4,
+     "colour": "#FFE680"
+    }
+   ]
+  }
+ },
+ {
+  "tool": "finish_building",
+  "args": {
+   "label": "Pet Dragon spider"
+  }
+ }
+]

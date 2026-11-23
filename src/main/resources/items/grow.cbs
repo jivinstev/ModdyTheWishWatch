@@ -1,0 +1,47 @@
+# GROW — you change size, and CHANGE BACK on a timer.
+#
+# THE ATTRIBUTE ID IS VERSION-SPECIFIC: `minecraft:scale` on 1.21.4 (written here), and
+# `minecraft:generic.scale` on 1.21.1, where the compile corrects it (wish.CommandDialect). Getting it
+# wrong does not make
+# this line fail -- it makes the WHOLE PACK fail to LOAD, so the effect and the clock below are both
+# dead and a grow item silently does nothing at all. It shipped that way, passed 51 matrix cells and
+# a green Gate B, and was caught only by looking at the world. everyHardcodedRegistryIdResolves now
+# resolves every id a template names against the live registry.
+#
+# The timer is the whole design. A potion that makes you giant forever is not a potion, it is a
+# permanent change to the save that the child has no way to undo — and being stuck at scale 4 means
+# not fitting through your own front door.
+#
+# WHO IS ON THE TIMER IS A TAG, NOT JUST A SCORE. `@e[scores=…]` alone makes Minecraft look at
+# EVERY entity in the world, every tick, to find the few on the timer — and a wished creature is
+# dozens of entities. Tagged, the selector index answers it from just the ones wearing
+# mfam_grow_on. The tag comes off with the score, so nothing wears it once it is over.
+#
+# THE SWEEP is the upgrade path, not a feature. An entity part-way through its timer when this
+# version replaced the old one (a player who logged off within the minute, a mob in an unloaded
+# chunk) has the score and no tag, and would otherwise stay tiny for ever. `reset` adopts every one
+# that is loaded; the sweep, every 200 ticks, adopts the rest as they come back. It is the one
+# untagged selector left here, at 1/200th of the old cost.
+reset
+    /scoreboard objectives add mfam_grow dummy
+    /execute as @e[scores={mfam_grow=0..},tag=!mfam_grow_on] run tag @s add mfam_grow_on
+end
+
+function effect()
+    /execute as ${TARGET} run attribute @s minecraft:scale base set ${SCALE}
+    /execute as ${TARGET} run scoreboard players set @s mfam_grow ${GROW_TICKS}
+    /execute as ${TARGET} run tag @s add mfam_grow_on
+    /particle minecraft:witch ~ ~1 ~ 0.5 0.8 0.5 0.1 40 force
+    /playsound minecraft:entity.player.levelup master @a ~ ~ ~ 1 0.7
+end
+
+clock tick
+    /execute as @e[tag=mfam_grow_on,scores={mfam_grow=1..}] run scoreboard players remove @s mfam_grow 1
+    /execute as @e[tag=mfam_grow_on,scores={mfam_grow=0}] run attribute @s minecraft:scale base set 1
+    /execute as @e[tag=mfam_grow_on,scores={mfam_grow=0}] at @s run playsound minecraft:entity.player.levelup master @a ~ ~ ~ 1 1.4
+    /execute as @e[tag=mfam_grow_on,scores={mfam_grow=0}] run scoreboard players reset @s mfam_grow
+    /execute as @e[tag=mfam_grow_on] unless score @s mfam_grow matches 0.. run tag @s remove mfam_grow_on
+    /scoreboard players add #sweep mfam_grow 1
+    /execute if score #sweep mfam_grow matches 200.. as @e[scores={mfam_grow=0..},tag=!mfam_grow_on] run tag @s add mfam_grow_on
+    /execute if score #sweep mfam_grow matches 200.. run scoreboard players set #sweep mfam_grow 0
+end

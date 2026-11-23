@@ -1,0 +1,44 @@
+# Validation 3: set the Claude subscription as the AI model, the way a player does: from the watch, with one button.
+# The Magician is the AI wish mode. The watch's "Turn on the Magician" opens the Magician
+# setup; "Use my Claude subscription" picks Opus 5.5 for wishes and Haiku 5.5 as the helper, both paid for by Claude
+# Code's own sign-in (no API key), and starts the setup at once: it checks Claude Code is installed and signed in,
+# then runs the Magician check (real calls to the models, ending in one small test wish), about 3 minutes, once.
+# Only a passed check turns the Magician on. The choice and the passed check are saved in Moddy's home folder, so 04
+# and 05 build on them (validate.sh runs the set in order).
+# Needs: Claude Code installed and signed in on this Mac (run `claude` once and sign in).
+@intent From the watch, one button sets up the Magician on the Claude subscription, and its check turns it on
+
+@step a clear stage
+gamemode creative
+time set noon
+weather clear
+gamerule doDaylightCycle false
+gamerule doMobSpawning false
+tp @s ~ ~ ~ 0 10
+
+@step open the watch
+# The watch sits in the selected hotbar slot; using it opens the wish screen. The Magician is off for a new player.
+@key key.use
+@expect screen /make a wish/ within 10s
+@wait 1s
+@shot watch-magician-off
+
+@step press "Turn on the Magician"
+@click button "Turn on the Magician"
+@expect screen Magician setup within 10s
+@wait 1s
+@shot magician-setup
+
+@step choose the Claude subscription
+@click item "Use my Claude subscription"
+@expect chat /setting up the magician with your claude subscription/ within 10s
+@expect actionbar /magician setup 1\/3/ within 20s
+@shot checking-claude-code
+@expect actionbar /magician setup 2\/3/ within 120s
+@shot magician-check-running
+
+@step the check passes and the Magician is on
+# The check's last step is a real wish made by the wish model; allow it 10 minutes.
+@expect chat /the magician is on: opus 5\.5 on your claude subscription/ within 600s
+@wait 2s
+@shot magician-on

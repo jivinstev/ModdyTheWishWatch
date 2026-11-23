@@ -1,0 +1,28 @@
+{
+  "name": "meteor_crater",
+  "motion": "impact_stamp",
+  "form": "crater",
+  "size": "medium",
+  "material": "minecraft:blackstone",
+  "core": "minecraft:magma_block",
+  "rim": "minecraft:cobbled_deepslate",
+  "catch": [
+    {
+      "where": "near",
+      "reach": 14,
+      "to": 20,
+      "do": [
+        "lift"
+      ]
+    }
+  ],
+  "blocks": [
+    {
+      "hit": "fire",
+      "reach": 16,
+      "per_tick": 4,
+      "strength": 0.6
+    }
+  ],
+  "afterwards": "until_undo"
+}

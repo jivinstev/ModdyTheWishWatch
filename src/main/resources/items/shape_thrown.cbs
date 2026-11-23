@@ -1,0 +1,29 @@
+# THROWN — right-click to hurl it, and it goes off WHERE IT LANDS.
+#
+# Two components ride on the stack and they are a pair:
+#   WishThrowTag     makes the right-click throw a snowball carrying this feature's tag, which is
+#                    what the trail clock below watches;
+#   WishHitFunction  runs act() AT the impact point, AS the thrower.
+#
+# The landing was solved once in the mod (commit a18b5e0) precisely so no wish has to trail marker
+# entities by hand — so there is no per-tick "where did it get to" bookkeeping here, and none should
+# be added.
+#
+# The trail is not decoration. A thrown thing that is invisible in flight reads as the click having
+# done nothing at all, which is the same complaint as an ability with no telegraph.
+import common
+
+function give()
+${GIVES}
+    /tellraw @s {"text":"${GIVE_MESSAGE}","color":"${HEX}"}
+end
+
+function act()
+    /function $namespace:effect
+end
+
+clock tick
+    /execute as @e[type=minecraft:snowball,tag=${FEATURE}_fly] at @s run particle ${TRAIL} ~ ~ ~ 0.05 0.05 0.05 0.01 3 force
+end
+
+${EFFECT_BLOCK}

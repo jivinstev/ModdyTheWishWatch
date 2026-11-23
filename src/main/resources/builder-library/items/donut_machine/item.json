@@ -1,0 +1,19 @@
+{
+ "count": 1,
+ "effects": [
+  "turn_into"
+ ],
+ "id": "donut_machine_convert",
+ "name": "Donut Machine",
+ "params": {
+  "FROM": "minecraft:sugar",
+  "TO": "donut_food",
+  "_kit": {
+   "items": "minecraft:sugar 32"
+  }
+ },
+ "parts": [],
+ "properties": {},
+ "shape": "machine",
+ "variants": []
+}

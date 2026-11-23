@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "moddingfromamod:item/wish/sword",
+    "layer1": "moddingfromamod:item/wish/sword_detail"
+  }
+}

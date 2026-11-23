@@ -1,0 +1,26 @@
+# TURN_INTO — it turns one thing into another: a block in the world, or a thing he carries.
+#
+# convert (his bag) and change_block (the world) made ONE, because a child does not split "a wand that
+# turns stone into gold" by where the stone is. The MODE is derived by make_item from the shape
+# (datapack/TurnInto): a machine takes from his inventory, a thrown thing changes the blocks where it
+# lands, a held one changes the block he points at if it matches and otherwise works on his inventory —
+# never both in one use. So the body is rendered whole by the tool (ACTS, HELPERS): a template cannot
+# loop over a list of FROMs or choose its own mode.
+#
+# What it keeps from both:
+#   - convert's ONE OPERATION: `clear` reports how many it took, so the test and the take are one
+#     command and cannot disagree; and it REFUSES OUT LOUD — "You need … in your inventory to use this!"
+#     — because a machine that does nothing reads as a broken machine.
+#   - change_block's filter: only blocks matching FROM change, and any_block is the curated
+#     #moddingfromamod:changeable — never a chest, bedrock or a portal.
+#
+# ITS OWN COUNTER: declared here, not only by the machine shape's reset, so a held one works in a
+# world where no machine was ever made. Adding an objective that exists is harmless.
+reset
+    /scoreboard objectives add mfam_conv dummy
+end
+
+function effect()
+${ACTS}
+end
+${HELPERS}

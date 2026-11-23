@@ -1,0 +1,20 @@
+# "I want a magic wand that shoots lightning" — the ITEM-WITH-AN-EFFECT class, end to end.
+#
+# What matters here is what is NOT in this file. There is no advancement, no trigger, no predicate
+# and no raycast: the mod's wish_item runs a named function when it is used, so the whole feature is
+# a give and a function. Compare docs/SPIKE_PLACEABLE_MECHANISM.md, where a datapack-only item had to
+# identify itself inside a loot predicate because a reward function never learns what was clicked.
+
+function give()
+    /give @s moddingfromamod:wish_item[minecraft:custom_model_data={floats:[10f]},minecraft:dyed_color={rgb:9857238},minecraft:custom_name='{"text":"Lightning Wand","color":"light_purple","bold":true,"italic":false}',minecraft:lore=['{"text":"Right-click to call the storm","color":"gray","italic":false}'],minecraft:enchantment_glint_override=true,minecraft:custom_data={WishOnUse:"wandwish:zap"}] 1
+    /tellraw @s {"text":"You got a Lightning Wand! Point it and right-click. ⚡","color":"light_purple"}
+end
+
+# Runs as the player, at the player, because the item calls it directly.
+function zap()
+    /execute at @s anchored eyes positioned ^ ^ ^6 run summon minecraft:lightning_bolt ~ ~ ~
+    /execute at @s run playsound minecraft:entity.lightning_bolt.thunder player @s ~ ~ ~ 1 1.4
+end
+
+reset
+end

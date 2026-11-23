@@ -1,0 +1,229 @@
+{
+  "id": "penguin",
+  "name": "Penguin",
+  "status": "Sculpting your penguin",
+  "powers": [
+    "friendly"
+  ],
+  "damage": 0,
+  "health": 10,
+  "speed": 0.2,
+  "palette": [
+    {
+      "colour": "black",
+      "percent": 55
+    },
+    {
+      "colour": "white",
+      "percent": 35
+    },
+    {
+      "colour": "orange",
+      "percent": 5
+    }
+  ],
+  "note": "Plain base penguin: black back/head/flippers, white belly and face patch, orange beak and feet, small cheerful eyes. No accessories so variants can start_from it.",
+  "parts": [
+    {
+      "name": "body",
+      "from": [
+        -5,
+        3,
+        -4
+      ],
+      "to": [
+        5,
+        17,
+        5
+      ],
+      "colour": "#1A1A1A",
+      "pattern": "fur",
+      "pattern_colour": "#2B2B3A"
+    },
+    {
+      "name": "belly",
+      "from": [
+        -4,
+        3,
+        -5
+      ],
+      "to": [
+        4,
+        15,
+        -3
+      ],
+      "colour": "white",
+      "parent": "body"
+    },
+    {
+      "name": "head",
+      "from": [
+        -4,
+        16,
+        -4
+      ],
+      "to": [
+        4,
+        23,
+        4
+      ],
+      "colour": "#1A1A1A",
+      "pivot": [
+        0,
+        17,
+        0
+      ]
+    },
+    {
+      "name": "face",
+      "from": [
+        -3,
+        17,
+        -5
+      ],
+      "to": [
+        3,
+        21,
+        -3
+      ],
+      "colour": "white",
+      "parent": "head"
+    },
+    {
+      "name": "eyeL",
+      "from": [
+        1,
+        19,
+        -6
+      ],
+      "to": [
+        2,
+        20,
+        -4
+      ],
+      "colour": "black",
+      "parent": "head"
+    },
+    {
+      "name": "eyeR",
+      "from": [
+        -2,
+        19,
+        -6
+      ],
+      "to": [
+        -1,
+        20,
+        -4
+      ],
+      "colour": "black",
+      "parent": "head"
+    },
+    {
+      "name": "beak",
+      "from": [
+        -1,
+        17,
+        -8
+      ],
+      "to": [
+        1,
+        19,
+        -4
+      ],
+      "colour": "orange",
+      "parent": "head"
+    },
+    {
+      "name": "armL",
+      "from": [
+        5,
+        7,
+        -2
+      ],
+      "to": [
+        6,
+        16,
+        3
+      ],
+      "colour": "#1A1A1A",
+      "pivot": [
+        5,
+        16,
+        0
+      ]
+    },
+    {
+      "name": "armR",
+      "from": [
+        -6,
+        7,
+        -2
+      ],
+      "to": [
+        -5,
+        16,
+        3
+      ],
+      "colour": "#1A1A1A",
+      "pivot": [
+        -5,
+        16,
+        0
+      ]
+    },
+    {
+      "name": "legL",
+      "from": [
+        1,
+        0,
+        -3
+      ],
+      "to": [
+        4,
+        4,
+        1
+      ],
+      "colour": "orange",
+      "pivot": [
+        2,
+        4,
+        0
+      ]
+    },
+    {
+      "name": "legR",
+      "from": [
+        -4,
+        0,
+        -3
+      ],
+      "to": [
+        -1,
+        4,
+        1
+      ],
+      "colour": "orange",
+      "pivot": [
+        -2,
+        4,
+        0
+      ]
+    },
+    {
+      "name": "tail",
+      "from": [
+        -2,
+        3,
+        5
+      ],
+      "to": [
+        2,
+        5,
+        7
+      ],
+      "colour": "#1A1A1A",
+      "parent": "body"
+    }
+  ]
+}

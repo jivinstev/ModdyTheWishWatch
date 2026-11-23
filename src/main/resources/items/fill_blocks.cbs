@@ -1,0 +1,23 @@
+# FILL_BLOCKS — the space around it fills with a block or a liquid: water, snow, cobwebs, a
+# pile of whatever he named.
+#
+# ONLY INTO AIR. `replace #minecraft:air` is the whole safety rule: it never touches a block that is
+# already there, so it cannot eat his house, a chest or its contents, and a fill can never be the
+# thing that deletes something he built. The reach is capped at 3 each way (a 7x7x7 pond, never a
+# flood of the world), and the block may not be a block entity — ten thousand chests is how a mod
+# repo's Wither Storm house froze a real client.
+#
+# REMEMBERED, SO IT CAN BE UNDONE. Each place it fills leaves a marker, and undo_fill (run by
+# remove_item) turns that block back into air around every marker. The caveat, said plainly: undo
+# also clears that same block if he placed some there himself, inside the same little box.
+function effect()
+    /execute unless entity @e[type=minecraft:marker,tag=${FEATURE}_filled,distance=..0.5] run summon minecraft:marker ~ ~ ~ {Tags:["mfam_fill","${FEATURE}_filled"]}
+    /fill ~-${FILL_RADIUS} ~-${FILL_RADIUS} ~-${FILL_RADIUS} ~${FILL_RADIUS} ~${FILL_RADIUS} ~${FILL_RADIUS} ${BLOCK} replace #minecraft:air
+    /particle minecraft:cloud ~ ~0.5 ~ 1 1 1 0.02 20 force
+    /playsound minecraft:block.bubble_column.upwards_inside master @a[distance=..24] ~ ~ ~ 1 1
+end
+
+function undo_fill()
+    /execute as @e[type=minecraft:marker,tag=${FEATURE}_filled] at @s run fill ~-${FILL_RADIUS} ~-${FILL_RADIUS} ~-${FILL_RADIUS} ~${FILL_RADIUS} ~${FILL_RADIUS} ~${FILL_RADIUS} minecraft:air replace ${BLOCK}
+    /kill @e[type=minecraft:marker,tag=${FEATURE}_filled]
+end

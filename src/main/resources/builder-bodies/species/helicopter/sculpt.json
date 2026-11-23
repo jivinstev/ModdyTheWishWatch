@@ -1,0 +1,260 @@
+{
+ "behaves_like": "vehicle",
+ "damage": 0,
+ "health": 100,
+ "id": "helicopter",
+ "name": "Helicopter",
+ "note": "Red cabin with cyan windshield, grey skids, long tail boom and flat top rotor blades in cross; vehicle life so it parks and flies only when he steers.",
+ "palette": [
+  {
+   "colour": "red",
+   "percent": 70
+  },
+  {
+   "colour": "cyan",
+   "percent": 10
+  },
+  {
+   "colour": "gray",
+   "percent": 15
+  }
+ ],
+ "parts": [
+  {
+   "colour": "red",
+   "from": [
+    -10,
+    6,
+    -14
+   ],
+   "name": "body",
+   "pattern": "gradient",
+   "pattern_colour": "#A01010",
+   "to": [
+    10,
+    22,
+    12
+   ]
+  },
+  {
+   "colour": "cyan",
+   "from": [
+    -8,
+    10,
+    -15
+   ],
+   "name": "windshield",
+   "to": [
+    8,
+    20,
+    -13
+   ]
+  },
+  {
+   "colour": "cyan",
+   "from": [
+    -11,
+    12,
+    -8
+   ],
+   "name": "window_l",
+   "to": [
+    -9,
+    19,
+    2
+   ]
+  },
+  {
+   "colour": "cyan",
+   "from": [
+    9,
+    12,
+    -8
+   ],
+   "name": "window_r",
+   "to": [
+    11,
+    19,
+    2
+   ]
+  },
+  {
+   "colour": "red",
+   "from": [
+    -3,
+    14,
+    11
+   ],
+   "name": "tail_boom",
+   "to": [
+    3,
+    19,
+    40
+   ]
+  },
+  {
+   "colour": "red",
+   "from": [
+    -1,
+    14,
+    36
+   ],
+   "name": "tail_fin",
+   "to": [
+    1,
+    28,
+    42
+   ]
+  },
+  {
+   "colour": "gray",
+   "from": [
+    1,
+    16,
+    37
+   ],
+   "name": "tail_rotor",
+   "to": [
+    2,
+    26,
+    41
+   ]
+  },
+  {
+   "colour": "gray",
+   "from": [
+    -2,
+    21,
+    -3
+   ],
+   "name": "mast",
+   "to": [
+    2,
+    26,
+    1
+   ]
+  },
+  {
+   "colour": "#333333",
+   "from": [
+    -36,
+    25,
+    -2
+   ],
+   "name": "blade_a",
+   "to": [
+    36,
+    26,
+    2
+   ]
+  },
+  {
+   "colour": "#333333",
+   "from": [
+    -2,
+    25,
+    -36
+   ],
+   "name": "blade_b",
+   "to": [
+    2,
+    26,
+    36
+   ]
+  },
+  {
+   "colour": "gray",
+   "from": [
+    -9,
+    2,
+    -8
+   ],
+   "name": "strut_l1",
+   "to": [
+    -7,
+    7,
+    -6
+   ]
+  },
+  {
+   "colour": "gray",
+   "from": [
+    -9,
+    2,
+    4
+   ],
+   "name": "strut_l2",
+   "to": [
+    -7,
+    7,
+    6
+   ]
+  },
+  {
+   "colour": "gray",
+   "from": [
+    7,
+    2,
+    -8
+   ],
+   "name": "strut_r1",
+   "to": [
+    9,
+    7,
+    -6
+   ]
+  },
+  {
+   "colour": "gray",
+   "from": [
+    7,
+    2,
+    4
+   ],
+   "name": "strut_r2",
+   "to": [
+    9,
+    7,
+    6
+   ]
+  },
+  {
+   "colour": "gray",
+   "from": [
+    -11,
+    0,
+    -14
+   ],
+   "name": "skid_l",
+   "to": [
+    -7,
+    2,
+    12
+   ]
+  },
+  {
+   "colour": "gray",
+   "from": [
+    7,
+    0,
+    -14
+   ],
+   "name": "skid_r",
+   "to": [
+    11,
+    2,
+    12
+   ]
+  }
+ ],
+ "powers": [
+  "friendly",
+  "rideable",
+  "flies",
+  "persistent"
+ ],
+ "scale": 1.6,
+ "speed": 0.45,
+ "status": "Building your helicopter",
+ "voice": "silent"
+}

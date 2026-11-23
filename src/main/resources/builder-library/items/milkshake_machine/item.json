@@ -1,0 +1,19 @@
+{
+ "count": 1,
+ "effects": [
+  "turn_into"
+ ],
+ "id": "milkshake_machine_convert",
+ "name": "Milkshake Machine",
+ "params": {
+  "FROM": "minecraft:milk_bucket",
+  "TO": "milkshake_food",
+  "_kit": {
+   "items": "minecraft:milk_bucket 8"
+  }
+ },
+ "parts": [],
+ "properties": {},
+ "shape": "machine",
+ "variants": []
+}

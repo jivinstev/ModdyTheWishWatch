@@ -1,0 +1,341 @@
+{
+  "id": "turtle",
+  "parts": [
+    {
+      "name": "body",
+      "from": [
+        -8.0,
+        4.0,
+        -10.0
+      ],
+      "to": [
+        8.0,
+        8.0,
+        10.0
+      ],
+      "pivot": [
+        0.0,
+        4.0,
+        0.0
+      ],
+      "colour": "#3E8E3E"
+    },
+    {
+      "name": "shell",
+      "parent": "body",
+      "from": [
+        -7.0,
+        8.0,
+        -9.0
+      ],
+      "to": [
+        7.0,
+        13.0,
+        9.0
+      ],
+      "pivot": [
+        0.0,
+        8.0,
+        0.0
+      ],
+      "colour": "#2E7D32",
+      "pattern": "checker",
+      "patternColour": "#FFFFFF"
+    },
+    {
+      "name": "shelltop",
+      "parent": "body",
+      "from": [
+        -4.0,
+        13.0,
+        -6.0
+      ],
+      "to": [
+        4.0,
+        15.0,
+        6.0
+      ],
+      "pivot": [
+        0.0,
+        13.0,
+        0.0
+      ],
+      "colour": "#2E7D32",
+      "pattern": "checker",
+      "patternColour": "#FFFFFF"
+    },
+    {
+      "name": "head",
+      "from": [
+        -3.0,
+        5.0,
+        -16.0
+      ],
+      "to": [
+        3.0,
+        11.0,
+        -9.0
+      ],
+      "pivot": [
+        0.0,
+        5.0,
+        -12.5
+      ],
+      "colour": "#8BC34A"
+    },
+    {
+      "name": "legL",
+      "from": [
+        -8.0,
+        0.0,
+        -8.0
+      ],
+      "to": [
+        -4.0,
+        5.0,
+        -4.0
+      ],
+      "pivot": [
+        -6.0,
+        5.0,
+        -6.0
+      ],
+      "colour": "#8BC34A"
+    },
+    {
+      "name": "legR",
+      "from": [
+        4.0,
+        0.0,
+        -8.0
+      ],
+      "to": [
+        8.0,
+        5.0,
+        -4.0
+      ],
+      "pivot": [
+        6.0,
+        5.0,
+        -6.0
+      ],
+      "colour": "#8BC34A"
+    },
+    {
+      "name": "legBL",
+      "from": [
+        -8.0,
+        0.0,
+        4.0
+      ],
+      "to": [
+        -4.0,
+        5.0,
+        8.0
+      ],
+      "pivot": [
+        -6.0,
+        5.0,
+        6.0
+      ],
+      "colour": "#8BC34A"
+    },
+    {
+      "name": "legBR",
+      "from": [
+        4.0,
+        0.0,
+        4.0
+      ],
+      "to": [
+        8.0,
+        5.0,
+        8.0
+      ],
+      "pivot": [
+        6.0,
+        5.0,
+        6.0
+      ],
+      "colour": "#8BC34A"
+    },
+    {
+      "name": "tail",
+      "parent": "body",
+      "from": [
+        -1.0,
+        5.0,
+        10.0
+      ],
+      "to": [
+        1.0,
+        7.0,
+        13.0
+      ],
+      "pivot": [
+        0.0,
+        7.0,
+        11.5
+      ],
+      "colour": "#8BC34A"
+    },
+    {
+      "name": "eyeL",
+      "parent": "head",
+      "from": [
+        -3.0,
+        8.0,
+        -17.0
+      ],
+      "to": [
+        -1.0,
+        10.0,
+        -16.0
+      ],
+      "pivot": [
+        -2.0,
+        8.0,
+        -16.5
+      ],
+      "colour": "#404040"
+    },
+    {
+      "name": "eyeR",
+      "parent": "head",
+      "from": [
+        1.0,
+        8.0,
+        -17.0
+      ],
+      "to": [
+        3.0,
+        10.0,
+        -16.0
+      ],
+      "pivot": [
+        2.0,
+        8.0,
+        -16.5
+      ],
+      "colour": "#404040"
+    },
+    {
+      "name": "shineL",
+      "parent": "head",
+      "from": [
+        -2.0,
+        9.0,
+        -18.0
+      ],
+      "to": [
+        -1.0,
+        10.0,
+        -17.0
+      ],
+      "pivot": [
+        -1.5,
+        9.0,
+        -17.5
+      ],
+      "colour": "#FFFFFF"
+    },
+    {
+      "name": "shineR",
+      "parent": "head",
+      "from": [
+        2.0,
+        9.0,
+        -18.0
+      ],
+      "to": [
+        3.0,
+        10.0,
+        -17.0
+      ],
+      "pivot": [
+        2.5,
+        9.0,
+        -17.5
+      ],
+      "colour": "#FFFFFF"
+    },
+    {
+      "name": "mouthM",
+      "parent": "head",
+      "from": [
+        -1.0,
+        6.0,
+        -17.0
+      ],
+      "to": [
+        1.0,
+        7.0,
+        -16.0
+      ],
+      "pivot": [
+        0.0,
+        6.0,
+        -16.5
+      ],
+      "colour": "#1B5E20"
+    },
+    {
+      "name": "mouthL",
+      "parent": "head",
+      "from": [
+        -2.0,
+        7.0,
+        -17.0
+      ],
+      "to": [
+        -1.0,
+        8.0,
+        -16.0
+      ],
+      "pivot": [
+        -1.5,
+        7.0,
+        -16.5
+      ],
+      "colour": "#1B5E20"
+    },
+    {
+      "name": "mouthR",
+      "parent": "head",
+      "from": [
+        1.0,
+        7.0,
+        -17.0
+      ],
+      "to": [
+        2.0,
+        8.0,
+        -16.0
+      ],
+      "pivot": [
+        1.5,
+        7.0,
+        -16.5
+      ],
+      "colour": "#1B5E20"
+    }
+  ],
+  "name": "Turtle",
+  "base": "companion",
+  "powers": [
+    "friendly",
+    "persistent"
+  ],
+  "damage": 0,
+  "health": 40,
+  "speed": 0.15,
+  "scale": 1.5,
+  "palette": [
+    {
+      "colour": "green",
+      "percent": 100
+    }
+  ],
+  "note": "Friendly blocky turtle: checkered green/brown shell, lime head+legs, visible big eyes w/ glints and 3-box smile. Companion, 0 damage, scale 1.5.",
+  "status": "Finishing your turtle"
+}

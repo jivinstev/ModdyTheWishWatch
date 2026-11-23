@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "moddingfromamod:item/wish/robot_dog",
+    "layer1": "moddingfromamod:item/wish/robot_dog_accent",
+    "layer2": "moddingfromamod:item/wish/robot_dog_detail"
+  }
+}

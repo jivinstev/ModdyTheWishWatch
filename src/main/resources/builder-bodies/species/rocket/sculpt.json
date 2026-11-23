@@ -1,0 +1,211 @@
+{
+ "behaves_like": "vehicle",
+ "damage": 0,
+ "health": 100,
+ "id": "rocket",
+ "name": "Rocket Ship",
+ "note": "Classic cartoon rocket: white body, red nose cone stepped, red fins, blue window, orange flame at the bottom. Vehicle + flies so he can steer it up.",
+ "palette": [
+  {
+   "colour": "white",
+   "percent": 60
+  },
+  {
+   "colour": "red",
+   "percent": 25
+  }
+ ],
+ "parts": [
+  {
+   "colour": "white",
+   "from": [
+    -6,
+    6,
+    -6
+   ],
+   "name": "body",
+   "pattern": "gradient",
+   "pattern_colour": "#D0D0D0",
+   "to": [
+    6,
+    34,
+    6
+   ]
+  },
+  {
+   "colour": "red",
+   "from": [
+    -5,
+    33,
+    -5
+   ],
+   "name": "nose1",
+   "parent": "body",
+   "to": [
+    5,
+    39,
+    5
+   ]
+  },
+  {
+   "colour": "red",
+   "from": [
+    -3,
+    38,
+    -3
+   ],
+   "name": "nose2",
+   "parent": "body",
+   "to": [
+    3,
+    43,
+    3
+   ]
+  },
+  {
+   "colour": "red",
+   "from": [
+    -1,
+    42,
+    -1
+   ],
+   "name": "nose3",
+   "parent": "body",
+   "to": [
+    1,
+    46,
+    1
+   ]
+  },
+  {
+   "colour": "#3FA9F5",
+   "from": [
+    -3,
+    22,
+    -7
+   ],
+   "name": "window",
+   "parent": "body",
+   "to": [
+    3,
+    28,
+    -5
+   ]
+  },
+  {
+   "colour": "red",
+   "from": [
+    -7,
+    14,
+    -7
+   ],
+   "name": "band",
+   "parent": "body",
+   "to": [
+    7,
+    16,
+    7
+   ]
+  },
+  {
+   "colour": "red",
+   "from": [
+    -11,
+    4,
+    -1
+   ],
+   "name": "finL",
+   "parent": "body",
+   "to": [
+    -5,
+    16,
+    1
+   ]
+  },
+  {
+   "colour": "red",
+   "from": [
+    5,
+    4,
+    -1
+   ],
+   "name": "finR",
+   "parent": "body",
+   "to": [
+    11,
+    16,
+    1
+   ]
+  },
+  {
+   "colour": "red",
+   "from": [
+    -1,
+    4,
+    -11
+   ],
+   "name": "finF",
+   "parent": "body",
+   "to": [
+    1,
+    16,
+    -5
+   ]
+  },
+  {
+   "colour": "red",
+   "from": [
+    -1,
+    4,
+    5
+   ],
+   "name": "finB",
+   "parent": "body",
+   "to": [
+    1,
+    16,
+    11
+   ]
+  },
+  {
+   "colour": "gray",
+   "from": [
+    -4,
+    2,
+    -4
+   ],
+   "name": "nozzle",
+   "parent": "body",
+   "to": [
+    4,
+    7,
+    4
+   ]
+  },
+  {
+   "colour": "orange",
+   "from": [
+    -3,
+    0,
+    -3
+   ],
+   "name": "flame",
+   "parent": "body",
+   "to": [
+    3,
+    3,
+    3
+   ]
+  }
+ ],
+ "powers": [
+  "friendly",
+  "rideable",
+  "flies",
+  "persistent"
+ ],
+ "scale": 1.6,
+ "speed": 0.5,
+ "status": "Building your rocket ship",
+ "voice": "silent"
+}

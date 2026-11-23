@@ -1,0 +1,204 @@
+{
+ "_comment": "PUBLIC FIXTURE for corpus/synthetic-player/sample.json: a pilot and a panel over the fixture's own wishes.",
+ "version": "fixture",
+ "pilot": [
+  {
+   "id": "fx-syn-001",
+   "class": "creature"
+  },
+  {
+   "id": "fx-syn-002",
+   "class": "creature"
+  },
+  {
+   "id": "fx-syn-003",
+   "class": "creature"
+  },
+  {
+   "id": "fx-syn-004",
+   "class": "creature"
+  },
+  {
+   "id": "fx-syn-005",
+   "class": "creature"
+  },
+  {
+   "id": "fx-syn-006",
+   "class": "creature"
+  },
+  {
+   "id": "fx-syn-007",
+   "class": "creature"
+  },
+  {
+   "id": "fx-syn-008",
+   "class": "creature"
+  },
+  {
+   "id": "fx-syn-009",
+   "class": "creature"
+  },
+  {
+   "id": "fx-syn-010",
+   "class": "creature"
+  },
+  {
+   "id": "fx-syn-011",
+   "class": "creature"
+  },
+  {
+   "id": "fx-syn-012",
+   "class": "creature"
+  },
+  {
+   "id": "fx-syn-013",
+   "class": "item"
+  },
+  {
+   "id": "fx-syn-014",
+   "class": "item"
+  },
+  {
+   "id": "fx-syn-015",
+   "class": "item"
+  },
+  {
+   "id": "fx-syn-016",
+   "class": "item"
+  },
+  {
+   "id": "fx-syn-017",
+   "class": "item"
+  },
+  {
+   "id": "fx-syn-018",
+   "class": "item"
+  },
+  {
+   "id": "fx-syn-019",
+   "class": "item"
+  },
+  {
+   "id": "fx-syn-020",
+   "class": "item"
+  },
+  {
+   "id": "fx-syn-021",
+   "class": "item"
+  },
+  {
+   "id": "fx-syn-022",
+   "class": "item"
+  },
+  {
+   "id": "fx-syn-023",
+   "class": "building"
+  },
+  {
+   "id": "fx-syn-024",
+   "class": "building"
+  },
+  {
+   "id": "fx-syn-025",
+   "class": "building"
+  },
+  {
+   "id": "fx-syn-026",
+   "class": "building"
+  },
+  {
+   "id": "fx-syn-027",
+   "class": "building"
+  },
+  {
+   "id": "fx-syn-028",
+   "class": "building"
+  },
+  {
+   "id": "fx-syn-029",
+   "class": "building"
+  },
+  {
+   "id": "fx-syn-030",
+   "class": "building"
+  },
+  {
+   "id": "fx-fol-001",
+   "class": "followup"
+  },
+  {
+   "id": "fx-fol-002",
+   "class": "followup"
+  },
+  {
+   "id": "fx-fol-003",
+   "class": "followup"
+  }
+ ],
+ "panel": [
+  {
+   "id": "fx-syn-031",
+   "class": "building"
+  },
+  {
+   "id": "fx-syn-032",
+   "class": "building"
+  },
+  {
+   "id": "fx-syn-033",
+   "class": "effect"
+  },
+  {
+   "id": "fx-syn-034",
+   "class": "effect"
+  },
+  {
+   "id": "fx-syn-035",
+   "class": "effect"
+  },
+  {
+   "id": "fx-syn-036",
+   "class": "effect"
+  },
+  {
+   "id": "fx-syn-037",
+   "class": "effect"
+  },
+  {
+   "id": "fx-syn-038",
+   "class": "effect"
+  },
+  {
+   "id": "fx-syn-039",
+   "class": "datapack"
+  },
+  {
+   "id": "fx-syn-040",
+   "class": "datapack"
+  },
+  {
+   "id": "fx-syn-041",
+   "class": "datapack"
+  },
+  {
+   "id": "fx-syn-042",
+   "class": "datapack"
+  },
+  {
+   "id": "fx-syn-043",
+   "class": "picture"
+  },
+  {
+   "id": "fx-syn-044",
+   "class": "picture"
+  },
+  {
+   "id": "fx-syn-045",
+   "class": "creature"
+  },
+  {
+   "id": "fx-syn-046",
+   "class": "creature"
+  }
+ ]
+}

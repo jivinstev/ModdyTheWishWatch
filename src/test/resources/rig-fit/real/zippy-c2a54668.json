@@ -1,0 +1,406 @@
+{
+ "id": "zippy",
+ "name": "\u00a79Zippy the Hedgehog",
+ "scale": 1,
+ "powers": [
+  "friendly",
+  "leaps"
+ ],
+ "parts": [
+  {
+   "name": "legL",
+   "from": [
+    -6,
+    3,
+    -2
+   ],
+   "to": [
+    -2,
+    12,
+    2
+   ],
+   "colour": "#C68642"
+  },
+  {
+   "name": "legR",
+   "from": [
+    2,
+    3,
+    -2
+   ],
+   "to": [
+    6,
+    12,
+    2
+   ],
+   "colour": "#C68642"
+  },
+  {
+   "name": "shoeL",
+   "parent": "legL",
+   "from": [
+    -7,
+    0,
+    -5
+   ],
+   "to": [
+    -1,
+    4,
+    3
+   ],
+   "colour": "red"
+  },
+  {
+   "name": "shoeR",
+   "parent": "legR",
+   "from": [
+    1,
+    0,
+    -5
+   ],
+   "to": [
+    7,
+    4,
+    3
+   ],
+   "colour": "red"
+  },
+  {
+   "name": "strapL",
+   "parent": "legL",
+   "from": [
+    -8,
+    2,
+    -5
+   ],
+   "to": [
+    0,
+    4,
+    -4
+   ],
+   "colour": "white"
+  },
+  {
+   "name": "strapR",
+   "parent": "legR",
+   "from": [
+    0,
+    2,
+    -5
+   ],
+   "to": [
+    8,
+    4,
+    -4
+   ],
+   "colour": "white"
+  },
+  {
+   "name": "body",
+   "from": [
+    -6,
+    11,
+    -4
+   ],
+   "to": [
+    6,
+    23,
+    4
+   ],
+   "colour": "blue"
+  },
+  {
+   "name": "belly",
+   "parent": "body",
+   "from": [
+    -4,
+    12,
+    -6
+   ],
+   "to": [
+    4,
+    20,
+    -4
+   ],
+   "colour": "#F2C79B"
+  },
+  {
+   "name": "armL",
+   "from": [
+    -9,
+    14,
+    -2
+   ],
+   "to": [
+    -6,
+    22,
+    2
+   ],
+   "colour": "blue"
+  },
+  {
+   "name": "armR",
+   "from": [
+    6,
+    14,
+    -2
+   ],
+   "to": [
+    9,
+    22,
+    2
+   ],
+   "colour": "blue"
+  },
+  {
+   "name": "gloveL",
+   "parent": "armL",
+   "from": [
+    -10,
+    11,
+    -3
+   ],
+   "to": [
+    -5,
+    15,
+    3
+   ],
+   "colour": "white"
+  },
+  {
+   "name": "gloveR",
+   "parent": "armR",
+   "from": [
+    5,
+    11,
+    -3
+   ],
+   "to": [
+    10,
+    15,
+    3
+   ],
+   "colour": "white"
+  },
+  {
+   "name": "head",
+   "from": [
+    -7,
+    23,
+    -4
+   ],
+   "to": [
+    7,
+    34,
+    5
+   ],
+   "colour": "blue"
+  },
+  {
+   "name": "muzzle",
+   "parent": "head",
+   "from": [
+    -5,
+    25,
+    -9
+   ],
+   "to": [
+    5,
+    30,
+    -4
+   ],
+   "colour": "#F2C79B"
+  },
+  {
+   "name": "nose",
+   "parent": "head",
+   "from": [
+    -2,
+    28,
+    -11
+   ],
+   "to": [
+    2,
+    31,
+    -8
+   ],
+   "colour": "black"
+  },
+  {
+   "name": "mouth1",
+   "parent": "head",
+   "from": [
+    -4,
+    25,
+    -10
+   ],
+   "to": [
+    -2,
+    26,
+    -8
+   ],
+   "colour": "black"
+  },
+  {
+   "name": "mouth2",
+   "parent": "head",
+   "from": [
+    -2,
+    24,
+    -10
+   ],
+   "to": [
+    2,
+    25,
+    -8
+   ],
+   "colour": "black"
+  },
+  {
+   "name": "mouth3",
+   "parent": "head",
+   "from": [
+    2,
+    25,
+    -10
+   ],
+   "to": [
+    4,
+    26,
+    -8
+   ],
+   "colour": "black"
+  },
+  {
+   "name": "eyeL",
+   "parent": "head",
+   "from": [
+    -6,
+    29,
+    -6
+   ],
+   "to": [
+    -1,
+    34,
+    -4
+   ],
+   "colour": "white"
+  },
+  {
+   "name": "eyeR",
+   "parent": "head",
+   "from": [
+    1,
+    29,
+    -6
+   ],
+   "to": [
+    6,
+    34,
+    -4
+   ],
+   "colour": "white"
+  },
+  {
+   "name": "pupilL",
+   "parent": "head",
+   "from": [
+    -5,
+    30,
+    -8
+   ],
+   "to": [
+    -2,
+    34,
+    -6
+   ],
+   "colour": "green"
+  },
+  {
+   "name": "pupilR",
+   "parent": "head",
+   "from": [
+    2,
+    30,
+    -8
+   ],
+   "to": [
+    5,
+    34,
+    -6
+   ],
+   "colour": "green"
+  },
+  {
+   "name": "browL",
+   "parent": "head",
+   "from": [
+    -6,
+    34,
+    -6
+   ],
+   "to": [
+    -1,
+    35,
+    -4
+   ],
+   "colour": "blue"
+  },
+  {
+   "name": "browR",
+   "parent": "head",
+   "from": [
+    1,
+    34,
+    -6
+   ],
+   "to": [
+    6,
+    35,
+    -4
+   ],
+   "colour": "blue"
+  },
+  {
+   "name": "earL",
+   "parent": "head",
+   "from": [
+    -6,
+    34,
+    0
+   ],
+   "to": [
+    -3,
+    38,
+    2
+   ],
+   "colour": "blue",
+   "rotation": [
+    0,
+    0,
+    -15
+   ]
+  },
+  {
+   "name": "earR",
+   "parent": "head",
+   "from": [
+    3,
+    34,
+    0
+   ],
+   "to": [
+    6,
+    38,
+    2
+   ],
+   "colour": "blue",
+   "rotation": [
+    0,
+    0,
+    15
+   ]
+  }
+ ],
+ "source": "claude/opus-5.5-creature-eval-xzu1ee:docs/evidence-opus55/ab2-panel/w2/o5/rep2/sculpt.json"
+}

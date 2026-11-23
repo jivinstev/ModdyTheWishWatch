@@ -1,0 +1,45 @@
+{"_comment": "#2216: typed wishes the Apprentice must answer with the Builder's 'Turn things into…' power, in the many ways a child says it. Each row names what the TOP tile must be: from = the From page's groups (any order), to = the To page's pick. A row with expect.power != turn_into is a CONTROL: the words look similar and must NOT become a turn-into wand. Owner-written test wishes, never training examples (docs/APPRENTICE.md: test clauses are never added to the layer's examples). Group ids: from = any_block, ores, logs, sand, stone, dirt_grass, gravel, clay, raw_food, plants, wool, netherrack, ice_snow; to = furnace, gold, iron, copper, diamond, emerald, coal, glass, stone, cobblestone, sand, dirt, gravel, wool, planks, ice, vanish (wool since #2236)."}
+{"id": "ti-01", "wish": "a wand that makes grass become dirt", "expect": {"power": "turn_into", "from": ["dirt_grass"], "to": "dirt"}, "why": "become"}
+{"id": "ti-02", "wish": "a wand that turns anything into gold", "expect": {"power": "turn_into", "from": ["any_block"], "to": "gold"}, "why": "the owner's Midas wish; 'gold' after 'into' is To, not the wand's look"}
+{"id": "ti-03", "wish": "i want a wand that makes anything turn to gold", "expect": {"power": "turn_into", "from": ["any_block"], "to": "gold"}, "why": "the issue's own words"}
+{"id": "ti-04", "wish": "everything i touch turns to gold", "expect": {"power": "turn_into", "from": ["any_block"], "to": "gold"}, "why": "no tool named; touch"}
+{"id": "ti-05", "wish": "a king midas staff", "expect": {"power": "turn_into", "from": ["any_block"], "to": "gold"}, "why": "a name for it, no verb"}
+{"id": "ti-06", "wish": "a golden touch wand", "expect": {"power": "turn_into", "from": ["any_block"], "to": "gold"}, "why": "golden touch is the power, not the colour"}
+{"id": "ti-07", "wish": "a staff that changes stone into diamonds", "expect": {"power": "turn_into", "from": ["stone"], "to": "diamond"}, "why": "change into"}
+{"id": "ti-08", "wish": "a wand that transforms dirt into sand", "expect": {"power": "turn_into", "from": ["dirt_grass"], "to": "sand"}, "why": "transform; the old Desert power's pair"}
+{"id": "ti-09", "wish": "zap cobblestone into gravel", "expect": {"power": "turn_into", "from": ["stone"], "to": "gravel"}, "why": "zap; the old Gravel power's pair"}
+{"id": "ti-10", "wish": "a rock crusher wand", "expect": {"power": "turn_into", "from": ["stone"], "to": "gravel"}, "why": "the old Gravel power's own words"}
+{"id": "ti-11", "wish": "a wand that turns stone into cobblestone", "expect": {"power": "turn_into", "from": ["stone"], "to": "cobblestone"}, "why": "the old Cobble power's pair"}
+{"id": "ti-12", "wish": "a magic furnace", "expect": {"power": "turn_into", "from": ["ores"], "to": "furnace"}, "why": "the old Smelting power's words; To defaults to what a furnace makes"}
+{"id": "ti-13", "wish": "a staff that smelts my raw iron", "expect": {"power": "turn_into", "from": ["ores"], "to": "furnace"}, "why": "smelt"}
+{"id": "ti-14", "wish": "a wand that cooks raw meat", "expect": {"power": "turn_into", "from": ["raw_food"], "to": "furnace"}, "why": "cook = what a furnace makes"}
+{"id": "ti-15", "wish": "a staff that bakes potatoes", "expect": {"power": "turn_into", "from": ["raw_food"], "to": "furnace"}, "why": "bake"}
+{"id": "ti-16", "wish": "a wand that makes charcoal out of logs", "expect": {"power": "turn_into", "from": ["logs"], "to": "furnace"}, "why": "out of; logs smelt to charcoal"}
+{"id": "ti-17", "wish": "turn my wood into charcoal", "expect": {"power": "turn_into", "from": ["logs"], "to": "coal"}, "why": "charcoal named as the To"}
+{"id": "ti-18", "wish": "a glassmaker staff", "expect": {"power": "turn_into", "from": ["sand"], "to": "glass"}, "why": "the old Glassmaker power's words"}
+{"id": "ti-19", "wish": "melt sand into glass", "expect": {"power": "turn_into", "from": ["sand"], "to": "glass"}, "why": "melt"}
+{"id": "ti-20", "wish": "a wand that freezes water into ice and snow into ice", "expect": {"power": "turn_into", "from": ["ice_snow"], "to": "ice"}, "why": "freeze into"}
+{"id": "ti-21", "wish": "a wand that turns leaves and flowers into wool", "expect": {"power": "turn_into", "from": ["plants"], "to": "wool"}, "why": "two froms in one group; wool on the To page since #2236"}
+{"id": "ti-22", "wish": "a wand that turns dirt and gravel into gold", "expect": {"power": "turn_into", "from": ["dirt_grass", "gravel"], "to": "gold"}, "why": "multi From"}
+{"id": "ti-23", "wish": "make netherrack become cobblestone", "expect": {"power": "turn_into", "from": ["netherrack"], "to": "cobblestone"}, "why": "make X become Y"}
+{"id": "ti-24", "wish": "a wand that swaps sand for dirt", "expect": {"power": "turn_into", "from": ["sand"], "to": "dirt"}, "why": "swap X for Y"}
+{"id": "ti-25", "wish": "a staff that morphs blocks into emeralds", "expect": {"power": "turn_into", "from": ["any_block"], "to": "emerald"}, "why": "morph; 'blocks' = any block"}
+{"id": "ti-26", "wish": "a transmuting wand that makes iron out of stone", "expect": {"power": "turn_into", "from": ["stone"], "to": "iron"}, "why": "transmute; Y out of X order"}
+{"id": "ti-27", "wish": "a wand that makes the ground disappear", "expect": {"power": "turn_into", "from": ["dirt_grass"], "to": "vanish"}, "why": "vanish"}
+{"id": "ti-28", "wish": "a magic wand that turns clay into bricks", "expect": {"power": "turn_into", "from": ["clay"], "to": "furnace"}, "why": "bricks are clay's smelting result"}
+{"id": "ti-29", "wish": "a wand that turns wool into wood planks", "expect": {"power": "turn_into", "from": ["wool"], "to": "planks"}, "why": "planks"}
+{"id": "ti-30", "wish": "a sword that turns blocks into gold when i hit them", "expect": {"power": "turn_into", "from": ["any_block"], "to": "gold"}, "why": "swung, not held: the shape decides the mode, the words still pick turn into"}
+{"id": "ti-31", "wish": "a snowball that turns the ground into ice where it lands", "expect": {"power": "turn_into", "from": ["dirt_grass"], "to": "ice"}, "why": "thrown"}
+{"id": "ti-32", "wish": "a wand that turns iron ore into iron", "expect": {"power": "turn_into", "from": ["ores"], "to": "iron"}, "why": "ore named, To named"}
+{"id": "ti-33", "wish": "a wand that turns stuff into copper", "expect": {"power": "turn_into", "from": ["any_block"], "to": "copper"}, "why": "'stuff' = any block"}
+{"id": "ti-34", "wish": "a wand dat turnz evrything into gold", "expect": {"power": "turn_into", "from": ["any_block"], "to": "gold"}, "why": "spelt as heard"}
+{"id": "ti-35", "wish": "a wand that turns grass to dirt", "expect": {"power": "turn_into", "from": ["dirt_grass"], "to": "dirt"}, "why": "X to Y"}
+{"id": "ti-36", "wish": "a staff that turns cobble into stone", "expect": {"power": "turn_into", "from": ["stone"], "to": "stone"}, "why": "short word 'cobble'"}
+{"id": "ti-37", "wish": "a wand that changes sand to glass in my inventory", "expect": {"power": "turn_into", "from": ["sand"], "to": "glass"}, "why": "inventory named; still the one power"}
+{"id": "ti-38", "wish": "a coal maker staff", "expect": {"power": "turn_into", "from": ["logs"], "to": "coal"}, "why": "maker of a material"}
+{"id": "ti-39", "wish": "a gold sword that shoots lightning", "expect": {"power": "not:turn_into"}, "why": "CONTROL: gold is the sword's look, lightning is the power"}
+{"id": "ti-40", "wish": "a golden wand", "expect": {"power": "not:turn_into"}, "why": "CONTROL: a gold look, no change named"}
+{"id": "ti-41", "wish": "a wand that puts water down", "expect": {"power": "not:turn_into"}, "why": "CONTROL: Place, not turn into"}
+{"id": "ti-42", "wish": "some iron ingots", "expect": {"power": "not:turn_into"}, "why": "CONTROL: Supplies (a guide wish)"}
+{"id": "ti-43", "wish": "a diamond pickaxe that mines faster", "expect": {"power": "not:turn_into"}, "why": "CONTROL: diamond is the tool's tier"}
+{"id": "ti-44", "wish": "a wand that turns me into a chicken", "expect": {"power": "not:turn_into"}, "why": "CONTROL: turning HIM into something is not a block or an item"}

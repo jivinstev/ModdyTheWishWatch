@@ -1,0 +1,11 @@
+# CALL_PETS — his OWN tamed pets come to him (T6F follow-up). The whistle, the horn, the bell.
+#
+# Only a pet whose owner IS him: a wolf tamed by somebody else stays where it is, and nothing new is
+# ever made, because "call my wolf" answered with a fresh untamed wolf is a stranger's dog. Finding
+# his pets and bringing them is Java's (CallPets): a function cannot ask a mob who owns it and still
+# act on the mob. This only says "call them", by tagging him, and makes it heard.
+function effect()
+    /execute as ${TARGET} run tag @s add mfam_call_pets_${KIND}
+    /particle minecraft:note ~ ~1.8 ~ 0.6 0.3 0.6 1 8 force
+    /playsound minecraft:block.note_block.flute master @a ~ ~ ~ 1 1.4
+end

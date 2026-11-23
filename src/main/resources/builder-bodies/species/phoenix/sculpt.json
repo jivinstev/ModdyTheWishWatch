@@ -1,0 +1,212 @@
+{
+ "behaves_like": "dragon",
+ "damage": 0,
+ "health": 80,
+ "id": "phoenix",
+ "kits": [
+  {
+   "colour": "#E02010",
+   "kit": "wing",
+   "on": "body",
+   "size": "XL"
+  },
+  {
+   "colour": "#FFB000",
+   "kit": "crest",
+   "on": "head",
+   "size": "M"
+  }
+ ],
+ "name": "Phoenix",
+ "note": "Majestic friendly fire bird: orange body with red gradient, gold beak, red/orange wing kit, flame crest and tail; glowing+fireproof+flies, behaves like a dragon (circles and perches).",
+ "palette": [
+  {
+   "colour": "#FF7A00",
+   "percent": 45
+  },
+  {
+   "colour": "#E02010",
+   "percent": 35
+  },
+  {
+   "colour": "gold",
+   "percent": 8
+  }
+ ],
+ "parts": [
+  {
+   "colour": "#FF7A00",
+   "from": [
+    -5,
+    10,
+    -6
+   ],
+   "name": "body",
+   "pattern": "gradient",
+   "pattern_colour": "#D01010",
+   "to": [
+    5,
+    20,
+    8
+   ]
+  },
+  {
+   "colour": "#FF8C00",
+   "from": [
+    -4,
+    18,
+    -12
+   ],
+   "name": "head",
+   "pattern": "gradient",
+   "pattern_colour": "#FFD000",
+   "to": [
+    4,
+    26,
+    -4
+   ]
+  },
+  {
+   "colour": "gold",
+   "from": [
+    -1,
+    20,
+    -15
+   ],
+   "name": "beak",
+   "parent": "head",
+   "to": [
+    1,
+    22,
+    -11
+   ]
+  },
+  {
+   "colour": "black",
+   "from": [
+    3,
+    22,
+    -10
+   ],
+   "name": "eyeL",
+   "parent": "head",
+   "to": [
+    5,
+    24,
+    -8
+   ]
+  },
+  {
+   "colour": "black",
+   "from": [
+    -5,
+    22,
+    -10
+   ],
+   "name": "eyeR",
+   "parent": "head",
+   "to": [
+    -3,
+    24,
+    -8
+   ]
+  },
+  {
+   "colour": "gold",
+   "from": [
+    1,
+    0,
+    -1
+   ],
+   "name": "legL",
+   "to": [
+    3,
+    11,
+    1
+   ]
+  },
+  {
+   "colour": "gold",
+   "from": [
+    -3,
+    0,
+    -1
+   ],
+   "name": "legR",
+   "to": [
+    -1,
+    11,
+    1
+   ]
+  },
+  {
+   "colour": "#D01010",
+   "from": [
+    -3,
+    12,
+    7
+   ],
+   "name": "tail1",
+   "pattern": "gradient",
+   "pattern_colour": "#FFD000",
+   "rotation": [
+    -20,
+    0,
+    0
+   ],
+   "to": [
+    3,
+    15,
+    20
+   ]
+  },
+  {
+   "colour": "#FF5A00",
+   "from": [
+    -5,
+    13,
+    7
+   ],
+   "name": "tail2",
+   "rotation": [
+    -15,
+    -15,
+    0
+   ],
+   "to": [
+    -2,
+    15,
+    17
+   ]
+  },
+  {
+   "colour": "#FF5A00",
+   "from": [
+    2,
+    13,
+    7
+   ],
+   "name": "tail3",
+   "rotation": [
+    -15,
+    15,
+    0
+   ],
+   "to": [
+    5,
+    15,
+    17
+   ]
+  }
+ ],
+ "powers": [
+  "friendly",
+  "flies",
+  "fireproof",
+  "glowing",
+  "persistent"
+ ],
+ "scale": 2,
+ "status": "Sculpting your phoenix",
+ "voice": "parrot"
+}

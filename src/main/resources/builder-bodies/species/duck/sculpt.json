@@ -1,0 +1,304 @@
+{
+ "id": "duck",
+ "name": "Yellow Duck",
+ "note": "Started from the chicken starter (closest bird body), recoloured bright yellow with orange beak and feet like a rubber duck; friendly, chicken voice.",
+ "palette": [
+  {
+   "colour": "yellow",
+   "percent": 86
+  },
+  {
+   "colour": "tan/orange",
+   "percent": 8
+  },
+  {
+   "colour": "white",
+   "percent": 6
+  }
+ ],
+ "parts": [
+  {
+   "colour": "#FFD800",
+   "from": [
+    -4.0,
+    5.0,
+    -5.0
+   ],
+   "name": "body",
+   "pattern": "fur",
+   "patternColour": "#FFFFFF",
+   "pivot": [
+    0.0,
+    5.0,
+    0.0
+   ],
+   "to": [
+    4.0,
+    12.0,
+    5.0
+   ]
+  },
+  {
+   "colour": "#FFFFFF",
+   "from": [
+    -3.0,
+    9.0,
+    5.0
+   ],
+   "name": "tail",
+   "parent": "body",
+   "pivot": [
+    0.0,
+    14.0,
+    6.0
+   ],
+   "to": [
+    3.0,
+    14.0,
+    7.0
+   ]
+  },
+  {
+   "colour": "#FFC800",
+   "from": [
+    4.0,
+    6.0,
+    -3.0
+   ],
+   "name": "wingL",
+   "parent": "body",
+   "pivot": [
+    4.5,
+    11.0,
+    0.5
+   ],
+   "to": [
+    5.0,
+    11.0,
+    4.0
+   ]
+  },
+  {
+   "colour": "#FFC800",
+   "from": [
+    -5.0,
+    6.0,
+    -3.0
+   ],
+   "name": "wingR",
+   "parent": "body",
+   "pivot": [
+    -4.5,
+    11.0,
+    0.5
+   ],
+   "to": [
+    -4.0,
+    11.0,
+    4.0
+   ]
+  },
+  {
+   "colour": "#FFD800",
+   "from": [
+    -3.0,
+    11.0,
+    -7.0
+   ],
+   "name": "head",
+   "pivot": [
+    0.0,
+    12.0,
+    -4.0
+   ],
+   "to": [
+    3.0,
+    18.0,
+    -2.0
+   ]
+  },
+  {
+   "colour": "#FFD800",
+   "from": [
+    -1.0,
+    18.0,
+    -7.0
+   ],
+   "name": "comb",
+   "parent": "head",
+   "pivot": [
+    0.0,
+    18.0,
+    -4.5
+   ],
+   "to": [
+    1.0,
+    21.0,
+    -2.0
+   ]
+  },
+  {
+   "colour": "#FF9020",
+   "from": [
+    -2.0,
+    14.0,
+    -10.0
+   ],
+   "name": "beak",
+   "parent": "head",
+   "pivot": [
+    0.0,
+    14.0,
+    -8.5
+   ],
+   "to": [
+    2.0,
+    16.0,
+    -7.0
+   ]
+  },
+  {
+   "colour": "#FF9020",
+   "from": [
+    -1.0,
+    11.0,
+    -9.0
+   ],
+   "name": "wattle",
+   "parent": "head",
+   "pivot": [
+    0.5,
+    11.0,
+    -8.0
+   ],
+   "to": [
+    2.0,
+    14.0,
+    -7.0
+   ]
+  },
+  {
+   "colour": "#FF9020",
+   "from": [
+    1.0,
+    0.0,
+    -1.0
+   ],
+   "name": "legL",
+   "pivot": [
+    2.0,
+    5.0,
+    0.0
+   ],
+   "to": [
+    3.0,
+    5.0,
+    1.0
+   ]
+  },
+  {
+   "colour": "#FF9020",
+   "from": [
+    -3.0,
+    0.0,
+    -1.0
+   ],
+   "name": "legR",
+   "pivot": [
+    -2.0,
+    5.0,
+    0.0
+   ],
+   "to": [
+    -1.0,
+    5.0,
+    1.0
+   ]
+  },
+  {
+   "colour": "#FFE040",
+   "from": [
+    0.0,
+    0.0,
+    -4.0
+   ],
+   "name": "footL",
+   "parent": "legL",
+   "pivot": [
+    1.5,
+    0.0,
+    -1.5
+   ],
+   "to": [
+    3.0,
+    1.0,
+    1.0
+   ]
+  },
+  {
+   "colour": "#FFE040",
+   "from": [
+    -3.0,
+    0.0,
+    -4.0
+   ],
+   "name": "footR",
+   "parent": "legR",
+   "pivot": [
+    -1.5,
+    0.0,
+    -1.5
+   ],
+   "to": [
+    0.0,
+    1.0,
+    1.0
+   ]
+  },
+  {
+   "colour": "#404040",
+   "from": [
+    1.0,
+    15.0,
+    -8.0
+   ],
+   "name": "eyeL",
+   "parent": "head",
+   "pivot": [
+    2.0,
+    15.0,
+    -7.5
+   ],
+   "to": [
+    3.0,
+    17.0,
+    -7.0
+   ]
+  },
+  {
+   "colour": "#404040",
+   "from": [
+    -3.0,
+    15.0,
+    -8.0
+   ],
+   "name": "eyeR",
+   "parent": "head",
+   "pivot": [
+    -2.0,
+    15.0,
+    -7.5
+   ],
+   "to": [
+    -1.0,
+    17.0,
+    -7.0
+   ]
+  }
+ ],
+ "powers": [
+  "friendly"
+ ],
+ "status": "Making your yellow duck",
+ "voice": "chicken"
+}

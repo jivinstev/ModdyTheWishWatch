@@ -1,0 +1,68 @@
+{
+ "name": "Snake",
+ "scale": 1.0,
+ "powers": [
+  "hostile"
+ ],
+ "parts": [
+  {
+   "name": "body",
+   "from": [
+    -2,
+    0,
+    -8
+   ],
+   "to": [
+    2,
+    3,
+    40
+   ],
+   "pivot": [
+    0,
+    0,
+    0
+   ],
+   "colour": "#3050E0"
+  },
+  {
+   "name": "neck",
+   "from": [
+    -2,
+    0,
+    -20
+   ],
+   "to": [
+    2,
+    6,
+    -8
+   ],
+   "pivot": [
+    0,
+    0,
+    0
+   ],
+   "colour": "#3050E0"
+  },
+  {
+   "name": "head",
+   "from": [
+    -3,
+    4,
+    -26
+   ],
+   "to": [
+    3,
+    8,
+    -18
+   ],
+   "pivot": [
+    0,
+    4,
+    0
+   ],
+   "colour": "#3050E0"
+  }
+ ],
+ "id": "snake",
+ "source": "synthetic \u2014 shapes the committed corpus does not contain"
+}

@@ -1,0 +1,105 @@
+{
+ "cluster": "shapes_regroup",
+ "order": [
+  "cube_furnace",
+  "anvil",
+  "beehive",
+  "cage",
+  "wheel_block",
+  "book_stand",
+  "low_gadget",
+  "orb",
+  "tuber",
+  "slice",
+  "bone",
+  "shell",
+  "chain",
+  "hide"
+ ],
+ "icons": [
+  {
+   "name": "cube_furnace",
+   "status": "ok",
+   "attempts": 2,
+   "note": "Stone cube with a dark mouth on the left face; plain top and right faces."
+  },
+  {
+   "name": "anvil",
+   "status": "ok",
+   "attempts": 2,
+   "note": "Chunky anvil in 3/4 view: wide top with horn, narrow waist, flared foot."
+  },
+  {
+   "name": "beehive",
+   "status": "ok",
+   "attempts": 2,
+   "note": "Wooden box with a round entrance hole and a honey drip from the top edge."
+  },
+  {
+   "name": "cage",
+   "status": "ok",
+   "attempts": 3,
+   "note": "Open cube of thick bars with magenta between them and a glowing core inside."
+  },
+  {
+   "name": "wheel_block",
+   "status": "ok",
+   "attempts": 2,
+   "note": "Low stone base with a big round wheel standing upright on top."
+  },
+  {
+   "name": "book_stand",
+   "status": "ok",
+   "attempts": 3,
+   "note": "Open book with fanned cream pages lying on a small stand."
+  },
+  {
+   "name": "low_gadget",
+   "status": "ok",
+   "attempts": 3,
+   "note": "Thin slab with a small bump and tendrils rising from its top."
+  },
+  {
+   "name": "orb",
+   "status": "ok",
+   "attempts": 2,
+   "note": "Perfectly round glossy ball with a shine and a darker inner spot."
+  },
+  {
+   "name": "tuber",
+   "status": "ok",
+   "attempts": 1,
+   "note": "Lumpy root vegetable with three eye spots."
+  },
+  {
+   "name": "slice",
+   "status": "ok",
+   "attempts": 2,
+   "note": "Wedge with a curved outer edge and a rind band along the curve."
+  },
+  {
+   "name": "bone",
+   "status": "ok",
+   "attempts": 2,
+   "note": "Diagonal bone with two round knobs at each end."
+  },
+  {
+   "name": "shell",
+   "status": "ok",
+   "attempts": 2,
+   "note": "Spiral shell with ridge rings and a small spire, not a plain circle."
+  },
+  {
+   "name": "chain",
+   "status": "ok",
+   "attempts": 2,
+   "note": "Four interlocking diagonal links, magenta through each link's hole."
+  },
+  {
+   "name": "hide",
+   "status": "ok",
+   "attempts": 2,
+   "note": "Stretched pelt: irregular rug with four leg-flaps at the corners."
+  }
+ ]
+}

@@ -1,0 +1,202 @@
+{
+ "behaves_like": "vehicle",
+ "damage": 0,
+ "health": 100,
+ "id": "hot_air_balloon",
+ "name": "Hot Air Balloon",
+ "note": "Rigid vehicle: wicker basket body with 4 ropes to a red/yellow striped stepped envelope; flies+rideable so he steers it up.",
+ "palette": [
+  {
+   "colour": "red",
+   "percent": 75
+  },
+  {
+   "colour": "#8B5A2B",
+   "percent": 10
+  }
+ ],
+ "parts": [
+  {
+   "colour": "#8B5A2B",
+   "from": [
+    -8,
+    0,
+    -8
+   ],
+   "name": "body",
+   "pattern": "plaid",
+   "pattern_colour": "#6B3F1A",
+   "to": [
+    8,
+    10,
+    8
+   ]
+  },
+  {
+   "colour": "#5C3A1A",
+   "from": [
+    -9,
+    9,
+    -9
+   ],
+   "name": "rim",
+   "parent": "body",
+   "to": [
+    9,
+    11,
+    9
+   ]
+  },
+  {
+   "colour": "#D2B48C",
+   "from": [
+    -8,
+    10,
+    -8
+   ],
+   "name": "ropeFL",
+   "parent": "body",
+   "to": [
+    -7,
+    30,
+    -7
+   ]
+  },
+  {
+   "colour": "#D2B48C",
+   "from": [
+    7,
+    10,
+    -8
+   ],
+   "name": "ropeFR",
+   "parent": "body",
+   "to": [
+    8,
+    30,
+    -7
+   ]
+  },
+  {
+   "colour": "#D2B48C",
+   "from": [
+    -8,
+    10,
+    7
+   ],
+   "name": "ropeBL",
+   "parent": "body",
+   "to": [
+    -7,
+    30,
+    8
+   ]
+  },
+  {
+   "colour": "#D2B48C",
+   "from": [
+    7,
+    10,
+    7
+   ],
+   "name": "ropeBR",
+   "parent": "body",
+   "to": [
+    8,
+    30,
+    8
+   ]
+  },
+  {
+   "colour": "orange",
+   "from": [
+    -3,
+    22,
+    -3
+   ],
+   "name": "burner",
+   "parent": "body",
+   "to": [
+    3,
+    28,
+    3
+   ]
+  },
+  {
+   "colour": "red",
+   "from": [
+    -14,
+    28,
+    -14
+   ],
+   "name": "envLow",
+   "parent": "body",
+   "pattern": "stripes",
+   "pattern_colour": "yellow",
+   "to": [
+    14,
+    36,
+    14
+   ]
+  },
+  {
+   "colour": "red",
+   "from": [
+    -20,
+    35,
+    -20
+   ],
+   "name": "envMid",
+   "parent": "body",
+   "pattern": "stripes",
+   "pattern_colour": "yellow",
+   "to": [
+    20,
+    60,
+    20
+   ]
+  },
+  {
+   "colour": "red",
+   "from": [
+    -15,
+    59,
+    -15
+   ],
+   "name": "envTop",
+   "parent": "body",
+   "pattern": "stripes",
+   "pattern_colour": "yellow",
+   "to": [
+    15,
+    68,
+    15
+   ]
+  },
+  {
+   "colour": "yellow",
+   "from": [
+    -8,
+    67,
+    -8
+   ],
+   "name": "envCap",
+   "parent": "body",
+   "to": [
+    8,
+    71,
+    8
+   ]
+  }
+ ],
+ "powers": [
+  "friendly",
+  "rideable",
+  "flies",
+  "persistent"
+ ],
+ "scale": 1.5,
+ "speed": 0.3,
+ "status": "Stitching your balloon",
+ "voice": "silent"
+}

@@ -1,0 +1,21 @@
+{
+ "vehicle": false,
+ "armor": 0.0,
+ "behaves": "grazer",
+ "body": "humanoid",
+ "damage": 0.0,
+ "health": 120.0,
+ "id": "triceratops",
+ "knockbackResistance": 0.0,
+ "modelKey": "triceratops",
+ "name": "Triceratops",
+ "powers": [
+  "friendly",
+  "persistent"
+ ],
+ "scale": 2.0,
+ "speed": 0.25,
+ "texture": "zombie",
+ "tint": "#FFFFFF",
+ "voice": "ravager"
+}

@@ -1,0 +1,27 @@
+{
+  "abilityPacks": [
+    "on_land_trex",
+    "periodic_trex"
+  ],
+  "armor": 0.0,
+  "body": "humanoid",
+  "damage": 0.0,
+  "health": 200.0,
+  "id": "trex",
+  "knockbackResistance": 0.0,
+  "modelKey": "trex",
+  "name": "Giant T-Rex",
+  "powers": [
+    "friendly",
+    "rideable",
+    "leaps",
+    "persistent",
+    "fallproof",
+    "fireproof"
+  ],
+  "scale": 3.0,
+  "speed": 0.35,
+  "texture": "zombie",
+  "tint": "#FFFFFF",
+  "voice": "ravager"
+}

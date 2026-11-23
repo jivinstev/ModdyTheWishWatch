@@ -1,0 +1,275 @@
+{
+ "behaves_like": "mount",
+ "damage": 0,
+ "health": 80,
+ "id": "griffin",
+ "kits": [
+  {
+   "colour": "#7A5530",
+   "kit": "wing",
+   "on": "body",
+   "size": "XL"
+  }
+ ],
+ "name": "Griffin",
+ "note": "Classic griffin: tan furry lion body+legs+tufted tail, white feathered eagle head with yellow hooked beak, big brown wing kit. Friendly, rideable flier, behaves like dragon? no \u2014 bee-like flier would be odd; chose horse life so it comes to rider.",
+ "palette": [
+  {
+   "colour": "#C8A060",
+   "percent": 60
+  },
+  {
+   "colour": "#F7F5EE",
+   "percent": 15
+  },
+  {
+   "colour": "#7A5530",
+   "percent": 15
+  },
+  {
+   "colour": "#F2B705",
+   "percent": 2
+  }
+ ],
+ "parts": [
+  {
+   "colour": "#C8A060",
+   "from": [
+    -6,
+    12,
+    -10
+   ],
+   "name": "body",
+   "pattern": "fur",
+   "pattern_colour": "#A8803F",
+   "to": [
+    6,
+    23,
+    12
+   ]
+  },
+  {
+   "colour": "#F2EFE6",
+   "from": [
+    -6,
+    13,
+    -13
+   ],
+   "name": "chest",
+   "parent": "body",
+   "pattern": "fur",
+   "pattern_colour": "#D8D2C2",
+   "to": [
+    6,
+    24,
+    -8
+   ]
+  },
+  {
+   "colour": "#C8A060",
+   "from": [
+    -6,
+    0,
+    -9
+   ],
+   "name": "legFL",
+   "parent": "body",
+   "to": [
+    -2,
+    13,
+    -5
+   ]
+  },
+  {
+   "colour": "#C8A060",
+   "from": [
+    2,
+    0,
+    -9
+   ],
+   "name": "legFR",
+   "parent": "body",
+   "to": [
+    6,
+    13,
+    -5
+   ]
+  },
+  {
+   "colour": "#C8A060",
+   "from": [
+    -6,
+    0,
+    6
+   ],
+   "name": "legBL",
+   "parent": "body",
+   "to": [
+    -2,
+    13,
+    10
+   ]
+  },
+  {
+   "colour": "#C8A060",
+   "from": [
+    2,
+    0,
+    6
+   ],
+   "name": "legBR",
+   "parent": "body",
+   "to": [
+    6,
+    13,
+    10
+   ]
+  },
+  {
+   "colour": "#F7F5EE",
+   "from": [
+    -4,
+    20,
+    -19
+   ],
+   "name": "head",
+   "parent": "body",
+   "pattern": "fur",
+   "pattern_colour": "#E0DCCF",
+   "to": [
+    4,
+    29,
+    -11
+   ]
+  },
+  {
+   "colour": "#F2B705",
+   "from": [
+    -2,
+    22,
+    -23
+   ],
+   "name": "beak",
+   "parent": "head",
+   "to": [
+    2,
+    26,
+    -18
+   ]
+  },
+  {
+   "colour": "#D99A00",
+   "from": [
+    -1,
+    20,
+    -23
+   ],
+   "name": "beaktip",
+   "parent": "head",
+   "to": [
+    1,
+    23,
+    -21
+   ]
+  },
+  {
+   "colour": "#2A1A0A",
+   "from": [
+    -5,
+    25,
+    -20
+   ],
+   "name": "eyeL",
+   "parent": "head",
+   "to": [
+    -4,
+    27,
+    -18
+   ]
+  },
+  {
+   "colour": "#2A1A0A",
+   "from": [
+    4,
+    25,
+    -20
+   ],
+   "name": "eyeR",
+   "parent": "head",
+   "to": [
+    5,
+    27,
+    -18
+   ]
+  },
+  {
+   "colour": "#8A6A3A",
+   "from": [
+    -4.6,
+    27,
+    -17.5
+   ],
+   "name": "browL",
+   "parent": "head",
+   "to": [
+    -3.4,
+    28,
+    -14.5
+   ]
+  },
+  {
+   "colour": "#8A6A3A",
+   "from": [
+    3.4,
+    27,
+    -17.5
+   ],
+   "name": "browR",
+   "parent": "head",
+   "to": [
+    4.6,
+    28,
+    -14.5
+   ]
+  },
+  {
+   "colour": "#C8A060",
+   "from": [
+    -1,
+    17,
+    11
+   ],
+   "name": "tail",
+   "parent": "body",
+   "to": [
+    1,
+    19,
+    22
+   ]
+  },
+  {
+   "colour": "#6B4A22",
+   "from": [
+    -2,
+    16,
+    20
+   ],
+   "name": "tailtuft",
+   "parent": "tail",
+   "to": [
+    2,
+    20,
+    24
+   ]
+  }
+ ],
+ "powers": [
+  "friendly",
+  "flies",
+  "rideable",
+  "persistent"
+ ],
+ "scale": 1.6,
+ "status": "Sculpting your griffin",
+ "voice": "parrot"
+}

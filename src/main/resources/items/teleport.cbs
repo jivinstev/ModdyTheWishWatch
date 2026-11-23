@@ -1,0 +1,12 @@
+# TELEPORT — you end up where you were pointing.
+#
+# `as <them> run tp @s ~ ~ ~` reads oddly and is right: `as` changes WHO runs the command, never
+# WHERE it runs from, so ~ ~ ~ is still the aim point the shape wrapper positioned us at.
+#
+# The guard in front of the tp is the child's SAFE=yes: it refuses to drop you inside a solid block.
+# Landing inside stone is not a teleport, it is suffocating in the dark.
+function effect()
+    /execute ${SAFE_GUARD}as ${TARGET} run tp @s ~ ~ ~
+    /particle minecraft:portal ~ ~1 ~ 0.5 1.0 0.5 0.5 60 force
+    /playsound minecraft:entity.enderman.teleport master @a ~ ~ ~ 1 1
+end

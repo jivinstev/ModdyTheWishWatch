@@ -1,0 +1,227 @@
+# The Slushie Machine — one artifact for the placeable-things spike.
+
+# Answers ONE question: is a thing composed from vanilla blocks and items good enough for a
+# seven-year-old? See docs/SPIKE_PLACEABLE_THINGS.md for the pre-registered criterion, and
+# docs/SPIKE_PLACEABLE_MECHANISM.md for why it is built this way rather than any other way.
+
+#     named item  --right-click a face-->  composed machine  --pull the handle-->  a drink
+#                                                            --break it-------->  item back
+
+# The whole trick is that the item is an ARMOUR STAND. Vanilla's own ArmorStandItem applies the
+# stack's entity_data component, drops the stand on exactly the cell the child aimed at, and
+# rotates it to face them. Position, identity and facing all arrive for free, so this datapack
+# never scans for blocks and never follows a player around.
+
+import common
+
+define @NewMachine = @Entity[type=armor_stand, tag=slushie_new]
+end
+
+define @Machine = @Entity[type=armor_stand, tag=slushie_machine]
+end
+
+# ── The two things the child holds ───────────────────────────────────────────────────────────
+
+# The item is now the mod's wish_item, which is the whole point of the spike's follow-on: it wears a
+# real slushie-machine icon instead of an armour stand, it is findable in the creative menu, and
+# WishPlaceTag makes it drop the SAME tagged anchor ArmorStandItem did. So this artifact changed by
+# exactly one line — the give — and everything below it is untouched.
+#
+# What it cost: this is no longer a standalone datapack. It needs the mod. Inside the wish system
+# that is free; for something handed around on its own, the armour-stand version is still the honest
+# answer (docs/ITEM_ICONS.md, Tier 2).
+
+function give()
+    /give @s moddingfromamod:wish_item[minecraft:custom_model_data={floats:[1f]},minecraft:dyed_color={rgb:46335},minecraft:custom_name='{"text":"Slushie Machine","color":"aqua","bold":true,"italic":false}',minecraft:lore=['{"text":"Right-click the ground to put it down","color":"gray","italic":false}'],minecraft:enchantment_glint_override=true,minecraft:custom_data={WishPlaceTag:"slushie_new"}] 1
+    /tellraw @s {"text":"You got a Slushie Machine! Right-click the ground with it. 🥤","color":"aqua"}
+end
+
+# The drink. A potion with a custom colour is the closest vanilla gets to a cup of blue slush:
+# it is the right colour, it has the drinking animation, and it makes the gulp sound.
+function serve()
+    /give @s minecraft:potion[minecraft:potion_contents={custom_color:46335,custom_effects:[{id:"minecraft:speed",duration:600,amplifier:0}]},minecraft:custom_name='{"text":"Blue Raspberry Slushie","color":"aqua","bold":true,"italic":false}',minecraft:lore=['{"text":"Brain freeze!","color":"blue","italic":true}'],minecraft:rarity="uncommon"] 1
+    /playsound minecraft:block.pointed_dripstone.drip_lava_into_cauldron player @s ~ ~ ~ 1 1.6
+    /particle minecraft:snowflake ~ ~1 ~ 0.3 0.3 0.3 0.02 12 force @s
+end
+
+# ── Placing it ───────────────────────────────────────────────────────────────────────────────
+
+# Vanilla already put an invisible marker stand on the exact spot. All that is left is to build
+# the machine around it. Runs EVERY tick (not on the slow counter) because a child who has just
+# clicked should see the machine now, and matching a tag is an indexed lookup, not a scan.
+
+function build_new()
+    as @NewMachine at @s
+        /tag @s remove slushie_new
+        /tag @s add slushie_machine
+        build_body()
+    end
+end
+
+# The body: a white appliance base, a tank full of blue slush, and a lit header box on top.
+# Only ever written into replaceable space above the base, so putting one down next to a build
+# cannot eat the build.
+function build_body()
+    /setblock ~ ~ ~ minecraft:chiseled_quartz_block
+    /execute if block ~ ~1 ~ #minecraft:replaceable run setblock ~ ~1 ~ minecraft:blue_ice
+    /execute if block ~ ~2 ~ #minecraft:replaceable run setblock ~ ~2 ~ minecraft:sea_lantern
+    /execute if entity @a[distance=..32] run playsound minecraft:block.copper.place block @a[distance=..32] ~ ~ ~ 1 1.2
+    /particle minecraft:cloud ~ ~1.5 ~ 0.4 0.6 0.4 0.01 20 force
+
+    # Which way is the front? The stand's yaw was snapped to a multiple of 45 and turned to face
+    # whoever placed it, so these four bands cover all nine possible values exactly once. They are
+    # deliberately NOT symmetrical: -45..45 and 45..135 would both claim 45.
+    /execute if entity @s[y_rotation=-45..44.9] run function $namespace:front_south
+    /execute if entity @s[y_rotation=45..134.9] run function $namespace:front_west
+    /execute if entity @s[y_rotation=135..180] run function $namespace:front_north
+    /execute if entity @s[y_rotation=-180..-135.1] run function $namespace:front_north
+    /execute if entity @s[y_rotation=-135..-45.1] run function $namespace:front_east
+end
+
+# The handle and the sign, on whichever face the child is standing at. The facing is remembered as
+# a tag on the marker so taking the machine down later touches only this machine's own blocks —
+# never a lever the child happened to build next to it.
+
+function front_south()
+    /tag @s add slushie_s
+    /execute if block ~ ~1 ~1 #minecraft:replaceable run setblock ~ ~1 ~1 minecraft:lever[face=wall,facing=south]
+    /execute if block ~ ~2 ~1 #minecraft:replaceable run setblock ~ ~2 ~1 minecraft:birch_wall_sign[facing=south]{front_text:{messages:['{"text":"SLUSHIES","color":"blue","bold":true}','{"text":"❄ ❄ ❄","color":"aqua"}','{"text":""}','{"text":"pull the handle","color":"gray"}'],has_glowing_text:1b},is_waxed:1b}
+end
+
+function front_north()
+    /tag @s add slushie_n
+    /execute if block ~ ~1 ~-1 #minecraft:replaceable run setblock ~ ~1 ~-1 minecraft:lever[face=wall,facing=north]
+    /execute if block ~ ~2 ~-1 #minecraft:replaceable run setblock ~ ~2 ~-1 minecraft:birch_wall_sign[facing=north]{front_text:{messages:['{"text":"SLUSHIES","color":"blue","bold":true}','{"text":"❄ ❄ ❄","color":"aqua"}','{"text":""}','{"text":"pull the handle","color":"gray"}'],has_glowing_text:1b},is_waxed:1b}
+end
+
+function front_east()
+    /tag @s add slushie_e
+    /execute if block ~1 ~1 ~ #minecraft:replaceable run setblock ~1 ~1 ~ minecraft:lever[face=wall,facing=east]
+    /execute if block ~1 ~2 ~ #minecraft:replaceable run setblock ~1 ~2 ~ minecraft:birch_wall_sign[facing=east]{front_text:{messages:['{"text":"SLUSHIES","color":"blue","bold":true}','{"text":"❄ ❄ ❄","color":"aqua"}','{"text":""}','{"text":"pull the handle","color":"gray"}'],has_glowing_text:1b},is_waxed:1b}
+end
+
+function front_west()
+    /tag @s add slushie_w
+    /execute if block ~-1 ~1 ~ #minecraft:replaceable run setblock ~-1 ~1 ~ minecraft:lever[face=wall,facing=west]
+    /execute if block ~-1 ~2 ~ #minecraft:replaceable run setblock ~-1 ~2 ~ minecraft:birch_wall_sign[facing=west]{front_text:{messages:['{"text":"SLUSHIES","color":"blue","bold":true}','{"text":"❄ ❄ ❄","color":"aqua"}','{"text":""}','{"text":"pull the handle","color":"gray"}'],has_glowing_text:1b},is_waxed:1b}
+end
+
+# ── Using it ─────────────────────────────────────────────────────────────────────────────────
+
+# A machine's clickable part has to be a block that consumes a bare right-click (a body of iron or
+# quartz consumes nothing and fires no trigger at all), so the handle is a real lever.
+
+# The second condition is what stops the child's front door giving out slushies: the lever only
+# counts when OUR sign is directly above it. An advancement reward always runs as the player and
+# never learns which block was clicked, so this identification has to happen in the predicate, up
+# here, while the block position still exists.
+
+advancement pulled_the_handle {
+    "criteria": {
+        "pulled": {
+            "trigger": "minecraft:default_block_use",
+            "conditions": {
+                "location": [
+                    {
+                        "condition": "minecraft:block_state_property",
+                        "block": "minecraft:lever"
+                    },
+                    {
+                        "condition": "minecraft:location_check",
+                        "offsetY": 1,
+                        "predicate": {
+                            "block": {
+                                "blocks": "minecraft:birch_wall_sign"
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    "rewards": {
+        "function": "$namespace:on_handle"
+    }
+}
+
+function on_handle()
+    /advancement revoke @s only $namespace:pulled_the_handle
+    serve()
+end
+
+# ── Taking it down ───────────────────────────────────────────────────────────────────────────
+
+# A child's undo is to break the thing, so breaking any of the machine's body is the undo. There
+# is no block-break advancement trigger in 1.21.1, so this is a once-a-second check over the
+# machines that exist — entity iteration, never a block scan.
+
+# The two checks set a TAG rather than each calling tear_down, because breaking the base makes
+# both of them true and the machine would then be handed back twice.
+
+function clean_broken()
+    as @Machine at @s
+        /execute unless block ~ ~ ~ minecraft:chiseled_quartz_block run tag @s add slushie_broken
+        /execute unless block ~ ~1 ~ minecraft:blue_ice run tag @s add slushie_broken
+        /execute if entity @s[tag=slushie_broken] run function $namespace:tear_down
+    end
+end
+
+# Plain 'replace', never 'destroy': the machine is handed back whole, so dropping its parts as
+# well would quietly duplicate them.
+#
+# EVERY line checks what is actually there before clearing it, including the handle and the sign.
+# Without that check the front clears are unconditional, and the case that bites is placing a machine
+# flat against a wall: the handle and sign have nowhere to go, so they are never placed — and taking
+# the machine down then punches a two-block hole in the child's wall. A tidy-up that destroys
+# something the child built is far worse than one that leaves a block behind.
+function tear_down()
+    /execute if entity @s[tag=slushie_s] if block ~ ~1 ~1 minecraft:lever run setblock ~ ~1 ~1 minecraft:air
+    /execute if entity @s[tag=slushie_s] if block ~ ~2 ~1 minecraft:birch_wall_sign run setblock ~ ~2 ~1 minecraft:air
+    /execute if entity @s[tag=slushie_n] if block ~ ~1 ~-1 minecraft:lever run setblock ~ ~1 ~-1 minecraft:air
+    /execute if entity @s[tag=slushie_n] if block ~ ~2 ~-1 minecraft:birch_wall_sign run setblock ~ ~2 ~-1 minecraft:air
+    /execute if entity @s[tag=slushie_e] if block ~1 ~1 ~ minecraft:lever run setblock ~1 ~1 ~ minecraft:air
+    /execute if entity @s[tag=slushie_e] if block ~1 ~2 ~ minecraft:birch_wall_sign run setblock ~1 ~2 ~ minecraft:air
+    /execute if entity @s[tag=slushie_w] if block ~-1 ~1 ~ minecraft:lever run setblock ~-1 ~1 ~ minecraft:air
+    /execute if entity @s[tag=slushie_w] if block ~-1 ~2 ~ minecraft:birch_wall_sign run setblock ~-1 ~2 ~ minecraft:air
+    /execute if block ~ ~ ~ minecraft:chiseled_quartz_block run setblock ~ ~ ~ minecraft:air
+    /execute if block ~ ~1 ~ minecraft:blue_ice run setblock ~ ~1 ~ minecraft:air
+    /execute if block ~ ~2 ~ minecraft:sea_lantern run setblock ~ ~2 ~ minecraft:air
+    /particle minecraft:cloud ~ ~1 ~ 0.4 0.6 0.4 0.02 25 force
+    # Hand the machine back rather than dropping parts, so a mistake costs nothing.
+    /execute if entity @p[distance=..24] run function $namespace:refund
+    /kill @s
+end
+
+function refund()
+    /execute as @p[distance=..24] run function $namespace:give
+end
+
+# ── Wiring ───────────────────────────────────────────────────────────────────────────────────
+
+# A datapack tick function runs in the OVERWORLD, and a bare @e only ever sees the dimension it is
+# run in — so without these, a machine carried to the Nether would silently never build and never
+# tidy up. That reads as "the mod is broken", which would poison the only measurement this spike
+# exists to take.
+
+clock tick
+    build_new()
+    /execute in minecraft:the_nether run function $namespace:build_new
+    /execute in minecraft:the_end run function $namespace:build_new
+
+    g.slushie_slow = g.slushie_slow + 1
+    if g.slushie_slow >= 20
+        g.slushie_slow = 0
+        clean_broken()
+        /execute in minecraft:the_nether run function $namespace:clean_broken
+        /execute in minecraft:the_end run function $namespace:clean_broken
+    end
+
+    # Greet in the tick, not in reset: a load-time tellraw reaches nobody in singleplayer.
+    as @Player[tag=!slushie_greeted]
+        /tag @s add slushie_greeted
+        /tellraw @s ["",{"text":"🥤 Slushie Machine! ","color":"aqua","bold":true},{"text":"[ Click here for one ]","color":"blue","bold":true,"underlined":true,"clickEvent":{"action":"run_command","value":"/function $namespace:give"}}]
+    end
+end
+
+reset
+end

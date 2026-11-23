@@ -1,0 +1,280 @@
+[
+ {
+  "cluster": "creatures_two",
+  "name": "slime",
+  "verdict": "WARN",
+  "kind": "fixed",
+  "n": 32,
+  "problems": [],
+  "warnings": [
+   "silhouette 92% the same as ladybug"
+  ],
+  "stats": {
+   "fill": 0.527,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "fixed": 459,
+   "line": 78,
+   "shine": 3
+  }
+ },
+ {
+  "cluster": "creatures_two",
+  "name": "snake",
+  "verdict": "PASS",
+  "kind": "fixed",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.427,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "fixed": 311,
+   "line": 123,
+   "shine": 3
+  }
+ },
+ {
+  "cluster": "creatures_two",
+  "name": "spider",
+  "verdict": "PASS",
+  "kind": "fixed",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.408,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "fixed": 232,
+   "line": 182,
+   "shine": 4
+  }
+ },
+ {
+  "cluster": "creatures_two",
+  "name": "mouse",
+  "verdict": "PASS",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.559,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "body": 265,
+   "fixed": 132,
+   "line": 174,
+   "shine": 1
+  }
+ },
+ {
+  "cluster": "creatures_two",
+  "name": "hamster",
+  "verdict": "PASS",
+  "kind": "fixed",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.349,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "fixed": 285,
+   "line": 69,
+   "shine": 3
+  }
+ },
+ {
+  "cluster": "creatures_two",
+  "name": "squirrel",
+  "verdict": "PASS",
+  "kind": "fixed",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.496,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "fixed": 360,
+   "line": 145,
+   "shine": 3
+  }
+ },
+ {
+  "cluster": "creatures_two",
+  "name": "deer",
+  "verdict": "PASS",
+  "kind": "fixed",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.422,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "fixed": 282,
+   "line": 145,
+   "shine": 5
+  }
+ },
+ {
+  "cluster": "creatures_two",
+  "name": "wolf",
+  "verdict": "PASS",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.541,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "body": 390,
+   "line": 159,
+   "shine": 5
+  }
+ },
+ {
+  "cluster": "creatures_two",
+  "name": "seal",
+  "verdict": "PASS",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.405,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "body": 320,
+   "line": 92,
+   "shine": 3
+  }
+ },
+ {
+  "cluster": "creatures_two",
+  "name": "flamingo",
+  "verdict": "PASS",
+  "kind": "fixed",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.342,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "fixed": 245,
+   "line": 103,
+   "shine": 2
+  }
+ },
+ {
+  "cluster": "creatures_two",
+  "name": "peacock",
+  "verdict": "PASS",
+  "kind": "fixed",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.539,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "fixed": 419,
+   "line": 130,
+   "shine": 3
+  }
+ },
+ {
+  "cluster": "creatures_two",
+  "name": "chick",
+  "verdict": "PASS",
+  "kind": "fixed",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.511,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "fixed": 414,
+   "line": 105,
+   "shine": 4
+  }
+ },
+ {
+  "cluster": "creatures_two",
+  "name": "ladybug",
+  "verdict": "WARN",
+  "kind": "fixed",
+  "n": 32,
+  "problems": [],
+  "warnings": [
+   "silhouette 92% the same as slime"
+  ],
+  "stats": {
+   "fill": 0.538,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "fixed": 367,
+   "line": 179,
+   "shine": 5
+  }
+ },
+ {
+  "cluster": "creatures_two",
+  "name": "snail",
+  "verdict": "PASS",
+  "kind": "fixed",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.548,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "fixed": 433,
+   "line": 124,
+   "shine": 4
+  }
+ },
+ {
+  "cluster": "creatures_two",
+  "name": "mermaid",
+  "verdict": "PASS",
+  "kind": "fixed",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.395,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "fixed": 265,
+   "line": 134,
+   "shine": 5
+  }
+ },
+ {
+  "cluster": "creatures_two",
+  "name": "robot_dog",
+  "verdict": "PASS",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.492,
+   "dark_body": 0.008,
+   "pieces": 1,
+   "accent": 36,
+   "body": 260,
+   "line": 203,
+   "shine": 5
+  }
+ }
+]

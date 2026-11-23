@@ -1,0 +1,227 @@
+{
+  "id": "octopus",
+  "name": "Octopus",
+  "status": "Sculpting your octopus",
+  "note": "Plain base octopus: reddish-orange mantle as 'head' (spotted skin), two big friendly eyes parented to head on the -z front, eight tentacle1..8 boxes in a ring under the mantle so they sway in water. No accessories by request.",
+  "palette": [
+    {
+      "colour": "#D9533A",
+      "percent": 95
+    },
+    {
+      "colour": "white",
+      "percent": 2
+    }
+  ],
+  "powers": [
+    "friendly"
+  ],
+  "damage": 0,
+  "health": 20,
+  "parts": [
+    {
+      "name": "head",
+      "from": [
+        -7,
+        10,
+        -7
+      ],
+      "to": [
+        7,
+        26,
+        7
+      ],
+      "colour": "#D9533A",
+      "pattern": "spots",
+      "pattern_colour": "#A8321F"
+    },
+    {
+      "name": "eyeL",
+      "parent": "head",
+      "from": [
+        -6,
+        15,
+        -8
+      ],
+      "to": [
+        -2,
+        19,
+        -6
+      ],
+      "colour": "white"
+    },
+    {
+      "name": "pupilL",
+      "parent": "head",
+      "from": [
+        -5,
+        15,
+        -8.5
+      ],
+      "to": [
+        -3,
+        17,
+        -7.5
+      ],
+      "colour": "black"
+    },
+    {
+      "name": "eyeR",
+      "parent": "head",
+      "from": [
+        2,
+        15,
+        -8
+      ],
+      "to": [
+        6,
+        19,
+        -6
+      ],
+      "colour": "white"
+    },
+    {
+      "name": "pupilR",
+      "parent": "head",
+      "from": [
+        3,
+        15,
+        -8.5
+      ],
+      "to": [
+        5,
+        17,
+        -7.5
+      ],
+      "colour": "black"
+    },
+    {
+      "name": "tentacle1",
+      "from": [
+        -7,
+        0,
+        -8
+      ],
+      "to": [
+        -4,
+        12,
+        -5
+      ],
+      "colour": "#D9533A",
+      "pattern": "gradient",
+      "pattern_colour": "#F08A6A"
+    },
+    {
+      "name": "tentacle2",
+      "from": [
+        -1.5,
+        0,
+        -8
+      ],
+      "to": [
+        1.5,
+        12,
+        -5
+      ],
+      "colour": "#D9533A",
+      "pattern": "gradient",
+      "pattern_colour": "#F08A6A"
+    },
+    {
+      "name": "tentacle3",
+      "from": [
+        4,
+        0,
+        -8
+      ],
+      "to": [
+        7,
+        12,
+        -5
+      ],
+      "colour": "#D9533A",
+      "pattern": "gradient",
+      "pattern_colour": "#F08A6A"
+    },
+    {
+      "name": "tentacle4",
+      "from": [
+        5,
+        0,
+        -1.5
+      ],
+      "to": [
+        8,
+        12,
+        1.5
+      ],
+      "colour": "#D9533A",
+      "pattern": "gradient",
+      "pattern_colour": "#F08A6A"
+    },
+    {
+      "name": "tentacle5",
+      "from": [
+        4,
+        0,
+        5
+      ],
+      "to": [
+        7,
+        12,
+        8
+      ],
+      "colour": "#D9533A",
+      "pattern": "gradient",
+      "pattern_colour": "#F08A6A"
+    },
+    {
+      "name": "tentacle6",
+      "from": [
+        -1.5,
+        0,
+        5
+      ],
+      "to": [
+        1.5,
+        12,
+        8
+      ],
+      "colour": "#D9533A",
+      "pattern": "gradient",
+      "pattern_colour": "#F08A6A"
+    },
+    {
+      "name": "tentacle7",
+      "from": [
+        -7,
+        0,
+        5
+      ],
+      "to": [
+        -4,
+        12,
+        8
+      ],
+      "colour": "#D9533A",
+      "pattern": "gradient",
+      "pattern_colour": "#F08A6A"
+    },
+    {
+      "name": "tentacle8",
+      "from": [
+        -8,
+        0,
+        -1.5
+      ],
+      "to": [
+        -5,
+        12,
+        1.5
+      ],
+      "colour": "#D9533A",
+      "pattern": "gradient",
+      "pattern_colour": "#F08A6A"
+    }
+  ]
+}

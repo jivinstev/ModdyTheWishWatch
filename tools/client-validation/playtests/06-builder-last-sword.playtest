@@ -1,0 +1,63 @@
+# Validation 6: a Builder wish for another mod's item, and that item working in a Moddy world. The Wish Builder's
+# Supplies page has a 🔍 Find that searches every installed item by name, mods included; here it finds The Last Sword
+# (the reforged one, the_last_sword:the_last_sword, from the mod of the same name, with its library Epic Core API),
+# the Builder makes it, and the sword the player was given kills a
+# Warden, the hardest vanilla mob (500 health), by melee.
+@intent A Builder wish finds The Last Sword by name and gives it, and that sword kills a Warden
+
+@step a clear stage
+gamemode creative
+time set noon
+weather clear
+gamerule doDaylightCycle false
+gamerule doMobSpawning false
+execute if entity @e[type=!minecraft:player] run kill @e[type=!minecraft:player]
+tp @s ~ ~ ~ 0 10
+
+@step find The Last Sword in the Builder's supplies
+/moddy builder
+@expect screen Wish Builder within 10s
+@click item "Supplies"
+@expect screen What do you need within 5s
+@click item "Find"
+@expect screen /find/ within 5s
+@type "last sword"
+@shot find-box
+@click button "Find it!"
+@expect screen Is it one of these within 15s
+@shot found
+
+@step the Builder makes it
+@click item "Last Sword"
+@wait 1s
+@shot after-pick
+@click button "Make it!"
+@expect chat /getting .*last sword/ within 30s
+# Moddy delivers it with a short show (a beam, a boss bar), then says where it went: "The Last Sword is in slot 3!".
+@expect chat /last sword is in slot/ within 90s
+@repeat 10 until execute if items entity @s container.* the_last_sword:the_last_sword
+@wait 1s
+@end-repeat
+@assert execute if items entity @s container.* the_last_sword:the_last_sword
+@shot got-the-sword
+
+@step a Warden to fight
+# Moddy said "in slot 3": the first free hotbar slot (the watch and the wish bag hold the first two).
+@key key.hotbar.3
+@assert execute if items entity @s weapon.mainhand the_last_sword:the_last_sword
+summon minecraft:warden ~ ~ ~6 {NoAI:1b}
+@assert execute if entity @e[type=minecraft:warden,distance=..16]
+@aim entity minecraft:warden
+@shot the-warden
+
+@step the sword kills it
+@repeat each @e[type=minecraft:warden,distance=..32] max 40 until execute unless entity {it}
+execute at @s rotated as @s rotated ~ 0 run tp {it} ^ ^ ^2
+@wait 5t
+@aim entity {it}
+@key key.attack
+@wait 12t
+@end-repeat
+@wait 2s
+@assert execute unless entity @e[type=minecraft:warden,distance=..64]
+@shot warden-defeated

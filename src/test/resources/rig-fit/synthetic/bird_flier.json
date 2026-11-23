@@ -1,0 +1,145 @@
+{
+ "name": "Bird that flies",
+ "scale": 1.0,
+ "powers": [
+  "friendly",
+  "flies"
+ ],
+ "parts": [
+  {
+   "name": "body",
+   "from": [
+    -3,
+    4,
+    -5
+   ],
+   "to": [
+    3,
+    10,
+    5
+   ],
+   "pivot": [
+    0,
+    4,
+    0
+   ],
+   "colour": "#3050E0"
+  },
+  {
+   "name": "head",
+   "from": [
+    -2,
+    9,
+    -8
+   ],
+   "to": [
+    2,
+    13,
+    -4
+   ],
+   "pivot": [
+    0,
+    9,
+    0
+   ],
+   "colour": "#3050E0"
+  },
+  {
+   "name": "beak",
+   "from": [
+    -1,
+    10,
+    -10
+   ],
+   "to": [
+    1,
+    11,
+    -8
+   ],
+   "pivot": [
+    0,
+    10,
+    0
+   ],
+   "colour": "#E0A020"
+  },
+  {
+   "name": "wingL",
+   "from": [
+    3,
+    8,
+    -4
+   ],
+   "to": [
+    17,
+    9,
+    4
+   ],
+   "pivot": [
+    0,
+    8,
+    0
+   ],
+   "colour": "#3050E0"
+  },
+  {
+   "name": "wingR",
+   "from": [
+    -17,
+    8,
+    -4
+   ],
+   "to": [
+    -3,
+    9,
+    4
+   ],
+   "pivot": [
+    0,
+    8,
+    0
+   ],
+   "colour": "#3050E0"
+  },
+  {
+   "name": "legL",
+   "from": [
+    1,
+    0,
+    -1
+   ],
+   "to": [
+    2,
+    4,
+    0
+   ],
+   "pivot": [
+    0,
+    0,
+    0
+   ],
+   "colour": "#3050E0"
+  },
+  {
+   "name": "legR",
+   "from": [
+    -2,
+    0,
+    -1
+   ],
+   "to": [
+    -1,
+    4,
+    0
+   ],
+   "pivot": [
+    0,
+    0,
+    0
+   ],
+   "colour": "#3050E0"
+  }
+ ],
+ "id": "bird_flier",
+ "source": "synthetic \u2014 shapes the committed corpus does not contain"
+}

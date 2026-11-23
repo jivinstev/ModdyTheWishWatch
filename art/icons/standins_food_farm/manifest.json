@@ -1,0 +1,126 @@
+{
+ "cluster": "standins_food_farm",
+ "order": [
+  "cake",
+  "egg",
+  "chicken",
+  "apple",
+  "golden_apple",
+  "bread",
+  "carrot",
+  "sugar",
+  "wheat_seeds",
+  "cocoa_beans",
+  "cod",
+  "cooked_beef",
+  "glow_berries",
+  "pumpkin",
+  "cactus",
+  "feather",
+  "stick"
+ ],
+ "icons": [
+  {
+   "name": "cake",
+   "status": "ok",
+   "attempts": 1,
+   "note": ""
+  },
+  {
+   "name": "egg",
+   "status": "ok",
+   "attempts": 2,
+   "note": ""
+  },
+  {
+   "name": "chicken",
+   "status": "ok",
+   "attempts": 2,
+   "note": ""
+  },
+  {
+   "name": "apple",
+   "status": "ok",
+   "attempts": 1,
+   "note": ""
+  },
+  {
+   "name": "golden_apple",
+   "status": "ok",
+   "attempts": 1,
+   "note": ""
+  },
+  {
+   "name": "bread",
+   "status": "ok",
+   "attempts": 2,
+   "note": ""
+  },
+  {
+   "name": "carrot",
+   "status": "ok",
+   "attempts": 3,
+   "note": ""
+  },
+  {
+   "name": "sugar",
+   "status": "ok",
+   "attempts": 3,
+   "note": ""
+  },
+  {
+   "name": "wheat_seeds",
+   "status": "ok",
+   "attempts": 2,
+   "note": ""
+  },
+  {
+   "name": "cocoa_beans",
+   "status": "ok",
+   "attempts": 3,
+   "note": ""
+  },
+  {
+   "name": "cod",
+   "status": "ok",
+   "attempts": 3,
+   "note": ""
+  },
+  {
+   "name": "cooked_beef",
+   "status": "ok",
+   "attempts": 2,
+   "note": ""
+  },
+  {
+   "name": "glow_berries",
+   "status": "ok",
+   "attempts": 2,
+   "note": ""
+  },
+  {
+   "name": "pumpkin",
+   "status": "ok",
+   "attempts": 2,
+   "note": ""
+  },
+  {
+   "name": "cactus",
+   "status": "ok",
+   "attempts": 1,
+   "note": ""
+  },
+  {
+   "name": "feather",
+   "status": "ok",
+   "attempts": 3,
+   "note": ""
+  },
+  {
+   "name": "stick",
+   "status": "ok",
+   "attempts": 3,
+   "note": ""
+  }
+ ]
+}

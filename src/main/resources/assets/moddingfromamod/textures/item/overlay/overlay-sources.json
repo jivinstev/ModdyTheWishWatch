@@ -1,0 +1,178 @@
+{
+  "backing_glow": {
+    "args": "--size 16 --frametime 3 --soft --luminance --dither",
+    "date": "2026-09-25",
+    "frames": 16,
+    "sheet": "sparkle-sheet.png",
+    "size": 16,
+    "source": "imported"
+  },
+  "boom": {
+    "args": "--frametime 2",
+    "date": "2026-09-25",
+    "frames": 16,
+    "sheet": "boom-sheet.png",
+    "size": 32,
+    "source": "imported"
+  },
+  "bubbles": {
+    "args": "--frametime 2",
+    "date": "2026-09-25",
+    "frames": 16,
+    "sheet": "bubbles-sheet.png",
+    "size": 32,
+    "source": "imported"
+  },
+  "coins": {
+    "args": "--frametime 2",
+    "date": "2026-09-25",
+    "frames": 16,
+    "sheet": "coins-sheet.png",
+    "size": 32,
+    "source": "imported"
+  },
+  "flame": {
+    "args": "--frametime 2",
+    "date": "2026-09-25",
+    "frames": 16,
+    "sheet": "flame-sheet.png",
+    "size": 32,
+    "source": "imported"
+  },
+  "frost": {
+    "args": "--frametime 3",
+    "date": "2026-09-25",
+    "frames": 16,
+    "sheet": "frost-sheet.png",
+    "size": 32,
+    "source": "imported"
+  },
+  "glow": {
+    "args": "--frametime 2",
+    "date": "2026-09-25",
+    "frames": 16,
+    "sheet": "glow-sheet.png",
+    "size": 32,
+    "source": "imported"
+  },
+  "hearts": {
+    "args": "--frametime 2",
+    "date": "2026-09-25",
+    "frames": 16,
+    "sheet": "hearts-sheet.png",
+    "size": 32,
+    "source": "imported"
+  },
+  "leaves": {
+    "args": "--frametime 3",
+    "date": "2026-09-25",
+    "frames": 16,
+    "sheet": "leaves-sheet.png",
+    "size": 32,
+    "source": "imported"
+  },
+  "moon": {
+    "args": "--size 32 --frametime 3",
+    "date": "2026-10-07",
+    "frames": 16,
+    "sheet": "bca64944-image.png",
+    "size": 32,
+    "source": "imported"
+  },
+  "music": {
+    "args": "--frametime 2",
+    "date": "2026-09-25",
+    "frames": 16,
+    "sheet": "music-sheet.png",
+    "size": 32,
+    "source": "imported"
+  },
+  "rain": {
+    "args": "--size 32 --frametime 2",
+    "date": "2026-10-07",
+    "frames": 16,
+    "sheet": "0884fe8d-image.png",
+    "size": 32,
+    "source": "imported"
+  },
+  "rainbow": {
+    "args": "--frametime 2",
+    "date": "2026-09-25",
+    "frames": 16,
+    "sheet": "rainbow-sheet.png",
+    "size": 32,
+    "source": "imported"
+  },
+  "shadow": {
+    "args": "--frametime 3",
+    "date": "2026-09-25",
+    "frames": 16,
+    "sheet": "shadow-sheet.png",
+    "size": 32,
+    "source": "imported"
+  },
+  "shield": {
+    "args": "--frametime 2",
+    "date": "2026-09-25",
+    "frames": 16,
+    "sheet": "shield-sheet.png",
+    "size": 32,
+    "source": "imported"
+  },
+  "slime": {
+    "args": "--frametime 2",
+    "date": "2026-09-25",
+    "frames": 16,
+    "sheet": "slime-sheet.png",
+    "size": 32,
+    "source": "imported"
+  },
+  "smoke": {
+    "args": "--frametime 3 --neutral",
+    "date": "2026-09-25",
+    "frames": 16,
+    "sheet": "smoke-sheet.png",
+    "size": 32,
+    "source": "imported"
+  },
+  "sparks": {
+    "args": "--frametime 2",
+    "date": "2026-09-25",
+    "frames": 16,
+    "sheet": "sparks-sheet.png",
+    "size": 32,
+    "source": "imported"
+  },
+  "stars": {
+    "args": "--frametime 2",
+    "date": "2026-09-25",
+    "frames": 16,
+    "sheet": "stars-sheet.png",
+    "size": 32,
+    "source": "imported"
+  },
+  "sun": {
+    "args": "--size 32 --frametime 3",
+    "date": "2026-10-07",
+    "frames": 16,
+    "sheet": "e6066668-image.png",
+    "size": 32,
+    "source": "imported"
+  },
+  "swirl": {
+    "args": "--frametime 2",
+    "date": "2026-09-25",
+    "frames": 16,
+    "sheet": "swirl-sheet.png",
+    "size": 32,
+    "source": "imported"
+  },
+  "wind": {
+    "args": "--frametime 2 --neutral",
+    "date": "2026-09-25",
+    "frames": 16,
+    "sheet": "wind-sheet.png",
+    "size": 32,
+    "source": "imported"
+  }
+}

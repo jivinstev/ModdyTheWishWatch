@@ -1,0 +1,10 @@
+# EXPLODE — the bang.
+#
+# The blast is built by the tool from SIZE and BREAKS_BLOCKS, and the two are genuinely different
+# programs rather than one with a flag: breaking uses real primed TNT, while not-breaking is a
+# particle, a sound and explosion damage in a radius. Faking the harmless one is the point — a
+# seven-year-old throwing bombs around his own base wants the BOOM, not the crater, and finding out
+# which he meant afterwards costs him the base.
+function effect()
+${BLAST}
+end

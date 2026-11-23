@@ -1,0 +1,17 @@
+# ON_CONSUME — he EATS it or DRINKS it, and when he has FINISHED, the wish happens. A real
+# food or drink (a cookie, bread, a potion…) built with base_item: vanilla eats it exactly as it
+# always does — the crunching, the hunger, the bottle left behind — and WishShapeEvents runs act() as
+# him the moment the eating or drinking finishes. A wish about him happens on him; one about
+# something else happens a few steps along his line of sight, as for a right-click (the AIM line).
+import common
+
+function give()
+${GIVES}
+    /tellraw @s {"text":"${GIVE_MESSAGE}","color":"${HEX}"}
+end
+
+function act()
+    ${AIM}
+end
+
+${EFFECT_BLOCK}

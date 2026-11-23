@@ -1,0 +1,23 @@
+{
+  "vehicle": true,
+  "armor": 0.0,
+  "behaves": "vehicle",
+  "body": "humanoid",
+  "createdAt": 1793198769895,
+  "damage": 0.0,
+  "health": 40.0,
+  "id": "car",
+  "knockbackResistance": 0.0,
+  "modelKey": "car",
+  "name": "Car",
+  "powers": [
+    "friendly",
+    "rideable",
+    "persistent"
+  ],
+  "scale": 1.0,
+  "speed": 0.25,
+  "texture": "zombie",
+  "tint": "#FFFFFF",
+  "updatedAt": 1793198769895
+}

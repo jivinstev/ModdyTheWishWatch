@@ -1,0 +1,14 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "com.moddingfromamod.testing.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "GameTestCrashGuardMixin",
+    "GameTestWallClockMixin",
+    "SoundSentMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

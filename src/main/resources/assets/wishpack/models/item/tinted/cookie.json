@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/cookie",
+  "textures": {
+    "layer0": "wishpack:item/tinted/cookie_tint"
+  }
+}

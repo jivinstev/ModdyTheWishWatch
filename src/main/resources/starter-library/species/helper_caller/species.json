@@ -1,0 +1,23 @@
+{
+  "abilities": [
+    "summon"
+  ],
+  "armor": 0.0,
+  "base": "guardian",
+  "body": "humanoid",
+  "damage": 4.0,
+  "health": 80.0,
+  "id": "helper_caller",
+  "knockbackResistance": 0.0,
+  "modelKey": "helper_caller",
+  "name": "Captain Puff",
+  "powers": [
+    "friendly",
+    "persistent"
+  ],
+  "scale": 1.0,
+  "speed": 0.25,
+  "texture": "zombie",
+  "tint": "#FFFFFF",
+  "voice": "allay"
+}

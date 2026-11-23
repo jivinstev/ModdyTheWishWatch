@@ -1,0 +1,20 @@
+{
+  "vehicle": false,
+  "armor": 0.0,
+  "body": "humanoid",
+  "createdAt": 1793165609485,
+  "damage": 0.0,
+  "health": 40.0,
+  "id": "elephant",
+  "knockbackResistance": 0.0,
+  "modelKey": "elephant",
+  "name": "Elephant",
+  "powers": [
+    "friendly"
+  ],
+  "scale": 1.0,
+  "speed": 0.2,
+  "texture": "zombie",
+  "tint": "#FFFFFF",
+  "updatedAt": 1793165609485
+}

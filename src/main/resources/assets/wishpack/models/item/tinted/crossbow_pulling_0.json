@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:item/crossbow_pulling_0",
+  "textures": {
+    "layer0": "wishpack:item/tinted/crossbow_pulling_0_tint",
+    "layer1": "wishpack:item/tinted/crossbow_pulling_0_keep"
+  }
+}

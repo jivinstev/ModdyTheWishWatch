@@ -1,0 +1,1 @@
+{"store":"learned","v":1,"templates":[{"id":"rain_chickens","all":["rain","chickens"],"commands":["say chickens"],"say":"Chickens!","icon":"minecraft:egg"}]}

@@ -1,0 +1,17 @@
+{
+ "base_item": "minecraft:potion",
+ "count": 4,
+ "effects": [
+  "food"
+ ],
+ "id": "hot_chocolate_food",
+ "name": "Hot Chocolate",
+ "params": {
+  "BONUS": "minecraft:regeneration",
+  "SECONDS": "10"
+ },
+ "parts": [],
+ "properties": {},
+ "shape": "on_consume",
+ "variants": []
+}

@@ -1,0 +1,10 @@
+# TELEPORT_HOME — he goes HOME: his bed or respawn point, or the world's spawn if he has none
+# (T6F follow-up). Thrown on a real ender pearl (on_throw_land) the pearl still flies; where
+# it lands, this runs as him BEFORE the pearl's own teleport, and GoHome cancels that one, so he ends
+# at home rather than where the pearl fell (and takes no pearl damage). Finding home and crossing
+# dimensions is Java's (GoHome); this says "go home", by tagging him, and makes it seen and heard.
+function effect()
+    /execute as ${TARGET} run tag @s add mfam_go_home
+    /particle minecraft:reverse_portal ~ ~1 ~ 0.5 1.0 0.5 0.1 60 force
+    /playsound minecraft:entity.enderman.teleport master @a ~ ~ ~ 1 0.8
+end

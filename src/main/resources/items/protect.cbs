@@ -1,0 +1,11 @@
+# PROTECT — very nearly nothing can hurt you.
+#
+# The tool refuses LEVEL=4. Resistance IV is COMPLETE immunity in vanilla, and an item that makes
+# the game unloseable is a worse gift than one that makes it easy — there is nothing left to do.
+# Level 3 is 80% off, which still feels invincible while leaving the game a game.
+function effect()
+    /execute as ${TARGET} run effect give @s minecraft:resistance ${SECONDS} ${LEVEL}
+    /execute as ${TARGET} run effect give @s minecraft:fire_resistance ${SECONDS} 0
+    /particle minecraft:enchant ~ ~1 ~ 0.5 0.8 0.5 0.5 50 force
+    /playsound minecraft:block.beacon.activate master @a ~ ~ ~ 1 1.4
+end

@@ -1,0 +1,10 @@
+# LIGHT — it lights the place up. For caves, which are dark and frightening at seven.
+#
+# minecraft:light is the invisible light block, so the cave stays a cave rather than acquiring a
+# glowing cube in the middle of it.
+function effect()
+    /execute if block ~ ~ ~ #minecraft:replaceable run setblock ~ ~ ~ minecraft:light[level=15]
+    ${GLOW}
+    /particle minecraft:end_rod ~ ~ ~ 0.3 0.3 0.3 0.01 20 force
+    /playsound minecraft:block.amethyst_block.chime master @a ~ ~ ~ 1 1.5
+end

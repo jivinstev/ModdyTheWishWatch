@@ -1,0 +1,90 @@
+{
+  "model": {
+    "cases": [
+      {
+        "model": {
+          "model": "wishpack:item/tinted/crossbow_arrow",
+          "tints": [
+            {
+              "default": -1,
+              "type": "minecraft:dye"
+            }
+          ],
+          "type": "minecraft:model"
+        },
+        "when": "arrow"
+      },
+      {
+        "model": {
+          "model": "wishpack:item/tinted/crossbow_firework",
+          "tints": [
+            {
+              "default": -1,
+              "type": "minecraft:dye"
+            }
+          ],
+          "type": "minecraft:model"
+        },
+        "when": "rocket"
+      }
+    ],
+    "fallback": {
+      "on_false": {
+        "model": "wishpack:item/tinted/crossbow",
+        "tints": [
+          {
+            "default": -1,
+            "type": "minecraft:dye"
+          }
+        ],
+        "type": "minecraft:model"
+      },
+      "on_true": {
+        "entries": [
+          {
+            "model": {
+              "model": "wishpack:item/tinted/crossbow_pulling_1",
+              "tints": [
+                {
+                  "default": -1,
+                  "type": "minecraft:dye"
+                }
+              ],
+              "type": "minecraft:model"
+            },
+            "threshold": 0.58
+          },
+          {
+            "model": {
+              "model": "wishpack:item/tinted/crossbow_pulling_2",
+              "tints": [
+                {
+                  "default": -1,
+                  "type": "minecraft:dye"
+                }
+              ],
+              "type": "minecraft:model"
+            },
+            "threshold": 1.0
+          }
+        ],
+        "fallback": {
+          "model": "wishpack:item/tinted/crossbow_pulling_0",
+          "tints": [
+            {
+              "default": -1,
+              "type": "minecraft:dye"
+            }
+          ],
+          "type": "minecraft:model"
+        },
+        "property": "minecraft:crossbow/pull",
+        "type": "minecraft:range_dispatch"
+      },
+      "property": "minecraft:using_item",
+      "type": "minecraft:condition"
+    },
+    "property": "minecraft:charge_type",
+    "type": "minecraft:select"
+  }
+}

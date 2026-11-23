@@ -1,0 +1,10 @@
+# GRAPPLE — "a hook that pulls me there". Thrown on a real throwable (on_throw_land):
+# where it lands, this asks for him to be flung there. The fling is Java's (Grapple): a function
+# cannot set a player's motion, and only a velocity packet reaches a stock client. WHERE it landed is
+# recorded per thrower by WishThrowImpact — never a marker in the world, which a second child's hook
+# could take. It runs as him, positioned where the hook landed.
+function effect()
+    /execute as ${TARGET} run tag @s add mfam_grapple
+    /particle minecraft:crit ~ ~ ~ 0.3 0.3 0.3 0.1 20 force
+    /playsound minecraft:item.crossbow.hit master @a ~ ~ ~ 1 1.2
+end

@@ -1,0 +1,17 @@
+{
+ "base_item": "minecraft:cookie",
+ "count": 4,
+ "effects": [
+  "food"
+ ],
+ "id": "cotton_candy_food",
+ "name": "Cotton Candy",
+ "params": {
+  "BONUS": "minecraft:speed",
+  "SECONDS": "5"
+ },
+ "parts": [],
+ "properties": {},
+ "shape": "on_consume",
+ "variants": []
+}

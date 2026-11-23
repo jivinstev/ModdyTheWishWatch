@@ -1,0 +1,288 @@
+[
+ {
+  "cluster": "food",
+  "name": "pizza",
+  "verdict": "PASS",
+  "kind": "fixed",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.577,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "fixed": 423,
+   "line": 165,
+   "shine": 3
+  }
+ },
+ {
+  "cluster": "food",
+  "name": "burger",
+  "verdict": "PASS",
+  "kind": "fixed",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.502,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "fixed": 312,
+   "line": 198,
+   "shine": 4
+  }
+ },
+ {
+  "cluster": "food",
+  "name": "hot_dog",
+  "verdict": "WARN",
+  "kind": "fixed",
+  "n": 32,
+  "problems": [],
+  "warnings": [
+   "silhouette 86% the same as sushi"
+  ],
+  "stats": {
+   "fill": 0.514,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "fixed": 369,
+   "line": 152,
+   "shine": 5
+  }
+ },
+ {
+  "cluster": "food",
+  "name": "fries",
+  "verdict": "WARN",
+  "kind": "fixed",
+  "n": 32,
+  "problems": [],
+  "warnings": [
+   "silhouette 86% the same as pancake"
+  ],
+  "stats": {
+   "fill": 0.597,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "fixed": 407,
+   "line": 199,
+   "shine": 5
+  }
+ },
+ {
+  "cluster": "food",
+  "name": "taco",
+  "verdict": "PASS",
+  "kind": "fixed",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.374,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "fixed": 283,
+   "line": 97,
+   "shine": 3
+  }
+ },
+ {
+  "cluster": "food",
+  "name": "sushi",
+  "verdict": "WARN",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [
+   "silhouette 86% the same as hot_dog"
+  ],
+  "stats": {
+   "fill": 0.587,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "body": 62,
+   "fixed": 290,
+   "line": 244,
+   "shine": 5
+  }
+ },
+ {
+  "cluster": "food",
+  "name": "ramen",
+  "verdict": "WARN",
+  "kind": "fixed",
+  "n": 32,
+  "problems": [],
+  "warnings": [
+   "silhouette is 2 pieces"
+  ],
+  "stats": {
+   "fill": 0.356,
+   "dark_body": 0.0,
+   "pieces": 2,
+   "accent": 1,
+   "fixed": 235,
+   "line": 124,
+   "shine": 5
+  }
+ },
+ {
+  "cluster": "food",
+  "name": "pancake",
+  "verdict": "WARN",
+  "kind": "fixed",
+  "n": 32,
+  "problems": [],
+  "warnings": [
+   "silhouette 86% the same as fries"
+  ],
+  "stats": {
+   "fill": 0.664,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "fixed": 471,
+   "line": 204,
+   "shine": 5
+  }
+ },
+ {
+  "cluster": "food",
+  "name": "waffle",
+  "verdict": "PASS",
+  "kind": "fixed",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.332,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "fixed": 267,
+   "line": 68,
+   "shine": 5
+  }
+ },
+ {
+  "cluster": "food",
+  "name": "popcorn",
+  "verdict": "PASS",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.512,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "body": 2,
+   "fixed": 381,
+   "line": 136,
+   "shine": 5
+  }
+ },
+ {
+  "cluster": "food",
+  "name": "drumstick",
+  "verdict": "PASS",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.472,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "body": 14,
+   "fixed": 343,
+   "line": 121,
+   "shine": 5
+  }
+ },
+ {
+  "cluster": "food",
+  "name": "banana",
+  "verdict": "PASS",
+  "kind": "fixed",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.353,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "fixed": 262,
+   "line": 94,
+   "shine": 5
+  }
+ },
+ {
+  "cluster": "food",
+  "name": "strawberry",
+  "verdict": "PASS",
+  "kind": "fixed",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.519,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "fixed": 404,
+   "line": 122,
+   "shine": 5
+  }
+ },
+ {
+  "cluster": "food",
+  "name": "cherry",
+  "verdict": "PASS",
+  "kind": "fixed",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.467,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "fixed": 329,
+   "line": 144,
+   "shine": 5
+  }
+ },
+ {
+  "cluster": "food",
+  "name": "pineapple",
+  "verdict": "PASS",
+  "kind": "fixed",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.419,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "fixed": 312,
+   "line": 113,
+   "shine": 4
+  }
+ },
+ {
+  "cluster": "food",
+  "name": "lemon",
+  "verdict": "PASS",
+  "kind": "fixed",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.354,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "fixed": 268,
+   "line": 90,
+   "shine": 5
+  }
+ }
+]

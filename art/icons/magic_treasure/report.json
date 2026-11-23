@@ -1,0 +1,229 @@
+[
+ {
+  "cluster": "magic_treasure",
+  "name": "magic_ring",
+  "verdict": "PASS",
+  "kind": "fixed",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.579,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "accent": 125,
+   "fixed": 180,
+   "line": 284,
+   "shine": 4
+  }
+ },
+ {
+  "cluster": "magic_treasure",
+  "name": "wizard_hat",
+  "verdict": "PASS",
+  "kind": "fixed",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.468,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "fixed": 281,
+   "line": 193,
+   "shine": 5
+  }
+ },
+ {
+  "cluster": "magic_treasure",
+  "name": "crystal_ball",
+  "verdict": "PASS",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.323,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "accent": 7,
+   "body": 183,
+   "fixed": 24,
+   "line": 112,
+   "shine": 5
+  }
+ },
+ {
+  "cluster": "magic_treasure",
+  "name": "genie_lamp",
+  "verdict": "PASS",
+  "kind": "fixed",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.387,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "fixed": 239,
+   "line": 152,
+   "shine": 5
+  }
+ },
+ {
+  "cluster": "magic_treasure",
+  "name": "ruby",
+  "verdict": "PASS",
+  "kind": "fixed",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.517,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "fixed": 328,
+   "line": 198,
+   "shine": 3
+  }
+ },
+ {
+  "cluster": "magic_treasure",
+  "name": "sapphire",
+  "verdict": "PASS",
+  "kind": "fixed",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.307,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "fixed": 262,
+   "line": 47,
+   "shine": 5
+  }
+ },
+ {
+  "cluster": "magic_treasure",
+  "name": "ticket",
+  "verdict": "PASS",
+  "kind": "fixed",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.403,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "fixed": 297,
+   "line": 114,
+   "shine": 2
+  }
+ },
+ {
+  "cluster": "magic_treasure",
+  "name": "dollar_bill",
+  "verdict": "PASS",
+  "kind": "fixed",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.484,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "fixed": 383,
+   "line": 108,
+   "shine": 5
+  }
+ },
+ {
+  "cluster": "magic_treasure",
+  "name": "cape",
+  "verdict": "PASS",
+  "kind": "fixed",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.459,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "fixed": 312,
+   "line": 156,
+   "shine": 2
+  }
+ },
+ {
+  "cluster": "magic_treasure",
+  "name": "sunglasses",
+  "verdict": "WARN",
+  "kind": "fixed",
+  "n": 32,
+  "problems": [],
+  "warnings": [
+   "fill 26% (want 30-85%)"
+  ],
+  "stats": {
+   "fill": 0.256,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "fixed": 74,
+   "line": 185,
+   "shine": 3
+  }
+ },
+ {
+  "cluster": "magic_treasure",
+  "name": "top_hat",
+  "verdict": "PASS",
+  "kind": "fixed",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.421,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "fixed": 47,
+   "line": 379,
+   "shine": 5
+  }
+ },
+ {
+  "cluster": "magic_treasure",
+  "name": "backpack",
+  "verdict": "PASS",
+  "kind": "fixed",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.438,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "fixed": 270,
+   "line": 175,
+   "shine": 3
+  }
+ },
+ {
+  "cluster": "magic_treasure",
+  "name": "jetpack",
+  "verdict": "PASS",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.644,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "body": 362,
+   "fixed": 88,
+   "line": 204,
+   "shine": 5
+  }
+ }
+]

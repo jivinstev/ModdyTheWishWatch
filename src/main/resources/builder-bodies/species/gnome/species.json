@@ -1,0 +1,20 @@
+{
+ "vehicle": false,
+ "armor": 0.0,
+ "behaves": "villager",
+ "body": "humanoid",
+ "damage": 0.0,
+ "health": 20.0,
+ "id": "gnome",
+ "knockbackResistance": 0.0,
+ "modelKey": "gnome",
+ "name": "Garden Gnome",
+ "powers": [
+  "friendly"
+ ],
+ "scale": 0.8,
+ "speed": 0.25,
+ "texture": "zombie",
+ "tint": "#FFFFFF",
+ "voice": "villager"
+}

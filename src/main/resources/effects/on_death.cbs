@@ -1,0 +1,30 @@
+# ON DEATH — the creature's last act, fired once, where it fell.
+#
+# THE OBVIOUS IMPLEMENTATION DOES NOT WORK, and it fails silently. A dying mob counts DeathTime up
+# from 1 over its death animation, so `@e[tag=X,nbt={DeathTime:1s}]` reads like the exact tick to
+# fire on. It compiles. It never runs: Minecraft's @e selector only ever matches entities that are
+# ALIVE, and a mob in its death animation is not. Confirmed by probe -- DeathTime is genuinely 1 and
+# serialises as 1s, and the selector still matches nobody.
+#
+# That version passed 336 compile-matrix cells. Only a test that asked whether the WORLD changed
+# caught it, which is the whole argument for tier 2 in one bug.
+#
+# SO: A SHADOW MARKER. Every living tagged creature keeps an invisible marker on top of it, replaced
+# each tick. The moment the creature dies it stops being selectable, so no fresh marker is placed --
+# and last tick's marker is left standing exactly where the creature fell. A marker with no living
+# creature beside it therefore MEANS "it just died here", and it fires the command from that spot.
+#
+# HONEST LIMIT: this cannot tell death from disappearance. A creature that despawns or is unloaded
+# also leaves its marker behind and will trigger the death act. For a boss (persistent, which is
+# what these wishes are about) that does not arise; for a wandering mob it can.
+reset
+    /scoreboard objectives add mfam_death dummy
+end
+
+clock tick
+    # 1. a marker with no living creature beside it is a creature that has just died: fire, once.
+    /execute as @e[tag=mfam_dw_${TAG}] at @s unless entity @e[tag=${TAG},distance=..2.5] run ${COMMAND}
+    /kill @e[tag=mfam_dw_${TAG},limit=1000]
+    # 2. every living creature gets a fresh marker for next tick
+    /execute as @e[tag=${TAG}] at @s run summon minecraft:armor_stand ~ ~ ~ {Tags:["mfam_dw_${TAG}"],Invisible:1b,Marker:1b,NoGravity:1b,Invulnerable:1b}
+end

@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/snowball",
+  "textures": {
+    "layer0": "wishpack:item/tinted/snowball_tint"
+  }
+}

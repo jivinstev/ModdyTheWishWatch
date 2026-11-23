@@ -1,0 +1,272 @@
+{
+  "id": "fire_imp",
+  "name": "Fire Guardian",
+  "base": "guardian",
+  "abilities": [
+    "ranged"
+  ],
+  "powers": [
+    "friendly",
+    "fireproof",
+    "persistent"
+  ],
+  "health": 80,
+  "damage": 6,
+  "scale": 1.2,
+  "status": "Sculpting your fire guardian",
+  "note": "Friendly+guardian so it fights monsters and never the child; ranged ability = fireballs. Orange/red flame imp look with yellow flame hair, smiling face to read as his ally.",
+  "palette": [
+    {
+      "colour": "orange",
+      "percent": 55
+    },
+    {
+      "colour": "red",
+      "percent": 30
+    },
+    {
+      "colour": "yellow",
+      "percent": 10
+    }
+  ],
+  "parts": [
+    {
+      "name": "body",
+      "from": [
+        -5,
+        12,
+        -3
+      ],
+      "to": [
+        5,
+        24,
+        3
+      ],
+      "colour": "orange",
+      "pattern": "gradient",
+      "pattern_colour": "red"
+    },
+    {
+      "name": "head",
+      "from": [
+        -5,
+        23,
+        -5
+      ],
+      "to": [
+        5,
+        33,
+        5
+      ],
+      "colour": "orange",
+      "pattern": "speckle",
+      "pattern_colour": "#FFB000"
+    },
+    {
+      "name": "flame1",
+      "parent": "head",
+      "from": [
+        -4,
+        32,
+        -4
+      ],
+      "to": [
+        4,
+        37,
+        4
+      ],
+      "colour": "yellow"
+    },
+    {
+      "name": "flame2",
+      "parent": "head",
+      "from": [
+        -2,
+        36,
+        -2
+      ],
+      "to": [
+        2,
+        40,
+        2
+      ],
+      "colour": "#FFE066"
+    },
+    {
+      "name": "eyeL",
+      "parent": "head",
+      "from": [
+        -4,
+        28,
+        -6
+      ],
+      "to": [
+        -1,
+        31,
+        -4
+      ],
+      "colour": "white"
+    },
+    {
+      "name": "eyeR",
+      "parent": "head",
+      "from": [
+        1,
+        28,
+        -6
+      ],
+      "to": [
+        4,
+        31,
+        -4
+      ],
+      "colour": "white"
+    },
+    {
+      "name": "pupilL",
+      "parent": "head",
+      "from": [
+        -3,
+        28,
+        -7
+      ],
+      "to": [
+        -1,
+        30,
+        -5
+      ],
+      "colour": "black"
+    },
+    {
+      "name": "pupilR",
+      "parent": "head",
+      "from": [
+        1,
+        28,
+        -7
+      ],
+      "to": [
+        3,
+        30,
+        -5
+      ],
+      "colour": "black"
+    },
+    {
+      "name": "mouthL",
+      "parent": "head",
+      "from": [
+        -3,
+        26,
+        -6
+      ],
+      "to": [
+        -2,
+        27,
+        -4
+      ],
+      "colour": "#7A1E00"
+    },
+    {
+      "name": "mouthM",
+      "parent": "head",
+      "from": [
+        -2,
+        25,
+        -6
+      ],
+      "to": [
+        2,
+        26,
+        -4
+      ],
+      "colour": "#7A1E00"
+    },
+    {
+      "name": "mouthR",
+      "parent": "head",
+      "from": [
+        2,
+        26,
+        -6
+      ],
+      "to": [
+        3,
+        27,
+        -4
+      ],
+      "colour": "#7A1E00"
+    },
+    {
+      "name": "armL",
+      "from": [
+        -8,
+        13,
+        -2
+      ],
+      "to": [
+        -4,
+        23,
+        2
+      ],
+      "colour": "red"
+    },
+    {
+      "name": "armR",
+      "from": [
+        4,
+        13,
+        -2
+      ],
+      "to": [
+        8,
+        23,
+        2
+      ],
+      "colour": "red"
+    },
+    {
+      "name": "fireball",
+      "parent": "armR",
+      "from": [
+        4,
+        10,
+        -2
+      ],
+      "to": [
+        8,
+        14,
+        2
+      ],
+      "colour": "yellow"
+    },
+    {
+      "name": "legL",
+      "from": [
+        -4,
+        0,
+        -2
+      ],
+      "to": [
+        0,
+        13,
+        2
+      ],
+      "colour": "red"
+    },
+    {
+      "name": "legR",
+      "from": [
+        0,
+        0,
+        -2
+      ],
+      "to": [
+        4,
+        13,
+        2
+      ],
+      "colour": "red"
+    }
+  ]
+}

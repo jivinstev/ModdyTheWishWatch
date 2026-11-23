@@ -1,0 +1,247 @@
+# MACHINE — he puts it down and it BECOMES A THING: a body he can see, a handle he can pull.
+#
+# This is the placeable-things spike (docs/SPIKE_PLACEABLE_MECHANISM.md) generalised. Every line
+# below was earned on the slushie machine, which was built by hand, gated and then left in
+# spike/ while `placed` shipped with only the marker half of the design — so a child who asked for
+# a machine got an item that vanished on right-click and an empty patch of ground.
+#
+# WHY THIS IS NOT `placed`. A trap or a healing totem works BY ITSELF on a cadence and wants
+# nothing to look at in the way; a machine is a thing you walk up to and operate. Keeping them
+# apart is also what makes this change safe: every wish already granted is `placed` and none of
+# them moves.
+#
+# The whole trick is that the anchor is placed by VANILLA. WishPlaceTag drops a tagged marker on
+# exactly the cell the child aimed at, rotated to face them, so this datapack never scans for
+# blocks and never follows a player around. Position, identity and facing arrive for free.
+import common
+
+define @NewMachine = @Entity[type=armor_stand, tag=${FEATURE}_new]
+end
+
+define @Machine = @Entity[type=armor_stand, tag=${FEATURE}_built]
+end
+
+function give()
+    /function $namespace:give_one
+${KIT}
+    /tellraw @s {"text":"${GIVE_MESSAGE}","color":"${HEX}"}
+end
+
+# The thing alone. A REFUND hands back this and never the kit: the supplies were
+# used, and a machine broken and re-placed must not mint a second set of them each time.
+function give_one()
+${GIVES}
+end
+
+# ── Putting it down ──────────────────────────────────────────────────────────────────────────
+
+# Runs EVERY tick rather than on the slow counter: a child who has just clicked should see the
+# machine now. Matching a tag is an indexed lookup, not a scan.
+function build_new()
+    as @NewMachine at @s
+        /tag @s remove ${FEATURE}_new
+        /tag @s add ${FEATURE}_built
+        build_body()
+    end
+end
+
+# ONLY EVER INTO REPLACEABLE SPACE above the base, so putting one down against a build cannot eat
+# the build. The base itself is unconditional because vanilla already refused to place the anchor
+# anywhere solid.
+function build_body()
+    /setblock ~ ~ ~ ${BODY_BASE}
+    /execute if block ~ ~1 ~ #minecraft:replaceable run setblock ~ ~1 ~ ${BODY_MID}
+    /execute if block ~ ~2 ~ #minecraft:replaceable run setblock ~ ~2 ~ ${BODY_TOP}
+    /playsound minecraft:block.copper.place block @a[distance=..32] ~ ~ ~ 1 1.2
+    /particle minecraft:cloud ~ ~1.5 ~ 0.4 0.6 0.4 0.01 20 force
+
+    # Which way is the front? The anchor's yaw was snapped to a multiple of 45 and turned to face
+    # whoever placed it, so these five bands cover all nine possible values exactly once. They are
+    # deliberately NOT symmetrical: -45..45 and 45..135 would both claim 45.
+    /execute if entity @s[y_rotation=-45..44.9] run function $namespace:front_south
+    /execute if entity @s[y_rotation=45..134.9] run function $namespace:front_west
+    /execute if entity @s[y_rotation=135..180] run function $namespace:front_north
+    /execute if entity @s[y_rotation=-180..-135.1] run function $namespace:front_north
+    /execute if entity @s[y_rotation=-135..-45.1] run function $namespace:front_east
+end
+
+# The handle and the sign go on whichever face the child is standing at. The facing is remembered
+# as a tag so taking the machine down later touches only this machine's own blocks — never a lever
+# the child happened to build next to it.
+function front_south()
+    /tag @s add ${FEATURE}_s
+    /execute if block ~ ~1 ~1 #minecraft:replaceable run setblock ~ ~1 ~1 minecraft:lever[face=wall,facing=south]
+    /execute if block ~ ~2 ~1 #minecraft:replaceable run setblock ~ ~2 ~1 minecraft:birch_wall_sign[facing=south]{front_text:{messages:['{"text":"${SIGN_NAME}","color":"${SIGN_COLOUR}","bold":true}','{"text":"${SIGN_IN}","color":"dark_gray"}','{"text":"${SIGN_OUT}","color":"dark_gray"}','{"text":"pull the handle","color":"gray"}'],has_glowing_text:1b},back_text:{messages:['"${FEATURE}"','""','""','""']},is_waxed:1b}
+end
+
+function front_north()
+    /tag @s add ${FEATURE}_n
+    /execute if block ~ ~1 ~-1 #minecraft:replaceable run setblock ~ ~1 ~-1 minecraft:lever[face=wall,facing=north]
+    /execute if block ~ ~2 ~-1 #minecraft:replaceable run setblock ~ ~2 ~-1 minecraft:birch_wall_sign[facing=north]{front_text:{messages:['{"text":"${SIGN_NAME}","color":"${SIGN_COLOUR}","bold":true}','{"text":"${SIGN_IN}","color":"dark_gray"}','{"text":"${SIGN_OUT}","color":"dark_gray"}','{"text":"pull the handle","color":"gray"}'],has_glowing_text:1b},back_text:{messages:['"${FEATURE}"','""','""','""']},is_waxed:1b}
+end
+
+function front_east()
+    /tag @s add ${FEATURE}_e
+    /execute if block ~1 ~1 ~ #minecraft:replaceable run setblock ~1 ~1 ~ minecraft:lever[face=wall,facing=east]
+    /execute if block ~1 ~2 ~ #minecraft:replaceable run setblock ~1 ~2 ~ minecraft:birch_wall_sign[facing=east]{front_text:{messages:['{"text":"${SIGN_NAME}","color":"${SIGN_COLOUR}","bold":true}','{"text":"${SIGN_IN}","color":"dark_gray"}','{"text":"${SIGN_OUT}","color":"dark_gray"}','{"text":"pull the handle","color":"gray"}'],has_glowing_text:1b},back_text:{messages:['"${FEATURE}"','""','""','""']},is_waxed:1b}
+end
+
+function front_west()
+    /tag @s add ${FEATURE}_w
+    /execute if block ~-1 ~1 ~ #minecraft:replaceable run setblock ~-1 ~1 ~ minecraft:lever[face=wall,facing=west]
+    /execute if block ~-1 ~2 ~ #minecraft:replaceable run setblock ~-1 ~2 ~ minecraft:birch_wall_sign[facing=west]{front_text:{messages:['{"text":"${SIGN_NAME}","color":"${SIGN_COLOUR}","bold":true}','{"text":"${SIGN_IN}","color":"dark_gray"}','{"text":"${SIGN_OUT}","color":"dark_gray"}','{"text":"pull the handle","color":"gray"}'],has_glowing_text:1b},back_text:{messages:['"${FEATURE}"','""','""','""']},is_waxed:1b}
+end
+
+# ── Using it ─────────────────────────────────────────────────────────────────────────────────
+
+# The clickable part has to be a block that CONSUMES a bare right-click — a body of quartz or iron
+# consumes nothing and fires no trigger at all — so the handle is a real lever.
+#
+# The second condition is what stops the child's own front door running his wish: the lever only
+# counts when OUR sign is directly above it. An advancement reward always runs as the player and
+# never learns which block was clicked, so this identification has to happen in the predicate, up
+# here, while the block position still exists.
+#
+# AND IT HAS TO NAME *WHICH* MACHINE. "A lever with a birch wall sign above it" is every
+# machine ever built, not this one -- so every machine the child owned ran its effect on any
+# handle. Filmed with two: pulling the roaster made the grinder say "you need Roasted Coffee Beans"
+# in the same breath as the roaster handed him some, and pulling the grinder quietly spent a cocoa
+# bean he never offered.
+#
+# The feature id is stamped on the sign's BACK, which is flush against the machine's own body and
+# so is never a thing a child reads. The front stays his. Matching it needs BlockPredicate's `nbt`
+# field, and NBT list matching is CONTAINS rather than equals, so naming one message is enough
+# while the other three stay empty. Since 1.21.5 a sign stores a plain line as a plain STRING, not
+# as JSON text in a string ('"id"'), so the id is matched bare; the old spelling matched nothing
+# and no handle ever answered (DatapackDialect corrects a stored pack the same way).
+advancement pulled_the_handle {
+    "criteria": {
+        "pulled": {
+            "trigger": "minecraft:default_block_use",
+            "conditions": {
+                "location": [
+                    {
+                        "condition": "minecraft:block_state_property",
+                        "block": "minecraft:lever"
+                    },
+                    {
+                        "condition": "minecraft:location_check",
+                        "offsetY": 1,
+                        "predicate": {
+                            "block": {
+                                "blocks": "minecraft:birch_wall_sign",
+                                "nbt": "{back_text:{messages:[\"${FEATURE}\"]}}"
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    "rewards": {
+        "function": "$namespace:on_handle"
+    }
+}
+
+# SAY THAT IT WORKED, every time, whatever the effect is. The first filmed run pulled the handle,
+# three cocoa beans appeared in a corner of the hotbar, and nothing anywhere said what had happened
+# — a machine that works in silence is indistinguishable from one that does not. The action bar
+# rather than chat, so the effect's own message (a conversion, a refusal) has the chat to itself.
+function on_handle()
+    /advancement revoke @s only $namespace:pulled_the_handle
+    /title @s actionbar {"text":"${NAME}","color":"${HEX}","bold":true}
+    # THE SIGN FOLLOWS THE RECIPE. A re-wish ("make it work with any log") changes the pack,
+    # not the sign already standing in the world -- so every pull rewrites the recipe lines from
+    # the pack he has now, and the sign never tells a lie about what the machine takes.
+    /execute as @e[type=armor_stand,tag=${FEATURE}_built,sort=nearest,limit=1,distance=..6] at @s run function $namespace:refresh_sign
+    ${AIM}
+${YIELD}
+end
+
+function refresh_sign()
+    /execute if entity @s[tag=${FEATURE}_s] if block ~ ~2 ~1 minecraft:birch_wall_sign run data merge block ~ ~2 ~1 {front_text:{messages:['{"text":"${SIGN_NAME}","color":"${SIGN_COLOUR}","bold":true}','{"text":"${SIGN_IN}","color":"dark_gray"}','{"text":"${SIGN_OUT}","color":"dark_gray"}','{"text":"pull the handle","color":"gray"}']}}
+    /execute if entity @s[tag=${FEATURE}_n] if block ~ ~2 ~-1 minecraft:birch_wall_sign run data merge block ~ ~2 ~-1 {front_text:{messages:['{"text":"${SIGN_NAME}","color":"${SIGN_COLOUR}","bold":true}','{"text":"${SIGN_IN}","color":"dark_gray"}','{"text":"${SIGN_OUT}","color":"dark_gray"}','{"text":"pull the handle","color":"gray"}']}}
+    /execute if entity @s[tag=${FEATURE}_e] if block ~1 ~2 ~ minecraft:birch_wall_sign run data merge block ~1 ~2 ~ {front_text:{messages:['{"text":"${SIGN_NAME}","color":"${SIGN_COLOUR}","bold":true}','{"text":"${SIGN_IN}","color":"dark_gray"}','{"text":"${SIGN_OUT}","color":"dark_gray"}','{"text":"pull the handle","color":"gray"}']}}
+    /execute if entity @s[tag=${FEATURE}_w] if block ~-1 ~2 ~ minecraft:birch_wall_sign run data merge block ~-1 ~2 ~ {front_text:{messages:['{"text":"${SIGN_NAME}","color":"${SIGN_COLOUR}","bold":true}','{"text":"${SIGN_IN}","color":"dark_gray"}','{"text":"${SIGN_OUT}","color":"dark_gray"}','{"text":"pull the handle","color":"gray"}']}}
+end
+
+# ── Taking it down ───────────────────────────────────────────────────────────────────────────
+
+# A child's undo is to break the thing. There is no block-break advancement trigger in 1.21.1, so
+# this is a once-a-second check over the machines that exist — entity iteration, never a block scan.
+#
+# The checks set a TAG rather than each calling tear_down, because breaking the base makes both of
+# them true and the machine would then be handed back twice.
+function check_broken()
+    /execute unless block ~ ~ ~ ${BODY_BASE} run tag @s add ${FEATURE}_broken
+    /execute unless block ~ ~1 ~ ${BODY_MID} run tag @s add ${FEATURE}_broken
+    /execute if entity @s[tag=${FEATURE}_broken] run function $namespace:tear_down
+end
+
+# Plain 'replace', never 'destroy': the machine is handed back whole, so dropping its parts as well
+# would quietly duplicate them.
+#
+# EVERY line checks what is actually there before clearing it, the handle and sign included.
+# Without that the front clears are unconditional, and the case that bites is a machine placed flat
+# against a wall: the handle and sign had nowhere to go and were never placed, so taking it down
+# punches a two-block hole in the child's wall. A tidy-up that destroys something he built is far
+# worse than one that leaves a block behind.
+function tear_down()
+    /execute if entity @s[tag=${FEATURE}_s] if block ~ ~1 ~1 minecraft:lever run setblock ~ ~1 ~1 minecraft:air
+    /execute if entity @s[tag=${FEATURE}_s] if block ~ ~2 ~1 minecraft:birch_wall_sign run setblock ~ ~2 ~1 minecraft:air
+    /execute if entity @s[tag=${FEATURE}_n] if block ~ ~1 ~-1 minecraft:lever run setblock ~ ~1 ~-1 minecraft:air
+    /execute if entity @s[tag=${FEATURE}_n] if block ~ ~2 ~-1 minecraft:birch_wall_sign run setblock ~ ~2 ~-1 minecraft:air
+    /execute if entity @s[tag=${FEATURE}_e] if block ~1 ~1 ~ minecraft:lever run setblock ~1 ~1 ~ minecraft:air
+    /execute if entity @s[tag=${FEATURE}_e] if block ~1 ~2 ~ minecraft:birch_wall_sign run setblock ~1 ~2 ~ minecraft:air
+    /execute if entity @s[tag=${FEATURE}_w] if block ~-1 ~1 ~ minecraft:lever run setblock ~-1 ~1 ~ minecraft:air
+    /execute if entity @s[tag=${FEATURE}_w] if block ~-1 ~2 ~ minecraft:birch_wall_sign run setblock ~-1 ~2 ~ minecraft:air
+    /execute if block ~ ~ ~ ${BODY_BASE} run setblock ~ ~ ~ minecraft:air
+    /execute if block ~ ~1 ~ ${BODY_MID} run setblock ~ ~1 ~ minecraft:air
+    /execute if block ~ ~2 ~ ${BODY_TOP} run setblock ~ ~2 ~ minecraft:air
+    /particle minecraft:cloud ~ ~1 ~ 0.4 0.6 0.4 0.02 25 force
+    # Hand the machine back rather than dropping parts, so a mistake costs nothing.
+    /execute unless entity @s[tag=${FEATURE}_undo] if entity @p[distance=..24] run function $namespace:refund
+    /kill @s
+end
+
+# The undo (remove_item): every placed one comes down and NOTHING is handed back, because
+# he asked for it to be gone. Only machines in loaded chunks can be reached; a far-away one takes
+# itself down the first time it is broken, as any machine does.
+function remove_all()
+    /tag @e[type=armor_stand,tag=${FEATURE}_built] add ${FEATURE}_undo
+    /execute as @e[type=armor_stand,tag=${FEATURE}_built] at @s run function $namespace:tear_down
+end
+
+function refund()
+    /execute as @p[distance=..24] run function $namespace:give_one
+end
+
+# A datapack tick function runs in the OVERWORLD, and a bare @e only ever sees the dimension it is
+# run in — so without these a machine carried to the Nether would silently never build and never
+# tidy up, which reads as "the mod is broken".
+# THE SLOW COUNTER LIVES ON THE MACHINE, not in a global. A global named after the feature is how
+# this first failed to compile: a scoreboard objective may be 16 characters and
+# "coffee_machine_rich_slow" is 24, so the whole clock refused and the wish came back as "a bug in
+# the catalogue rather than in your wish". Counting on the marker also makes the sweep per-machine
+# instead of one dial every machine in the world shares.
+reset
+    /scoreboard objectives add mfam_mach dummy
+    # WHAT A CONVERSION TOOK. Declared by the SHAPE rather than by the effect, because an effect
+    # body has no reset hook of its own — and an objective that does not exist makes `execute store
+    # result` fail silently, which is the machine doing nothing with no error at all.
+    /scoreboard objectives add mfam_conv dummy
+end
+
+clock tick
+    build_new()
+    /execute in minecraft:the_nether run function $namespace:build_new
+    /execute in minecraft:the_end run function $namespace:build_new
+
+    /execute as @e[tag=${FEATURE}_built] run scoreboard players add @s mfam_mach 1
+    /execute as @e[tag=${FEATURE}_built,scores={mfam_mach=20..}] run scoreboard players set @s mfam_mach 0
+    /execute as @e[tag=${FEATURE}_built,scores={mfam_mach=0}] at @s run function $namespace:check_broken
+    /execute in minecraft:the_nether as @e[tag=${FEATURE}_built,scores={mfam_mach=0}] at @s run function $namespace:check_broken
+    /execute in minecraft:the_end as @e[tag=${FEATURE}_built,scores={mfam_mach=0}] at @s run function $namespace:check_broken
+end
+
+${EFFECT_BLOCK}

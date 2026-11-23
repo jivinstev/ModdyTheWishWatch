@@ -1,0 +1,29 @@
+
+# THE GATE HISTORY IS APPEND-ONLY FACTS, SO UNION-MERGE IT.
+#
+# Two branches that each ran Gate B both append a run row to the end of this file, and git's
+# default merge sees two different edits to the same place: a conflict, on a file of 500+
+# near-identical rows that nobody can resolve by reading. `union` takes BOTH sides instead.
+#
+# That is safe here only because of how the file is defined (see docs/GATE_HISTORY.md): each line
+# is an immutable fact keyed by runId, nothing is ever rewritten, duplicates are dropped on read,
+# and the order of lines carries no meaning. Do NOT copy this to a file that stores derived or
+# mutable state — union merge on those silently keeps both stale halves.
+corpus/gate-history.jsonl merge=union
+
+# THE GATE B COVERAGE MAP IS ONE ARTEFACT, AND THE NEWER ONE WINS.
+#
+# A session that can fetch the nightly's map commits it onto the branch it tests (gate-covmap.py sync), so two
+# branches can carry different maps. The `covmap-newest` driver (installed by .claude/hooks/session-start.sh) keeps the
+# one with the later builtUtc. GitHub's own merge button cannot run a driver: merge main locally first. NOT `binary`: that macro is `-diff -merge -text`, and its -merge overrode the driver (measured).
+corpus/gate-covmap/methods.json.gz -text -diff merge=covmap-newest
+
+# GATE A'S FINGERPRINT LEDGER IS APPEND-ONLY FACTS TOO (phase 2, tools/gate-a-ledger.py).
+#
+# One pass per line, keyed by its fingerprint: a duplicate is dropped on read, and a line union brings back after a
+# prune is still a true pass (the next fold prunes it again). Two branches that each folded never conflict.
+corpus/gate-a-ledger.jsonl merge=union
+
+# THE GATE HISTORY STORE (tools/gate_ledger.py): run files are new paths and never conflict; a month file is
+# written by the roll-up, which may run on two branches for one month. Same facts, keyed by runId, deduped on read.
+corpus/gate-history/*.jsonl merge=union

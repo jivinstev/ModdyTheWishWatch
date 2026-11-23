@@ -1,0 +1,20 @@
+{
+  "vehicle": false,
+  "armor": 0.0,
+  "body": "humanoid",
+  "createdAt": 1793172148954,
+  "damage": 0.0,
+  "health": 20.0,
+  "id": "person",
+  "knockbackResistance": 0.0,
+  "modelKey": "person",
+  "name": "Person",
+  "powers": [
+    "friendly"
+  ],
+  "scale": 1.0,
+  "speed": 0.25,
+  "texture": "zombie",
+  "tint": "#FFFFFF",
+  "updatedAt": 1793172148954
+}

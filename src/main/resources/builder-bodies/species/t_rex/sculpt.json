@@ -1,0 +1,287 @@
+{
+  "id": "t_rex",
+  "name": "T-Rex",
+  "status": "Sculpting your T-rex",
+  "parts": [
+    {
+      "name": "body",
+      "from": [
+        -8,
+        16,
+        -10
+      ],
+      "to": [
+        8,
+        32,
+        10
+      ],
+      "colour": "#5B6B3A",
+      "pattern": "scales",
+      "pattern_colour": "#46552C"
+    },
+    {
+      "name": "belly",
+      "from": [
+        -6,
+        15,
+        -9
+      ],
+      "to": [
+        6,
+        20,
+        8
+      ],
+      "colour": "#B8A67A",
+      "parent": "body"
+    },
+    {
+      "name": "legL",
+      "from": [
+        2,
+        0,
+        -3
+      ],
+      "to": [
+        8,
+        20,
+        5
+      ],
+      "colour": "#5B6B3A",
+      "pattern": "scales",
+      "pattern_colour": "#46552C"
+    },
+    {
+      "name": "legR",
+      "from": [
+        -8,
+        0,
+        -3
+      ],
+      "to": [
+        -2,
+        20,
+        5
+      ],
+      "colour": "#5B6B3A",
+      "pattern": "scales",
+      "pattern_colour": "#46552C"
+    },
+    {
+      "name": "footL",
+      "from": [
+        1,
+        0,
+        -7
+      ],
+      "to": [
+        9,
+        3,
+        5
+      ],
+      "colour": "#4A5730",
+      "parent": "legL"
+    },
+    {
+      "name": "footR",
+      "from": [
+        -9,
+        0,
+        -7
+      ],
+      "to": [
+        -1,
+        3,
+        5
+      ],
+      "colour": "#4A5730",
+      "parent": "legR"
+    },
+    {
+      "name": "head",
+      "from": [
+        -6,
+        28,
+        -26
+      ],
+      "to": [
+        6,
+        40,
+        -8
+      ],
+      "colour": "#5B6B3A",
+      "pattern": "scales",
+      "pattern_colour": "#46552C"
+    },
+    {
+      "name": "jaw",
+      "from": [
+        -5,
+        24,
+        -25
+      ],
+      "to": [
+        5,
+        29,
+        -9
+      ],
+      "colour": "#B8A67A",
+      "parent": "head"
+    },
+    {
+      "name": "teeth",
+      "from": [
+        -5.0,
+        28.0,
+        -26.5
+      ],
+      "to": [
+        5.0,
+        30.0,
+        -24.5
+      ],
+      "colour": "#F2EEDC",
+      "parent": "head"
+    },
+    {
+      "name": "eyeL",
+      "from": [
+        5,
+        35,
+        -21
+      ],
+      "to": [
+        7,
+        37,
+        -18
+      ],
+      "colour": "#E8B020",
+      "parent": "head"
+    },
+    {
+      "name": "eyeR",
+      "from": [
+        -7,
+        35,
+        -21
+      ],
+      "to": [
+        -5,
+        37,
+        -18
+      ],
+      "colour": "#E8B020",
+      "parent": "head"
+    },
+    {
+      "name": "browL",
+      "from": [
+        4,
+        37,
+        -22
+      ],
+      "to": [
+        7,
+        38,
+        -17
+      ],
+      "colour": "#3E4A25",
+      "parent": "head"
+    },
+    {
+      "name": "browR",
+      "from": [
+        -7,
+        37,
+        -22
+      ],
+      "to": [
+        -4,
+        38,
+        -17
+      ],
+      "colour": "#3E4A25",
+      "parent": "head"
+    },
+    {
+      "name": "armL",
+      "from": [
+        6,
+        20,
+        -13
+      ],
+      "to": [
+        9,
+        24,
+        -8
+      ],
+      "colour": "#5B6B3A",
+      "parent": "body"
+    },
+    {
+      "name": "armR",
+      "from": [
+        -9,
+        20,
+        -13
+      ],
+      "to": [
+        -6,
+        24,
+        -8
+      ],
+      "colour": "#5B6B3A",
+      "parent": "body"
+    },
+    {
+      "name": "tail",
+      "from": [
+        -5,
+        19,
+        9
+      ],
+      "to": [
+        5,
+        29,
+        23
+      ],
+      "colour": "#5B6B3A",
+      "parent": "body",
+      "pattern": "scales",
+      "pattern_colour": "#46552C"
+    },
+    {
+      "name": "tail2",
+      "from": [
+        -3,
+        21,
+        22
+      ],
+      "to": [
+        3,
+        27,
+        36
+      ],
+      "colour": "#5B6B3A",
+      "parent": "tail",
+      "pattern": "scales",
+      "pattern_colour": "#46552C"
+    }
+  ],
+  "palette": [
+    {
+      "colour": "#5B6B3A",
+      "percent": 85
+    },
+    {
+      "colour": "#B8A67A",
+      "percent": 10
+    }
+  ],
+  "powers": [
+    "friendly"
+  ],
+  "health": 80,
+  "damage": 0,
+  "scale": 2,
+  "note": "Plain base T-rex: olive-green scaled body, tan belly/jaw, white teeth, yellow eyes; big head, tiny arms, thick legs, two-piece tail. No accessories so later wishes can start_from it. Friendly by default."
+}

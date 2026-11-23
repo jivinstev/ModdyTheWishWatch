@@ -1,0 +1,35 @@
+{
+ "cluster": "shapes_round4",
+ "order": [
+  "beehive",
+  "tuber",
+  "shovel",
+  "horse_armor"
+ ],
+ "icons": [
+  {
+   "name": "beehive",
+   "status": "ok",
+   "attempts": 1,
+   "note": "Dome-shaped straw skep in 3/4 view: stacked coil bands, arched entrance, honey drip."
+  },
+  {
+   "name": "tuber",
+   "status": "ok",
+   "attempts": 3,
+   "note": "Spotless lumpy potato with a green fixed leaf tuft on top."
+  },
+  {
+   "name": "shovel",
+   "status": "ok",
+   "attempts": 3,
+   "note": "Diagonal spade: thin fixed handle with crossbar grip, bold angular head wider than the handle."
+  },
+  {
+   "name": "horse_armor",
+   "status": "ok",
+   "attempts": 3,
+   "note": "Side-view horse in plate armour: armour covers most of the picture, brown legs/mane/tail/muzzle."
+  }
+ ]
+}

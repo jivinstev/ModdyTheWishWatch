@@ -1,0 +1,14 @@
+# IGNITE — it sets things on fire.
+#
+# TWO commands, because there is no ONE way to set everything alight:
+#   Fire NBT is the real mechanism and works on every mob, but a PLAYER cannot be modified by
+#   /data (vanilla refuses it outright), so on a player that line does nothing;
+#   a fire block under their feet burns a player, and looks right for everything else too.
+# Together they cover both. The doc says so rather than the tool pretending SECONDS is exact for a
+# player — the fire block burns for as long as fire burns.
+function effect()
+    /execute as ${TARGET} at @s run data modify entity @s Fire set value ${FIRE_TICKS}s
+    /execute at ${TARGET} if block ~ ~ ~ #minecraft:replaceable run setblock ~ ~ ~ minecraft:fire
+    /particle minecraft:flame ~ ~1 ~ 0.4 0.4 0.4 0.02 25 force
+    /playsound minecraft:item.firecharge.use master @a ~ ~ ~ 1 1
+end

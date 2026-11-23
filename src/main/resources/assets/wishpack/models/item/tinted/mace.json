@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:item/mace",
+  "textures": {
+    "layer0": "wishpack:item/tinted/mace_tint",
+    "layer1": "wishpack:item/tinted/mace_keep"
+  }
+}

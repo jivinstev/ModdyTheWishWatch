@@ -1,0 +1,20 @@
+{
+  "vehicle": false,
+  "armor": 0.0,
+  "body": "humanoid",
+  "createdAt": 1793164586859,
+  "damage": 6.0,
+  "health": 60.0,
+  "id": "shark",
+  "knockbackResistance": 0.0,
+  "modelKey": "shark",
+  "name": "Great White Shark",
+  "powers": [
+    "persistent"
+  ],
+  "scale": 1.5,
+  "speed": 0.25,
+  "texture": "zombie",
+  "tint": "#FFFFFF",
+  "updatedAt": 1793164586859
+}

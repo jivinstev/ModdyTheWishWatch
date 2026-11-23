@@ -1,0 +1,292 @@
+[
+ {
+  "cluster": "vehicles_space",
+  "name": "car",
+  "verdict": "PASS",
+  "kind": "fixed",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.333,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "accent": 25,
+   "fixed": 188,
+   "line": 123,
+   "shine": 5
+  }
+ },
+ {
+  "cluster": "vehicles_space",
+  "name": "police_car",
+  "verdict": "PASS",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.503,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "body": 125,
+   "fixed": 50,
+   "line": 335,
+   "shine": 5
+  }
+ },
+ {
+  "cluster": "vehicles_space",
+  "name": "fire_truck",
+  "verdict": "PASS",
+  "kind": "fixed",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.564,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "accent": 34,
+   "fixed": 253,
+   "line": 287,
+   "shine": 4
+  }
+ },
+ {
+  "cluster": "vehicles_space",
+  "name": "airplane",
+  "verdict": "PASS",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.341,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "body": 97,
+   "fixed": 88,
+   "line": 159,
+   "shine": 5
+  }
+ },
+ {
+  "cluster": "vehicles_space",
+  "name": "helicopter",
+  "verdict": "PASS",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.315,
+   "dark_body": 0.49,
+   "pieces": 1,
+   "accent": 23,
+   "body": 49,
+   "fixed": 128,
+   "line": 120,
+   "shine": 3
+  }
+ },
+ {
+  "cluster": "vehicles_space",
+  "name": "submarine",
+  "verdict": "PASS",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.301,
+   "dark_body": 0.478,
+   "pieces": 1,
+   "accent": 16,
+   "body": 23,
+   "fixed": 144,
+   "line": 120,
+   "shine": 5
+  }
+ },
+ {
+  "cluster": "vehicles_space",
+  "name": "pirate_ship",
+  "verdict": "PASS",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.437,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "body": 120,
+   "fixed": 113,
+   "line": 209,
+   "shine": 5
+  }
+ },
+ {
+  "cluster": "vehicles_space",
+  "name": "spaceship",
+  "verdict": "WARN",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [
+   "fill 26% (want 30-85%)"
+  ],
+  "stats": {
+   "fill": 0.264,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "accent": 14,
+   "body": 109,
+   "fixed": 42,
+   "line": 102,
+   "shine": 3
+  }
+ },
+ {
+  "cluster": "vehicles_space",
+  "name": "ufo",
+  "verdict": "PASS",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.488,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "accent": 109,
+   "body": 239,
+   "line": 148,
+   "shine": 4
+  }
+ },
+ {
+  "cluster": "vehicles_space",
+  "name": "planet",
+  "verdict": "PASS",
+  "kind": "fixed",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.436,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "fixed": 318,
+   "line": 125,
+   "shine": 3
+  }
+ },
+ {
+  "cluster": "vehicles_space",
+  "name": "moon",
+  "verdict": "PASS",
+  "kind": "fixed",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.409,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "fixed": 283,
+   "line": 131,
+   "shine": 5
+  }
+ },
+ {
+  "cluster": "vehicles_space",
+  "name": "astronaut_helmet",
+  "verdict": "PASS",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.622,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "accent": 202,
+   "body": 268,
+   "line": 162,
+   "shine": 5
+  }
+ },
+ {
+  "cluster": "vehicles_space",
+  "name": "boomerang",
+  "verdict": "PASS",
+  "kind": "fixed",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.435,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "fixed": 320,
+   "line": 122,
+   "shine": 3
+  }
+ },
+ {
+  "cluster": "vehicles_space",
+  "name": "water_gun",
+  "verdict": "PASS",
+  "kind": "fixed",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.371,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "accent": 70,
+   "fixed": 141,
+   "line": 164,
+   "shine": 5
+  }
+ },
+ {
+  "cluster": "vehicles_space",
+  "name": "blaster",
+  "verdict": "PASS",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.336,
+   "dark_body": 0.115,
+   "pieces": 1,
+   "accent": 24,
+   "body": 165,
+   "line": 151,
+   "shine": 4
+  }
+ },
+ {
+  "cluster": "vehicles_space",
+  "name": "grappling_hook",
+  "verdict": "PASS",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.366,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "body": 124,
+   "fixed": 59,
+   "line": 188,
+   "shine": 4
+  }
+ }
+]

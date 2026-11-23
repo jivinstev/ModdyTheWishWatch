@@ -1,0 +1,811 @@
+{
+ "id": "spikor",
+ "name": "SPIKOR, King of the Kroaks",
+ "scale": 2.2,
+ "powers": [
+  "hostile",
+  "fireproof",
+  "boss",
+  "persistent"
+ ],
+ "parts": [
+  {
+   "name": "legL",
+   "from": [
+    2,
+    0,
+    -4
+   ],
+   "to": [
+    9,
+    11,
+    4
+   ],
+   "colour": "#D8B26A"
+  },
+  {
+   "name": "legR",
+   "from": [
+    -9,
+    0,
+    -4
+   ],
+   "to": [
+    -2,
+    11,
+    4
+   ],
+   "colour": "#D8B26A"
+  },
+  {
+   "name": "footL",
+   "from": [
+    1,
+    0,
+    -8
+   ],
+   "to": [
+    10,
+    4,
+    4
+   ],
+   "colour": "#D8B26A",
+   "parent": "legL"
+  },
+  {
+   "name": "footR",
+   "from": [
+    -10,
+    0,
+    -8
+   ],
+   "to": [
+    -1,
+    4,
+    4
+   ],
+   "colour": "#D8B26A",
+   "parent": "legR"
+  },
+  {
+   "name": "toeL1",
+   "from": [
+    1,
+    0,
+    -10
+   ],
+   "to": [
+    3,
+    3,
+    -8
+   ],
+   "colour": "white",
+   "parent": "legL"
+  },
+  {
+   "name": "toeL2",
+   "from": [
+    4,
+    0,
+    -10
+   ],
+   "to": [
+    6,
+    3,
+    -8
+   ],
+   "colour": "white",
+   "parent": "legL"
+  },
+  {
+   "name": "toeL3",
+   "from": [
+    7,
+    0,
+    -10
+   ],
+   "to": [
+    9,
+    3,
+    -8
+   ],
+   "colour": "white",
+   "parent": "legL"
+  },
+  {
+   "name": "toeR1",
+   "from": [
+    -3,
+    0,
+    -10
+   ],
+   "to": [
+    -1,
+    3,
+    -8
+   ],
+   "colour": "white",
+   "parent": "legR"
+  },
+  {
+   "name": "toeR2",
+   "from": [
+    -6,
+    0,
+    -10
+   ],
+   "to": [
+    -4,
+    3,
+    -8
+   ],
+   "colour": "white",
+   "parent": "legR"
+  },
+  {
+   "name": "toeR3",
+   "from": [
+    -9,
+    0,
+    -10
+   ],
+   "to": [
+    -7,
+    3,
+    -8
+   ],
+   "colour": "white",
+   "parent": "legR"
+  },
+  {
+   "name": "body",
+   "from": [
+    -9,
+    11,
+    -5
+   ],
+   "to": [
+    9,
+    26,
+    4
+   ],
+   "colour": "#D8B26A"
+  },
+  {
+   "name": "tail",
+   "from": [
+    -4,
+    10,
+    4
+   ],
+   "to": [
+    4,
+    16,
+    12
+   ],
+   "colour": "#3FA63F",
+   "parent": "body",
+   "rotation": [
+    35,
+    0,
+    0
+   ]
+  },
+  {
+   "name": "shell",
+   "from": [
+    -11,
+    13,
+    3
+   ],
+   "to": [
+    11,
+    27,
+    10
+   ],
+   "colour": "#3FA63F",
+   "parent": "body",
+   "inflate": 1,
+   "pattern": "scales",
+   "pattern_colour": "#2E7D2E"
+  },
+  {
+   "name": "shellrim",
+   "from": [
+    -11,
+    12,
+    2
+   ],
+   "to": [
+    11,
+    15,
+    10
+   ],
+   "colour": "#E8C060",
+   "parent": "body"
+  },
+  {
+   "name": "sspike1",
+   "from": [
+    -10,
+    26,
+    4
+   ],
+   "to": [
+    -5,
+    32,
+    9
+   ],
+   "colour": "white",
+   "parent": "body",
+   "rotation": [
+    -30,
+    0,
+    0
+   ]
+  },
+  {
+   "name": "sspike2",
+   "from": [
+    -3,
+    27,
+    4
+   ],
+   "to": [
+    3,
+    34,
+    9
+   ],
+   "colour": "white",
+   "parent": "body",
+   "rotation": [
+    -30,
+    0,
+    0
+   ]
+  },
+  {
+   "name": "sspike3",
+   "from": [
+    5,
+    26,
+    4
+   ],
+   "to": [
+    10,
+    32,
+    9
+   ],
+   "colour": "white",
+   "parent": "body",
+   "rotation": [
+    -30,
+    0,
+    0
+   ]
+  },
+  {
+   "name": "armL",
+   "from": [
+    9,
+    14,
+    -4
+   ],
+   "to": [
+    15,
+    25,
+    4
+   ],
+   "colour": "#D8B26A"
+  },
+  {
+   "name": "armR",
+   "from": [
+    -15,
+    14,
+    -4
+   ],
+   "to": [
+    -9,
+    25,
+    4
+   ],
+   "colour": "#D8B26A"
+  },
+  {
+   "name": "clawL1",
+   "from": [
+    12,
+    10,
+    -6
+   ],
+   "to": [
+    14,
+    14,
+    -3
+   ],
+   "colour": "white",
+   "parent": "armL"
+  },
+  {
+   "name": "clawL2",
+   "from": [
+    12,
+    10,
+    -2
+   ],
+   "to": [
+    14,
+    14,
+    1
+   ],
+   "colour": "white",
+   "parent": "armL"
+  },
+  {
+   "name": "clawL3",
+   "from": [
+    12,
+    10,
+    2
+   ],
+   "to": [
+    14,
+    14,
+    5
+   ],
+   "colour": "white",
+   "parent": "armL"
+  },
+  {
+   "name": "clawR1",
+   "from": [
+    -14,
+    10,
+    -6
+   ],
+   "to": [
+    -12,
+    14,
+    -3
+   ],
+   "colour": "white",
+   "parent": "armR"
+  },
+  {
+   "name": "clawR2",
+   "from": [
+    -14,
+    10,
+    -2
+   ],
+   "to": [
+    -12,
+    14,
+    1
+   ],
+   "colour": "white",
+   "parent": "armR"
+  },
+  {
+   "name": "clawR3",
+   "from": [
+    -14,
+    10,
+    2
+   ],
+   "to": [
+    -12,
+    14,
+    5
+   ],
+   "colour": "white",
+   "parent": "armR"
+  },
+  {
+   "name": "cuffL",
+   "from": [
+    9,
+    13,
+    -5
+   ],
+   "to": [
+    16,
+    17,
+    5
+   ],
+   "colour": "black",
+   "parent": "armL"
+  },
+  {
+   "name": "cuffR",
+   "from": [
+    -16,
+    13,
+    -5
+   ],
+   "to": [
+    -9,
+    17,
+    5
+   ],
+   "colour": "black",
+   "parent": "armR"
+  },
+  {
+   "name": "cuffspikeL",
+   "from": [
+    11,
+    17,
+    -2
+   ],
+   "to": [
+    14,
+    21,
+    2
+   ],
+   "colour": "white",
+   "parent": "armL"
+  },
+  {
+   "name": "cuffspikeR",
+   "from": [
+    -14,
+    17,
+    -2
+   ],
+   "to": [
+    -11,
+    21,
+    2
+   ],
+   "colour": "white",
+   "parent": "armR"
+  },
+  {
+   "name": "collar",
+   "from": [
+    -10,
+    24,
+    -6
+   ],
+   "to": [
+    10,
+    27,
+    5
+   ],
+   "colour": "black",
+   "parent": "body"
+  },
+  {
+   "name": "head",
+   "from": [
+    -8,
+    26,
+    -6
+   ],
+   "to": [
+    8,
+    38,
+    4
+   ],
+   "colour": "#3FA63F"
+  },
+  {
+   "name": "hornL",
+   "from": [
+    8,
+    33,
+    -4
+   ],
+   "to": [
+    13,
+    39,
+    0
+   ],
+   "colour": "white",
+   "parent": "head",
+   "rotation": [
+    0,
+    0,
+    35
+   ]
+  },
+  {
+   "name": "hornR",
+   "from": [
+    -13,
+    33,
+    -4
+   ],
+   "to": [
+    -8,
+    39,
+    0
+   ],
+   "colour": "white",
+   "parent": "head",
+   "rotation": [
+    0,
+    0,
+    -35
+   ]
+  },
+  {
+   "name": "muzzle",
+   "from": [
+    -6,
+    27,
+    -11
+   ],
+   "to": [
+    6,
+    33,
+    -5
+   ],
+   "colour": "#D8B26A",
+   "parent": "head"
+  },
+  {
+   "name": "nostrilL",
+   "from": [
+    2,
+    31,
+    -12
+   ],
+   "to": [
+    4,
+    32,
+    -11
+   ],
+   "colour": "#2A1208",
+   "parent": "head"
+  },
+  {
+   "name": "nostrilR",
+   "from": [
+    -4,
+    31,
+    -12
+   ],
+   "to": [
+    -2,
+    32,
+    -11
+   ],
+   "colour": "#2A1208",
+   "parent": "head"
+  },
+  {
+   "name": "mouthMid",
+   "from": [
+    -4,
+    27,
+    -12
+   ],
+   "to": [
+    4,
+    28,
+    -10
+   ],
+   "colour": "#2A1208",
+   "parent": "head"
+  },
+  {
+   "name": "mouthL",
+   "from": [
+    4,
+    28,
+    -12
+   ],
+   "to": [
+    6,
+    29,
+    -10
+   ],
+   "colour": "#2A1208",
+   "parent": "head"
+  },
+  {
+   "name": "mouthR",
+   "from": [
+    -6,
+    28,
+    -12
+   ],
+   "to": [
+    -4,
+    29,
+    -10
+   ],
+   "colour": "#2A1208",
+   "parent": "head"
+  },
+  {
+   "name": "fangL",
+   "from": [
+    3,
+    28,
+    -12
+   ],
+   "to": [
+    5,
+    31,
+    -10
+   ],
+   "colour": "white",
+   "parent": "head"
+  },
+  {
+   "name": "fangR",
+   "from": [
+    -5,
+    28,
+    -12
+   ],
+   "to": [
+    -3,
+    31,
+    -10
+   ],
+   "colour": "white",
+   "parent": "head"
+  },
+  {
+   "name": "eyeL",
+   "from": [
+    2,
+    34,
+    -8
+   ],
+   "to": [
+    6,
+    37,
+    -6
+   ],
+   "colour": "white",
+   "parent": "head"
+  },
+  {
+   "name": "eyeR",
+   "from": [
+    -6,
+    34,
+    -8
+   ],
+   "to": [
+    -2,
+    37,
+    -6
+   ],
+   "colour": "white",
+   "parent": "head"
+  },
+  {
+   "name": "pupilL",
+   "from": [
+    3,
+    34,
+    -9
+   ],
+   "to": [
+    5,
+    36,
+    -7
+   ],
+   "colour": "black",
+   "parent": "head"
+  },
+  {
+   "name": "pupilR",
+   "from": [
+    -5,
+    34,
+    -9
+   ],
+   "to": [
+    -3,
+    36,
+    -7
+   ],
+   "colour": "black",
+   "parent": "head"
+  },
+  {
+   "name": "browLin",
+   "from": [
+    2,
+    36,
+    -9
+   ],
+   "to": [
+    4,
+    37,
+    -7
+   ],
+   "colour": "#7A2A00",
+   "parent": "head"
+  },
+  {
+   "name": "browLout",
+   "from": [
+    4,
+    37,
+    -9
+   ],
+   "to": [
+    7,
+    38,
+    -7
+   ],
+   "colour": "#7A2A00",
+   "parent": "head"
+  },
+  {
+   "name": "browRin",
+   "from": [
+    -4,
+    36,
+    -9
+   ],
+   "to": [
+    -2,
+    37,
+    -7
+   ],
+   "colour": "#7A2A00",
+   "parent": "head"
+  },
+  {
+   "name": "browRout",
+   "from": [
+    -7,
+    37,
+    -9
+   ],
+   "to": [
+    -4,
+    38,
+    -7
+   ],
+   "colour": "#7A2A00",
+   "parent": "head"
+  },
+  {
+   "name": "hair1",
+   "from": [
+    -7,
+    38,
+    -2
+   ],
+   "to": [
+    7,
+    42,
+    4
+   ],
+   "colour": "#C62828",
+   "parent": "head"
+  },
+  {
+   "name": "hair2",
+   "from": [
+    -5,
+    40,
+    3
+   ],
+   "to": [
+    5,
+    44,
+    9
+   ],
+   "colour": "#C62828",
+   "parent": "head",
+   "rotation": [
+    30,
+    0,
+    0
+   ]
+  }
+ ],
+ "source": "claude/opus-5.5-creature-eval-xzu1ee:docs/evidence-opus55/ab1-panel/w1/o5/run3/sculpt.json"
+}

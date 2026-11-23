@@ -1,0 +1,106 @@
+# LOAD AND POUR — he LOADS it, then it POURS (machines you fill).
+#
+# The slushie machine, the popcorn machine, the coffee maker: hold the ingredients and pull the
+# handle, and the machine takes them; when it has what it needs, pulling again pours the thing —
+# bigger for more of the main ingredient, named after the extras that went in, into his hand or
+# into the chest standing next to it.
+#
+# `convert` is a vending slot: one thing in, one thing out, in one pull. This is the other half of
+# what a child means by a machine — something he FILLS UP and watches get fuller.
+#
+# EVERY LINE A CHILD READS IS GENERATED from the spec (MachineFill), never written by the agent, so
+# the machine always says what it really does: what it takes, what is missing, how full it is,
+# where the chest has to go. A machine with no GUI that does nothing when pulled looks exactly like
+# a broken one — and that is the failure this whole class exists to stop (contract C18).
+#
+# WHERE THE LOAD LIVES. On the machine's own anchor when he is standing at one — so two machines
+# never share a load — and on him otherwise, which is only ever the case for a fill wish in a shape
+# that is not a machine. The MACHINE argument is the feature id, the same tag the machine shape stamps.
+
+reset
+    /scoreboard objectives add mfam_fill dummy
+${OBJECTIVES}
+end
+
+function effect()
+    /tag @s add mfam_filler
+    # SNEAK-PULL IS HELP, and does nothing else — so he can always find out how it works without
+    # spending an ingredient to learn.
+    /execute if predicate {"condition":"minecraft:entity_properties","entity":"this","predicate":{"flags":{"is_sneaking":true}}} run function $namespace:fill_help
+    /execute unless predicate {"condition":"minecraft:entity_properties","entity":"this","predicate":{"flags":{"is_sneaking":true}}} as @e[type=armor_stand,tag=${MACHINE}_built,sort=nearest,limit=1,distance=..6] at @s run function $namespace:fill_here
+    /execute unless predicate {"condition":"minecraft:entity_properties","entity":"this","predicate":{"flags":{"is_sneaking":true}}} unless entity @e[type=armor_stand,tag=${MACHINE}_built,distance=..6] run function $namespace:fill_here
+    /tag @s remove mfam_filler
+end
+
+function fill_help()
+${HELP}
+end
+
+# Runs AS whatever holds the load (the machine, or him), AT it.
+function fill_here()
+${INIT}
+    /scoreboard players set #any mfam_fill 0
+${LOAD_CALLS}
+    /scoreboard players set #ready mfam_fill 0
+    /execute ${READY} run scoreboard players set #ready mfam_fill 1
+    /execute if score #any mfam_fill matches 1 run function $namespace:fill_loaded
+    # NOTHING NEW WENT IN, so this pull is a POUR — or, when it cannot pour, a sentence saying why.
+    /execute if score #any mfam_fill matches 0 if score #ready mfam_fill matches 1 run function $namespace:fill_pour
+    /execute if score #any mfam_fill matches 0 if score #ready mfam_fill matches 0 run function $namespace:fill_cannot
+end
+
+${LOAD_FUNCS}
+
+function fill_loaded()
+    /playsound minecraft:block.stone_button.click_on player @a[tag=mfam_filler,limit=1] ~ ~ ~ 1 1.4
+    /particle minecraft:happy_villager ~ ~1.5 ~ 0.3 0.3 0.3 0.01 6 force
+    /title @a[tag=mfam_filler,limit=1] actionbar ${PROGRESS}
+    /execute if score #ready mfam_fill matches 1 run tellraw @a[tag=mfam_filler,limit=1] ${READY_LINE}
+${STILL_NEEDS}
+    ${FULL_LINE}
+end
+
+function fill_cannot()
+    /playsound minecraft:entity.villager.no player @a[tag=mfam_filler,limit=1] ~ ~ ~ 1 1
+    /scoreboard players set #empty mfam_fill 0
+    /execute ${EMPTY} run scoreboard players set #empty mfam_fill 1
+    /execute if score #empty mfam_fill matches 1 run tellraw @a[tag=mfam_filler,limit=1] ${EMPTY_LINE}
+    /execute if score #empty mfam_fill matches 0 run function $namespace:fill_needs
+end
+
+function fill_needs()
+${NEEDS}
+end
+
+function fill_pour()
+    /scoreboard players set #dir mfam_fill 0
+    /scoreboard players set #full mfam_fill 0
+    /scoreboard players set #tochest mfam_fill 0
+    /scoreboard players set #go mfam_fill 1
+    /execute if entity @s[type=armor_stand] run function $namespace:fill_find_chest
+${CHEST_POLICY}
+    /execute if score #go mfam_fill matches 1 run function $namespace:fill_serve
+end
+
+function fill_find_chest()
+${FIND_CHEST}
+end
+
+function fill_serve()
+${PICK}
+${EMPTY_IT}
+    /playsound minecraft:block.brewing_stand.brew player @a[tag=mfam_filler,limit=1] ~ ~ ~ 1 1.2
+    /particle minecraft:splash ~ ~1.5 ~ 0.3 0.4 0.3 0.1 24 force
+end
+
+${OUT_FUNCS}
+
+function fill_deliver()
+${DELIVER}
+end
+
+function fill_slots()
+${SLOTS}
+end
+
+${SLOT_FUNCS}

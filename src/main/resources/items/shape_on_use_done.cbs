@@ -1,0 +1,17 @@
+# ON_USE_DONE — he USES a real thing that takes a while (blows a goat horn, brushes, looks through a
+# spyglass), and when he is DONE the wish happens. Vanilla does the using exactly as it
+# always does — the horn sounds, the spyglass zooms — and WishShapeEvents runs act() as him when he
+# lets go or the use runs out. A wish about him happens on him; one about something else happens
+# where he is pointing (the AIM line).
+import common
+
+function give()
+${GIVES}
+    /tellraw @s {"text":"${GIVE_MESSAGE}","color":"${HEX}"}
+end
+
+function act()
+    ${AIM}
+end
+
+${EFFECT_BLOCK}

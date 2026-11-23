@@ -1,0 +1,40 @@
+# gradle
+build
+.gradle
+
+# dev runtime (created by runClient/runServer/runGameTestServer)
+run
+
+# local environment: machine-specific paths and API keys. NEVER commit.
+.env.local
+
+# IDE
+.idea
+out
+*.ipr
+*.iws
+*.iml
+.vscode/
+bin
+*.launch
+.settings
+.metadata
+.classpath
+.project
+eclipse
+
+# logs
+logs/
+
+# python bytecode
+__pycache__/
+
+# macOS
+.DS_Store
+
+# JVM crash dumps
+hs_err_pid*.log
+replay_pid*.log
+
+# the Apprentice's sentence model, fetched by tools/fetch-apprentice-model.sh
+.apprentice-model/

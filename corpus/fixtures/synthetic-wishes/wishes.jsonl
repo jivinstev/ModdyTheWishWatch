@@ -1,0 +1,50 @@
+{"_comment": "PUBLIC FIXTURE (#2708) for corpus/synthetic-wishes/wishes.jsonl: wishes written for this fixture, never a player's words. Read through CorpusSource by WishReferenceFollowupTest."}
+{"id": "fx-syn-001", "prompt": "a fluffy cloud sheep that floats over the farm", "class": "creature", "source": "fixture"}
+{"id": "fx-syn-002", "prompt": "a bunny with rocket boots", "class": "creature", "source": "fixture"}
+{"id": "fx-syn-003", "prompt": "a giant snail made of candy", "class": "creature", "source": "fixture"}
+{"id": "fx-syn-004", "prompt": "a penguin chef who cooks fish for me", "class": "creature", "source": "fixture"}
+{"id": "fx-syn-005", "prompt": "a purple cow that gives chocolate milk", "class": "creature", "source": "fixture"}
+{"id": "fx-syn-006", "prompt": "a squid that shoots bubbles", "class": "creature", "source": "fixture"}
+{"id": "fx-syn-007", "prompt": "a knight horse with golden armour", "class": "creature", "source": "fixture"}
+{"id": "fx-syn-008", "prompt": "a baby phoenix that sits on my shoulder", "class": "creature", "source": "fixture"}
+{"id": "fx-syn-009", "prompt": "a frog king with a tiny crown", "class": "creature", "source": "fixture"}
+{"id": "fx-syn-010", "prompt": "a robot dog that barks music", "class": "creature", "source": "fixture"}
+{"id": "fx-syn-011", "prompt": "an owl that hoots out the time", "class": "creature", "source": "fixture"}
+{"id": "fx-syn-012", "prompt": "a crab that builds sandcastles", "class": "creature", "source": "fixture"}
+{"id": "fx-syn-013", "prompt": "a sword made of ice crystals", "class": "item", "source": "fixture"}
+{"id": "fx-syn-014", "prompt": "a hammer that shakes the ground", "class": "item", "source": "fixture"}
+{"id": "fx-syn-015", "prompt": "boots with springs on the bottom", "class": "item", "source": "fixture"}
+{"id": "fx-syn-016", "prompt": "a helmet with a lamp on top", "class": "item", "source": "fixture"}
+{"id": "fx-syn-017", "prompt": "a bow made of rainbow light", "class": "item", "source": "fixture"}
+{"id": "fx-syn-018", "prompt": "a slime ball that bounces forever", "class": "item", "source": "fixture"}
+{"id": "fx-syn-019", "prompt": "a fishing rod that catches treasure", "class": "item", "source": "fixture"}
+{"id": "fx-syn-020", "prompt": "a cake that makes everyone dance", "class": "item", "source": "fixture"}
+{"id": "fx-syn-021", "prompt": "a compass that points to diamonds", "class": "item", "source": "fixture"}
+{"id": "fx-syn-022", "prompt": "a pair of wings made of leaves", "class": "item", "source": "fixture"}
+{"id": "fx-syn-023", "prompt": "a pirate ship on the hill", "class": "building", "source": "fixture"}
+{"id": "fx-syn-024", "prompt": "a mushroom house with a red roof", "class": "building", "source": "fixture"}
+{"id": "fx-syn-025", "prompt": "a giant library with secret doors", "class": "building", "source": "fixture"}
+{"id": "fx-syn-026", "prompt": "a lighthouse on the rocks by the sea", "class": "building", "source": "fixture"}
+{"id": "fx-syn-027", "prompt": "an ice palace with blue towers", "class": "building", "source": "fixture"}
+{"id": "fx-syn-028", "prompt": "a farm with a big red barn", "class": "building", "source": "fixture"}
+{"id": "fx-syn-029", "prompt": "a volcano base with lava moats", "class": "building", "source": "fixture"}
+{"id": "fx-syn-030", "prompt": "a candy shop on the corner", "class": "building", "source": "fixture"}
+{"id": "fx-syn-031", "prompt": "a castle in the clouds", "class": "building", "source": "fixture"}
+{"id": "fx-syn-032", "prompt": "a train station with a clock tower", "class": "building", "source": "fixture"}
+{"id": "fx-syn-033", "prompt": "make the sky go purple at night", "class": "effect", "source": "fixture"}
+{"id": "fx-syn-034", "prompt": "fireworks every time the sun comes up", "class": "effect", "source": "fixture"}
+{"id": "fx-syn-035", "prompt": "rain made of flower petals", "class": "effect", "source": "fixture"}
+{"id": "fx-syn-036", "prompt": "a rainbow over the village", "class": "effect", "source": "fixture"}
+{"id": "fx-syn-037", "prompt": "snowflakes that sparkle in the air", "class": "effect", "source": "fixture"}
+{"id": "fx-syn-038", "prompt": "make every tree grow apples", "class": "effect", "source": "fixture"}
+{"id": "fx-syn-039", "prompt": "a block that plays a song when stepped on", "class": "datapack", "source": "fixture"}
+{"id": "fx-syn-040", "prompt": "a button that launches me into the air", "class": "datapack", "source": "fixture"}
+{"id": "fx-syn-041", "prompt": "a door that opens with a secret word", "class": "datapack", "source": "fixture"}
+{"id": "fx-syn-042", "prompt": "a chest that refills with bread each morning", "class": "datapack", "source": "fixture"}
+{"id": "fx-syn-043", "prompt": "a painting of a sleepy fox", "class": "picture", "source": "fixture"}
+{"id": "fx-syn-044", "prompt": "a poster of a space rocket", "class": "picture", "source": "fixture"}
+{"id": "fx-syn-045", "prompt": "a turtle that carries a garden on its shell", "class": "creature", "source": "fixture"}
+{"id": "fx-syn-046", "prompt": "a hamster as big as a house", "class": "creature", "source": "fixture"}
+{"id": "fx-fol-001", "prompt": "make the bunny hop higher", "class": "followup", "source": "fixture"}
+{"id": "fx-fol-002", "prompt": "now give the penguin a hat", "class": "followup", "source": "fixture"}
+{"id": "fx-fol-003", "prompt": "paint the pirate ship gold", "class": "followup", "source": "fixture"}

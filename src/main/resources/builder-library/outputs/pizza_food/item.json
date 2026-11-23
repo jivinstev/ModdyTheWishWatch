@@ -1,0 +1,17 @@
+{
+ "base_item": "minecraft:cookie",
+ "count": 4,
+ "effects": [
+  "food"
+ ],
+ "id": "pizza_food",
+ "name": "Pizza",
+ "params": {
+  "BONUS": "minecraft:saturation",
+  "SECONDS": "5"
+ },
+ "parts": [],
+ "properties": {},
+ "shape": "on_consume",
+ "variants": []
+}

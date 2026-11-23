@@ -1,0 +1,316 @@
+{
+  "id": "rabbit",
+  "status": "Evening out the ears",
+  "note": "Plain rabbit base; mirrored inner ears at x \u00b12.",
+  "palette": [
+    {
+      "colour": "tan/orange",
+      "percent": 95
+    }
+  ],
+  "parts": [
+    {
+      "name": "body",
+      "from": [
+        -4.0,
+        3.0,
+        -4.0
+      ],
+      "to": [
+        4.0,
+        10.0,
+        6.0
+      ],
+      "pivot": [
+        0.0,
+        3.0,
+        1.0
+      ],
+      "colour": "#8B6A4A",
+      "pattern": "fur",
+      "patternColour": "#6E5238"
+    },
+    {
+      "name": "head",
+      "from": [
+        -3.0,
+        7.0,
+        -9.0
+      ],
+      "to": [
+        3.0,
+        13.0,
+        -3.0
+      ],
+      "pivot": [
+        0.0,
+        7.0,
+        -6.0
+      ],
+      "colour": "#8B6A4A",
+      "pattern": "fur",
+      "patternColour": "#6E5238"
+    },
+    {
+      "name": "earL",
+      "parent": "head",
+      "from": [
+        -3.0,
+        12.0,
+        -6.0
+      ],
+      "to": [
+        -1.0,
+        20.0,
+        -5.0
+      ],
+      "pivot": [
+        -2.0,
+        12.0,
+        -5.5
+      ],
+      "colour": "#8B6A4A"
+    },
+    {
+      "name": "earR",
+      "parent": "head",
+      "from": [
+        1.0,
+        12.0,
+        -6.0
+      ],
+      "to": [
+        3.0,
+        20.0,
+        -5.0
+      ],
+      "pivot": [
+        2.0,
+        12.0,
+        -5.5
+      ],
+      "colour": "#8B6A4A"
+    },
+    {
+      "name": "earInnerL",
+      "parent": "head",
+      "from": [
+        -2.0,
+        13.0,
+        -6.0
+      ],
+      "to": [
+        -1.0,
+        19.0,
+        -5.0
+      ],
+      "pivot": [
+        -1.5,
+        13.0,
+        -5.5
+      ],
+      "colour": "#FF7FBF"
+    },
+    {
+      "name": "earInnerR",
+      "parent": "head",
+      "from": [
+        1.0,
+        13.0,
+        -6.0
+      ],
+      "to": [
+        2.0,
+        19.0,
+        -5.0
+      ],
+      "pivot": [
+        1.5,
+        13.0,
+        -5.5
+      ],
+      "colour": "#FF7FBF"
+    },
+    {
+      "name": "muzzle",
+      "parent": "head",
+      "from": [
+        -1.0,
+        8.0,
+        -9.0
+      ],
+      "to": [
+        2.0,
+        10.0,
+        -8.0
+      ],
+      "pivot": [
+        0.5,
+        8.0,
+        -8.5
+      ],
+      "colour": "#FFFFFF"
+    },
+    {
+      "name": "nose",
+      "parent": "head",
+      "from": [
+        0.0,
+        9.0,
+        -10.0
+      ],
+      "to": [
+        1.0,
+        10.0,
+        -9.0
+      ],
+      "pivot": [
+        0.5,
+        9.0,
+        -9.5
+      ],
+      "colour": "#FF7FBF"
+    },
+    {
+      "name": "eyeL",
+      "parent": "head",
+      "from": [
+        -4.0,
+        10.0,
+        -8.0
+      ],
+      "to": [
+        -3.0,
+        12.0,
+        -6.0
+      ],
+      "pivot": [
+        -3.5,
+        10.0,
+        -7.0
+      ],
+      "colour": "#1A1A1A"
+    },
+    {
+      "name": "eyeR",
+      "parent": "head",
+      "from": [
+        3.0,
+        10.0,
+        -8.0
+      ],
+      "to": [
+        4.0,
+        12.0,
+        -6.0
+      ],
+      "pivot": [
+        3.5,
+        10.0,
+        -7.0
+      ],
+      "colour": "#1A1A1A"
+    },
+    {
+      "name": "legL",
+      "from": [
+        -3.0,
+        0.0,
+        -4.0
+      ],
+      "to": [
+        -1.0,
+        4.0,
+        -2.0
+      ],
+      "pivot": [
+        -2.0,
+        4.0,
+        -3.0
+      ],
+      "colour": "#8B6A4A"
+    },
+    {
+      "name": "legR",
+      "from": [
+        1.0,
+        0.0,
+        -4.0
+      ],
+      "to": [
+        3.0,
+        4.0,
+        -2.0
+      ],
+      "pivot": [
+        2.0,
+        4.0,
+        -3.0
+      ],
+      "colour": "#8B6A4A"
+    },
+    {
+      "name": "hindL",
+      "from": [
+        -5.0,
+        0.0,
+        1.0
+      ],
+      "to": [
+        -2.0,
+        5.0,
+        6.0
+      ],
+      "pivot": [
+        -3.5,
+        0.0,
+        3.5
+      ],
+      "colour": "#8B6A4A",
+      "pattern": "fur",
+      "patternColour": "#6E5238"
+    },
+    {
+      "name": "hindR",
+      "from": [
+        2.0,
+        0.0,
+        1.0
+      ],
+      "to": [
+        5.0,
+        5.0,
+        6.0
+      ],
+      "pivot": [
+        3.5,
+        0.0,
+        3.5
+      ],
+      "colour": "#8B6A4A",
+      "pattern": "fur",
+      "patternColour": "#6E5238"
+    },
+    {
+      "name": "tail",
+      "from": [
+        -1.0,
+        6.0,
+        5.0
+      ],
+      "to": [
+        2.0,
+        9.0,
+        8.0
+      ],
+      "pivot": [
+        0.5,
+        9.0,
+        6.5
+      ],
+      "colour": "#FFFFFF",
+      "pattern": "fur",
+      "patternColour": "#E8E8E8"
+    }
+  ]
+}

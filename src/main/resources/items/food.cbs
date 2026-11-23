@@ -1,0 +1,10 @@
+# FOOD — drinking or eating it fills you up and gives you a boost.
+#
+# Saturation rather than a hunger command: it is the one effect that fills the bar instantly and
+# works on anything with a hunger bar, and it needs no item to actually be edible.
+function effect()
+    /execute as ${TARGET} run effect give @s minecraft:saturation 1 4
+    /execute as ${TARGET} run effect give @s ${BONUS} ${SECONDS} 0
+    /particle minecraft:happy_villager ~ ~1 ~ 0.4 0.4 0.4 0.1 15 force
+    /playsound minecraft:entity.generic.drink master @a ~ ~ ~ 1 1
+end

@@ -1,0 +1,10 @@
+{"old": "give @p minecraft:leather_helmet[minecraft:dyed_color={rgb:16711680}] 1", "new": "give @p minecraft:leather_helmet[minecraft:dyed_color=16711680] 1"}
+{"old": "give @p minecraft:leather_boots[dyed_color={rgb:255}] 1", "new": "give @p minecraft:leather_boots[dyed_color=255] 1"}
+{"old": "give @p minecraft:potion[minecraft:custom_name='{\"text\":\"Lemon Fizz\",\"color\":\"yellow\"}'] 1", "new": "give @p minecraft:potion[minecraft:custom_name={\"text\":\"Lemon Fizz\",\"color\":\"yellow\"}] 1"}
+{"old": "give @p minecraft:stick[custom_name='{\"text\":\"Wobbly Wand\",\"italic\":false}'] 1", "new": "give @p minecraft:stick[custom_name={\"text\":\"Wobbly Wand\",\"italic\":false}] 1"}
+{"old": "setblock ~ ~ ~ command_block{CustomName: '\"fixture_keep_stone\"'}", "new": "setblock ~ ~ ~ command_block{CustomName: \"fixture_keep_stone\"}"}
+{"old": "summon minecraft:armor_stand ~ ~ ~ {CustomName:'{\"text\":\"Tour Guide\"}'}", "new": "summon minecraft:armor_stand ~ ~ ~ {CustomName:{\"text\":\"Tour Guide\"}}"}
+{"old": "setblock ~1 ~2 ~ minecraft:oak_wall_sign[facing=east]{front_text:{messages:['{\"text\":\"Pancake Stand\",\"color\":\"gold\"}','{\"text\":\"\"}','{\"text\":\"\"}','{\"text\":\"\"}']}}", "new": "setblock ~1 ~2 ~ minecraft:oak_wall_sign[facing=east]{front_text:{messages:[{\"text\":\"Pancake Stand\",\"color\":\"gold\"},{\"text\":\"\"},{\"text\":\"\"},{\"text\":\"\"}]}}"}
+{"old": "data merge block ~ ~2 ~-1 {front_text:{messages:['{\"text\":\"Snow Cone Cart\"}','\"\"','\"\"','\"\"']}}", "new": "data merge block ~ ~2 ~-1 {front_text:{messages:[{\"text\":\"Snow Cone Cart\"},\"\",\"\",\"\"]}}"}
+{"old": "give @p minecraft:paper[lore=['{\"text\":\"A ticket to the moon\"}']] 1", "new": "give @p minecraft:paper[lore=[{\"text\":\"A ticket to the moon\"}]] 1"}
+{"old": "give @p minecraft:potion[minecraft:custom_name='{\"text\":\"Berry Swirl\",\"color\":\"#C2185B\",\"bold\":true}',minecraft:dyed_color={rgb:12720219}] 1", "new": "give @p minecraft:potion[minecraft:custom_name={\"text\":\"Berry Swirl\",\"color\":\"#C2185B\",\"bold\":true},minecraft:dyed_color=12720219] 1"}

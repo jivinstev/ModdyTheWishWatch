@@ -1,0 +1,35 @@
+{
+ "cluster": "shapes_reshoot2",
+ "order": [
+  "coral",
+  "name_tag",
+  "tablet",
+  "bowl_food"
+ ],
+ "icons": [
+  {
+   "name": "coral",
+   "status": "ok",
+   "attempts": 2,
+   "note": "Five splayed finger-like branches from a short base; magenta between branches, no cap or crown."
+  },
+  {
+   "name": "name_tag",
+   "status": "ok",
+   "attempts": 1,
+   "note": "Luggage tag: pointed end, punched hole, tan string loop; blank, no tab, no writing."
+  },
+  {
+   "name": "tablet",
+   "status": "ok",
+   "attempts": 2,
+   "note": "Chunky stone slab with a cyan sun mark (32px) / zigzag (16px); no letters or symbols."
+  },
+  {
+   "name": "bowl_food",
+   "status": "ok",
+   "attempts": 2,
+   "note": "Wide shallow bowl, flat wide bottom, filled with cyan stew and lumps."
+  }
+ ]
+}

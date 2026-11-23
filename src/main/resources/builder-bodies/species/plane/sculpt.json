@@ -1,0 +1,194 @@
+{
+ "behaves_like": "vehicle",
+ "damage": 0,
+ "health": 100,
+ "id": "plane",
+ "name": "Sky Plane",
+ "note": "Classic white plane with blue wings/tail, red nose and propeller; vehicle life + flies + rideable so he can fly it. Body runs along z (nose at -z).",
+ "palette": [
+  {
+   "colour": "white",
+   "percent": 60
+  },
+  {
+   "colour": "blue",
+   "percent": 25
+  },
+  {
+   "colour": "red",
+   "percent": 8
+  }
+ ],
+ "parts": [
+  {
+   "colour": "white",
+   "from": [
+    -5,
+    6,
+    -20
+   ],
+   "name": "body",
+   "pattern": "gradient",
+   "pattern_colour": "#DDDDEE",
+   "to": [
+    5,
+    15,
+    20
+   ]
+  },
+  {
+   "colour": "red",
+   "from": [
+    -4,
+    7,
+    -24
+   ],
+   "name": "nose",
+   "to": [
+    4,
+    14,
+    -19
+   ]
+  },
+  {
+   "colour": "#333333",
+   "from": [
+    -1,
+    1,
+    -26
+   ],
+   "name": "propeller",
+   "to": [
+    1,
+    20,
+    -24
+   ]
+  },
+  {
+   "colour": "#88CCFF",
+   "from": [
+    -4,
+    15,
+    -10
+   ],
+   "name": "cockpit",
+   "to": [
+    4,
+    19,
+    -2
+   ]
+  },
+  {
+   "colour": "blue",
+   "from": [
+    -30,
+    9,
+    -8
+   ],
+   "name": "wing_left",
+   "pattern": "stripes",
+   "pattern_colour": "white",
+   "to": [
+    -4,
+    11,
+    4
+   ]
+  },
+  {
+   "colour": "blue",
+   "from": [
+    4,
+    9,
+    -8
+   ],
+   "name": "wing_right",
+   "pattern": "stripes",
+   "pattern_colour": "white",
+   "to": [
+    30,
+    11,
+    4
+   ]
+  },
+  {
+   "colour": "blue",
+   "from": [
+    -1,
+    14,
+    14
+   ],
+   "name": "tail_fin",
+   "to": [
+    1,
+    24,
+    20
+   ]
+  },
+  {
+   "colour": "blue",
+   "from": [
+    -12,
+    12,
+    15
+   ],
+   "name": "tail_wing",
+   "to": [
+    12,
+    14,
+    20
+   ]
+  },
+  {
+   "colour": "#222222",
+   "from": [
+    -5,
+    0,
+    -10
+   ],
+   "name": "wheel_left",
+   "to": [
+    -2,
+    7,
+    -6
+   ]
+  },
+  {
+   "colour": "#222222",
+   "from": [
+    2,
+    0,
+    -10
+   ],
+   "name": "wheel_right",
+   "to": [
+    5,
+    7,
+    -6
+   ]
+  },
+  {
+   "colour": "#222222",
+   "from": [
+    -1,
+    3,
+    14
+   ],
+   "name": "wheel_back",
+   "to": [
+    1,
+    7,
+    17
+   ]
+  }
+ ],
+ "powers": [
+  "friendly",
+  "rideable",
+  "flies",
+  "persistent"
+ ],
+ "scale": 1.6,
+ "speed": 0.5,
+ "status": "Building your plane",
+ "voice": "silent"
+}

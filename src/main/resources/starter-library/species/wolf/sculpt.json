@@ -1,0 +1,326 @@
+{
+  "id": "wolf",
+  "name": "Wolf",
+  "base": "companion",
+  "powers": [
+    "friendly"
+  ],
+  "damage": 0,
+  "health": 40,
+  "speed": 0.3,
+  "parts": [
+    {
+      "name": "body",
+      "from": [
+        -4.0,
+        8.0,
+        -8.0
+      ],
+      "to": [
+        4.0,
+        16.0,
+        8.0
+      ],
+      "pivot": [
+        0.0,
+        8.0,
+        0.0
+      ],
+      "colour": "#9A9A9A",
+      "pattern": "fur",
+      "patternColour": "#FFFFFF"
+    },
+    {
+      "name": "chest",
+      "parent": "body",
+      "from": [
+        -4.0,
+        8.0,
+        -9.0
+      ],
+      "to": [
+        5.0,
+        16.0,
+        -4.0
+      ],
+      "pivot": [
+        0.5,
+        8.0,
+        -6.5
+      ],
+      "colour": "#FFFFFF"
+    },
+    {
+      "name": "head",
+      "from": [
+        -4.0,
+        12.0,
+        -15.0
+      ],
+      "to": [
+        4.0,
+        20.0,
+        -8.0
+      ],
+      "pivot": [
+        0.0,
+        14.0,
+        -8.0
+      ],
+      "colour": "#A0A0A0"
+    },
+    {
+      "name": "snout",
+      "parent": "head",
+      "from": [
+        -2.0,
+        12.0,
+        -18.0
+      ],
+      "to": [
+        2.0,
+        15.0,
+        -15.0
+      ],
+      "pivot": [
+        0.0,
+        12.0,
+        -16.5
+      ],
+      "colour": "#FFFFFF"
+    },
+    {
+      "name": "nose",
+      "parent": "head",
+      "from": [
+        -1.0,
+        14.0,
+        -18.0
+      ],
+      "to": [
+        1.0,
+        15.0,
+        -17.0
+      ],
+      "pivot": [
+        0.0,
+        14.0,
+        -17.5
+      ],
+      "colour": "#404040"
+    },
+    {
+      "name": "earL",
+      "parent": "head",
+      "from": [
+        1.0,
+        20.0,
+        -12.0
+      ],
+      "to": [
+        4.0,
+        23.0,
+        -10.0
+      ],
+      "pivot": [
+        2.5,
+        20.0,
+        -11.0
+      ],
+      "colour": "#8A8A8A"
+    },
+    {
+      "name": "earR",
+      "parent": "head",
+      "from": [
+        -4.0,
+        20.0,
+        -12.0
+      ],
+      "to": [
+        -1.0,
+        23.0,
+        -10.0
+      ],
+      "pivot": [
+        -2.5,
+        20.0,
+        -11.0
+      ],
+      "colour": "#8A8A8A"
+    },
+    {
+      "name": "legL",
+      "from": [
+        1.0,
+        0.0,
+        -7.0
+      ],
+      "to": [
+        4.0,
+        8.0,
+        -4.0
+      ],
+      "pivot": [
+        2.5,
+        8.0,
+        -5.5
+      ],
+      "colour": "#9A9A9A"
+    },
+    {
+      "name": "legR",
+      "from": [
+        -4.0,
+        0.0,
+        -7.0
+      ],
+      "to": [
+        -1.0,
+        8.0,
+        -4.0
+      ],
+      "pivot": [
+        -2.5,
+        8.0,
+        -5.5
+      ],
+      "colour": "#9A9A9A"
+    },
+    {
+      "name": "armL",
+      "from": [
+        1.0,
+        0.0,
+        4.0
+      ],
+      "to": [
+        4.0,
+        8.0,
+        7.0
+      ],
+      "pivot": [
+        2.5,
+        8.0,
+        5.5
+      ],
+      "colour": "#9A9A9A"
+    },
+    {
+      "name": "armR",
+      "from": [
+        -4.0,
+        0.0,
+        4.0
+      ],
+      "to": [
+        -1.0,
+        8.0,
+        7.0
+      ],
+      "pivot": [
+        -2.5,
+        8.0,
+        5.5
+      ],
+      "colour": "#9A9A9A"
+    },
+    {
+      "name": "tail",
+      "parent": "body",
+      "from": [
+        -1.0,
+        12.0,
+        8.0
+      ],
+      "to": [
+        1.0,
+        14.0,
+        15.0
+      ],
+      "pivot": [
+        0.0,
+        14.0,
+        8.0
+      ],
+      "rotation": [
+        30.0,
+        0.0,
+        0.0
+      ],
+      "colour": "#BDBDBD"
+    },
+    {
+      "name": "eyeL",
+      "parent": "head",
+      "from": [
+        1.0,
+        17.0,
+        -16.0
+      ],
+      "to": [
+        3.0,
+        18.0,
+        -15.0
+      ],
+      "pivot": [
+        2.0,
+        17.0,
+        -15.5
+      ],
+      "colour": "#404040"
+    },
+    {
+      "name": "eyeR",
+      "parent": "head",
+      "from": [
+        -3.0,
+        17.0,
+        -16.0
+      ],
+      "to": [
+        -1.0,
+        18.0,
+        -15.0
+      ],
+      "pivot": [
+        -2.0,
+        17.0,
+        -15.5
+      ],
+      "colour": "#404040"
+    },
+    {
+      "name": "tongue",
+      "parent": "head",
+      "from": [
+        -1.0,
+        11.0,
+        -17.0
+      ],
+      "to": [
+        1.0,
+        12.0,
+        -15.0
+      ],
+      "pivot": [
+        0.0,
+        11.0,
+        -16.0
+      ],
+      "colour": "#FF1493"
+    }
+  ],
+  "palette": [
+    {
+      "colour": "grey",
+      "percent": 82
+    },
+    {
+      "colour": "white",
+      "percent": 18
+    }
+  ],
+  "note": "Restoring name/stats (start_from revision dropped them): friendly companion, 0 dmg.",
+  "status": "Making your wolf extra friendly"
+}

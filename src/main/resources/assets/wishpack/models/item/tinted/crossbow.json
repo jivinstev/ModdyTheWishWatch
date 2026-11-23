@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:item/crossbow",
+  "textures": {
+    "layer0": "wishpack:item/tinted/crossbow_standby_tint",
+    "layer1": "wishpack:item/tinted/crossbow_standby_keep"
+  }
+}

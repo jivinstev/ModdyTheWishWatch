@@ -1,0 +1,287 @@
+[
+ {
+  "cluster": "sweets_toys",
+  "name": "candy_cane",
+  "verdict": "PASS",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.386,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "body": 46,
+   "fixed": 197,
+   "line": 147,
+   "shine": 5
+  }
+ },
+ {
+  "cluster": "sweets_toys",
+  "name": "gummy_bear",
+  "verdict": "PASS",
+  "kind": "fixed",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.316,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "fixed": 234,
+   "line": 85,
+   "shine": 5
+  }
+ },
+ {
+  "cluster": "sweets_toys",
+  "name": "chocolate_bar",
+  "verdict": "PASS",
+  "kind": "fixed",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.432,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "fixed": 240,
+   "line": 197,
+   "shine": 5
+  }
+ },
+ {
+  "cluster": "sweets_toys",
+  "name": "cupcake",
+  "verdict": "PASS",
+  "kind": "fixed",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.407,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "accent": 124,
+   "fixed": 155,
+   "line": 133,
+   "shine": 5
+  }
+ },
+ {
+  "cluster": "sweets_toys",
+  "name": "cotton_candy",
+  "verdict": "PASS",
+  "kind": "fixed",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.443,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "fixed": 333,
+   "line": 116,
+   "shine": 5
+  }
+ },
+ {
+  "cluster": "sweets_toys",
+  "name": "ice_pop",
+  "verdict": "PASS",
+  "kind": "fixed",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.306,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "fixed": 211,
+   "line": 97,
+   "shine": 5
+  }
+ },
+ {
+  "cluster": "sweets_toys",
+  "name": "sundae",
+  "verdict": "PASS",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.422,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "accent": 150,
+   "body": 41,
+   "fixed": 59,
+   "line": 177,
+   "shine": 5
+  }
+ },
+ {
+  "cluster": "sweets_toys",
+  "name": "marshmallow",
+  "verdict": "PASS",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.422,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "body": 250,
+   "fixed": 25,
+   "line": 152,
+   "shine": 5
+  }
+ },
+ {
+  "cluster": "sweets_toys",
+  "name": "wrapped_candy",
+  "verdict": "PASS",
+  "kind": "fixed",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.303,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "fixed": 214,
+   "line": 91,
+   "shine": 5
+  }
+ },
+ {
+  "cluster": "sweets_toys",
+  "name": "boba_tea",
+  "verdict": "PASS",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.412,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "body": 74,
+   "fixed": 216,
+   "line": 127,
+   "shine": 5
+  }
+ },
+ {
+  "cluster": "sweets_toys",
+  "name": "teddy_bear",
+  "verdict": "PASS",
+  "kind": "fixed",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.463,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "fixed": 354,
+   "line": 116,
+   "shine": 4
+  }
+ },
+ {
+  "cluster": "sweets_toys",
+  "name": "yo_yo",
+  "verdict": "PASS",
+  "kind": "fixed",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.4,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "fixed": 291,
+   "line": 114,
+   "shine": 5
+  }
+ },
+ {
+  "cluster": "sweets_toys",
+  "name": "soccer_ball",
+  "verdict": "WARN",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [
+   "silhouette 93% the same as basketball"
+  ],
+  "stats": {
+   "fill": 0.659,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "body": 366,
+   "line": 304,
+   "shine": 5
+  }
+ },
+ {
+  "cluster": "sweets_toys",
+  "name": "basketball",
+  "verdict": "WARN",
+  "kind": "fixed",
+  "n": 32,
+  "problems": [],
+  "warnings": [
+   "silhouette 93% the same as soccer_ball"
+  ],
+  "stats": {
+   "fill": 0.613,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "fixed": 424,
+   "line": 203,
+   "shine": 1
+  }
+ },
+ {
+  "cluster": "sweets_toys",
+  "name": "toy_car",
+  "verdict": "PASS",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.371,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "accent": 46,
+   "body": 12,
+   "fixed": 154,
+   "line": 163,
+   "shine": 5
+  }
+ },
+ {
+  "cluster": "sweets_toys",
+  "name": "toy_robot",
+  "verdict": "PASS",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.305,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "accent": 4,
+   "body": 141,
+   "line": 162,
+   "shine": 5
+  }
+ }
+]

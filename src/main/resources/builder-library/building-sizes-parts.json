@@ -1,0 +1,792 @@
+{
+  "cozy_house": [
+    {
+      "size": 1,
+      "walks": true,
+      "keepsItems": true,
+      "floats": 0,
+      "floatsFixed": 0,
+      "measured": "606 blocks; floats 0 (fixed 0); walk 1/1; {door\u003d0, bed\u003d1, chest\u003d0, trapdoor\u003d0, gold\u003d0}"
+    },
+    {
+      "size": 2,
+      "walks": true,
+      "keepsItems": true,
+      "floats": 0,
+      "floatsFixed": 0,
+      "measured": "688 blocks; floats 0 (fixed 0); walk 1/1; {door\u003d0, bed\u003d1, chest\u003d0, trapdoor\u003d0, gold\u003d0}"
+    },
+    {
+      "size": 3,
+      "walks": true,
+      "keepsItems": true,
+      "floats": 0,
+      "floatsFixed": 0,
+      "measured": "1975 blocks; floats 0 (fixed 0); walk 2/2; {door\u003d0, bed\u003d1, chest\u003d0, trapdoor\u003d0, gold\u003d0}"
+    },
+    {
+      "size": 4,
+      "walks": true,
+      "keepsItems": true,
+      "floats": 0,
+      "floatsFixed": 0,
+      "measured": "3182 blocks; floats 0 (fixed 0); walk 2/2; {door\u003d0, bed\u003d1, chest\u003d0, trapdoor\u003d0, gold\u003d0}"
+    }
+  ],
+  "mansion": [
+    {
+      "size": 1,
+      "walks": true,
+      "keepsItems": true,
+      "floats": 0,
+      "floatsFixed": 0,
+      "measured": "6806 blocks; floats 0 (fixed 0); walk 2/2; {door\u003d0, bed\u003d0, chest\u003d0, trapdoor\u003d0, gold\u003d251}"
+    },
+    {
+      "size": 2,
+      "walks": true,
+      "keepsItems": true,
+      "floats": 0,
+      "floatsFixed": 0,
+      "measured": "8191 blocks; floats 0 (fixed 0); walk 2/2; {door\u003d0, bed\u003d0, chest\u003d0, trapdoor\u003d0, gold\u003d267}"
+    },
+    {
+      "size": 3,
+      "walks": true,
+      "keepsItems": true,
+      "floats": 0,
+      "floatsFixed": 0,
+      "measured": "24897 blocks; floats 0 (fixed 0); walk 12/13; {door\u003d0, bed\u003d0, chest\u003d0, trapdoor\u003d0, gold\u003d991}"
+    },
+    {
+      "size": 4,
+      "walks": true,
+      "keepsItems": true,
+      "floats": 0,
+      "floatsFixed": 0,
+      "measured": "52924 blocks; floats 0 (fixed 0); walk 19/25; {door\u003d0, bed\u003d0, chest\u003d0, trapdoor\u003d0, gold\u003d2121}"
+    }
+  ],
+  "wizard_tower": [
+    {
+      "size": 1,
+      "walks": false,
+      "keepsItems": true,
+      "floats": 0,
+      "floatsFixed": 0,
+      "walkWhy": "you couldn\u0027t reach its rooms",
+      "measured": "2249 blocks; floats 0 (fixed 0); walk 12/27; {door\u003d2, bed\u003d0, chest\u003d0, trapdoor\u003d0, gold\u003d0}"
+    },
+    {
+      "size": 2,
+      "walks": true,
+      "keepsItems": true,
+      "floats": 0,
+      "floatsFixed": 0,
+      "measured": "2306 blocks; floats 0 (fixed 0); walk 31/31; {door\u003d2, bed\u003d0, chest\u003d0, trapdoor\u003d0, gold\u003d0}"
+    },
+    {
+      "size": 3,
+      "walks": true,
+      "keepsItems": true,
+      "floats": 0,
+      "floatsFixed": 0,
+      "measured": "7581 blocks; floats 0 (fixed 0); walk 39/39; {door\u003d4, bed\u003d0, chest\u003d0, trapdoor\u003d0, gold\u003d0}"
+    },
+    {
+      "size": 4,
+      "walks": true,
+      "keepsItems": true,
+      "floats": 0,
+      "floatsFixed": 0,
+      "measured": "16961 blocks; floats 0 (fixed 0); walk 46/46; {door\u003d4, bed\u003d0, chest\u003d0, trapdoor\u003d0, gold\u003d0}"
+    }
+  ],
+  "lava_moat_castle": [
+    {
+      "size": 1,
+      "walks": false,
+      "keepsItems": true,
+      "floats": 0,
+      "floatsFixed": 0,
+      "walkWhy": "you couldn\u0027t reach its rooms",
+      "measured": "8221 blocks; floats 0 (fixed 0); walk 2/16; {door\u003d0, bed\u003d0, chest\u003d0, trapdoor\u003d0, gold\u003d0}"
+    },
+    {
+      "size": 2,
+      "walks": true,
+      "keepsItems": true,
+      "floats": 0,
+      "floatsFixed": 0,
+      "measured": "14504 blocks; floats 0 (fixed 0); walk 4/24; {door\u003d0, bed\u003d0, chest\u003d0, trapdoor\u003d0, gold\u003d0}"
+    },
+    {
+      "size": 3,
+      "walks": true,
+      "keepsItems": true,
+      "floats": 0,
+      "floatsFixed": 0,
+      "measured": "44668 blocks; floats 0 (fixed 0); walk 5/29; {door\u003d0, bed\u003d0, chest\u003d0, trapdoor\u003d0, gold\u003d0}"
+    },
+    {
+      "size": 4,
+      "walks": true,
+      "keepsItems": true,
+      "floats": 0,
+      "floatsFixed": 0,
+      "measured": "89404 blocks; floats 0 (fixed 0); walk 9/33; {door\u003d0, bed\u003d0, chest\u003d0, trapdoor\u003d0, gold\u003d0}"
+    }
+  ],
+  "village_shop": [
+    {
+      "size": 1,
+      "walks": true,
+      "keepsItems": true,
+      "floats": 0,
+      "floatsFixed": 0,
+      "measured": "518 blocks; floats 0 (fixed 0); walk 2/2; {door\u003d2, bed\u003d0, chest\u003d6, trapdoor\u003d0, gold\u003d0}"
+    },
+    {
+      "size": 2,
+      "walks": true,
+      "keepsItems": true,
+      "floats": 0,
+      "floatsFixed": 0,
+      "measured": "615 blocks; floats 0 (fixed 0); walk 2/2; {door\u003d2, bed\u003d0, chest\u003d6, trapdoor\u003d0, gold\u003d0}"
+    },
+    {
+      "size": 3,
+      "walks": true,
+      "keepsItems": true,
+      "floats": 0,
+      "floatsFixed": 0,
+      "measured": "1777 blocks; floats 0 (fixed 0); walk 2/2; {door\u003d2, bed\u003d0, chest\u003d6, trapdoor\u003d0, gold\u003d0}"
+    },
+    {
+      "size": 4,
+      "walks": true,
+      "keepsItems": true,
+      "floats": 0,
+      "floatsFixed": 0,
+      "measured": "3459 blocks; floats 0 (fixed 0); walk 2/3; {door\u003d2, bed\u003d0, chest\u003d6, trapdoor\u003d0, gold\u003d0}"
+    }
+  ],
+  "small_village": [
+    {
+      "size": 1,
+      "walks": true,
+      "keepsItems": true,
+      "floats": 0,
+      "floatsFixed": 0,
+      "measured": "876 blocks; floats 0 (fixed 0); walk 6/6; {door\u003d6, bed\u003d0, chest\u003d0, trapdoor\u003d0, gold\u003d0}"
+    },
+    {
+      "size": 2,
+      "walks": true,
+      "keepsItems": true,
+      "floats": 0,
+      "floatsFixed": 0,
+      "measured": "1072 blocks; floats 0 (fixed 0); walk 6/6; {door\u003d6, bed\u003d0, chest\u003d0, trapdoor\u003d0, gold\u003d0}"
+    },
+    {
+      "size": 3,
+      "walks": true,
+      "keepsItems": true,
+      "floats": 0,
+      "floatsFixed": 0,
+      "measured": "2731 blocks; floats 0 (fixed 0); walk 6/6; {door\u003d6, bed\u003d0, chest\u003d0, trapdoor\u003d0, gold\u003d0}"
+    },
+    {
+      "size": 4,
+      "walks": true,
+      "keepsItems": true,
+      "floats": 0,
+      "floatsFixed": 0,
+      "measured": "5666 blocks; floats 0 (fixed 0); walk 6/6; {door\u003d6, bed\u003d0, chest\u003d0, trapdoor\u003d0, gold\u003d0}"
+    }
+  ],
+  "mushroom_village": [
+    {
+      "size": 1,
+      "walks": false,
+      "keepsItems": true,
+      "floats": 0,
+      "floatsFixed": 0,
+      "walkWhy": "you couldn\u0027t reach its rooms",
+      "measured": "3490 blocks; floats 0 (fixed 0); walk 4/11; {door\u003d0, bed\u003d0, chest\u003d0, trapdoor\u003d0, gold\u003d0}"
+    },
+    {
+      "size": 2,
+      "walks": true,
+      "keepsItems": true,
+      "floats": 0,
+      "floatsFixed": 0,
+      "measured": "7444 blocks; floats 0 (fixed 0); walk 6/13; {door\u003d0, bed\u003d0, chest\u003d0, trapdoor\u003d0, gold\u003d0}"
+    },
+    {
+      "size": 3,
+      "walks": true,
+      "keepsItems": true,
+      "floats": 0,
+      "floatsFixed": 0,
+      "measured": "24530 blocks; floats 0 (fixed 0); walk 6/21; {door\u003d0, bed\u003d0, chest\u003d0, trapdoor\u003d0, gold\u003d0}"
+    },
+    {
+      "size": 4,
+      "walks": true,
+      "keepsItems": true,
+      "floats": 0,
+      "floatsFixed": 0,
+      "measured": "55513 blocks; floats 0 (fixed 0); walk 6/23; {door\u003d0, bed\u003d0, chest\u003d0, trapdoor\u003d0, gold\u003d0}"
+    }
+  ],
+  "red_barn": [
+    {
+      "size": 1,
+      "walks": true,
+      "keepsItems": true,
+      "floats": 0,
+      "floatsFixed": 0,
+      "measured": "800 blocks; floats 0 (fixed 0); walk 3/3; {door\u003d0, bed\u003d0, chest\u003d0, trapdoor\u003d0, gold\u003d0}"
+    },
+    {
+      "size": 2,
+      "walks": true,
+      "keepsItems": true,
+      "floats": 0,
+      "floatsFixed": 0,
+      "measured": "1058 blocks; floats 0 (fixed 0); walk 3/3; {door\u003d0, bed\u003d0, chest\u003d0, trapdoor\u003d0, gold\u003d0}"
+    },
+    {
+      "size": 3,
+      "walks": false,
+      "keepsItems": true,
+      "floats": 0,
+      "floatsFixed": 0,
+      "walkWhy": "you couldn\u0027t reach its rooms",
+      "measured": "3200 blocks; floats 0 (fixed 0); walk 2/3; {door\u003d0, bed\u003d0, chest\u003d0, trapdoor\u003d0, gold\u003d0}"
+    },
+    {
+      "size": 4,
+      "walks": false,
+      "keepsItems": true,
+      "floats": 0,
+      "floatsFixed": 0,
+      "walkWhy": "you couldn\u0027t reach its rooms",
+      "measured": "6342 blocks; floats 0 (fixed 0); walk 2/3; {door\u003d0, bed\u003d0, chest\u003d0, trapdoor\u003d0, gold\u003d0}"
+    }
+  ],
+  "farm": [
+    {
+      "size": 1,
+      "walks": true,
+      "keepsItems": true,
+      "floats": 0,
+      "floatsFixed": 0,
+      "measured": "732 blocks; floats 0 (fixed 0); walk 0/0; {door\u003d0, bed\u003d0, chest\u003d0, trapdoor\u003d0, gold\u003d0}"
+    },
+    {
+      "size": 2,
+      "walks": true,
+      "keepsItems": true,
+      "floats": 0,
+      "floatsFixed": 0,
+      "measured": "1046 blocks; floats 0 (fixed 0); walk 0/0; {door\u003d0, bed\u003d0, chest\u003d0, trapdoor\u003d0, gold\u003d0}"
+    },
+    {
+      "size": 3,
+      "walks": true,
+      "keepsItems": true,
+      "floats": 0,
+      "floatsFixed": 0,
+      "measured": "2290 blocks; floats 0 (fixed 0); walk 0/0; {door\u003d0, bed\u003d0, chest\u003d0, trapdoor\u003d0, gold\u003d0}"
+    },
+    {
+      "size": 4,
+      "walks": true,
+      "keepsItems": true,
+      "floats": 0,
+      "floatsFixed": 0,
+      "measured": "4014 blocks; floats 0 (fixed 0); walk 0/0; {door\u003d0, bed\u003d0, chest\u003d0, trapdoor\u003d0, gold\u003d0}"
+    }
+  ],
+  "lighthouse": [
+    {
+      "size": 1,
+      "walks": false,
+      "keepsItems": true,
+      "floats": 0,
+      "floatsFixed": 0,
+      "walkWhy": "its balcony would be too narrow",
+      "measured": "767 blocks; floats 0 (fixed 0); walk 4/4; {door\u003d2, bed\u003d0, chest\u003d0, trapdoor\u003d0, gold\u003d0}"
+    },
+    {
+      "size": 2,
+      "walks": true,
+      "keepsItems": true,
+      "floats": 0,
+      "floatsFixed": 0,
+      "measured": "898 blocks; floats 0 (fixed 0); walk 3/3; {door\u003d2, bed\u003d0, chest\u003d0, trapdoor\u003d0, gold\u003d0}"
+    },
+    {
+      "size": 3,
+      "walks": true,
+      "keepsItems": true,
+      "floats": 0,
+      "floatsFixed": 0,
+      "measured": "4136 blocks; floats 0 (fixed 0); walk 6/6; {door\u003d4, bed\u003d0, chest\u003d0, trapdoor\u003d0, gold\u003d0}"
+    },
+    {
+      "size": 4,
+      "walks": true,
+      "keepsItems": false,
+      "floats": 0,
+      "floatsFixed": 0,
+      "itemsWhy": "it would lose its doors",
+      "measured": "6207 blocks; floats 0 (fixed 0); walk 7/7; {door\u003d0, bed\u003d0, chest\u003d0, trapdoor\u003d0, gold\u003d0}"
+    }
+  ],
+  "jungle_temple": [
+    {
+      "size": 1,
+      "walks": true,
+      "keepsItems": true,
+      "floats": 0,
+      "floatsFixed": 0,
+      "measured": "1922 blocks; floats 0 (fixed 0); walk 1/1; {door\u003d0, bed\u003d0, chest\u003d0, trapdoor\u003d0, gold\u003d0}"
+    },
+    {
+      "size": 2,
+      "walks": true,
+      "keepsItems": true,
+      "floats": 0,
+      "floatsFixed": 0,
+      "measured": "4080 blocks; floats 0 (fixed 0); walk 1/1; {door\u003d0, bed\u003d0, chest\u003d0, trapdoor\u003d0, gold\u003d0}"
+    },
+    {
+      "size": 3,
+      "walks": true,
+      "keepsItems": true,
+      "floats": 0,
+      "floatsFixed": 0,
+      "measured": "14510 blocks; floats 0 (fixed 0); walk 1/1; {door\u003d0, bed\u003d0, chest\u003d0, trapdoor\u003d0, gold\u003d0}"
+    },
+    {
+      "size": 4,
+      "walks": true,
+      "keepsItems": true,
+      "floats": 0,
+      "floatsFixed": 0,
+      "measured": "35652 blocks; floats 0 (fixed 0); walk 1/1; {door\u003d0, bed\u003d0, chest\u003d0, trapdoor\u003d0, gold\u003d0}"
+    }
+  ],
+  "secret_treehouse": [
+    {
+      "size": 1,
+      "walks": true,
+      "keepsItems": true,
+      "floats": 0,
+      "floatsFixed": 0,
+      "measured": "1747 blocks; floats 0 (fixed 0); walk 6/6; {door\u003d0, bed\u003d0, chest\u003d1, trapdoor\u003d0, gold\u003d0}"
+    },
+    {
+      "size": 2,
+      "walks": true,
+      "keepsItems": true,
+      "floats": 0,
+      "floatsFixed": 0,
+      "measured": "2337 blocks; floats 0 (fixed 0); walk 5/7; {door\u003d0, bed\u003d0, chest\u003d1, trapdoor\u003d0, gold\u003d0}"
+    },
+    {
+      "size": 3,
+      "walks": true,
+      "keepsItems": true,
+      "floats": 0,
+      "floatsFixed": 0,
+      "measured": "7610 blocks; floats 0 (fixed 0); walk 5/7; {door\u003d0, bed\u003d0, chest\u003d1, trapdoor\u003d0, gold\u003d0}"
+    },
+    {
+      "size": 4,
+      "walks": true,
+      "keepsItems": true,
+      "floats": 0,
+      "floatsFixed": 0,
+      "measured": "15857 blocks; floats 0 (fixed 0); walk 5/12; {door\u003d0, bed\u003d0, chest\u003d1, trapdoor\u003d0, gold\u003d0}"
+    }
+  ],
+  "underground_base": [
+    {
+      "size": 1,
+      "walks": true,
+      "keepsItems": true,
+      "floats": 0,
+      "floatsFixed": 0,
+      "measured": "1374 blocks; floats 0 (fixed 0); walk 1/1; {door\u003d0, bed\u003d2, chest\u003d2, trapdoor\u003d1, gold\u003d0}"
+    },
+    {
+      "size": 2,
+      "walks": true,
+      "keepsItems": true,
+      "floats": 0,
+      "floatsFixed": 0,
+      "measured": "1838 blocks; floats 0 (fixed 0); walk 1/1; {door\u003d0, bed\u003d2, chest\u003d2, trapdoor\u003d1, gold\u003d0}"
+    },
+    {
+      "size": 3,
+      "walks": true,
+      "keepsItems": true,
+      "floats": 0,
+      "floatsFixed": 0,
+      "measured": "4641 blocks; floats 0 (fixed 0); walk 1/1; {door\u003d0, bed\u003d2, chest\u003d2, trapdoor\u003d1, gold\u003d0}"
+    },
+    {
+      "size": 4,
+      "walks": true,
+      "keepsItems": true,
+      "floats": 0,
+      "floatsFixed": 0,
+      "measured": "7819 blocks; floats 0 (fixed 0); walk 1/1; {door\u003d0, bed\u003d2, chest\u003d2, trapdoor\u003d1, gold\u003d0}"
+    }
+  ],
+  "hedge_maze": [
+    {
+      "size": 1,
+      "walks": true,
+      "keepsItems": true,
+      "floats": 0,
+      "floatsFixed": 0,
+      "measured": "1773 blocks; floats 0 (fixed 0); walk 0/0; {door\u003d0, bed\u003d0, chest\u003d1, trapdoor\u003d0, gold\u003d1}"
+    },
+    {
+      "size": 2,
+      "walks": true,
+      "keepsItems": true,
+      "floats": 0,
+      "floatsFixed": 0,
+      "measured": "1680 blocks; floats 0 (fixed 0); walk 0/0; {door\u003d0, bed\u003d0, chest\u003d1, trapdoor\u003d0, gold\u003d1}"
+    },
+    {
+      "size": 3,
+      "walks": true,
+      "keepsItems": true,
+      "floats": 0,
+      "floatsFixed": 0,
+      "measured": "4046 blocks; floats 0 (fixed 0); walk 0/0; {door\u003d0, bed\u003d0, chest\u003d1, trapdoor\u003d0, gold\u003d1}"
+    },
+    {
+      "size": 4,
+      "walks": true,
+      "keepsItems": true,
+      "floats": 0,
+      "floatsFixed": 0,
+      "measured": "6780 blocks; floats 0 (fixed 0); walk 0/0; {door\u003d0, bed\u003d0, chest\u003d1, trapdoor\u003d0, gold\u003d1}"
+    }
+  ],
+  "playground": [
+    {
+      "size": 1,
+      "walks": true,
+      "keepsItems": true,
+      "floats": 0,
+      "floatsFixed": 0,
+      "measured": "311 blocks; floats 0 (fixed 0); walk 1/1; {door\u003d0, bed\u003d0, chest\u003d0, trapdoor\u003d0, gold\u003d0}"
+    },
+    {
+      "size": 2,
+      "walks": true,
+      "keepsItems": true,
+      "floats": 0,
+      "floatsFixed": 0,
+      "measured": "336 blocks; floats 0 (fixed 0); walk 1/1; {door\u003d0, bed\u003d0, chest\u003d0, trapdoor\u003d0, gold\u003d0}"
+    },
+    {
+      "size": 3,
+      "walks": true,
+      "keepsItems": true,
+      "floats": 0,
+      "floatsFixed": 0,
+      "measured": "727 blocks; floats 0 (fixed 0); walk 1/1; {door\u003d0, bed\u003d0, chest\u003d0, trapdoor\u003d0, gold\u003d0}"
+    },
+    {
+      "size": 4,
+      "walks": true,
+      "keepsItems": true,
+      "floats": 0,
+      "floatsFixed": 0,
+      "measured": "1216 blocks; floats 0 (fixed 0); walk 1/1; {door\u003d0, bed\u003d0, chest\u003d0, trapdoor\u003d0, gold\u003d0}"
+    }
+  ],
+  "stone_well": [
+    {
+      "size": 1,
+      "walks": true,
+      "keepsItems": true,
+      "floats": 0,
+      "floatsFixed": 0,
+      "measured": "159 blocks; floats 0 (fixed 0); walk 1/1; {door\u003d0, bed\u003d0, chest\u003d0, trapdoor\u003d0, gold\u003d0}"
+    },
+    {
+      "size": 2,
+      "walks": true,
+      "keepsItems": true,
+      "floats": 0,
+      "floatsFixed": 0,
+      "measured": "159 blocks; floats 0 (fixed 0); walk 1/1; {door\u003d0, bed\u003d0, chest\u003d0, trapdoor\u003d0, gold\u003d0}"
+    },
+    {
+      "size": 3,
+      "walks": true,
+      "keepsItems": true,
+      "floats": 0,
+      "floatsFixed": 0,
+      "measured": "427 blocks; floats 0 (fixed 0); walk 1/1; {door\u003d0, bed\u003d0, chest\u003d0, trapdoor\u003d0, gold\u003d0}"
+    },
+    {
+      "size": 4,
+      "walks": true,
+      "keepsItems": true,
+      "floats": 0,
+      "floatsFixed": 0,
+      "measured": "821 blocks; floats 0 (fixed 0); walk 1/1; {door\u003d0, bed\u003d0, chest\u003d0, trapdoor\u003d0, gold\u003d0}"
+    }
+  ],
+  "pirate_ship": [
+    {
+      "size": 1,
+      "walks": true,
+      "keepsItems": true,
+      "floats": 0,
+      "floatsFixed": 0,
+      "measured": "1312 blocks; floats 0 (fixed 0); walk 4/4; {door\u003d0, bed\u003d0, chest\u003d11, trapdoor\u003d0, gold\u003d1}"
+    },
+    {
+      "size": 2,
+      "walks": true,
+      "keepsItems": true,
+      "floats": 0,
+      "floatsFixed": 0,
+      "measured": "1550 blocks; floats 0 (fixed 0); walk 4/4; {door\u003d0, bed\u003d0, chest\u003d11, trapdoor\u003d0, gold\u003d1}"
+    },
+    {
+      "size": 3,
+      "walks": true,
+      "keepsItems": true,
+      "floats": 0,
+      "floatsFixed": 0,
+      "measured": "4153 blocks; floats 0 (fixed 0); walk 5/5; {door\u003d0, bed\u003d0, chest\u003d11, trapdoor\u003d0, gold\u003d1}"
+    },
+    {
+      "size": 4,
+      "walks": true,
+      "keepsItems": true,
+      "floats": 0,
+      "floatsFixed": 0,
+      "measured": "8023 blocks; floats 0 (fixed 0); walk 5/5; {door\u003d0, bed\u003d0, chest\u003d11, trapdoor\u003d0, gold\u003d1}"
+    }
+  ],
+  "floating_island": [
+    {
+      "size": 1,
+      "walks": true,
+      "keepsItems": true,
+      "floats": 0,
+      "floatsFixed": 0,
+      "measured": "2148 blocks; floats 0 (fixed 0); walk 2/2; {door\u003d0, bed\u003d0, chest\u003d0, trapdoor\u003d0, gold\u003d0}"
+    },
+    {
+      "size": 2,
+      "walks": true,
+      "keepsItems": true,
+      "floats": 0,
+      "floatsFixed": 0,
+      "measured": "2148 blocks; floats 0 (fixed 0); walk 2/2; {door\u003d0, bed\u003d0, chest\u003d0, trapdoor\u003d0, gold\u003d0}"
+    },
+    {
+      "size": 3,
+      "walks": true,
+      "keepsItems": true,
+      "floats": 0,
+      "floatsFixed": 0,
+      "measured": "7576 blocks; floats 0 (fixed 0); walk 2/3; {door\u003d2, bed\u003d0, chest\u003d0, trapdoor\u003d0, gold\u003d0}"
+    },
+    {
+      "size": 4,
+      "walks": true,
+      "keepsItems": true,
+      "floats": 0,
+      "floatsFixed": 0,
+      "measured": "14854 blocks; floats 0 (fixed 0); walk 2/3; {door\u003d2, bed\u003d0, chest\u003d0, trapdoor\u003d0, gold\u003d0}"
+    }
+  ],
+  "underwater_dome": [
+    {
+      "size": 1,
+      "walks": false,
+      "keepsItems": true,
+      "floats": 0,
+      "floatsFixed": 0,
+      "walkWhy": "you couldn\u0027t reach its rooms",
+      "measured": "12514 blocks; floats 0 (fixed 0); walk 2/2; {door\u003d0, bed\u003d0, chest\u003d0, trapdoor\u003d0, gold\u003d0}"
+    },
+    {
+      "size": 2,
+      "walks": true,
+      "keepsItems": true,
+      "floats": 0,
+      "floatsFixed": 0,
+      "measured": "28623 blocks; floats 0 (fixed 0); walk 3/3; {door\u003d0, bed\u003d0, chest\u003d0, trapdoor\u003d0, gold\u003d0}"
+    },
+    {
+      "size": 3,
+      "walks": true,
+      "keepsItems": true,
+      "floats": 0,
+      "floatsFixed": 0,
+      "measured": "96892 blocks; floats 0 (fixed 0); walk 15/15; {door\u003d0, bed\u003d0, chest\u003d0, trapdoor\u003d0, gold\u003d0}"
+    },
+    {
+      "size": 4,
+      "walks": true,
+      "keepsItems": true,
+      "floats": 0,
+      "floatsFixed": 0,
+      "measured": "212739 blocks; floats 0 (fixed 0); walk 12/12; {door\u003d0, bed\u003d0, chest\u003d0, trapdoor\u003d0, gold\u003d0}"
+    }
+  ],
+  "farm_plot": [
+    {
+      "size": 1,
+      "walks": true,
+      "keepsItems": true,
+      "floats": 0,
+      "floatsFixed": 0,
+      "measured": "97 blocks; floats 0 (fixed 0); walk 0/0; {door\u003d0, bed\u003d0, chest\u003d0, trapdoor\u003d0, gold\u003d0}"
+    },
+    {
+      "size": 2,
+      "walks": true,
+      "keepsItems": true,
+      "floats": 0,
+      "floatsFixed": 0,
+      "measured": "97 blocks; floats 0 (fixed 0); walk 0/0; {door\u003d0, bed\u003d0, chest\u003d0, trapdoor\u003d0, gold\u003d0}"
+    },
+    {
+      "size": 3,
+      "walks": true,
+      "keepsItems": true,
+      "floats": 0,
+      "floatsFixed": 0,
+      "measured": "233 blocks; floats 0 (fixed 0); walk 0/0; {door\u003d0, bed\u003d0, chest\u003d0, trapdoor\u003d0, gold\u003d0}"
+    },
+    {
+      "size": 4,
+      "walks": true,
+      "keepsItems": true,
+      "floats": 0,
+      "floatsFixed": 0,
+      "measured": "344 blocks; floats 0 (fixed 0); walk 0/0; {door\u003d0, bed\u003d0, chest\u003d0, trapdoor\u003d0, gold\u003d0}"
+    }
+  ],
+  "animal_pen": [
+    {
+      "size": 1,
+      "walks": true,
+      "keepsItems": true,
+      "floats": 0,
+      "floatsFixed": 0,
+      "measured": "73 blocks; floats 0 (fixed 0); walk 0/0; {door\u003d0, bed\u003d0, chest\u003d0, trapdoor\u003d0, gold\u003d0}"
+    },
+    {
+      "size": 2,
+      "walks": true,
+      "keepsItems": true,
+      "floats": 0,
+      "floatsFixed": 0,
+      "measured": "113 blocks; floats 0 (fixed 0); walk 0/0; {door\u003d0, bed\u003d0, chest\u003d0, trapdoor\u003d0, gold\u003d0}"
+    },
+    {
+      "size": 3,
+      "walks": true,
+      "keepsItems": true,
+      "floats": 0,
+      "floatsFixed": 0,
+      "measured": "248 blocks; floats 0 (fixed 0); walk 0/0; {door\u003d0, bed\u003d0, chest\u003d0, trapdoor\u003d0, gold\u003d0}"
+    },
+    {
+      "size": 4,
+      "walks": true,
+      "keepsItems": true,
+      "floats": 0,
+      "floatsFixed": 0,
+      "measured": "392 blocks; floats 0 (fixed 0); walk 0/0; {door\u003d0, bed\u003d0, chest\u003d0, trapdoor\u003d0, gold\u003d0}"
+    }
+  ],
+  "tree_nursery": [
+    {
+      "size": 1,
+      "walks": true,
+      "keepsItems": true,
+      "floats": 0,
+      "floatsFixed": 0,
+      "measured": "58 blocks; floats 0 (fixed 0); walk 0/0; {door\u003d0, bed\u003d0, chest\u003d0, trapdoor\u003d0, gold\u003d0}"
+    },
+    {
+      "size": 2,
+      "walks": true,
+      "keepsItems": true,
+      "floats": 0,
+      "floatsFixed": 0,
+      "measured": "90 blocks; floats 0 (fixed 0); walk 0/0; {door\u003d0, bed\u003d0, chest\u003d0, trapdoor\u003d0, gold\u003d0}"
+    },
+    {
+      "size": 3,
+      "walks": true,
+      "keepsItems": true,
+      "floats": 0,
+      "floatsFixed": 0,
+      "measured": "205 blocks; floats 0 (fixed 0); walk 0/0; {door\u003d0, bed\u003d0, chest\u003d0, trapdoor\u003d0, gold\u003d0}"
+    },
+    {
+      "size": 4,
+      "walks": true,
+      "keepsItems": true,
+      "floats": 0,
+      "floatsFixed": 0,
+      "measured": "333 blocks; floats 0 (fixed 0); walk 0/0; {door\u003d0, bed\u003d0, chest\u003d0, trapdoor\u003d0, gold\u003d0}"
+    }
+  ],
+  "monster_cave": [
+    {
+      "size": 1,
+      "walks": true,
+      "keepsItems": true,
+      "floats": 0,
+      "floatsFixed": 0,
+      "measured": "396 blocks; floats 0 (fixed 0); walk 1/1; {door\u003d0, bed\u003d0, chest\u003d0, trapdoor\u003d0, gold\u003d0}"
+    },
+    {
+      "size": 2,
+      "walks": true,
+      "keepsItems": true,
+      "floats": 0,
+      "floatsFixed": 0,
+      "measured": "466 blocks; floats 0 (fixed 0); walk 1/1; {door\u003d0, bed\u003d0, chest\u003d0, trapdoor\u003d0, gold\u003d0}"
+    },
+    {
+      "size": 3,
+      "walks": true,
+      "keepsItems": true,
+      "floats": 0,
+      "floatsFixed": 0,
+      "measured": "1444 blocks; floats 0 (fixed 0); walk 1/1; {door\u003d0, bed\u003d0, chest\u003d0, trapdoor\u003d0, gold\u003d0}"
+    },
+    {
+      "size": 4,
+      "walks": true,
+      "keepsItems": true,
+      "floats": 0,
+      "floatsFixed": 0,
+      "measured": "3256 blocks; floats 0 (fixed 0); walk 1/1; {door\u003d0, bed\u003d0, chest\u003d0, trapdoor\u003d0, gold\u003d0}"
+    }
+  ]
+}

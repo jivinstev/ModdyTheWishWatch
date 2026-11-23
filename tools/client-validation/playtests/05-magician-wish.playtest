@@ -1,0 +1,37 @@
+# Validation 5: a Magician wish. With the Magician on (03) and the wish box on the Magician (04), a wish typed into the
+# watch goes to the wish model (Opus 5.5 on the Claude subscription, through Claude Code), which builds something new from scratch:
+# no ready-made part. Here it is asked for a creature nobody has made before, so the Apprentice has no tile for it.
+@intent A typed wish goes to the Magician on the Claude subscription, which makes a new creature that appears in the world
+
+@step a clear stage
+gamemode creative
+time set noon
+weather clear
+gamerule doDaylightCycle false
+gamerule doMobSpawning false
+execute if entity @e[type=!minecraft:player] run kill @e[type=!minecraft:player]
+tp @s ~ ~ ~ 0 10
+
+@step wish for something new, on the watch
+@key key.use
+@expect screen /make a wish/ within 10s
+# Moddy puts an idea in the box; @type replaces it with the wish.
+@type "a small teal hedgehog with glowing orange spikes that rolls into a ball when it is scared"
+@wait 1s
+@shot the-wish-typed
+@click button "Make my wish"
+# While it works, the action bar shows what it is doing and a running timer: "🏗 🔧 Reshaping it… (30s)".
+@expect actionbar /\([0-9]+s\)/ within 90s
+@shot the-magician-at-work
+
+@step the wish comes true
+# The wish model plans, builds and checks it: a few minutes is normal.
+@expect chat /is ready|came true|all done/ within 600s
+@wait 3s
+@shot the-wish-made
+
+@step the creature is in the world
+@repeat 15 until execute if entity @e[tag=wishmob]
+@wait 1s
+@end-repeat
+@assert execute if entity @e[tag=wishmob]

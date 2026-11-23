@@ -1,0 +1,19 @@
+{
+ "count": 1,
+ "effects": [
+  "turn_into"
+ ],
+ "id": "popcorn_machine_convert",
+ "name": "Popcorn Machine",
+ "params": {
+  "FROM": "minecraft:wheat_seeds",
+  "TO": "popcorn_food",
+  "_kit": {
+   "items": "minecraft:wheat_seeds 32"
+  }
+ },
+ "parts": [],
+ "properties": {},
+ "shape": "machine",
+ "variants": []
+}

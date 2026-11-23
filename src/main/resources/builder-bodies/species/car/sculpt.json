@@ -1,0 +1,283 @@
+{
+  "id": "car",
+  "name": "Car",
+  "status": "Sculpting your car",
+  "behaves_like": "vehicle",
+  "voice": "silent",
+  "powers": [
+    "friendly",
+    "rideable",
+    "persistent"
+  ],
+  "damage": 0,
+  "health": 40,
+  "speed": 0.25,
+  "palette": [
+    {
+      "colour": "red",
+      "percent": 65
+    },
+    {
+      "colour": "black",
+      "percent": 15
+    },
+    {
+      "colour": "#9FD8F0",
+      "percent": 10
+    }
+  ],
+  "parts": [
+    {
+      "name": "body",
+      "from": [
+        -12,
+        5,
+        -24
+      ],
+      "to": [
+        12,
+        15,
+        24
+      ],
+      "colour": "red",
+      "pattern": "gradient",
+      "pattern_colour": "#9A1414"
+    },
+    {
+      "name": "cabin",
+      "from": [
+        -11,
+        15,
+        -10
+      ],
+      "to": [
+        11,
+        25,
+        12
+      ],
+      "colour": "red",
+      "parent": "body",
+      "pattern": "gradient",
+      "pattern_colour": "#9A1414"
+    },
+    {
+      "name": "windshield",
+      "from": [
+        -10.0,
+        16.0,
+        -11.0
+      ],
+      "to": [
+        10.0,
+        24.0,
+        -10.0
+      ],
+      "colour": "#9FD8F0",
+      "parent": "cabin"
+    },
+    {
+      "name": "rear_window",
+      "from": [
+        -10.0,
+        16.0,
+        12.0
+      ],
+      "to": [
+        10.0,
+        24.0,
+        13.0
+      ],
+      "colour": "#9FD8F0",
+      "parent": "cabin"
+    },
+    {
+      "name": "window_left",
+      "from": [
+        11.0,
+        16.0,
+        -8.0
+      ],
+      "to": [
+        12.0,
+        24.0,
+        10.0
+      ],
+      "colour": "#9FD8F0",
+      "parent": "cabin"
+    },
+    {
+      "name": "window_right",
+      "from": [
+        -12.0,
+        16.0,
+        -8.0
+      ],
+      "to": [
+        -11.0,
+        24.0,
+        10.0
+      ],
+      "colour": "#9FD8F0",
+      "parent": "cabin"
+    },
+    {
+      "name": "wheel_front_left",
+      "from": [
+        10,
+        0,
+        -20
+      ],
+      "to": [
+        14,
+        10,
+        -10
+      ],
+      "colour": "black",
+      "parent": "body",
+      "pattern": "speckle",
+      "pattern_colour": "#3A3A3A"
+    },
+    {
+      "name": "wheel_front_right",
+      "from": [
+        -14,
+        0,
+        -20
+      ],
+      "to": [
+        -10,
+        10,
+        -10
+      ],
+      "colour": "black",
+      "parent": "body",
+      "pattern": "speckle",
+      "pattern_colour": "#3A3A3A"
+    },
+    {
+      "name": "wheel_back_left",
+      "from": [
+        10,
+        0,
+        10
+      ],
+      "to": [
+        14,
+        10,
+        20
+      ],
+      "colour": "black",
+      "parent": "body",
+      "pattern": "speckle",
+      "pattern_colour": "#3A3A3A"
+    },
+    {
+      "name": "wheel_back_right",
+      "from": [
+        -14,
+        0,
+        10
+      ],
+      "to": [
+        -10,
+        10,
+        20
+      ],
+      "colour": "black",
+      "parent": "body",
+      "pattern": "speckle",
+      "pattern_colour": "#3A3A3A"
+    },
+    {
+      "name": "headlight_left",
+      "from": [
+        6.0,
+        10.0,
+        -25.0
+      ],
+      "to": [
+        10.0,
+        13.0,
+        -24.0
+      ],
+      "colour": "yellow",
+      "parent": "body"
+    },
+    {
+      "name": "headlight_right",
+      "from": [
+        -10.0,
+        10.0,
+        -25.0
+      ],
+      "to": [
+        -6.0,
+        13.0,
+        -24.0
+      ],
+      "colour": "yellow",
+      "parent": "body"
+    },
+    {
+      "name": "taillight_left",
+      "from": [
+        6.0,
+        10.0,
+        24.0
+      ],
+      "to": [
+        10.0,
+        13.0,
+        25.0
+      ],
+      "colour": "#FF2020",
+      "parent": "body"
+    },
+    {
+      "name": "taillight_right",
+      "from": [
+        -10.0,
+        10.0,
+        24.0
+      ],
+      "to": [
+        -6.0,
+        13.0,
+        25.0
+      ],
+      "colour": "#FF2020",
+      "parent": "body"
+    },
+    {
+      "name": "bumper_front",
+      "from": [
+        -12,
+        5,
+        -25
+      ],
+      "to": [
+        12,
+        8,
+        -24
+      ],
+      "colour": "gray",
+      "parent": "body"
+    },
+    {
+      "name": "bumper_back",
+      "from": [
+        -12,
+        5,
+        24
+      ],
+      "to": [
+        12,
+        8,
+        25
+      ],
+      "colour": "gray",
+      "parent": "body"
+    }
+  ],
+  "note": "Plain reusable red car base: body + cabin + 4 black wheels, glass windows, lights, bumpers; front is -z. Wheels not named leg* so they don't swing. Meant as a start_from base."
+}

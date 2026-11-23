@@ -1,0 +1,17 @@
+{
+ "base_item": "minecraft:cookie",
+ "count": 4,
+ "effects": [
+  "food"
+ ],
+ "id": "hot_dog_food",
+ "name": "Hot Dog",
+ "params": {
+  "BONUS": "minecraft:strength",
+  "SECONDS": "30"
+ },
+ "parts": [],
+ "properties": {},
+ "shape": "on_consume",
+ "variants": []
+}

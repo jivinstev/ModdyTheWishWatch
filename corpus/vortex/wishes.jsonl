@@ -1,0 +1,68 @@
+{"id": "vx-001", "wish": "a tornado", "expect": {"shape": "funnel"}}
+{"id": "vx-002", "wish": "a twister", "expect": {"shape": "funnel"}}
+{"id": "vx-003", "wish": "a tornato", "expect": {"shape": "funnel"}}
+{"id": "vx-004", "wish": "make a tornadoe", "expect": {"shape": "funnel"}}
+{"id": "vx-005", "wish": "a little dust devil", "expect": {"shape": "funnel", "size": "little", "family": "sand"}}
+{"id": "vx-006", "wish": "a tiny tornado", "expect": {"shape": "funnel", "size": "little"}}
+{"id": "vx-007", "wish": "a medium tornado that picks up the sheep", "expect": {"shape": "funnel", "size": "medium"}}
+{"id": "vx-008", "wish": "a big tornado", "expect": {"shape": "funnel", "size": "big"}}
+{"id": "vx-009", "wish": "a giant tornado", "expect": {"shape": "funnel", "size": "gigantic"}}
+{"id": "vx-010", "wish": "a category 4 tornado that cuts through the forest", "expect": {"shape": "funnel", "size": "gigantic", "path": "line"}}
+{"id": "vx-011", "wish": "a huge tornado that rips through everything in a line", "expect": {"shape": "funnel", "size": "gigantic", "path": "line"}}
+{"id": "vx-012", "wish": "a tornado that goes straight across the field", "expect": {"shape": "funnel", "path": "line"}}
+{"id": "vx-013", "wish": "a tornado that stays in one spot", "expect": {"shape": "funnel", "path": "stay"}}
+{"id": "vx-014", "wish": "a tornado that wanders around randomly", "expect": {"shape": "funnel", "path": "wander"}}
+{"id": "vx-015", "wish": "a tornado that follows me", "expect": {"shape": "funnel", "path": "follow"}}
+{"id": "vx-016", "wish": "a tornado that chases me everywhere", "expect": {"shape": "funnel", "path": "follow"}}
+{"id": "vx-017", "wish": "a tornado that goes round and round my house", "expect": {"shape": "funnel", "path": "circle"}}
+{"id": "vx-018", "wish": "a twister that circles the castle", "expect": {"shape": "funnel", "path": "circle"}}
+{"id": "vx-019", "wish": "a fire tornado", "expect": {"shape": "funnel", "family": "fire"}}
+{"id": "vx-020", "wish": "a firenado", "expect": {"shape": "funnel", "family": "fire"}}
+{"id": "vx-021", "wish": "a tornado made of fire that burns the zombies", "expect": {"shape": "funnel", "family": "fire"}}
+{"id": "vx-022", "wish": "a water spout", "expect": {"shape": "funnel", "family": "water"}}
+{"id": "vx-023", "wish": "a waterspout out at sea", "expect": {"shape": "funnel", "family": "water"}}
+{"id": "vx-024", "wish": "a snow tornado", "expect": {"shape": "funnel", "family": "snow"}}
+{"id": "vx-025", "wish": "a blizzard twister", "expect": {"shape": "funnel", "family": "snow"}}
+{"id": "vx-026", "wish": "a sand tornado in the desert", "expect": {"shape": "funnel", "family": "sand"}}
+{"id": "vx-027", "wish": "a whirlwind of leaves", "expect": {"shape": "funnel", "family": "leaves"}}
+{"id": "vx-028", "wish": "a leaf tornado", "expect": {"shape": "funnel", "family": "leaves"}}
+{"id": "vx-029", "wish": "a cotton candy tornado", "expect": {"shape": "funnel", "family": "candy"}}
+{"id": "vx-030", "wish": "a pink candy floss twister", "expect": {"shape": "funnel", "family": "candy"}}
+{"id": "vx-031", "wish": "an ender tornado", "expect": {"shape": "funnel", "family": "ender"}}
+{"id": "vx-032", "wish": "a purple ender vortex", "expect": {"shape": "funnel", "family": "ender"}}
+{"id": "vx-033", "wish": "a tornado full of cats", "expect": {"shape": "funnel", "drop": "minecraft:cat"}}
+{"id": "vx-034", "wish": "a cyclone of chickens", "expect": {"shape": "funnel", "drop": "minecraft:chicken"}}
+{"id": "vx-035", "wish": "a tornado that has pigs flying in it", "expect": {"shape": "funnel", "drop": "minecraft:pig"}}
+{"id": "vx-036", "wish": "two tornadoes", "expect": {"shape": "funnel", "count": 2}}
+{"id": "vx-037", "wish": "three twisters at once", "expect": {"shape": "funnel", "count": 3}}
+{"id": "vx-038", "wish": "a tornado that picks up cows and minecarts", "expect": {"shape": "funnel", "size_at_least": "medium"}}
+{"id": "vx-039", "wish": "a tornado strong enough to lift an iron golem", "expect": {"shape": "funnel", "size": "gigantic"}}
+{"id": "vx-040", "wish": "a whirlpool", "expect": {"shape": "drain"}}
+{"id": "vx-041", "wish": "a wirlpool", "expect": {"shape": "drain"}}
+{"id": "vx-042", "wish": "a whirlpool in the lake", "expect": {"shape": "drain", "family": "water"}}
+{"id": "vx-043", "wish": "a giant whirlpool that sucks in my boat", "expect": {"shape": "drain", "size": "gigantic"}}
+{"id": "vx-044", "wish": "a little whirlpool", "expect": {"shape": "drain", "size": "little"}}
+{"id": "vx-045", "wish": "a maelstrom in the ocean", "expect": {"shape": "drain"}}
+{"id": "vx-046", "wish": "a vortex in the water that pulls everything down", "expect": {"shape": "drain"}}
+{"id": "vx-047", "wish": "a quicksand pit that swallows the creepers", "expect": {"shape": "drain", "family": "sand"}}
+{"id": "vx-048", "wish": "a hurricane", "expect": {"shape": "spiral"}}
+{"id": "vx-049", "wish": "a huricane", "expect": {"shape": "spiral"}}
+{"id": "vx-050", "wish": "a hurricain over my island", "expect": {"shape": "spiral"}}
+{"id": "vx-051", "wish": "a big hurricane with lightning", "expect": {"shape": "spiral", "size": "big"}}
+{"id": "vx-052", "wish": "a cyclone storm over the sea", "expect": {"shape": "spiral"}}
+{"id": "vx-053", "wish": "a giant hurricane with a calm eye in the middle", "expect": {"shape": "spiral", "size": "gigantic"}}
+{"id": "vx-054", "wish": "a typhoon", "expect": {"shape": "spiral"}}
+{"id": "vx-055", "wish": "a hurricane that moves across the map", "expect": {"shape": "spiral", "path": "line"}}
+{"id": "vx-056", "wish": "a storm that spins around in a circle", "expect": {"shape": "spiral"}}
+{"id": "vx-057", "wish": "a tornado around my base", "expect": {"shape": "funnel", "at": "around"}}
+{"id": "vx-058", "wish": "a tornado on top of my castle", "expect": {"shape": "funnel", "at": "top"}}
+{"id": "vx-059", "wish": "a tornado that tears up blocks", "expect": {"shape": "funnel"}}
+{"id": "vx-060", "wish": "a little twister that only picks up flowers", "expect": {"shape": "funnel", "size": "little"}}
+{"id": "vx-061", "wish": "a safe tornado that doesnt break my house", "expect": {"shape": "funnel", "spares": ["builds"]}}
+{"id": "vx-062", "wish": "a tornado that does not hurt the animals", "expect": {"shape": "funnel", "spares": ["creatures"]}}
+{"id": "vx-063", "wish": "a harmless pretend tornado", "expect": {"shape": "funnel", "spares": ["builds", "creatures"]}}
+{"id": "vx-064", "wish": "a tornado that destroys everything in its path", "expect": {"shape": "funnel", "spares": []}}
+{"id": "vx-065", "wish": "a hurricane that wrecks my whole village", "expect": {"shape": "spiral", "spares": []}}
+{"id": "vx-066", "wish": "a whirlpool that is totally safe", "expect": {"shape": "drain", "spares": ["builds", "creatures"]}}
+{"id": "vx-067", "wish": "a giant fire tornado", "expect": {"shape": "funnel", "family": "fire", "size": "gigantic"}}
+{"id": "vx-068", "wish": "a tornado with loads of cats flying in it", "expect": {"shape": "funnel", "drop": "minecraft:cat"}}

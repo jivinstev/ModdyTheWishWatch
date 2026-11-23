@@ -1,0 +1,17 @@
+{
+ "base_item": "minecraft:cookie",
+ "count": 4,
+ "effects": [
+  "food"
+ ],
+ "id": "ice_cream_food",
+ "name": "Ice Cream",
+ "params": {
+  "BONUS": "minecraft:speed",
+  "SECONDS": "10"
+ },
+ "parts": [],
+ "properties": {},
+ "shape": "on_consume",
+ "variants": []
+}

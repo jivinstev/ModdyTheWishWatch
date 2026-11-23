@@ -1,0 +1,21 @@
+{
+  "count": 16,
+  "effects": [
+    "outcome_table"
+  ],
+  "id": "lucky_block_outcome_table",
+  "name": "Lucky Block",
+  "params": {
+    "PRESENTS": "minecraft:diamond*3, minecraft:cake, minecraft:golden_apple, minecraft:emerald*5, minecraft:enchanted_golden_apple",
+    "SURPRISES": "minecraft:chicken, minecraft:pig, minecraft:zombie",
+    "BOOM": "yes",
+    "_block": {
+      "when": "broken",
+      "look": "minecraft:gold_block"
+    }
+  },
+  "parts": [],
+  "properties": {},
+  "shape": "magic_block",
+  "variants": []
+}

@@ -1,0 +1,365 @@
+{
+ "id": "dinko",
+ "name": "Dinko",
+ "scale": 1.2,
+ "powers": [
+  "friendly",
+  "persistent"
+ ],
+ "parts": [
+  {
+   "name": "legL",
+   "from": [
+    -4,
+    0,
+    -3
+   ],
+   "to": [
+    -1,
+    8,
+    1
+   ],
+   "colour": "green"
+  },
+  {
+   "name": "legR",
+   "from": [
+    1,
+    0,
+    -3
+   ],
+   "to": [
+    4,
+    8,
+    1
+   ],
+   "colour": "green"
+  },
+  {
+   "name": "shoeL",
+   "from": [
+    -5,
+    0,
+    -5
+   ],
+   "to": [
+    0,
+    3,
+    2
+   ],
+   "colour": "orange",
+   "parent": "legL"
+  },
+  {
+   "name": "shoeR",
+   "from": [
+    0,
+    0,
+    -5
+   ],
+   "to": [
+    5,
+    3,
+    2
+   ],
+   "colour": "orange",
+   "parent": "legR"
+  },
+  {
+   "name": "body",
+   "from": [
+    -5,
+    8,
+    -4
+   ],
+   "to": [
+    5,
+    20,
+    4
+   ],
+   "colour": "green"
+  },
+  {
+   "name": "belly",
+   "from": [
+    -4,
+    8,
+    -5
+   ],
+   "to": [
+    4,
+    18,
+    -4
+   ],
+   "colour": "white"
+  },
+  {
+   "name": "saddle",
+   "from": [
+    -5,
+    17,
+    -1
+   ],
+   "to": [
+    5,
+    20,
+    5
+   ],
+   "colour": "red"
+  },
+  {
+   "name": "tail",
+   "from": [
+    -2,
+    9,
+    4
+   ],
+   "to": [
+    2,
+    13,
+    9
+   ],
+   "colour": "green",
+   "parent": "body"
+  },
+  {
+   "name": "armL",
+   "from": [
+    -7,
+    13,
+    -3
+   ],
+   "to": [
+    -5,
+    18,
+    0
+   ],
+   "colour": "green"
+  },
+  {
+   "name": "armR",
+   "from": [
+    5,
+    13,
+    -3
+   ],
+   "to": [
+    7,
+    18,
+    0
+   ],
+   "colour": "green"
+  },
+  {
+   "name": "head",
+   "from": [
+    -4,
+    20,
+    -4
+   ],
+   "to": [
+    4,
+    28,
+    4
+   ],
+   "colour": "green"
+  },
+  {
+   "name": "snout",
+   "from": [
+    -4,
+    20,
+    -11
+   ],
+   "to": [
+    4,
+    26,
+    -4
+   ],
+   "colour": "green",
+   "parent": "head",
+   "inflate": 1
+  },
+  {
+   "name": "chin",
+   "from": [
+    -4,
+    19,
+    -10
+   ],
+   "to": [
+    4,
+    21,
+    -4
+   ],
+   "colour": "white",
+   "parent": "head"
+  },
+  {
+   "name": "nostrilL",
+   "from": [
+    -3,
+    24,
+    -12
+   ],
+   "to": [
+    -1,
+    25,
+    -11
+   ],
+   "colour": "black",
+   "parent": "head"
+  },
+  {
+   "name": "nostrilR",
+   "from": [
+    1,
+    24,
+    -12
+   ],
+   "to": [
+    3,
+    25,
+    -11
+   ],
+   "colour": "black",
+   "parent": "head"
+  },
+  {
+   "name": "eyeL",
+   "from": [
+    -4,
+    26,
+    -5
+   ],
+   "to": [
+    -1,
+    32,
+    -3
+   ],
+   "colour": "white",
+   "parent": "head"
+  },
+  {
+   "name": "eyeR",
+   "from": [
+    1,
+    26,
+    -5
+   ],
+   "to": [
+    4,
+    32,
+    -3
+   ],
+   "colour": "white",
+   "parent": "head"
+  },
+  {
+   "name": "pupilL",
+   "from": [
+    -3,
+    27,
+    -6
+   ],
+   "to": [
+    -2,
+    30,
+    -5
+   ],
+   "colour": "black",
+   "parent": "head"
+  },
+  {
+   "name": "pupilR",
+   "from": [
+    2,
+    27,
+    -6
+   ],
+   "to": [
+    3,
+    30,
+    -5
+   ],
+   "colour": "black",
+   "parent": "head"
+  },
+  {
+   "name": "smileM",
+   "from": [
+    -2,
+    21,
+    -12
+   ],
+   "to": [
+    2,
+    22,
+    -11
+   ],
+   "colour": "black",
+   "parent": "head"
+  },
+  {
+   "name": "smileL",
+   "from": [
+    -4,
+    22,
+    -12
+   ],
+   "to": [
+    -2,
+    23,
+    -11
+   ],
+   "colour": "black",
+   "parent": "head"
+  },
+  {
+   "name": "smileR",
+   "from": [
+    2,
+    22,
+    -12
+   ],
+   "to": [
+    4,
+    23,
+    -11
+   ],
+   "colour": "black",
+   "parent": "head"
+  },
+  {
+   "name": "spine1",
+   "from": [
+    -1,
+    28,
+    0
+   ],
+   "to": [
+    1,
+    31,
+    3
+   ],
+   "colour": "red",
+   "parent": "head"
+  },
+  {
+   "name": "spine2",
+   "from": [
+    -1,
+    26,
+    4
+   ],
+   "to": [
+    1,
+    29,
+    6
+   ],
+   "colour": "red",
+   "parent": "head"
+  }
+ ],
+ "source": "claude/opus-5.5-creature-eval-xzu1ee:docs/evidence-opus55/ab2-panel/w3/o55/rep3/sculpt.json"
+}

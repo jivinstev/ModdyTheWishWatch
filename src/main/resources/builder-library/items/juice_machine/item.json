@@ -1,0 +1,19 @@
+{
+ "count": 1,
+ "effects": [
+  "turn_into"
+ ],
+ "id": "orange_juice_machine_convert",
+ "name": "Orange Juice Machine",
+ "params": {
+  "FROM": "minecraft:sugar",
+  "TO": "orange_juice_food",
+  "_kit": {
+   "items": "minecraft:sugar 32"
+  }
+ },
+ "parts": [],
+ "properties": {},
+ "shape": "machine",
+ "variants": []
+}

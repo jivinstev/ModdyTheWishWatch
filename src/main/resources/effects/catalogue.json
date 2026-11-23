@@ -1,0 +1,812 @@
+{
+  "_comment": "L0 — the index a model selects from. See docs/EFFECT_CATALOGUE.md and. Entries are ONE PER TRIGGER, because trigger is the only axis that changes the emitted program: effect and target are token substitutions, a trigger is a different scaffold. Measured over the vocabulary learned from 535 real mods, 7 triggers cover all 32 abilities and these 3 cover 23 of them. COMMAND carries a whole vanilla command, which is the one thing the agent already writes reliably — far less work than authoring CBScript, and it keeps effect × target out of the template entirely.",
+  "version": 13,
+  "effects": [
+    {
+      "id": "inflict_nearby",
+      "ability": "status_effect",
+      "who": "anything that comes near and TARGET allows (default everything but players), except this creature",
+      "when": "continuously, by proximity",
+      "summary": "Anything that comes close to this creature gets a potion effect — poison, slowness, blindness, anything vanilla. This is the 'its bite poisons you' shape. NOTE: it triggers on CLOSENESS, not on the actual bite.",
+      "template": "inflict_nearby.cbs",
+      "params": {
+        "TAG": {
+          "type": "string",
+          "doc": "the creature's tag, e.g. snake"
+        },
+        "EFFECT": {
+          "type": "string",
+          "default": "minecraft:poison",
+          "doc": "any vanilla effect id"
+        },
+        "SECONDS": {
+          "type": "int",
+          "default": 5,
+          "doc": "how long it lasts"
+        },
+        "AMPLIFIER": {
+          "type": "int",
+          "default": 0,
+          "doc": "0 is level I, 1 is level II"
+        },
+        "RADIUS": {
+          "type": "number",
+          "default": 2,
+          "doc": "how close counts as touching"
+        },
+        "TARGET": {
+          "type": "string",
+          "default": "mobs",
+          "doc": "WHO it lands on: mobs (the DEFAULT -- everything but players), monsters (only hostile mobs: zombies, skeletons, creepers...), animals, players (the child), everyone, or one creature like zombies or cows. Never the child unless the wish says so: 'its bite poisons YOU' / 'breathes frost at ME' / 'launch me' -> players (or everyone, if it is meant for anybody nearby); 'breathes fire at the monsters' -> monsters; 'poison the cow' -> cows. Leave it out and the child is never caught."
+        }
+      },
+      "substitutable": [
+        "TAG",
+        "EFFECT",
+        "SECONDS",
+        "AMPLIFIER",
+        "RADIUS",
+        "TARGET"
+      ],
+      "wishes": [
+        "my snake spits poison and you get poisoned for 5 whole seconds",
+        "the spider bite should make you all slow and dizzy",
+        "i want the spider bite to make you slow for 10 seconds"
+      ],
+      "child_when": "It happens the WHOLE TIME you are close to ${TAG}.",
+      "derived": [
+        "VICTIMS"
+      ]
+    },
+    {
+      "id": "buff_allies",
+      "ability": "buff_allies",
+      "who": "other creatures carrying the ally tag",
+      "when": "continuously, within range",
+      "summary": "This creature makes its friends stronger, faster or tougher — any vanilla effect, given to everything carrying the ally tag near it.",
+      "template": "buff_allies.cbs",
+      "params": {
+        "TAG": {
+          "type": "string",
+          "doc": "the leader's tag, e.g. king"
+        },
+        "ALLY_TAG": {
+          "type": "string",
+          "doc": "the tag its friends carry, e.g. soldier"
+        },
+        "EFFECT": {
+          "type": "string",
+          "default": "minecraft:strength",
+          "doc": "any vanilla effect id"
+        },
+        "SECONDS": {
+          "type": "int",
+          "default": 15,
+          "doc": "how long it lasts"
+        },
+        "AMPLIFIER": {
+          "type": "int",
+          "default": 0,
+          "doc": "0 is level I, 1 is level II"
+        },
+        "RADIUS": {
+          "type": "number",
+          "default": 16,
+          "doc": "how far the leader's presence reaches"
+        }
+      },
+      "substitutable": [
+        "TAG",
+        "ALLY_TAG",
+        "EFFECT",
+        "SECONDS",
+        "AMPLIFIER",
+        "RADIUS"
+      ],
+      "wishes": [
+        "make the king guy give his soldiers super strength",
+        "i want my wolf to make the OTHER wolves stronger when they fight"
+      ],
+      "child_when": "It happens to ${TAG}'s friends, the whole time they stay close to ${TAG}."
+    },
+    {
+      "id": "on_hit",
+      "ability": "trigger",
+      "who": "whoever just got hurt nearby and TARGET allows (default everything but players)",
+      "when": "when something takes damage near this creature",
+      "summary": "Runs your command the moment something is hurt next to this creature — the real 'its BITE does something' shape, and it works when the victim is ANOTHER MOB, not just the child. Write @s in your command to mean whoever was hurt. Approximate: anything damaged within RADIUS counts, so a hit from something else standing nearby also fires it. IT DOES NOT NEED YOUR CREATURE TO LAND THE HIT — it keys on the VICTIM being hurt nearby, never on who hurt it, so it still fires for a creature that never attacks anything (an agent talked itself out of on_hit believing a summoned giant might never attack, and fell back to proximity; measured, it fires even with the creature's AI switched off entirely).",
+      "template": "on_hit.cbs",
+      "params": {
+        "TAG": {
+          "type": "string",
+          "doc": "the creature's tag, e.g. spider — the same id you sculpted"
+        },
+        "COMMAND": {
+          "type": "string",
+          "doc": "ONE vanilla command to run, with @s meaning WHOEVER JUST GOT HURT, e.g. 'effect give @s minecraft:slowness 10 1' or 'damage @s 4 minecraft:magic'. Things children ask for that ARE one command, and were measurably never reached for — these are not new features, they already work: \"make it BURN them\" / \"set them on fire\" -> data modify entity @s Fire set value 100s, which SETS IT ALIGHT for 5 seconds and the fire does the hurting (damage @s 4 minecraft:on_fire only HURTS: nothing catches fire. A player cannot be set alight this way, so for him use damage); other kinds of hurt -> damage @s 4 minecraft:freeze (or magic / lightning_bolt — the damage TYPE is a parameter); a ROAR as part of an effect -> playsound minecraft:entity.wither.spawn hostile @a ~ ~ ~ (its own growl, hurt cry, death cry and footsteps are its sculpt_creature voice, never a command); \"make it GROW when it fights\" -> attribute @s minecraft:generic.scale base set 2; \"make it teleport BEHIND me\" -> tp @s ^ ^ ^-2 (relative to facing, so 'behind' needs no maths); \"make it go invisible\" -> effect give @s minecraft:invisibility 10 1; \"make it knock the sword out of my hand\" -> clear @s minecraft:diamond_sword 1 — say it that way to the child, because it REMOVES the item rather than stealing it, and promising a steal would be a promise the command does not keep."
+        },
+        "RADIUS": {
+          "type": "number",
+          "default": 4,
+          "doc": "how close counts as 'this creature did it'"
+        },
+        "TARGET": {
+          "type": "string",
+          "default": "mobs",
+          "doc": "WHO it lands on: mobs (the DEFAULT -- everything but players), monsters (only hostile mobs: zombies, skeletons, creepers...), animals, players (the child), everyone, or one creature like zombies or cows. Never the child unless the wish says so: 'its bite poisons YOU' / 'breathes frost at ME' / 'launch me' -> players (or everyone, if it is meant for anybody nearby); 'breathes fire at the monsters' -> monsters; 'poison the cow' -> cows. Leave it out and the child is never caught."
+        }
+      },
+      "substitutable": [
+        "TAG",
+        "COMMAND",
+        "RADIUS",
+        "TARGET"
+      ],
+      "wishes": [
+        "make the fire wolf burn you for 5 seconds when it bites",
+        "the snake should poison the cow so it cant run away"
+      ],
+      "child_when": "It happens when ${TAG} HITS something.",
+      "derived": [
+        "VICTIMS"
+      ]
+    },
+    {
+      "id": "on_land",
+      "ability": "trigger",
+      "who": "whoever is near where it lands and TARGET allows (default everything but players)",
+      "when": "when it comes back down after at least a moment in the air: his jump on its back, its own leap, a fall",
+      "summary": "Runs your command the moment this creature LANDS: a quake, a splash, a puff of dust where it comes down. The 'it shakes the ground when it lands' shape. Fires on the landing only, never while it just stands there, so it does nothing at all until it has been in the air. Write @s in your command to mean whoever is near where it lands. A dust puff and a thump play by themselves.",
+      "template": "on_land.cbs",
+      "params": {
+        "TAG": {
+          "type": "string",
+          "doc": "the creature's tag, the same id you sculpted"
+        },
+        "COMMAND": {
+          "type": "string",
+          "doc": "ONE vanilla command, with @s ALREADY meaning each one near where it landed -- never write @e[...] here. Left out, the ground jolts them up: the 'ground shakes when it lands' wish as it is. Or e.g. 'damage @s 4' (it hurts them), 'effect give @s minecraft:slowness 5 1' (it stuns them).",
+          "default": "data modify entity @s Motion set value [0.0d,0.45d,0.0d]"
+        },
+        "RADIUS": {
+          "type": "number",
+          "default": 4,
+          "doc": "how far the landing reaches, in blocks past its own side (a big creature's reach starts at its flank, not its middle)"
+        },
+        "TARGET": {
+          "type": "string",
+          "default": "mobs",
+          "doc": "WHO it lands on: mobs (the DEFAULT -- everything but players), monsters (only hostile mobs: zombies, skeletons, creepers...), animals, players (the child), everyone, or one creature like zombies or cows. Never the child unless the wish says so: 'its bite poisons YOU' / 'breathes frost at ME' / 'launch me' -> players (or everyone, if it is meant for anybody nearby); 'breathes fire at the monsters' -> monsters; 'poison the cow' -> cows. Leave it out and the child is never caught."
+        },
+        "PARTICLE": {
+          "type": "string",
+          "default": "minecraft:cloud",
+          "doc": "the puff where it lands: minecraft:cloud | minecraft:explosion | minecraft:splash | minecraft:snowflake"
+        },
+        "SOUND": {
+          "type": "string",
+          "default": "minecraft:entity.iron_golem.step",
+          "doc": "the thump: any vanilla sound id"
+        }
+      },
+      "substitutable": [
+        "TAG",
+        "COMMAND",
+        "RADIUS",
+        "TARGET",
+        "PARTICLE",
+        "SOUND"
+      ],
+      "wishes": [
+        "my bouncy frog should squish the zombies when it lands on them",
+        "when my dragon lands it should make a big boom that hurts the creepers"
+      ],
+      "child_when": "It happens when ${TAG} lands after a jump.",
+      "derived": [
+        "VICTIMS"
+      ]
+    },
+    {
+      "id": "on_step",
+      "ability": "trigger",
+      "who": "whoever is near it as it walks and TARGET allows (default everything but players)",
+      "when": "every few blocks it WALKS along the ground; never while it stands still",
+      "summary": "Runs your command as it WALKS: every STRIDE blocks of ground it covers, at its feet. The 'it does something with every step' shape: thumps that hurt what it walks past, sparks under its feet, a squelch. It never fires while the creature stands still (so 'only when it walks' is true), and a teleport is not a step. Write @s in your command to mean whoever is near it. A puff and a footstep play by themselves. To LEAVE something behind as it walks (flowers, snow), use trail instead.",
+      "template": "on_step.cbs",
+      "params": {
+        "TAG": {
+          "type": "string",
+          "doc": "the creature's tag, the same id you sculpted"
+        },
+        "COMMAND": {
+          "type": "string",
+          "doc": "ONE vanilla command, with @s ALREADY meaning each one near it as it steps -- never write @e[...] here, TARGET says who. E.g. 'damage @s 2' (it tramples them), 'effect give @s minecraft:slowness 3 1', 'data modify entity @s Motion set value [0.0d,0.4d,0.0d]' (bumps them up and out of its way). Left out: steps you only see and hear -- big stompy feet with a SOUND.",
+          "default": "scoreboard players get @s mfam_stepk"
+        },
+        "RADIUS": {
+          "type": "number",
+          "default": 2,
+          "doc": "how close to its feet counts, in blocks past its own side (a big creature's reach starts at its flank, not its middle)"
+        },
+        "STRIDE": {
+          "type": "number",
+          "default": 2,
+          "doc": "how many blocks it walks between steps (1 = every block, 3 = big slow strides)"
+        },
+        "TARGET": {
+          "type": "string",
+          "default": "mobs",
+          "doc": "WHO it lands on: mobs (the DEFAULT -- everything but players), monsters (only hostile mobs: zombies, skeletons, creepers...), animals, players (the child), everyone, or one creature like zombies or cows. Never the child unless the wish says so: 'its bite poisons YOU' / 'breathes frost at ME' / 'launch me' -> players (or everyone, if it is meant for anybody nearby); 'breathes fire at the monsters' -> monsters; 'poison the cow' -> cows. Leave it out and the child is never caught."
+        },
+        "PARTICLE": {
+          "type": "string",
+          "default": "minecraft:poof",
+          "doc": "a puff under its feet each step: minecraft:poof | minecraft:crit | minecraft:snowflake | minecraft:flame"
+        },
+        "SOUND": {
+          "type": "string",
+          "default": "minecraft:entity.ravager.step",
+          "doc": "the footstep: any vanilla sound id"
+        }
+      },
+      "substitutable": [
+        "TAG",
+        "COMMAND",
+        "RADIUS",
+        "STRIDE",
+        "TARGET",
+        "PARTICLE",
+        "SOUND"
+      ],
+      "wishes": [
+        "my rock troll should crack the ground and hurt the skeletons as it walks",
+        "a robot whose feet zap the zombies with every step"
+      ],
+      "child_when": "It happens as ${TAG} WALKS, with every few steps.",
+      "derived": [
+        "VICTIMS",
+        "STRIDE_TENTHS"
+      ]
+    },
+    {
+      "id": "periodic",
+      "ability": "trigger",
+      "who": "whoever the command selects",
+      "when": "every PERIOD_TICKS ticks (20 ticks = 1 second)",
+      "summary": "Runs your command on a timer — every few seconds, forever. The 'big fire every 15-30 seconds' shape, and how roars, waves of minions and auras are built.",
+      "template": "periodic.cbs",
+      "params": {
+        "TAG": {
+          "type": "string",
+          "doc": "the creature's tag, e.g. spider — the same id you sculpted"
+        },
+        "COMMAND": {
+          "type": "string",
+          "doc": "ONE vanilla command to run when it fires, e.g. 'effect give @a[distance=..4] minecraft:poison 5 1' or 'damage @e[tag=enemy,distance=..6] 4 minecraft:magic'. Write the target selector straight into it — that is how any effect and any target are expressed without a new template. Things children ask for that ARE one command, and were measurably never reached for — these are not new features, they already work: \"make it BURN them\" / \"set them on fire\" -> data modify entity @s Fire set value 100s, which SETS IT ALIGHT for 5 seconds and the fire does the hurting (damage @s 4 minecraft:on_fire only HURTS: nothing catches fire. A player cannot be set alight this way, so for him use damage); other kinds of hurt -> damage @s 4 minecraft:freeze (or magic / lightning_bolt — the damage TYPE is a parameter); a ROAR as part of an effect -> playsound minecraft:entity.wither.spawn hostile @a ~ ~ ~ (its own growl, hurt cry, death cry and footsteps are its sculpt_creature voice, never a command); \"make it GROW when it fights\" -> attribute @s minecraft:generic.scale base set 2; \"make it teleport BEHIND me\" -> tp @s ^ ^ ^-2 (relative to facing, so 'behind' needs no maths); \"make it go invisible\" -> effect give @s minecraft:invisibility 10 1; \"make it knock the sword out of my hand\" -> clear @s minecraft:diamond_sword 1 — say it that way to the child, because it REMOVES the item rather than stealing it, and promising a steal would be a promise the command does not keep."
+        },
+        "PERIOD_TICKS": {
+          "type": "int",
+          "default": 200,
+          "doc": "20 ticks = 1 second, so 200 is every 10 seconds"
+        }
+      },
+      "substitutable": [
+        "TAG",
+        "COMMAND",
+        "PERIOD_TICKS"
+      ],
+      "wishes": [
+        "summon a dragon and make it BREATHE FIRE! Big fire every 15-30 seconds!",
+        "the gorilla should pound his chest and roar"
+      ],
+      "child_when": "${TAG} does it over and over all by itself — you do not have to do anything."
+    },
+    {
+      "id": "proximity",
+      "ability": "trigger",
+      "who": "whoever the command selects",
+      "when": "continuously, every tick",
+      "summary": "Runs your command over and over from this creature's position — the cheapest and most reliable trigger. Good for auras and 'anything near it' effects.",
+      "template": "proximity.cbs",
+      "params": {
+        "TAG": {
+          "type": "string",
+          "doc": "the creature's tag, e.g. spider — the same id you sculpted"
+        },
+        "COMMAND": {
+          "type": "string",
+          "doc": "ONE vanilla command to run when it fires, e.g. 'effect give @a[distance=..4] minecraft:poison 5 1' or 'damage @e[tag=enemy,distance=..6] 4 minecraft:magic'. Write the target selector straight into it — that is how any effect and any target are expressed without a new template. Things children ask for that ARE one command, and were measurably never reached for — these are not new features, they already work: \"make it BURN them\" / \"set them on fire\" -> data modify entity @s Fire set value 100s, which SETS IT ALIGHT for 5 seconds and the fire does the hurting (damage @s 4 minecraft:on_fire only HURTS: nothing catches fire. A player cannot be set alight this way, so for him use damage); other kinds of hurt -> damage @s 4 minecraft:freeze (or magic / lightning_bolt — the damage TYPE is a parameter); a ROAR as part of an effect -> playsound minecraft:entity.wither.spawn hostile @a ~ ~ ~ (its own growl, hurt cry, death cry and footsteps are its sculpt_creature voice, never a command); \"make it GROW when it fights\" -> attribute @s minecraft:generic.scale base set 2; \"make it teleport BEHIND me\" -> tp @s ^ ^ ^-2 (relative to facing, so 'behind' needs no maths); \"make it go invisible\" -> effect give @s minecraft:invisibility 10 1; \"make it knock the sword out of my hand\" -> clear @s minecraft:diamond_sword 1 — say it that way to the child, because it REMOVES the item rather than stealing it, and promising a steal would be a promise the command does not keep."
+        }
+      },
+      "substitutable": [
+        "TAG",
+        "COMMAND"
+      ],
+      "wishes": [
+        "my snake spits poison and you get poisoned for 5 whole seconds",
+        "make the king guy give his soldiers super strength"
+      ],
+      "child_when": "It happens the WHOLE TIME you are close to ${TAG}."
+    },
+    {
+      "id": "impulse",
+      "ability": "impulse",
+      "kind": "pseudo-entry",
+      "who": "whoever the trigger catches and TARGET allows (default everything but players)",
+      "when": "on the chosen trigger, then spread over RAMP_TICKS ticks",
+      "summary": "push, launch or PULL creatures around -- knock back, send flying, or suck in like a magnet. Spread over ticks so it reads as a hit, not a teleport.",
+      "params": {
+        "TAG": {
+          "type": "string",
+          "doc": "the creature doing the pushing, e.g. giant"
+        },
+        "TRIGGER": {
+          "type": "string",
+          "required": true,
+          "doc": "REQUIRED, no default -- say which one, because guessing builds the wrong ability silently. Match the child's own words: on_hit = they say when it HITS/punches/bites/smashes something ('whack me so hard i go flying'); proximity = they name a DISTANCE or say near/close ('from 15 blocks away', 'when you get close', 'pulls everything to it'); periodic = they name a TIME or say every/keeps ('every 5 seconds', 'stomps every 10 seconds') -- use with EVERY_SECONDS. If the wish names BOTH a contact verb AND a time ('knocks everyone back every 5 seconds'), the TIME WINS -- periodic. If the wish genuinely does not say WHEN, choose on_hit: an always-on aura cannot be escaped and reads as the game being broken, while a hit that guessed wrong sits quietly and can be tested on purpose. AND DO NOT TALK YOURSELF OUT OF on_hit: it does NOT need the creature to attack, or even to be ABLE to attack. It fires on the VICTIM's own hurt state within RADIUS and never asks who dealt the damage, so it works when the child hits the creature, when another mob does, and when the creature has no AI at all -- measured with the AI switched off. A real wish was lost to this: the agent chose on_hit three times, decided a summoned giant might never swing, and switched to proximity so that something would happen."
+        },
+        "DIRECTION": {
+          "type": "string",
+          "default": "away",
+          "doc": "away (knock back) | up (launch skyward) | down (drag under, e.g. sucked into deep water) | toward (pull in, like a magnet or black hole)"
+        },
+        "STRENGTH": {
+          "type": "string",
+          "default": "shove",
+          "doc": "nudge | shove | launch | huge. WORDS, not numbers -- a child says 'so hard i go flying'"
+        },
+        "FEEL": {
+          "type": "string",
+          "default": "ramp",
+          "doc": "ramp (spread over ticks so you SEE it -- almost always right) | snap (one instant shove; only when the wish really means instantaneous)"
+        },
+        "RADIUS": {
+          "type": "number",
+          "default": 4,
+          "doc": "how close counts"
+        },
+        "TARGET": {
+          "type": "string",
+          "default": "mobs",
+          "doc": "WHO gets pushed -- WHO it lands on: mobs (the DEFAULT -- everything but players), monsters (only hostile mobs: zombies, skeletons, creepers...), animals, players (the child), everyone, or one creature like zombies or cows. Never the child unless the wish says so: 'its bite poisons YOU' / 'breathes frost at ME' / 'launch me' -> players (or everyone, if it is meant for anybody nearby); 'breathes fire at the monsters' -> monsters; 'poison the cow' -> cows. Leave it out and the child is never caught. 'my dragon should fling the CREEPERS' -> creepers."
+        },
+        "EVERY_SECONDS": {
+          "type": "number",
+          "default": 0,
+          "doc": "only with TRIGGER=periodic: how often it goes off, e.g. 5 for 'every 5 seconds'."
+        },
+        "SOFT_LANDING": {
+          "type": "string",
+          "default": "yes",
+          "doc": "yes | no. Launching someone into the sky is lethal on the way DOWN; yes gives them slow falling so the fun part is not followed by a death screen. Default yes for up-launches."
+        }
+      },
+      "substitutable": [
+        "TAG",
+        "TRIGGER",
+        "DIRECTION",
+        "STRENGTH",
+        "FEEL",
+        "RADIUS"
+      ],
+      "wishes": [
+        "i want the giant to WHACK me so hard i go flying",
+        "make the monster launch me way up in the SKY",
+        "my magnet robot should pull all the zombies to him"
+      ],
+      "template": "impulse.cbs",
+      "derived": [
+        "VICTIM_SELECTOR",
+        "MOVE",
+        "RAMP_TICKS",
+        "PARTICLE",
+        "SOUND",
+        "PERIOD_TICKS",
+        "FIRE_IF",
+        "LANDING"
+      ],
+      "_derived_note": "Filled by apply_effect from the friendly words above, never by the agent. Kept OUT of `params` on purpose: params is the surface the agent is offered, and offering it a raw selector or a Motion vector would undo the entire point of asking for direction and strength in words.",
+      "child_when": "It happens when ${TAG} sets it off, and you get pushed."
+    },
+    {
+      "id": "on_death",
+      "ability": "death_sequence",
+      "template": "on_death.cbs",
+      "summary": "the creature's LAST ACT — runs once, the moment it dies, where it fell",
+      "who": "run at the dying creature's own position",
+      "when": "once, the tick after the creature stops being alive, at the place it fell (cannot tell death from despawning)",
+      "child_when": "It happens when ${TAG} DIES.",
+      "params": {
+        "TAG": {
+          "type": "string",
+          "doc": "the creature whose death sets it off"
+        },
+        "COMMAND": {
+          "type": "string",
+          "doc": "what happens when it dies, e.g. summon lightning_bolt ~ ~ ~ or particle minecraft:explosion ~ ~1 ~ 1 1 1 0.1 40 force Things children ask for that ARE one command, and were measurably never reached for — these are not new features, they already work: \"make it BURN them\" / \"set them on fire\" -> data modify entity @s Fire set value 100s, which SETS IT ALIGHT for 5 seconds and the fire does the hurting (damage @s 4 minecraft:on_fire only HURTS: nothing catches fire. A player cannot be set alight this way, so for him use damage); other kinds of hurt -> damage @s 4 minecraft:freeze (or magic / lightning_bolt — the damage TYPE is a parameter); a ROAR as part of an effect -> playsound minecraft:entity.wither.spawn hostile @a ~ ~ ~ (its own growl, hurt cry, death cry and footsteps are its sculpt_creature voice, never a command); \"make it GROW when it fights\" -> attribute @s minecraft:generic.scale base set 2; \"make it teleport BEHIND me\" -> tp @s ^ ^ ^-2 (relative to facing, so 'behind' needs no maths); \"make it go invisible\" -> effect give @s minecraft:invisibility 10 1; \"make it knock the sword out of my hand\" -> clear @s minecraft:diamond_sword 1 — say it that way to the child, because it REMOVES the item rather than stealing it, and promising a steal would be a promise the command does not keep."
+        }
+      },
+      "derived": [],
+      "substitutable": [
+        "COMMAND"
+      ],
+      "wishes": [
+        "when the boss dies make a HUGE explosion",
+        "when my dragon dies he should drop treasure everywhere",
+        "when he dies make lightning strike where he fell"
+      ]
+    },
+    {
+      "id": "on_low_health",
+      "ability": "phase_change",
+      "template": "on_low_health.cbs",
+      "summary": "PHASE TWO — fires once when the creature drops below a share of its health, e.g. half",
+      "who": "run at the wounded creature itself",
+      "when": "once, the first time its health falls below PERCENT of full",
+      "child_when": "It happens when ${TAG} is badly hurt and nearly beaten.",
+      "params": {
+        "TAG": {
+          "type": "string",
+          "doc": "the creature to watch"
+        },
+        "PERCENT": {
+          "type": "number",
+          "default": 50,
+          "doc": "how hurt: 50 = half health, 25 = nearly beaten. A whole number."
+        },
+        "COMMAND": {
+          "type": "string",
+          "doc": "what happens when it gets there, e.g. effect give @s minecraft:strength 999 2 true, or particle/playsound for a transformation Things children ask for that ARE one command, and were measurably never reached for — these are not new features, they already work: \"make it BURN them\" / \"set them on fire\" -> data modify entity @s Fire set value 100s, which SETS IT ALIGHT for 5 seconds and the fire does the hurting (damage @s 4 minecraft:on_fire only HURTS: nothing catches fire. A player cannot be set alight this way, so for him use damage); other kinds of hurt -> damage @s 4 minecraft:freeze (or magic / lightning_bolt — the damage TYPE is a parameter); a ROAR as part of an effect -> playsound minecraft:entity.wither.spawn hostile @a ~ ~ ~ (its own growl, hurt cry, death cry and footsteps are its sculpt_creature voice, never a command); \"make it GROW when it fights\" -> attribute @s minecraft:generic.scale base set 2; \"make it teleport BEHIND me\" -> tp @s ^ ^ ^-2 (relative to facing, so 'behind' needs no maths); \"make it go invisible\" -> effect give @s minecraft:invisibility 10 1; \"make it knock the sword out of my hand\" -> clear @s minecraft:diamond_sword 1 — say it that way to the child, because it REMOVES the item rather than stealing it, and promising a steal would be a promise the command does not keep."
+        }
+      },
+      "derived": [],
+      "substitutable": [
+        "COMMAND"
+      ],
+      "wishes": [
+        "when the boss is half dead he should get ANGRY and go faster",
+        "when he's nearly beaten he glows red and hits harder",
+        "when the wolf is nearly dead make him run away super fast"
+      ]
+    },
+    {
+      "id": "lingering_zone",
+      "ability": "area_denial",
+      "template": "lingering_zone.cbs",
+      "summary": "leave a DANGEROUS PATCH behind — a blizzard, a ring of fire, a poison cloud that stays where it was dropped and then fades",
+      "who": "anything standing in the patch that TARGET allows (default everything but players), except the creature that made it",
+      "when": "the patch is dropped on a timer and then lives its own life for LASTS_SECONDS",
+      "child_when": "${TAG} leaves a patch behind — stand in it and it gets you.",
+      "params": {
+        "TAG": {
+          "type": "string",
+          "doc": "the creature that leaves the patch"
+        },
+        "COMMAND": {
+          "type": "string",
+          "doc": "what happens to whoever stands in it, e.g. effect give @s minecraft:slowness 4 2 true, or damage @s 2 minecraft:magic Things children ask for that ARE one command, and were measurably never reached for — these are not new features, they already work: \"make it BURN them\" / \"set them on fire\" -> data modify entity @s Fire set value 100s, which SETS IT ALIGHT for 5 seconds and the fire does the hurting (damage @s 4 minecraft:on_fire only HURTS: nothing catches fire. A player cannot be set alight this way, so for him use damage); other kinds of hurt -> damage @s 4 minecraft:freeze (or magic / lightning_bolt — the damage TYPE is a parameter); a ROAR as part of an effect -> playsound minecraft:entity.wither.spawn hostile @a ~ ~ ~ (its own growl, hurt cry, death cry and footsteps are its sculpt_creature voice, never a command); \"make it GROW when it fights\" -> attribute @s minecraft:generic.scale base set 2; \"make it teleport BEHIND me\" -> tp @s ^ ^ ^-2 (relative to facing, so 'behind' needs no maths); \"make it go invisible\" -> effect give @s minecraft:invisibility 10 1; \"make it knock the sword out of my hand\" -> clear @s minecraft:diamond_sword 1 — say it that way to the child, because it REMOVES the item rather than stealing it, and promising a steal would be a promise the command does not keep."
+        },
+        "PARTICLE": {
+          "type": "string",
+          "default": "minecraft:snowflake",
+          "doc": "what the patch looks like: minecraft:snowflake (blizzard) | minecraft:flame (fire) | minecraft:sneeze (poison gas) | minecraft:soul_fire_flame"
+        },
+        "SOUND": {
+          "type": "string",
+          "default": "minecraft:block.powder_snow.place",
+          "doc": "the noise when a patch is dropped"
+        },
+        "RADIUS": {
+          "type": "number",
+          "default": 4,
+          "doc": "how big the patch is. NOTE: the patch is a filled circle, not a hollow ring — 'a ring of fire' comes out as a disc of fire around the creature."
+        },
+        "DENSITY": {
+          "type": "number",
+          "default": 40,
+          "doc": "how thick the cloud looks. 40 is a clear patch; 120 is a wall you cannot see through"
+        },
+        "EVERY_SECONDS": {
+          "type": "number",
+          "default": 6,
+          "doc": "how often a new patch is dropped"
+        },
+        "LASTS_SECONDS": {
+          "type": "number",
+          "default": 8,
+          "doc": "how long each patch stays before it fades. A patch that never fades makes the world unwalkable."
+        },
+        "TARGET": {
+          "type": "string",
+          "default": "mobs",
+          "doc": "WHO it lands on: mobs (the DEFAULT -- everything but players), monsters (only hostile mobs: zombies, skeletons, creepers...), animals, players (the child), everyone, or one creature like zombies or cows. Never the child unless the wish says so: 'its bite poisons YOU' / 'breathes frost at ME' / 'launch me' -> players (or everyone, if it is meant for anybody nearby); 'breathes fire at the monsters' -> monsters; 'poison the cow' -> cows. Leave it out and the child is never caught."
+        }
+      },
+      "derived": [
+        "PERIOD_TICKS",
+        "LASTS_TICKS",
+        "VICTIMS"
+      ],
+      "substitutable": [
+        "COMMAND",
+        "PARTICLE",
+        "TARGET"
+      ],
+      "wishes": [
+        "he makes a blizzerd that freezes you",
+        "he bursts into a ring of fire",
+        "the tree makes a poison leaf cloud"
+      ]
+    },
+    {
+      "id": "breath_cone",
+      "ability": "breath_cone",
+      "template": "breath_cone.cbs",
+      "summary": "BREATHE something OUT OF ITS MOUTH — the breath starts at the creature's head, at eye height, and sprays FORWARD along the way it is facing (not a ring around it). Fire, frost or poison.",
+      "who": "whoever is caught in front of the creature and TARGET allows (default everything but players)",
+      "when": "a burst of BREATH_SECONDS, every EVERY_SECONDS",
+      "child_when": "${TAG} breathes it out of its MOUTH — stand in front of it to see.",
+      "params": {
+        "TAG": {
+          "type": "string",
+          "doc": "the creature doing the breathing"
+        },
+        "COMMAND": {
+          "type": "string",
+          "doc": "what it does to whoever is caught in the breath, e.g. data modify entity @s Fire set value 100s for a FIRE breath (it sets them alight), effect give @s minecraft:slowness 4 2 for frost, effect give @s minecraft:poison 4 1 for poison. Things children ask for that ARE one command, and were measurably never reached for — these are not new features, they already work: \"make it BURN them\" / \"set them on fire\" -> data modify entity @s Fire set value 100s, which SETS IT ALIGHT for 5 seconds and the fire does the hurting (damage @s 4 minecraft:on_fire only HURTS: nothing catches fire. A player cannot be set alight this way, so for him use damage); other kinds of hurt -> damage @s 4 minecraft:freeze (or magic / lightning_bolt — the damage TYPE is a parameter); a ROAR as part of an effect -> playsound minecraft:entity.wither.spawn hostile @a ~ ~ ~ (its own growl, hurt cry, death cry and footsteps are its sculpt_creature voice, never a command); \"make it GROW when it fights\" -> attribute @s minecraft:generic.scale base set 2; \"make it teleport BEHIND me\" -> tp @s ^ ^ ^-2 (relative to facing, so 'behind' needs no maths); \"make it go invisible\" -> effect give @s minecraft:invisibility 10 1; \"make it knock the sword out of my hand\" -> clear @s minecraft:diamond_sword 1 — say it that way to the child, because it REMOVES the item rather than stealing it, and promising a steal would be a promise the command does not keep."
+        },
+        "PARTICLE": {
+          "type": "string",
+          "default": "minecraft:flame",
+          "doc": "what the breath looks like: minecraft:flame (fire) | minecraft:snowflake (frost) | minecraft:sneeze (poison) | minecraft:soul_fire_flame (blue fire) | minecraft:dragon_breath"
+        },
+        "SOUND": {
+          "type": "string",
+          "default": "minecraft:entity.ender_dragon.growl",
+          "doc": "the roar that goes with it"
+        },
+        "REACH": {
+          "type": "number",
+          "default": 6,
+          "doc": "how far the breath goes, in blocks"
+        },
+        "DENSITY": {
+          "type": "number",
+          "default": 25,
+          "doc": "how thick the breath looks"
+        },
+        "BREATH_SECONDS": {
+          "type": "number",
+          "default": 1.5,
+          "doc": "how long each burst lasts"
+        },
+        "EVERY_SECONDS": {
+          "type": "number",
+          "default": 8,
+          "doc": "how often it breathes. 'every 15-30 seconds' means about 20."
+        },
+        "TARGET": {
+          "type": "string",
+          "default": "mobs",
+          "doc": "WHO it lands on: mobs (the DEFAULT -- everything but players), monsters (only hostile mobs: zombies, skeletons, creepers...), animals, players (the child), everyone, or one creature like zombies or cows. Never the child unless the wish says so: 'its bite poisons YOU' / 'breathes frost at ME' / 'launch me' -> players (or everyone, if it is meant for anybody nearby); 'breathes fire at the monsters' -> monsters; 'poison the cow' -> cows. Leave it out and the child is never caught."
+        }
+      },
+      "derived": [
+        "PERIOD_TICKS",
+        "BREATH_TICKS",
+        "VICTIMS"
+      ],
+      "substitutable": [
+        "COMMAND",
+        "PARTICLE",
+        "TARGET"
+      ],
+      "wishes": [
+        "summon a dragon and make it BREATHE FIRE! Big fire every 15-30 seconds!",
+        "make sure his fire breath SHOOTS FROM HIS MOUTH!",
+        "my ice dragon should breathe freezing frost at you"
+      ]
+    },
+    {
+      "id": "erupt_blocks",
+      "ability": "block_manipulation",
+      "template": "erupt_blocks.cbs",
+      "summary": "make the GROUND ERUPT — spikes, pillars or a wall of blocks thrown up around the creature, which then sink away again. The only ability that changes the world itself.",
+      "who": "anything caught in the eruption, plus the blocks themselves",
+      "when": "on the creature's own timer, and each eruption lasts LASTS_SECONDS before the ground takes it back",
+      "child_when": "${TAG} makes the ground ERUPT around it — the blocks come up and then sink away again.",
+      "params": {
+        "TAG": {
+          "type": "string",
+          "doc": "the creature that slams the ground"
+        },
+        "BLOCK": {
+          "type": "string",
+          "default": "minecraft:amethyst_block",
+          "doc": "what comes out of the ground: minecraft:amethyst_block | minecraft:pointed_dripstone | minecraft:magma_block | minecraft:ice | minecraft:dirt (a wave of earth) | any block"
+        },
+        "COMMAND": {
+          "type": "string",
+          "default": "damage @s 2 minecraft:magic",
+          "doc": "what happens to whoever is caught in it Things children ask for that ARE one command, and were measurably never reached for — these are not new features, they already work: \"make it BURN them\" / \"set them on fire\" -> data modify entity @s Fire set value 100s, which SETS IT ALIGHT for 5 seconds and the fire does the hurting (damage @s 4 minecraft:on_fire only HURTS: nothing catches fire. A player cannot be set alight this way, so for him use damage); other kinds of hurt -> damage @s 4 minecraft:freeze (or magic / lightning_bolt — the damage TYPE is a parameter); a ROAR as part of an effect -> playsound minecraft:entity.wither.spawn hostile @a ~ ~ ~ (its own growl, hurt cry, death cry and footsteps are its sculpt_creature voice, never a command); \"make it GROW when it fights\" -> attribute @s minecraft:generic.scale base set 2; \"make it teleport BEHIND me\" -> tp @s ^ ^ ^-2 (relative to facing, so 'behind' needs no maths); \"make it go invisible\" -> effect give @s minecraft:invisibility 10 1; \"make it knock the sword out of my hand\" -> clear @s minecraft:diamond_sword 1 — say it that way to the child, because it REMOVES the item rather than stealing it, and promising a steal would be a promise the command does not keep."
+        },
+        "PARTICLE": {
+          "type": "string",
+          "default": "minecraft:crit",
+          "doc": "the burst as it erupts: minecraft:crit | minecraft:explosion | minecraft:cloud"
+        },
+        "SOUND": {
+          "type": "string",
+          "default": "minecraft:block.deepslate.break",
+          "doc": "the crunch when the ground breaks open"
+        },
+        "RADIUS": {
+          "type": "number",
+          "default": 3,
+          "doc": "how wide the eruption is, in blocks"
+        },
+        "HEIGHT": {
+          "type": "number",
+          "default": 2,
+          "doc": "how tall the spikes stand"
+        },
+        "EVERY_SECONDS": {
+          "type": "number",
+          "default": 6,
+          "doc": "how often it slams the ground"
+        },
+        "LASTS_SECONDS": {
+          "type": "number",
+          "default": 4,
+          "doc": "how long before the ground takes the blocks back. It ALWAYS takes them back — a spike field that stays turns the child's world into a quarry."
+        }
+      },
+      "derived": [
+        "PERIOD_TICKS",
+        "LASTS_TICKS"
+      ],
+      "substitutable": [
+        "COMMAND",
+        "BLOCK",
+        "PARTICLE"
+      ],
+      "wishes": [
+        "he slams and amythist spikes come out of the ground",
+        "when he smashes the ground the blocks fly up",
+        "my giant should stomp every 10 seconds and make a big wave in the dirt"
+      ]
+    },
+    {
+      "id": "colour_cycle",
+      "ability": "recolour",
+      "template": "colour_cycle.cbs",
+      "summary": "RECOLOUR AN ORDINARY MOB — make a vanilla mob SHIMMER THROUGH ITS OWN COLOURS for ever: a RAINBOW axolotl, a rainbow sheep, a colour-changing parrot. Use this INSTEAD of sculpting a new creature when the child names a vanilla mob plus a colour or 'rainbow': summon the real mob with a tag, then apply this to that tag. Works on: axolotl, sheep, shulker, parrot, rabbit, llama, trader_llama, horse, mooshroom, fox, frog, cat.",
+      "who": "the tagged mob itself — its own colour changes",
+      "when": "all the time: one colour step every EVERY_SECONDS",
+      "child_when": "${TAG} keeps changing colour all by itself — just watch it!",
+      "params": {
+        "TAG": {
+          "type": "string",
+          "doc": "the mob to recolour (the tag you summoned it with)"
+        },
+        "MOB": {
+          "type": "string",
+          "doc": "which vanilla mob it is, so the right colours are used: axolotl, sheep, shulker, parrot, rabbit, llama, trader_llama, horse, mooshroom, fox, frog, cat. Any other mob has no colours to step through."
+        },
+        "EVERY_SECONDS": {
+          "type": "number",
+          "default": 1,
+          "doc": "how long each colour lasts. 1 is a gentle shimmer; 0.25 is a disco."
+        }
+      },
+      "derived": [
+        "PERIOD_TICKS",
+        "KEY",
+        "STEPS",
+        "COUNT"
+      ],
+      "substitutable": [],
+      "wishes": [
+        "make my axolotl rainbow coloured",
+        "a sheep that changes colour all the time",
+        "a rainbow parrot"
+      ]
+    },
+    {
+      "id": "trail",
+      "ability": "leave_behind",
+      "template": "trail.cbs",
+      "summary": "leave a TRAIL behind it as it walks — snow, flowers, a carpet of colour — that fades after a while. For 'leaves ice / flowers / rainbow hoofprints behind it'. It only fills air and only ever takes back its own block.",
+      "who": "the ground it walks over (only empty air above solid ground)",
+      "when": "as it moves: a mark every few steps, each fading after LASTS_SECONDS",
+      "child_when": "${TAG} leaves a trail behind it as it walks, and the trail fades away after a while.",
+      "derived": [
+        "LASTS_TICKS",
+        "STEP_TICKS"
+      ],
+      "substitutable": [
+        "BLOCK",
+        "PARTICLE"
+      ],
+      "params": {
+        "TAG": {
+          "type": "string",
+          "doc": "the creature that leaves the trail"
+        },
+        "BLOCK": {
+          "type": "string",
+          "default": "minecraft:snow",
+          "doc": "what it leaves — a THIN thing it can walk over: minecraft:snow (frost, ice, snow) | minecraft:poppy, minecraft:dandelion, minecraft:cornflower (flowers) | minecraft:red_carpet … (colour) | minecraft:moss_carpet. A full block is refused: it would be put round the creature's own feet."
+        },
+        "PARTICLE": {
+          "type": "string",
+          "default": "minecraft:happy_villager",
+          "doc": "a small sparkle where each mark lands: minecraft:happy_villager | minecraft:snowflake | minecraft:cherry_leaves | minecraft:glow"
+        },
+        "LASTS_SECONDS": {
+          "type": "number",
+          "default": 10,
+          "doc": "how long each mark stays before it fades. It ALWAYS fades — a trail that stays turns his world into carpet."
+        },
+        "MOST": {
+          "type": "number",
+          "default": 60,
+          "doc": "the most marks down at once"
+        }
+      },
+      "wishes": [
+        "a frost wolf that leaves frost wherever it walks",
+        "a slug that leaves a line of daisies behind it",
+        "a pony that leaves coloured footprints"
+      ]
+    },
+    {
+      "id": "drops",
+      "ability": "leave_behind",
+      "template": "drops.cbs",
+      "summary": "DROPS an item at its feet every so often, for him to pick up — honey, eggs, flowers. Stops while MOST of its drops lie unclaimed, so it never floods the world.",
+      "who": "nobody: an item appears where it stands",
+      "when": "every EVERY_SECONDS, while fewer than MOST of its drops are lying about",
+      "child_when": "${TAG} drops something for you every so often — pick it up!",
+      "derived": [
+        "PERIOD_TICKS"
+      ],
+      "substitutable": [
+        "ITEM",
+        "SOUND"
+      ],
+      "params": {
+        "TAG": {
+          "type": "string",
+          "doc": "the creature that drops things"
+        },
+        "ITEM": {
+          "type": "string",
+          "default": "minecraft:honey_bottle",
+          "doc": "the item id it drops: minecraft:honey_bottle | minecraft:egg | minecraft:fire_charge (a 'fire egg') | minecraft:poppy | any item"
+        },
+        "SOUND": {
+          "type": "string",
+          "default": "minecraft:entity.chicken.egg",
+          "doc": "the little noise when it drops one"
+        },
+        "EVERY_SECONDS": {
+          "type": "number",
+          "default": 20,
+          "doc": "how often it drops one"
+        },
+        "MOST": {
+          "type": "number",
+          "default": 6,
+          "doc": "it stops while this many of its drops lie unclaimed"
+        }
+      },
+      "wishes": [
+        "a hen that lays golden eggs for me",
+        "a sheep that drops a cookie now and then",
+        "a little dragon that leaves fire charges for me"
+      ]
+    }
+  ],
+  "_child_when_note": "The sentence the CHILD is told, spoken at finish_building and derived from what was actually BUILT rather than from what the agent meant to build. Separate from `when`, which is judge-facing and names parameters (`every PERIOD_TICKS ticks`) a seven-year-old cannot read. Required on every entry: an ability nobody can be told how to trigger is an ability the child concludes is broken."
+}

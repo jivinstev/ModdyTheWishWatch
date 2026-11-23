@@ -1,0 +1,15 @@
+{
+  "count": 1,
+  "effects": [
+    "teleport"
+  ],
+  "id": "teleport_wand_teleport",
+  "name": "Teleport Wand",
+  "params": {
+    "SAFE": "yes"
+  },
+  "parts": [],
+  "properties": {},
+  "shape": "held",
+  "variants": []
+}

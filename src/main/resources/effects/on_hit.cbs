@@ -1,0 +1,17 @@
+# TRIGGER: on_hit — something took damage next to this creature. WORKS FOR MOBS AND PLAYERS ALIKE.
+#
+# The largest trigger by coverage: 11 of 32 abilities, including the top three by demand.
+#
+# WHY HurtTime AND NOT A SCOREBOARD. The obvious build uses the damage_taken scoreboard criterion —
+# and that is a PLAYER STATISTIC. Mobs cannot have one, so it silently covers only wishes where the
+# victim is the child. Nineteen of the corpus's generated wishes name a MOB as the victim ("freeze
+# the zombies", "poison the cow", "eat the cow"), and mob-versus-mob fights are a thing this game
+# is asked for constantly. HurtTime is NBT every living entity carries: the game sets it to 10 the
+# tick something is damaged, then counts it down.
+#
+# The final executor is the VICTIM, so write @s in your command to mean "whoever just got hurt".
+# WHO can be a victim is TARGET (default: everything but players), filled in as VICTIMS --:
+# a bite that poisons "the monsters" poisoned the child, because nothing here said who.
+clock tick
+    /execute as @e[tag=${TAG}] at @s as @e[nbt={HurtTime:10s},distance=..${RADIUS},tag=!${TAG}${VICTIMS}] run ${COMMAND}
+end

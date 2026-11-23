@@ -1,0 +1,18 @@
+{
+  "_comment": "2026-10-12. One player's own watch tiles as the mod exports them (WatchPanelSnapshot.own), a made-up player and made-up tiles. WatchViewGoldenTest builds it from cells, and a reader of the export draws it from this same file, so the two sides cannot drift apart: change it here and both must agree.",
+  "store": "watch-own",
+  "v": 1,
+  "player": "00000000-0000-0000-0000-0000000000aa",
+  "atMs": 1760241600000,
+  "cells": [
+    {"family": "CREATION", "name": "Giant T-Rex  ✨", "id": "giant_trex", "recipeId": "t_rex_ride_1a2b",
+     "lore": ["species", "❤ 80 health", "⚔ 9 damage", "📏 6 blocks tall", "💨 0.3 speed", "rideable", "Click to make another · Right-click for more"],
+     "face": {"item": "minecraft:egg"}},
+    {"family": "CREATION", "name": "Tiny Cookie", "id": "id:tiny_cookie_grow",
+     "lore": ["item", "✋ food — 8 of them", "💥 You get TINY — and after a while you go back to normal.", "🎨 brown", "🔁 made once", "size ×0.3, lasts 60 seconds", "Click to have a look at it"],
+     "face": {"made": "item", "look": {"sprite": "food_round", "color": "#B5793A", "effects": ["grow"]}}},
+    {"family": "PRESET", "name": "✨ Rainbow castle", "recipeId": "rainbow_castle_9f8e",
+     "lore": ["Click to wish for this! · Right-click for more"],
+     "face": {"made": "wish", "look": {"sprite": "balloon", "color": "#e33bc8"}}}
+  ]
+}

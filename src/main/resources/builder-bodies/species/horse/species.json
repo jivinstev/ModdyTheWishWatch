@@ -1,0 +1,20 @@
+{
+  "vehicle": false,
+  "armor": 0.0,
+  "body": "humanoid",
+  "createdAt": 1793163484770,
+  "damage": 0.0,
+  "health": 30.0,
+  "id": "horse",
+  "knockbackResistance": 0.0,
+  "modelKey": "horse",
+  "name": "Horse",
+  "powers": [
+    "friendly"
+  ],
+  "scale": 1.0,
+  "speed": 0.25,
+  "texture": "zombie",
+  "tint": "#FFFFFF",
+  "updatedAt": 1793163484770
+}

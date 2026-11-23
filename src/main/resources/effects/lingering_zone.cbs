@@ -1,0 +1,37 @@
+# LINGERING ZONE — a patch of ground that STAYS dangerous after the creature has moved on.
+#
+# WHY THIS CANNOT BE A COMMAND UNDER AN EXISTING TRIGGER. Everything the catalogue does so far
+# happens AT the creature: an aura moves with it, a hit lands where it hit. "a blizzerd that freezes
+# you" and "he bursts into a RING OF FIRE" are different -- the danger is left behind at a PLACE,
+# and it has a lifetime of its own. That needs something in the world to carry it, which no
+# parameter of an existing template can supply.
+#
+# The marker is an armour stand, which is the cheapest entity that holds a tag and a scoreboard
+# score and does not wander off. It is invisible and cannot be hit, so the only thing the child sees
+# is the effect itself.
+#
+# IT EXPIRES. A permanent hazard is not what anybody wished for -- a blizzard that never ends turns
+# the world into a place you cannot walk. mfam_zone counts down and the marker removes itself.
+reset
+    /scoreboard objectives add mfam_zone dummy
+    /scoreboard objectives add mfam_zonet dummy
+end
+
+clock tick
+    # 1. the creature drops a zone on its own clock
+    /execute as @e[tag=${TAG}] run scoreboard players add @s mfam_zonet 1
+    /execute as @e[tag=${TAG},scores={mfam_zonet=${PERIOD_TICKS}..}] at @s run summon minecraft:armor_stand ~ ~ ~ {Tags:["mfam_zone_${TAG}"],Invisible:1b,Marker:1b,NoGravity:1b,Invulnerable:1b}
+    /execute unless entity @e[tag=${TAG},tag=mfam_veiled,limit=1] as @e[tag=${TAG},scores={mfam_zonet=${PERIOD_TICKS}..}] at @s run playsound ${SOUND} master @a ~ ~ ~ 1 1
+    /execute if entity @e[tag=${TAG},tag=mfam_veiled,limit=1] as @e[tag=${TAG},scores={mfam_zonet=${PERIOD_TICKS}..}] at @s run playsound ${SOUND} master @a[tag=!mfam_veil_blind] ~ ~ ~ 1 1
+    /execute as @e[tag=${TAG},scores={mfam_zonet=${PERIOD_TICKS}..}] run scoreboard players set @s mfam_zonet 0
+    # 2. a new marker starts its life
+    /execute as @e[tag=mfam_zone_${TAG},scores={mfam_zone=0}] run scoreboard players set @s mfam_zone ${LASTS_TICKS}
+    # 3. while it lives: it is VISIBLE, and it does its thing to whoever stands in it
+    /execute unless entity @e[tag=${TAG},tag=mfam_veiled,limit=1] as @e[tag=mfam_zone_${TAG},scores={mfam_zone=1..}] at @s run particle ${PARTICLE} ~ ~0.2 ~ ${RADIUS} 0.4 ${RADIUS} 0.02 ${DENSITY} force
+    /execute if entity @e[tag=${TAG},tag=mfam_veiled,limit=1] as @e[tag=mfam_zone_${TAG},scores={mfam_zone=1..}] at @s run particle ${PARTICLE} ~ ~0.2 ~ ${RADIUS} 0.4 ${RADIUS} 0.02 ${DENSITY} force @a[tag=!mfam_veil_blind]
+    /execute as @e[tag=mfam_zone_${TAG},scores={mfam_zone=1..}] at @s run execute as @e[distance=..${RADIUS},tag=!${TAG}${VICTIMS}] run ${COMMAND}
+    /execute as @e[tag=mfam_zone_${TAG},scores={mfam_zone=1..}] run scoreboard players remove @s mfam_zone 1
+    # 4. and then it is gone
+    /execute as @e[tag=mfam_zone_${TAG},scores={mfam_zone=0}] run tp @s ~ -300 ~
+    /kill @e[tag=mfam_zone_${TAG},scores={mfam_zone=0}]
+end

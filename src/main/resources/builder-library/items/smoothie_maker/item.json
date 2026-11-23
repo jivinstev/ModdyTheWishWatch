@@ -1,0 +1,19 @@
+{
+ "count": 1,
+ "effects": [
+  "turn_into"
+ ],
+ "id": "smoothie_maker_convert",
+ "name": "Smoothie Maker",
+ "params": {
+  "FROM": "minecraft:sweet_berries",
+  "TO": "smoothie_food",
+  "_kit": {
+   "items": "minecraft:sweet_berries 32"
+  }
+ },
+ "parts": [],
+ "properties": {},
+ "shape": "machine",
+ "variants": []
+}

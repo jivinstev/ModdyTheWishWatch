@@ -1,0 +1,31 @@
+# Validation 4: the Magician is on, and wishes switch to it. 03's one button already ran the Magician check and turned
+# the Magician on. The watch now says so on its Magician button ("✪ Magician: on (Opus 5.5)"), which opens the setup
+# page. The wish box's Magic choice switches who answers typed wishes: the Magician ("infinite opportunities") or the
+# Apprentice ("faster, but more limited"). It starts on the Magician once the Magician is on, so it is pressed twice:
+# to the Apprentice, then back to the Magician, so the switch to it is seen.
+@intent With the Magician on, the watch shows it, and the wish box switches wishes between the Apprentice and the Magician
+
+@step the watch shows the Magician is on
+@key key.use
+@expect screen /make a wish/ within 10s
+@wait 1s
+@shot watch-magician-on
+@click button "Magician: on (Opus 5.5)"
+@expect screen Magician setup within 10s
+@wait 1s
+@shot magician-setup-on
+@key key.keyboard.escape
+@wait 1s
+
+@step switch the wish box to the Apprentice
+@key key.use
+@expect screen /make a wish/ within 10s
+@click button "Magician: infinite opportunities"
+@wait 1s
+@shot wishes-to-apprentice
+
+@step and back to the Magician
+@click button "Apprentice: faster, but more limited"
+@wait 1s
+@shot wishes-to-magician
+@click button "Cancel"

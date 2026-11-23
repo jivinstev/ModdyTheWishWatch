@@ -1,0 +1,47 @@
+# Validation 1: a Builder wish. The Wish Builder (on the watch, or /moddy builder) walks the player through chest pages
+# (what kind, which body, parts, powers, special moves) to a "Tune" dialog, and "Make it!" makes the thing. No AI.
+# The pages are chests of different sizes, so each page's "Done" tile is at a different slot: the middle of its last
+# row (6 rows: 49, 4 rows: 31, 3 rows: 22). If the Builder's pages change, re-read the slots from the frames.
+@intent The Wish Builder's pages, clicked like a player, make a creature that appears in the world
+
+@step a clear stage
+gamemode creative
+time set noon
+weather clear
+gamerule doDaylightCycle false
+gamerule doMobSpawning false
+tp @s ~ ~ ~ 0 10
+
+@step open the Wish Builder
+/moddy builder
+@expect screen Wish Builder within 10s
+@shot what-shall-we-make
+
+@step a creature, from the first body (a cat)
+@click slot 0
+@expect screen Pick a body within 5s
+@click slot 0
+@expect screen Parts within 5s
+@shot parts
+
+@step no extra parts, powers or moves
+@click slot 49
+@expect screen Powers within 5s
+@click slot 31
+@expect screen Special moves within 5s
+@click slot 22
+@expect screen /tune your/ within 5s
+@shot tune-dialog
+
+@step make it
+@click button "Make it!"
+@expect chat is ready within 120s
+@wait 2s
+@shot the-wish-made
+
+@step the creature is in the world
+# A wished creature's body carries the tags wishmob and mfamrig ("Buddy the Cat" here).
+@repeat 10 until execute if entity @e[tag=wishmob,tag=mfamrig]
+@wait 1s
+@end-repeat
+@assert execute if entity @e[tag=wishmob,tag=mfamrig,distance=..60]

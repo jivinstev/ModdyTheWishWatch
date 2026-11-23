@@ -1,0 +1,20 @@
+# JUMP — a SUPER BOUNCE that lands soft. "Boots that let me jump REALLY high."
+#
+# Jump boost is the primitive, for the same reason fly uses levitation: the client simulates its own
+# movement, so nothing the server writes into Motion can make a PLAYER jump higher. A potion effect
+# is applied by the client itself.
+#
+# WHY IT LANDS SOFT WITHOUT A SECOND EFFECT. Vanilla takes (amplifier + 1) blocks off every fall
+# while jump boost lasts, and the height the boost adds grows more slowly than that: at the five
+# levels this effect allows the jump peaks at roughly 1.8, 2.5, 3.3, 4.1 and 5.1 blocks, while a fall
+# stops hurting below 4, 5, 6, 7 and 8. So landing from his own jump never costs a heart. Slow
+# falling was the obvious extra and is deliberately left out: it makes every jump float, which is a
+# different wish.
+#
+# A TRUE DOUBLE JUMP IS NOT POSSIBLE on a stock client: the server never learns that he pressed jump
+# in mid-air. The lesson (lessons/item.md) tells the agent to offer this instead and say so.
+function effect()
+    /execute as ${TARGET} run effect give @s minecraft:jump_boost ${SECONDS} ${LEVEL} true
+    /particle minecraft:cloud ~ ~0.1 ~ 0.3 0.05 0.3 0.02 12 force
+    /playsound minecraft:entity.slime.jump master @a ~ ~ ~ 0.6 1.4
+end

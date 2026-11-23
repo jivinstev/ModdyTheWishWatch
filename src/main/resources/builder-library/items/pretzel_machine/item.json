@@ -1,0 +1,19 @@
+{
+ "count": 1,
+ "effects": [
+  "turn_into"
+ ],
+ "id": "pretzel_machine_convert",
+ "name": "Pretzel Machine",
+ "params": {
+  "FROM": "minecraft:wheat",
+  "TO": "pretzel_food",
+  "_kit": {
+   "items": "minecraft:wheat 16"
+  }
+ },
+ "parts": [],
+ "properties": {},
+ "shape": "machine",
+ "variants": []
+}

@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:item/bow",
+  "textures": {
+    "layer0": "wishpack:item/tinted/bow_tint",
+    "layer1": "wishpack:item/tinted/bow_keep"
+  }
+}

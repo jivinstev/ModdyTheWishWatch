@@ -1,0 +1,20 @@
+[
+ {
+  "cluster": "originals_d",
+  "name": "food_round",
+  "verdict": "PASS",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.628,
+   "dark_body": 0.08,
+   "pieces": 1,
+   "body": 514,
+   "fixed": 8,
+   "line": 116,
+   "shine": 5
+  }
+ }
+]

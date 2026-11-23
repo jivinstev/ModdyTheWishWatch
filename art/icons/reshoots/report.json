@@ -1,0 +1,187 @@
+[
+ {
+  "cluster": "reshoots",
+  "name": "laptop",
+  "verdict": "PASS",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.495,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "accent": 10,
+   "body": 208,
+   "fixed": 118,
+   "line": 166,
+   "shine": 5
+  }
+ },
+ {
+  "cluster": "reshoots",
+  "name": "phone",
+  "verdict": "PASS",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.653,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "body": 225,
+   "fixed": 232,
+   "line": 208,
+   "shine": 4
+  }
+ },
+ {
+  "cluster": "reshoots",
+  "name": "binoculars",
+  "verdict": "PASS",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.567,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "body": 293,
+   "fixed": 70,
+   "line": 213,
+   "shine": 5
+  }
+ },
+ {
+  "cluster": "reshoots",
+  "name": "dollar_bill",
+  "verdict": "PASS",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.409,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "body": 114,
+   "fixed": 206,
+   "line": 96,
+   "shine": 3
+  }
+ },
+ {
+  "cluster": "reshoots",
+  "name": "microphone",
+  "verdict": "PASS",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.384,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "accent": 31,
+   "body": 179,
+   "line": 180,
+   "shine": 3
+  }
+ },
+ {
+  "cluster": "reshoots",
+  "name": "panda",
+  "verdict": "FAIL",
+  "kind": "fixed",
+  "n": 32,
+  "problems": [
+   "135 near-grey pixel(s): body or fixed? draw pure grey or a real colour"
+  ],
+  "warnings": [],
+  "stats": {
+   "fill": 0.526,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "fixed": 257,
+   "grey?": 135,
+   "line": 143,
+   "shine": 4
+  }
+ },
+ {
+  "cluster": "reshoots",
+  "name": "giraffe",
+  "verdict": "FAIL",
+  "kind": "fixed",
+  "n": 32,
+  "problems": [
+   "touches the edge (needs a 1px margin)"
+  ],
+  "warnings": [],
+  "stats": {
+   "fill": 0.469,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "accent": 43,
+   "fixed": 320,
+   "line": 112,
+   "shine": 5
+  }
+ },
+ {
+  "cluster": "reshoots",
+  "name": "gorilla",
+  "verdict": "PASS",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.618,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "body": 465,
+   "line": 166,
+   "shine": 2
+  }
+ },
+ {
+  "cluster": "reshoots",
+  "name": "marshmallow",
+  "verdict": "PASS",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.336,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "body": 218,
+   "fixed": 50,
+   "line": 74,
+   "shine": 2
+  }
+ },
+ {
+  "cluster": "reshoots",
+  "name": "medal",
+  "verdict": "PASS",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.312,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "accent": 109,
+   "body": 26,
+   "fixed": 48,
+   "line": 131,
+   "shine": 5
+  }
+ }
+]

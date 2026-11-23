@@ -1,0 +1,17 @@
+{
+ "base_item": "minecraft:cookie",
+ "count": 4,
+ "effects": [
+  "food"
+ ],
+ "id": "chocolate_drink_food",
+ "name": "Chocolate Drink",
+ "params": {
+  "BONUS": "minecraft:speed",
+  "SECONDS": "10"
+ },
+ "parts": [],
+ "properties": {},
+ "shape": "on_consume",
+ "variants": []
+}

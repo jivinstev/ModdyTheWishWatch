@@ -1,0 +1,58 @@
+# ERUPT BLOCKS — spikes, pillars or a wave of ground thrown up around the creature, then gone again.
+#
+# THE WISHES: "he slams and amythist spikes come out of the ground", "when he smashes the ground the
+# blocks fly up", "a big wave in the dirt". Every one of them is about the WORLD changing shape, and
+# nothing in the catalogue could touch a block at all.
+#
+# WHY IT IS A TEMPLATE AND NOT JUST A COMMAND. `setblock` and `fill` ARE commands, so an eruption
+# could ride the COMMAND parameter of any existing trigger. What cannot: taking it back. A spike
+# field that stays is not what a child pictured, and after a few fights their world is a forest of
+# amethyst they have to mine by hand. The eruption has to expire, and expiring needs per-eruption
+# state -- which is the template.
+#
+# IT CANNOT DESTROY ANYTHING. Three rules, and they are not decoration:
+#   - it only ever fills AIR (`replace air`), so a house or a chest is untouched;
+#   - it never fills the space a LIVING thing is in -- the creature itself, a pet, him (a
+#     creature with this move encased itself and suffocated within a minute, one or thirty);
+#   - it only ever removes ITS OWN block type (`air replace <the BLOCK parameter>`), so if the child mines a
+#     spike or builds among them, their blocks stay.
+# A creature ability that can eat a seven-year-old's build is not a feature, whatever it does right.
+reset
+    /scoreboard objectives add mfam_erupt dummy
+    /scoreboard objectives add mfam_eruptt dummy
+end
+
+clock tick
+    # 1. the creature's own clock decides when it slams
+    /execute as @e[tag=${TAG}] run scoreboard players add @s mfam_eruptt 1
+    /execute as @e[tag=${TAG},scores={mfam_eruptt=${PERIOD_TICKS}..}] at @s run summon minecraft:armor_stand ~ ~ ~ {Tags:["mfam_er_${TAG}"],Invisible:1b,Marker:1b,NoGravity:1b,Invulnerable:1b}
+    /execute unless entity @e[tag=${TAG},tag=mfam_veiled,limit=1] as @e[tag=${TAG},scores={mfam_eruptt=${PERIOD_TICKS}..}] at @s run playsound ${SOUND} master @a ~ ~ ~ 1.2 0.7
+    /execute if entity @e[tag=${TAG},tag=mfam_veiled,limit=1] as @e[tag=${TAG},scores={mfam_eruptt=${PERIOD_TICKS}..}] at @s run playsound ${SOUND} master @a[tag=!mfam_veil_blind] ~ ~ ~ 1.2 0.7
+    /execute as @e[tag=${TAG},scores={mfam_eruptt=${PERIOD_TICKS}..}] run scoreboard players set @s mfam_eruptt 0
+
+    # 2. a marker that has not erupted yet does so now. The "live" tag is what separates a NEW
+    #    marker from an EXPIRED one -- both would otherwise sit at score 0 and the eruption would
+    #    re-place itself forever.
+    #    ...and NEVER INTO ANYBODY. The fill is "replace air", and the space a creature stands in IS air, so
+    #    the creature itself -- and every pet or player beside it -- was encased and "suffocated in a wall" within a
+    #    minute, one creature or thirty. So first every living thing's space (a 3x3x3 box from its feet: a big
+    #    carrier is two blocks wide) is RESERVED with structure_void, which is not air, so the fill leaves it, and
+    #    which nothing collides with; then the fill; then, the same tick, exactly those voids turn back into air.
+    #    The eruption is a RING around whoever stands in it. It still only ever replaces air: no block of his is
+    #    touched. 48 blocks reaches past any eruption a fill can make (32768 blocks at most).
+    /execute as @e[tag=mfam_er_${TAG},tag=!mfam_erl_${TAG}] at @s as @e[distance=..48,type=!minecraft:item,type=!minecraft:armor_stand,type=!minecraft:marker,type=!minecraft:block_display,type=!minecraft:item_display,type=!minecraft:text_display,type=!minecraft:interaction,type=!minecraft:experience_orb] at @s run fill ~-1 ~ ~-1 ~1 ~2 ~1 minecraft:structure_void replace air
+    /execute as @e[tag=mfam_er_${TAG},tag=!mfam_erl_${TAG}] at @s run fill ~-${RADIUS} ~ ~-${RADIUS} ~${RADIUS} ~${HEIGHT} ~${RADIUS} ${BLOCK} replace air
+    /execute as @e[tag=mfam_er_${TAG},tag=!mfam_erl_${TAG}] at @s as @e[distance=..48,type=!minecraft:item,type=!minecraft:armor_stand,type=!minecraft:marker,type=!minecraft:block_display,type=!minecraft:item_display,type=!minecraft:text_display,type=!minecraft:interaction,type=!minecraft:experience_orb] at @s run fill ~-1 ~ ~-1 ~1 ~2 ~1 minecraft:air replace minecraft:structure_void
+    /execute unless entity @e[tag=${TAG},tag=mfam_veiled,limit=1] as @e[tag=mfam_er_${TAG},tag=!mfam_erl_${TAG}] at @s run particle ${PARTICLE} ~ ~1 ~ ${RADIUS} 0.6 ${RADIUS} 0.08 80 force
+    /execute if entity @e[tag=${TAG},tag=mfam_veiled,limit=1] as @e[tag=mfam_er_${TAG},tag=!mfam_erl_${TAG}] at @s run particle ${PARTICLE} ~ ~1 ~ ${RADIUS} 0.6 ${RADIUS} 0.08 80 force @a[tag=!mfam_veil_blind]
+    /execute as @e[tag=mfam_er_${TAG},tag=!mfam_erl_${TAG}] run scoreboard players set @s mfam_erupt ${LASTS_TICKS}
+    /tag @e[tag=mfam_er_${TAG},tag=!mfam_erl_${TAG}] add mfam_erl_${TAG}
+
+    # 3. while it stands, it does its thing to whoever is caught in it
+    /execute as @e[tag=mfam_erl_${TAG},scores={mfam_erupt=1..}] at @s run execute as @e[distance=..${RADIUS},tag=!${TAG},type=!minecraft:armor_stand,type=!minecraft:item] run ${COMMAND}
+    /execute as @e[tag=mfam_erl_${TAG},scores={mfam_erupt=1..}] run scoreboard players remove @s mfam_erupt 1
+
+    # 4. and then the ground takes it back -- ONLY our own block, never anything else
+    /execute as @e[tag=mfam_erl_${TAG},scores={mfam_erupt=0}] at @s run fill ~-${RADIUS} ~ ~-${RADIUS} ~${RADIUS} ~${HEIGHT} ~${RADIUS} air replace ${BLOCK}
+    /kill @e[tag=mfam_erl_${TAG},scores={mfam_erupt=0}]
+end

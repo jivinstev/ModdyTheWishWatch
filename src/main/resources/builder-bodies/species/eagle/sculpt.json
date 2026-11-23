@@ -1,0 +1,284 @@
+{
+  "id": "eagle",
+  "name": "Eagle",
+  "status": "Sculpting your eagle",
+  "note": "Plain bald-eagle base for reuse: dark brown body/wings with fur pattern, white head and tail, yellow hooked beak and legs. No accessories. Head faces -z. Wings named wingL/wingR so they flap; flies + friendly.",
+  "powers": [
+    "flies",
+    "friendly"
+  ],
+  "damage": 0,
+  "health": 20,
+  "palette": [
+    {
+      "colour": "#4A2E1A",
+      "percent": 65
+    },
+    {
+      "colour": "white",
+      "percent": 22
+    },
+    {
+      "colour": "#F2B705",
+      "percent": 6
+    }
+  ],
+  "parts": [
+    {
+      "name": "body",
+      "from": [
+        -5,
+        8,
+        -6
+      ],
+      "to": [
+        5,
+        19,
+        7
+      ],
+      "colour": "#4A2E1A",
+      "pattern": "fur",
+      "pattern_colour": "#3A2212"
+    },
+    {
+      "name": "head",
+      "from": [
+        -4,
+        17,
+        -11
+      ],
+      "to": [
+        4,
+        25,
+        -3
+      ],
+      "colour": "white",
+      "pattern": "fur",
+      "pattern_colour": "#E6E6E6"
+    },
+    {
+      "name": "beak",
+      "from": [
+        -1.5,
+        19,
+        -15
+      ],
+      "to": [
+        1.5,
+        23,
+        -10
+      ],
+      "colour": "#F2B705",
+      "parent": "head"
+    },
+    {
+      "name": "beak_tip",
+      "from": [
+        -1,
+        17.5,
+        -15
+      ],
+      "to": [
+        1,
+        19.5,
+        -13
+      ],
+      "colour": "#F2B705",
+      "parent": "head"
+    },
+    {
+      "name": "eyeL",
+      "from": [
+        3.5,
+        22,
+        -9
+      ],
+      "to": [
+        4.5,
+        23,
+        -7
+      ],
+      "colour": "black",
+      "parent": "head"
+    },
+    {
+      "name": "eyeR",
+      "from": [
+        -4.5,
+        22.0,
+        -11.5
+      ],
+      "to": [
+        -3.5,
+        23.0,
+        -9.5
+      ],
+      "colour": "black",
+      "parent": "head"
+    },
+    {
+      "name": "browL",
+      "from": [
+        3.5,
+        23,
+        -10
+      ],
+      "to": [
+        4.6,
+        24,
+        -7
+      ],
+      "colour": "#D9D9D9",
+      "parent": "head"
+    },
+    {
+      "name": "browR",
+      "from": [
+        -5.0,
+        23.0,
+        -10.0
+      ],
+      "to": [
+        -4.0,
+        24.0,
+        -7.0
+      ],
+      "colour": "#D9D9D9",
+      "parent": "head",
+      "pivot": [
+        -4.5,
+        23.0,
+        -8.5
+      ]
+    },
+    {
+      "name": "wingL",
+      "from": [
+        4,
+        9,
+        -5
+      ],
+      "to": [
+        7,
+        19,
+        8
+      ],
+      "colour": "#3E2615",
+      "pattern": "fur",
+      "pattern_colour": "#2E1A0E",
+      "pivot": [
+        5,
+        18,
+        0
+      ]
+    },
+    {
+      "name": "wingR",
+      "from": [
+        -7,
+        9,
+        -5
+      ],
+      "to": [
+        -4,
+        19,
+        8
+      ],
+      "colour": "#3E2615",
+      "pattern": "fur",
+      "pattern_colour": "#2E1A0E",
+      "pivot": [
+        -5,
+        18,
+        0
+      ]
+    },
+    {
+      "name": "tail",
+      "from": [
+        -4,
+        8,
+        6
+      ],
+      "to": [
+        4,
+        11,
+        13
+      ],
+      "colour": "white",
+      "rotation": [
+        -20,
+        0,
+        0
+      ],
+      "pivot": [
+        0,
+        10,
+        6
+      ]
+    },
+    {
+      "name": "legL",
+      "from": [
+        1,
+        0,
+        -2
+      ],
+      "to": [
+        3,
+        9,
+        1
+      ],
+      "colour": "#F2B705"
+    },
+    {
+      "name": "legR",
+      "from": [
+        -3,
+        0,
+        -2
+      ],
+      "to": [
+        -1,
+        9,
+        1
+      ],
+      "colour": "#F2B705"
+    },
+    {
+      "name": "talonL",
+      "from": [
+        1.0,
+        0.0,
+        -4.0
+      ],
+      "to": [
+        4.0,
+        1.0,
+        1.0
+      ],
+      "colour": "#2B2B2B",
+      "parent": "legL"
+    },
+    {
+      "name": "talonR",
+      "from": [
+        -4.0,
+        0.0,
+        -4.0
+      ],
+      "to": [
+        -1.0,
+        1.0,
+        1.0
+      ],
+      "colour": "#2B2B2B",
+      "parent": "legR",
+      "pivot": [
+        -2.5,
+        0.0,
+        -1.5
+      ]
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "_comment": [
+    "#2355: how long the mod keeps the local logs that can hold a player's words (runtime/LogRetention).",
+    "logsDays is the privacy notice's number for logs, and the two must stay equal. A server that rotates these",
+    "logs itself turns the mod's own pruning off through its settings override (logs.prune)."
+  ],
+  "logsDays": 180
+}

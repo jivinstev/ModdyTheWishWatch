@@ -1,0 +1,103 @@
+# MAGIC BLOCK — he puts it down and it becomes a BLOCK that does something to the world around it
+#: a lucky block that pops presents when he breaks it, a block that pulls things in, a cloud
+# that bounces him, a block that zaps monsters.
+#
+# WHY NOT `placed`. A placed thing is an invisible marker on a two-second beat, and every placed
+# wish already granted must keep working exactly as it does. This shape adds what `placed` cannot
+# say: a BODY he can see and break, a WHEN (a beat, something coming near, something standing on it,
+# or being broken), a WHO and a reach. Those are settings chosen by make_item's `block` object and
+# arrive here as the placeholders below — nothing in this file is named after a thing a child asked
+# for, and nothing in it changes per wish except those settings.
+#
+# The anchor is the one the machine shape uses: vanilla drops a marker tagged `_new` on the cell he
+# aimed at, and a tick builds the body around it and swaps the tag for `_built`, so it is built once.
+import common
+
+define @NewBlock = @Entity[type=armor_stand, tag=${FEATURE}_new]
+end
+
+reset
+    # The beat and the rest between goes, counted ON EACH BLOCK so two of them never share one dial.
+    /scoreboard objectives add mfam_blk dummy
+end
+
+function give()
+    /function $namespace:give_one
+${KIT}
+    /tellraw @s {"text":"${GIVE_MESSAGE}","color":"${HEX}"}
+end
+
+# The thing alone. A REFUND hands back this and never the kit: the supplies were
+# used, and a machine broken and re-placed must not mint a second set of them each time.
+function give_one()
+${GIVES}
+end
+
+# ── Putting it down ──────────────────────────────────────────────────────────────────────────
+
+function build_new()
+    as @NewBlock at @s
+        /tag @s remove ${FEATURE}_new
+        /tag @s add ${FEATURE}_built
+        /scoreboard players set @s mfam_blk 0
+        build_body()
+    end
+end
+
+# The body goes ONLY into replaceable space, and is never a block entity (make_item refuses one), so
+# putting it down cannot eat something he built and ten thousand of them cannot freeze a client.
+function build_body()
+${BUILD_LOOK}
+    /playsound minecraft:block.amethyst_block.place block @a[distance=..32] ~ ~ ~ 1 1
+    /particle minecraft:end_rod ~ ~0.6 ~ 0.3 0.3 0.3 0.02 12 force
+end
+
+# ── Going off ────────────────────────────────────────────────────────────────────────────────
+
+function fire()
+    /scoreboard players set @s mfam_blk 0
+${FIRE}
+end
+
+# ── Taking it down ───────────────────────────────────────────────────────────────────────────
+
+# Breaking the body is how a child takes a thing away, so it is checked every tick — which is also
+# what lets a block that goes off WHEN BROKEN go off the moment it is.
+function check_broken()
+${CHECK_BODY}
+    /execute if entity @s[tag=${FEATURE}_broken] run function $namespace:tear_down
+end
+
+# EVERY clear checks what is there first, so taking it down never removes a block he placed himself.
+function tear_down()
+    /execute unless entity @s[tag=${FEATURE}_undo] run function $namespace:on_broken
+${CLEAR_LOOK}
+    /kill @s
+end
+
+# What breaking it does: goes off (a lucky block), or hands the block back (everything else), so a
+# mistake costs nothing.
+function on_broken()
+${ON_BROKEN}
+end
+
+# The undo (remove_item): every placed one comes down, NOTHING goes off and nothing is handed back.
+function remove_all()
+    /tag @e[type=armor_stand,tag=${FEATURE}_built] add ${FEATURE}_undo
+    /execute as @e[type=armor_stand,tag=${FEATURE}_built] at @s run function $namespace:tear_down
+end
+
+function refund()
+    /execute as @p[distance=..24] run function $namespace:give_one
+end
+
+# @e with nothing but a tag and a type reaches every loaded dimension, so one line serves the
+# Nether and the End as well — a second `execute in` line would make a Nether block go off twice.
+clock tick
+    build_new()
+    /execute as @e[type=armor_stand,tag=${FEATURE}_built] at @s run function $namespace:check_broken
+    /scoreboard players add @e[type=armor_stand,tag=${FEATURE}_built,scores={mfam_blk=..100000}] mfam_blk 1
+${TRIGGER}
+end
+
+${EFFECT_BLOCK}

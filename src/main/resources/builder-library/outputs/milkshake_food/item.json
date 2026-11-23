@@ -1,0 +1,17 @@
+{
+ "base_item": "minecraft:cookie",
+ "count": 4,
+ "effects": [
+  "food"
+ ],
+ "id": "milkshake_food",
+ "name": "Milkshake",
+ "params": {
+  "BONUS": "minecraft:jump_boost",
+  "SECONDS": "30"
+ },
+ "parts": [],
+ "properties": {},
+ "shape": "on_consume",
+ "variants": []
+}

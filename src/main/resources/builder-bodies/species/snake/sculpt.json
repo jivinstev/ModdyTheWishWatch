@@ -1,0 +1,229 @@
+{
+  "id": "snake",
+  "name": "Snake",
+  "status": "Sculpting your snake",
+  "powers": [
+    "friendly"
+  ],
+  "damage": 0,
+  "health": 12,
+  "speed": 0.2,
+  "parts": [
+    {
+      "name": "body",
+      "from": [
+        -3,
+        0,
+        -6
+      ],
+      "to": [
+        3,
+        5,
+        6
+      ],
+      "colour": "#3E8E2E",
+      "pattern": "scales",
+      "pattern_colour": "#2A6420"
+    },
+    {
+      "name": "belly",
+      "from": [
+        -2,
+        0,
+        -6
+      ],
+      "to": [
+        2,
+        1,
+        6
+      ],
+      "colour": "#D9C95A",
+      "parent": "body"
+    },
+    {
+      "name": "body_front",
+      "from": [
+        -3,
+        0,
+        5
+      ],
+      "to": [
+        3,
+        5,
+        14
+      ],
+      "colour": "#3E8E2E",
+      "pattern": "scales",
+      "pattern_colour": "#2A6420",
+      "parent": "body"
+    },
+    {
+      "name": "neck",
+      "from": [
+        -2,
+        1,
+        13
+      ],
+      "to": [
+        2,
+        6,
+        18
+      ],
+      "colour": "#3E8E2E",
+      "pattern": "scales",
+      "pattern_colour": "#2A6420",
+      "parent": "body"
+    },
+    {
+      "name": "head",
+      "from": [
+        -3,
+        3,
+        17
+      ],
+      "to": [
+        3,
+        8,
+        25
+      ],
+      "colour": "#3E8E2E",
+      "pattern": "scales",
+      "pattern_colour": "#2A6420"
+    },
+    {
+      "name": "eyeL",
+      "from": [
+        2,
+        6,
+        21
+      ],
+      "to": [
+        4,
+        8,
+        23
+      ],
+      "colour": "#F2D20F",
+      "parent": "head"
+    },
+    {
+      "name": "pupilL",
+      "from": [
+        3,
+        6,
+        21
+      ],
+      "to": [
+        4,
+        8,
+        22
+      ],
+      "colour": "black",
+      "parent": "head"
+    },
+    {
+      "name": "eyeR",
+      "from": [
+        -4,
+        6,
+        21
+      ],
+      "to": [
+        -2,
+        8,
+        23
+      ],
+      "colour": "#F2D20F",
+      "parent": "head"
+    },
+    {
+      "name": "pupilR",
+      "from": [
+        -4,
+        6,
+        21
+      ],
+      "to": [
+        -3,
+        8,
+        22
+      ],
+      "colour": "black",
+      "parent": "head"
+    },
+    {
+      "name": "tongue",
+      "from": [
+        -0.5,
+        3.75,
+        24.0
+      ],
+      "to": [
+        0.5,
+        4.75,
+        28.0
+      ],
+      "colour": "red",
+      "parent": "head"
+    },
+    {
+      "name": "tail1",
+      "from": [
+        -2.5,
+        0,
+        -13
+      ],
+      "to": [
+        2.5,
+        4,
+        -5
+      ],
+      "colour": "#3E8E2E",
+      "pattern": "scales",
+      "pattern_colour": "#2A6420",
+      "parent": "body"
+    },
+    {
+      "name": "tail2",
+      "from": [
+        -2,
+        0,
+        -19
+      ],
+      "to": [
+        2,
+        3,
+        -12
+      ],
+      "colour": "#3E8E2E",
+      "pattern": "scales",
+      "pattern_colour": "#2A6420",
+      "parent": "body"
+    },
+    {
+      "name": "tail3",
+      "from": [
+        -1,
+        0,
+        -25
+      ],
+      "to": [
+        1,
+        2,
+        -18
+      ],
+      "colour": "#2A6420",
+      "parent": "body"
+    }
+  ],
+  "palette": [
+    {
+      "colour": "#3E8E2E",
+      "percent": 85
+    },
+    {
+      "colour": "#D9C95A",
+      "percent": 5
+    }
+  ],
+  "note": "Plain base snake: green scaled segments body/body_front/neck/head/tail1-3 along +z, yellow belly strip, yellow eyes with slit pupils, red forked-ish tongue. No accessories by request; segment names chosen so later edits can target them."
+}

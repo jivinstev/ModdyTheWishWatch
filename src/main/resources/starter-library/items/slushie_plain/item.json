@@ -1,0 +1,30 @@
+{
+  "base_item": "minecraft:potion",
+  "count": 1,
+  "effects": [
+    "food"
+  ],
+  "id": "slushie_plain",
+  "name": "Slushie",
+  "params": {
+    "BONUS": "minecraft:speed",
+    "SECONDS": "30"
+  },
+  "parts": [],
+  "properties": {},
+  "shape": "on_consume",
+  "variants": [
+    {
+      "name": "Small Slushie",
+      "colour": "#81D4FA"
+    },
+    {
+      "name": "Medium Slushie",
+      "colour": "#29B6F6"
+    },
+    {
+      "name": "GIANT Slushie",
+      "colour": "#0277BD"
+    }
+  ]
+}

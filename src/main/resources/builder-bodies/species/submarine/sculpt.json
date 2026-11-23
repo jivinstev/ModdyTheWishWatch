@@ -1,0 +1,304 @@
+{
+ "behaves_like": "vehicle",
+ "damage": 0,
+ "health": 80,
+ "id": "submarine",
+ "name": "Yellow Submarine",
+ "note": "Classic yellow sub: long yellow hull, conning tower with periscope, blue portholes, grey propeller. Vehicle + rideable.",
+ "palette": [
+  {
+   "colour": "#FFD800",
+   "percent": 85
+  },
+  {
+   "colour": "#4FC3F7",
+   "percent": 3
+  },
+  {
+   "colour": "gray",
+   "percent": 5
+  }
+ ],
+ "parts": [
+  {
+   "colour": "#FFD800",
+   "from": [
+    -8,
+    2,
+    -18
+   ],
+   "name": "body",
+   "pattern": "gradient",
+   "pattern_colour": "#E6B800",
+   "to": [
+    8,
+    16,
+    18
+   ]
+  },
+  {
+   "colour": "#FFD800",
+   "from": [
+    -6,
+    4,
+    -22
+   ],
+   "name": "nose",
+   "parent": "body",
+   "to": [
+    6,
+    14,
+    -17
+   ]
+  },
+  {
+   "colour": "#FFD800",
+   "from": [
+    -5,
+    5,
+    17
+   ],
+   "name": "tailcone",
+   "parent": "body",
+   "to": [
+    5,
+    13,
+    23
+   ]
+  },
+  {
+   "colour": "#FFD800",
+   "from": [
+    -4,
+    15,
+    -6
+   ],
+   "name": "tower",
+   "parent": "body",
+   "to": [
+    4,
+    23,
+    4
+   ]
+  },
+  {
+   "colour": "#E6B800",
+   "from": [
+    -5,
+    22,
+    -7
+   ],
+   "name": "towercap",
+   "parent": "body",
+   "to": [
+    5,
+    24,
+    5
+   ]
+  },
+  {
+   "colour": "gray",
+   "from": [
+    -1,
+    23,
+    -2
+   ],
+   "name": "periscope",
+   "parent": "body",
+   "to": [
+    1,
+    30,
+    0
+   ]
+  },
+  {
+   "colour": "gray",
+   "from": [
+    -1,
+    28,
+    -5
+   ],
+   "name": "periscope_top",
+   "parent": "body",
+   "to": [
+    1,
+    30,
+    0
+   ]
+  },
+  {
+   "colour": "#4FC3F7",
+   "from": [
+    -9,
+    8,
+    -12
+   ],
+   "name": "port1L",
+   "parent": "body",
+   "to": [
+    -7,
+    12,
+    -8
+   ]
+  },
+  {
+   "colour": "#4FC3F7",
+   "from": [
+    -9,
+    8,
+    -2
+   ],
+   "name": "port2L",
+   "parent": "body",
+   "to": [
+    -7,
+    12,
+    2
+   ]
+  },
+  {
+   "colour": "#4FC3F7",
+   "from": [
+    -9,
+    8,
+    8
+   ],
+   "name": "port3L",
+   "parent": "body",
+   "to": [
+    -7,
+    12,
+    12
+   ]
+  },
+  {
+   "colour": "#4FC3F7",
+   "from": [
+    7,
+    8,
+    -12
+   ],
+   "name": "port1R",
+   "parent": "body",
+   "to": [
+    9,
+    12,
+    -8
+   ]
+  },
+  {
+   "colour": "#4FC3F7",
+   "from": [
+    7,
+    8,
+    -2
+   ],
+   "name": "port2R",
+   "parent": "body",
+   "to": [
+    9,
+    12,
+    2
+   ]
+  },
+  {
+   "colour": "#4FC3F7",
+   "from": [
+    7,
+    8,
+    8
+   ],
+   "name": "port3R",
+   "parent": "body",
+   "to": [
+    9,
+    12,
+    12
+   ]
+  },
+  {
+   "colour": "gray",
+   "from": [
+    -1,
+    8,
+    22
+   ],
+   "name": "prop_hub",
+   "parent": "body",
+   "to": [
+    1,
+    10,
+    25
+   ]
+  },
+  {
+   "colour": "gray",
+   "from": [
+    -1,
+    4,
+    24
+   ],
+   "name": "prop_blade_v",
+   "parent": "body",
+   "to": [
+    1,
+    14,
+    25
+   ]
+  },
+  {
+   "colour": "gray",
+   "from": [
+    -5,
+    8,
+    24
+   ],
+   "name": "prop_blade_h",
+   "parent": "body",
+   "to": [
+    5,
+    10,
+    25
+   ]
+  },
+  {
+   "colour": "#E6B800",
+   "from": [
+    -1,
+    13,
+    16
+   ],
+   "name": "rudder",
+   "parent": "body",
+   "to": [
+    1,
+    18,
+    22
+   ]
+  },
+  {
+   "colour": "#E6B800",
+   "from": [
+    -6,
+    0,
+    -14
+   ],
+   "name": "keel",
+   "parent": "body",
+   "to": [
+    6,
+    3,
+    14
+   ]
+  }
+ ],
+ "powers": [
+  "friendly",
+  "rideable",
+  "persistent"
+ ],
+ "scale": 1.5,
+ "speed": 0.4,
+ "status": "Building your yellow submarine",
+ "voice": "silent"
+}

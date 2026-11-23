@@ -1,0 +1,219 @@
+{
+ "behaves_like": "buzzer",
+ "damage": 0,
+ "health": 30,
+ "id": "butterfly",
+ "name": "Rainbow Butterfly",
+ "note": "Big friendly butterfly: thin dark body, four large wings each a different bright colour with spotted pattern for 'colourful'; flies like a bee, scale 2.5 for 'big'.",
+ "palette": [
+  {
+   "colour": "magenta",
+   "percent": 25
+  },
+  {
+   "colour": "cyan",
+   "percent": 25
+  },
+  {
+   "colour": "orange",
+   "percent": 20
+  },
+  {
+   "colour": "yellow",
+   "percent": 20
+  },
+  {
+   "colour": "black",
+   "percent": 5
+  }
+ ],
+ "parts": [
+  {
+   "colour": "#2B1B3A",
+   "from": [
+    -1,
+    8,
+    -6
+   ],
+   "name": "body",
+   "pattern": "stripes",
+   "pattern_colour": "#FFD800",
+   "to": [
+    1,
+    10,
+    6
+   ]
+  },
+  {
+   "colour": "#2B1B3A",
+   "from": [
+    -2,
+    7,
+    -9
+   ],
+   "name": "head",
+   "to": [
+    2,
+    11,
+    -5
+   ]
+  },
+  {
+   "colour": "white",
+   "from": [
+    1.0,
+    9.0,
+    -9.0
+   ],
+   "name": "eyeL",
+   "parent": "head",
+   "to": [
+    3.0,
+    11.0,
+    -7.0
+   ]
+  },
+  {
+   "colour": "white",
+   "from": [
+    -3.0,
+    9.0,
+    -9.0
+   ],
+   "name": "eyeR",
+   "parent": "head",
+   "pivot": [
+    -2.0,
+    9.0,
+    -8.0
+   ],
+   "to": [
+    -1.0,
+    11.0,
+    -7.0
+   ]
+  },
+  {
+   "colour": "black",
+   "from": [
+    1.0,
+    10.0,
+    -9.4
+   ],
+   "name": "antennaL",
+   "parent": "head",
+   "rotation": [
+    -20,
+    0,
+    -15
+   ],
+   "to": [
+    2.0,
+    16.0,
+    -8.4
+   ]
+  },
+  {
+   "colour": "black",
+   "from": [
+    -2.0,
+    10.0,
+    -9.4
+   ],
+   "name": "antennaR",
+   "parent": "head",
+   "rotation": [
+    -20,
+    0,
+    15
+   ],
+   "to": [
+    -1.0,
+    16.0,
+    -8.4
+   ]
+  },
+  {
+   "colour": "#FF2FB0",
+   "from": [
+    0.5,
+    8.8,
+    -6.0
+   ],
+   "name": "wingFL",
+   "pattern": "spots",
+   "pattern_colour": "#FFE000",
+   "to": [
+    14.0,
+    9.8,
+    2.0
+   ]
+  },
+  {
+   "colour": "#00C8FF",
+   "from": [
+    -14.0,
+    9.0,
+    -6.0
+   ],
+   "name": "wingFR",
+   "pattern": "spots",
+   "pattern_colour": "#FFE000",
+   "pivot": [
+    -7.5,
+    10.0,
+    -2.0
+   ],
+   "to": [
+    -1.0,
+    10.0,
+    2.0
+   ]
+  },
+  {
+   "colour": "#FF8A00",
+   "from": [
+    0.5,
+    8.8,
+    1.0
+   ],
+   "name": "wingBL",
+   "pattern": "spots",
+   "pattern_colour": "#8A2BE2",
+   "to": [
+    10.0,
+    9.8,
+    9.0
+   ]
+  },
+  {
+   "colour": "#FFE000",
+   "from": [
+    -10.0,
+    9.0,
+    1.0
+   ],
+   "name": "wingBR",
+   "pattern": "spots",
+   "pattern_colour": "#8A2BE2",
+   "pivot": [
+    -5.5,
+    10.0,
+    5.0
+   ],
+   "to": [
+    -1.0,
+    10.0,
+    9.0
+   ]
+  }
+ ],
+ "powers": [
+  "friendly",
+  "flies",
+  "persistent"
+ ],
+ "scale": 2.5,
+ "status": "Painting rainbow wings",
+ "voice": "bee"
+}

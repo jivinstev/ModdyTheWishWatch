@@ -1,0 +1,22 @@
+# PLAIN — it just IS. He holds it, keeps it, sorts it, feeds it to something. It does nothing.
+#
+# The shape with no trigger, which is the whole point of it. Ask a child about a machine and most of
+# what he names is INGREDIENTS — a syrup, a topping, a shot of something, a cup in three sizes — and
+# an ingredient is not supposed to do anything when you right-click it. Its meaning is its identity.
+#
+# Before this there was no way to say that. Every item had to carry an effect, so an ingredient came
+# back with a behaviour nobody asked for: a syrup bottle that healed you, a cup that made you fast.
+#
+# WHY THIS FILE IS SHORT, AND WHY THAT IS THE FEATURE. There is no `act`, so nothing is registered
+# to a right-click and no function exists to run. A no-op effect would have been the easier route
+# and is worse: the item would still answer a click, by doing nothing, which reads as broken rather
+# than as finished. Here the click is simply not a thing the item participates in.
+#
+# It is therefore the one shape that carries NO effect at all, and make_item refuses the pair. The
+# effect matrix is a product over the shapes that fire; this one is not in it.
+import common
+
+function give()
+${GIVES}
+    /tellraw @s {"text":"${GIVE_MESSAGE}","color":"${HEX}"}
+end

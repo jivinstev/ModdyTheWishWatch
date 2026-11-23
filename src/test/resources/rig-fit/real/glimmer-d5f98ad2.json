@@ -1,0 +1,295 @@
+{
+ "id": "glimmer",
+ "name": "\u00a7bGlimmer",
+ "scale": 0.9,
+ "powers": [
+  "friendly",
+  "glowing",
+  "persistent"
+ ],
+ "parts": [
+  {
+   "name": "body",
+   "from": [
+    -6,
+    8,
+    -5
+   ],
+   "to": [
+    6,
+    22,
+    5
+   ],
+   "colour": "cyan",
+   "inflate": 2
+  },
+  {
+   "name": "head",
+   "from": [
+    -7,
+    22,
+    -6
+   ],
+   "to": [
+    7,
+    36,
+    6
+   ],
+   "colour": "#7FE9FF",
+   "inflate": 2
+  },
+  {
+   "name": "eyeL",
+   "from": [
+    -5,
+    28,
+    -7
+   ],
+   "to": [
+    -1,
+    33,
+    -6
+   ],
+   "colour": "white",
+   "parent": "head"
+  },
+  {
+   "name": "eyeR",
+   "from": [
+    1,
+    28,
+    -7
+   ],
+   "to": [
+    5,
+    33,
+    -6
+   ],
+   "colour": "white",
+   "parent": "head"
+  },
+  {
+   "name": "pupilL",
+   "from": [
+    -4,
+    29,
+    -8
+   ],
+   "to": [
+    -2,
+    32,
+    -7
+   ],
+   "colour": "blue",
+   "parent": "head"
+  },
+  {
+   "name": "pupilR",
+   "from": [
+    2,
+    29,
+    -8
+   ],
+   "to": [
+    4,
+    32,
+    -7
+   ],
+   "colour": "blue",
+   "parent": "head"
+  },
+  {
+   "name": "browL",
+   "from": [
+    -5,
+    34,
+    -7
+   ],
+   "to": [
+    -3,
+    35,
+    -6
+   ],
+   "colour": "white",
+   "parent": "head"
+  },
+  {
+   "name": "browL2",
+   "from": [
+    -3,
+    34,
+    -7
+   ],
+   "to": [
+    -1,
+    35,
+    -6
+   ],
+   "colour": "white",
+   "parent": "head"
+  },
+  {
+   "name": "browR",
+   "from": [
+    1,
+    34,
+    -7
+   ],
+   "to": [
+    3,
+    35,
+    -6
+   ],
+   "colour": "white",
+   "parent": "head"
+  },
+  {
+   "name": "browR2",
+   "from": [
+    3,
+    34,
+    -7
+   ],
+   "to": [
+    5,
+    35,
+    -6
+   ],
+   "colour": "white",
+   "parent": "head"
+  },
+  {
+   "name": "smile1",
+   "from": [
+    -4,
+    25,
+    -7
+   ],
+   "to": [
+    -2,
+    26,
+    -6
+   ],
+   "colour": "#1B4F7A",
+   "parent": "head"
+  },
+  {
+   "name": "smile2",
+   "from": [
+    -2,
+    24,
+    -7
+   ],
+   "to": [
+    2,
+    25,
+    -6
+   ],
+   "colour": "#1B4F7A",
+   "parent": "head"
+  },
+  {
+   "name": "smile3",
+   "from": [
+    2,
+    25,
+    -7
+   ],
+   "to": [
+    4,
+    26,
+    -6
+   ],
+   "colour": "#1B4F7A",
+   "parent": "head"
+  },
+  {
+   "name": "armL",
+   "from": [
+    -9,
+    12,
+    -3
+   ],
+   "to": [
+    -6,
+    21,
+    3
+   ],
+   "colour": "#7FE9FF"
+  },
+  {
+   "name": "armR",
+   "from": [
+    6,
+    12,
+    -3
+   ],
+   "to": [
+    9,
+    21,
+    3
+   ],
+   "colour": "#7FE9FF"
+  },
+  {
+   "name": "legL",
+   "from": [
+    -5,
+    0,
+    -3
+   ],
+   "to": [
+    -1,
+    9,
+    3
+   ],
+   "colour": "cyan"
+  },
+  {
+   "name": "legR",
+   "from": [
+    1,
+    0,
+    -3
+   ],
+   "to": [
+    5,
+    9,
+    3
+   ],
+   "colour": "cyan"
+  },
+  {
+   "name": "lantern",
+   "from": [
+    -3,
+    36,
+    -3
+   ],
+   "to": [
+    3,
+    41,
+    3
+   ],
+   "colour": "yellow",
+   "parent": "head",
+   "inflate": 1
+  },
+  {
+   "name": "lanternglow",
+   "from": [
+    -2,
+    41,
+    -2
+   ],
+   "to": [
+    2,
+    43,
+    2
+   ],
+   "colour": "white",
+   "parent": "head"
+  }
+ ],
+ "source": "docs/starter-candidates/candidates/make_me_a_companion_that_walks_with_me_and_glows/species/glimmer/sculpt.json"
+}

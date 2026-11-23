@@ -1,0 +1,19 @@
+{
+  "count": 1,
+  "effects": [
+    "load_and_pour"
+  ],
+  "id": "slushie_machine_load_and_pour",
+  "name": "Slushie Machine",
+  "params": {
+    "INGREDIENTS": "minecraft:ice",
+    "EXTRAS": "minecraft:sugar",
+    "MAX": "3",
+    "WHERE": "hand",
+    "OUTPUT": "slushie_plain"
+  },
+  "parts": [],
+  "properties": {},
+  "shape": "machine",
+  "variants": []
+}

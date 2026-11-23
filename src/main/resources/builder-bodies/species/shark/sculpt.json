@@ -1,0 +1,393 @@
+{
+  "id": "shark",
+  "name": "Great White Shark",
+  "status": "Sculpting the great white shark",
+  "note": "Plain reusable great white base: slate-grey back (#6E7B85, scales pattern), white belly/jaw, black eyes, white teeth; nose points -z. Parts named head/body/belly/jaw/tail/tail_fin/fin_* so swim animation works and later edits can target them.",
+  "palette": [
+    {
+      "colour": "#6E7B85",
+      "percent": 65
+    },
+    {
+      "colour": "white",
+      "percent": 30
+    }
+  ],
+  "powers": [
+    "persistent"
+  ],
+  "damage": 6,
+  "health": 60,
+  "scale": 1.5,
+  "parts": [
+    {
+      "name": "body",
+      "from": [
+        -6,
+        5,
+        -12
+      ],
+      "to": [
+        6,
+        15,
+        12
+      ],
+      "colour": "#6E7B85",
+      "pattern": "scales",
+      "pattern_colour": "#5E6A73"
+    },
+    {
+      "name": "belly",
+      "from": [
+        -5,
+        3,
+        -11
+      ],
+      "to": [
+        5,
+        6,
+        11
+      ],
+      "colour": "#F2F2F2",
+      "parent": "body"
+    },
+    {
+      "name": "head",
+      "from": [
+        -5,
+        5,
+        -24
+      ],
+      "to": [
+        5,
+        14,
+        -11
+      ],
+      "colour": "#6E7B85",
+      "pattern": "scales",
+      "pattern_colour": "#5E6A73"
+    },
+    {
+      "name": "snout",
+      "from": [
+        -3,
+        7,
+        -28
+      ],
+      "to": [
+        3,
+        12,
+        -23
+      ],
+      "colour": "#6E7B85",
+      "parent": "head"
+    },
+    {
+      "name": "jaw",
+      "from": [
+        -4,
+        3,
+        -25
+      ],
+      "to": [
+        4,
+        7,
+        -12
+      ],
+      "colour": "#F2F2F2",
+      "parent": "head"
+    },
+    {
+      "name": "mouth",
+      "from": [
+        -4,
+        6,
+        -25
+      ],
+      "to": [
+        4,
+        7,
+        -17
+      ],
+      "colour": "#3A1F24",
+      "parent": "head"
+    },
+    {
+      "name": "teethL",
+      "from": [
+        -4,
+        5,
+        -25
+      ],
+      "to": [
+        -3,
+        7,
+        -18
+      ],
+      "colour": "white",
+      "parent": "head"
+    },
+    {
+      "name": "teethR",
+      "from": [
+        3,
+        5,
+        -25
+      ],
+      "to": [
+        4,
+        7,
+        -18
+      ],
+      "colour": "white",
+      "parent": "head"
+    },
+    {
+      "name": "teethF",
+      "from": [
+        -3,
+        5,
+        -26
+      ],
+      "to": [
+        3,
+        7,
+        -25
+      ],
+      "colour": "white",
+      "parent": "head"
+    },
+    {
+      "name": "eyeL",
+      "from": [
+        -6,
+        10,
+        -21
+      ],
+      "to": [
+        -4,
+        12,
+        -19
+      ],
+      "colour": "black",
+      "parent": "head"
+    },
+    {
+      "name": "eyeR",
+      "from": [
+        4,
+        10,
+        -21
+      ],
+      "to": [
+        6,
+        12,
+        -19
+      ],
+      "colour": "black",
+      "parent": "head"
+    },
+    {
+      "name": "gillsL",
+      "from": [
+        -6,
+        7,
+        -14
+      ],
+      "to": [
+        -5,
+        12,
+        -11
+      ],
+      "colour": "#55616A",
+      "parent": "body"
+    },
+    {
+      "name": "gillsR",
+      "from": [
+        5,
+        7,
+        -14
+      ],
+      "to": [
+        6,
+        12,
+        -11
+      ],
+      "colour": "#55616A",
+      "parent": "body"
+    },
+    {
+      "name": "tail",
+      "from": [
+        -4,
+        6,
+        11
+      ],
+      "to": [
+        4,
+        13,
+        24
+      ],
+      "colour": "#6E7B85",
+      "parent": "body",
+      "pattern": "scales",
+      "pattern_colour": "#5E6A73"
+    },
+    {
+      "name": "tail_fin_top",
+      "from": [
+        -1,
+        11,
+        21
+      ],
+      "to": [
+        1,
+        26,
+        26
+      ],
+      "colour": "#6E7B85",
+      "parent": "tail",
+      "pivot": [
+        0,
+        11,
+        23
+      ],
+      "rotation": [
+        35,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "tail_fin_bottom",
+      "from": [
+        -1,
+        -2,
+        21
+      ],
+      "to": [
+        1,
+        8,
+        25
+      ],
+      "colour": "#6E7B85",
+      "parent": "tail",
+      "pivot": [
+        0,
+        8,
+        23
+      ],
+      "rotation": [
+        -30,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "fin_dorsal",
+      "from": [
+        -1,
+        14,
+        -5
+      ],
+      "to": [
+        1,
+        26,
+        3
+      ],
+      "colour": "#6E7B85",
+      "parent": "body",
+      "pivot": [
+        0,
+        14,
+        0
+      ],
+      "rotation": [
+        25,
+        0,
+        0
+      ]
+    },
+    {
+      "name": "finL",
+      "from": [
+        -15,
+        5,
+        -9
+      ],
+      "to": [
+        -5,
+        7,
+        -2
+      ],
+      "colour": "#6E7B85",
+      "parent": "body",
+      "pivot": [
+        -5,
+        6,
+        -5
+      ],
+      "rotation": [
+        0,
+        0,
+        -20
+      ]
+    },
+    {
+      "name": "finR",
+      "from": [
+        5,
+        5,
+        -9
+      ],
+      "to": [
+        15,
+        7,
+        -2
+      ],
+      "colour": "#6E7B85",
+      "parent": "body",
+      "pivot": [
+        5,
+        6,
+        -5
+      ],
+      "rotation": [
+        0,
+        0,
+        20
+      ]
+    },
+    {
+      "name": "fin_pelvicL",
+      "from": [
+        -8,
+        4,
+        6
+      ],
+      "to": [
+        -4,
+        6,
+        10
+      ],
+      "colour": "#6E7B85",
+      "parent": "body"
+    },
+    {
+      "name": "fin_pelvicR",
+      "from": [
+        4,
+        4,
+        6
+      ],
+      "to": [
+        8,
+        6,
+        10
+      ],
+      "colour": "#6E7B85",
+      "parent": "body"
+    }
+  ]
+}

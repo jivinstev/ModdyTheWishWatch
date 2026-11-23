@@ -1,0 +1,38 @@
+# BREATH CONE — fire, frost or poison sprayed FROM THE MOUTH, in the direction the creature faces.
+#
+# THE WISH THIS EXISTS FOR is Steve's most repeated one: "summon Spikor and make him BREATHE FIRE!"
+# followed immediately by "make sure his fire breath SHOOTS FROM HIS MOUTH!". The second wish is the
+# whole point -- a fire effect centred on the creature is an aura, and a child can tell the
+# difference instantly.
+#
+# WHY NOT A REAL PROJECTILE. A projectile is an entity, with a spawn, a velocity, a collision and a
+# lifetime. This draws the breath as a line of points stepping out along the creature's own facing
+# (^ ^ ^) instead: no entity, no physics, and it lands where the creature is LOOKING, which is what
+# "from his mouth" means. It cannot arc or bounce -- that is the honest limit of the approximation.
+#
+# The ^ ^ ^ form is local coordinates: left, up, forward relative to where the creature faces. So
+# ^ ^1.4 ^2 is "out of the mouth, two blocks ahead", and stepping forward widens the reach without
+# any arithmetic about angles.
+reset
+    /scoreboard objectives add mfam_breath dummy
+end
+
+clock tick
+    /execute as @e[tag=${TAG}] run scoreboard players add @s mfam_breath 1
+    # the breath lasts BREATH_TICKS out of every PERIOD_TICKS -- a burst, not a permanent jet
+    /execute unless entity @e[tag=${TAG},tag=mfam_veiled,limit=1] as @e[tag=${TAG},scores={mfam_breath=1..${BREATH_TICKS}}] at @s anchored eyes run particle ${PARTICLE} ^ ^ ^1 0.1 0.1 0.1 0.02 ${DENSITY} force
+    /execute if entity @e[tag=${TAG},tag=mfam_veiled,limit=1] as @e[tag=${TAG},scores={mfam_breath=1..${BREATH_TICKS}}] at @s anchored eyes run particle ${PARTICLE} ^ ^ ^1 0.1 0.1 0.1 0.02 ${DENSITY} force @a[tag=!mfam_veil_blind]
+    /execute unless entity @e[tag=${TAG},tag=mfam_veiled,limit=1] as @e[tag=${TAG},scores={mfam_breath=1..${BREATH_TICKS}}] at @s anchored eyes run particle ${PARTICLE} ^ ^ ^2.5 0.4 0.4 0.4 0.02 ${DENSITY} force
+    /execute if entity @e[tag=${TAG},tag=mfam_veiled,limit=1] as @e[tag=${TAG},scores={mfam_breath=1..${BREATH_TICKS}}] at @s anchored eyes run particle ${PARTICLE} ^ ^ ^2.5 0.4 0.4 0.4 0.02 ${DENSITY} force @a[tag=!mfam_veil_blind]
+    /execute unless entity @e[tag=${TAG},tag=mfam_veiled,limit=1] as @e[tag=${TAG},scores={mfam_breath=1..${BREATH_TICKS}}] at @s anchored eyes run particle ${PARTICLE} ^ ^ ^4 0.8 0.8 0.8 0.02 ${DENSITY} force
+    /execute if entity @e[tag=${TAG},tag=mfam_veiled,limit=1] as @e[tag=${TAG},scores={mfam_breath=1..${BREATH_TICKS}}] at @s anchored eyes run particle ${PARTICLE} ^ ^ ^4 0.8 0.8 0.8 0.02 ${DENSITY} force @a[tag=!mfam_veil_blind]
+    /execute unless entity @e[tag=${TAG},tag=mfam_veiled,limit=1] as @e[tag=${TAG},scores={mfam_breath=1..${BREATH_TICKS}}] at @s anchored eyes run particle ${PARTICLE} ^ ^ ^${REACH} 1.1 1.1 1.1 0.02 ${DENSITY} force
+    /execute if entity @e[tag=${TAG},tag=mfam_veiled,limit=1] as @e[tag=${TAG},scores={mfam_breath=1..${BREATH_TICKS}}] at @s anchored eyes run particle ${PARTICLE} ^ ^ ^${REACH} 1.1 1.1 1.1 0.02 ${DENSITY} force @a[tag=!mfam_veil_blind]
+    /execute unless entity @e[tag=${TAG},tag=mfam_veiled,limit=1] as @e[tag=${TAG},scores={mfam_breath=1}] at @s run playsound ${SOUND} master @a ~ ~ ~ 1.4 1
+    /execute if entity @e[tag=${TAG},tag=mfam_veiled,limit=1] as @e[tag=${TAG},scores={mfam_breath=1}] at @s run playsound ${SOUND} master @a[tag=!mfam_veil_blind] ~ ~ ~ 1.4 1
+    # anything caught IN FRONT gets it -- anything TARGET allows (default: everything but players;
+    # a fire breath burned the child, because nothing here said who). positioned ^ ^ ^N keeps the check on the breath line rather
+    # than in a ring around the creature -- otherwise this is just an aura with extra particles.
+    /execute as @e[tag=${TAG},scores={mfam_breath=1..${BREATH_TICKS}}] at @s anchored eyes positioned ^ ^ ^3 run execute as @e[distance=..3.5,tag=!${TAG}${VICTIMS}] run ${COMMAND}
+    /execute as @e[tag=${TAG},scores={mfam_breath=${PERIOD_TICKS}..}] run scoreboard players set @s mfam_breath 0
+end

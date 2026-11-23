@@ -1,0 +1,102 @@
+{
+ "id": "farm_plot",
+ "name": "Farm Plot",
+ "shapes": [
+  {
+   "block": "minecraft:air",
+   "depth": 7,
+   "dx": 0,
+   "dy": 0,
+   "dz": 0,
+   "height": 3,
+   "hollow": false,
+   "kind": "box",
+   "name": "clear",
+   "width": 7
+  },
+  {
+   "block": "minecraft:dirt",
+   "depth": 7,
+   "dx": 0,
+   "dy": -1,
+   "dz": 0,
+   "height": 1,
+   "hollow": false,
+   "kind": "box",
+   "name": "ground",
+   "width": 7
+  },
+  {
+   "block": "minecraft:farmland[moisture=7]",
+   "depth": 5,
+   "dx": 1,
+   "dy": -1,
+   "dz": 1,
+   "height": 1,
+   "hollow": false,
+   "kind": "box",
+   "name": "soil",
+   "width": 5
+  },
+  {
+   "block": "minecraft:water",
+   "depth": 1,
+   "dx": 3,
+   "dy": -1,
+   "dz": 3,
+   "height": 1,
+   "hollow": false,
+   "kind": "box",
+   "name": "water",
+   "width": 1
+  },
+  {
+   "block": "minecraft:wheat[age=7]",
+   "depth": 5,
+   "dx": 1,
+   "dy": 0,
+   "dz": 1,
+   "height": 1,
+   "hollow": false,
+   "kind": "box",
+   "name": "wheat_rows",
+   "width": 5
+  },
+  {
+   "block": "minecraft:air",
+   "depth": 1,
+   "dx": 3,
+   "dy": 0,
+   "dz": 3,
+   "height": 1,
+   "hollow": false,
+   "kind": "box",
+   "name": "over_water",
+   "width": 1
+  },
+  {
+   "block": "minecraft:oak_fence",
+   "depth": 7,
+   "dx": 0,
+   "dy": 0,
+   "dz": 0,
+   "height": 1,
+   "hollow": true,
+   "kind": "box",
+   "name": "fence",
+   "width": 7
+  },
+  {
+   "block": "minecraft:oak_fence_gate",
+   "depth": 1,
+   "dx": 3,
+   "dy": 0,
+   "dz": 0,
+   "height": 1,
+   "hollow": false,
+   "kind": "box",
+   "name": "gate",
+   "width": 1
+  }
+ ]
+}

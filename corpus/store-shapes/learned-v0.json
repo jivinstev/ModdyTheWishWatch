@@ -1,0 +1,1 @@
+{"templates":[{"id":"rain_chickens","all":["rain","chickens"],"commands":["say chickens"],"say":"Chickens!","icon":"minecraft:egg"},{"id":"treehouse~1f2e3d4c","all":["treehouse"],"commands":["wishbuild treehouse~1f2e3d4c"],"say":"Your treehouse!","ownerId":"1f2e3d4c-0000-0000-0000-00000000000a"}]}

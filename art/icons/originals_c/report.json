@@ -1,0 +1,161 @@
+[
+  {
+    "cluster": "originals_c",
+    "name": "bottle",
+    "verdict": "PASS",
+    "kind": "tint",
+    "n": 32,
+    "problems": [],
+    "warnings": [],
+    "stats": {
+      "fill": 0.406,
+      "dark_body": 0.125,
+      "pieces": 1,
+      "body": 328,
+      "fixed": 2,
+      "line": 81,
+      "shine": 5
+    }
+  },
+  {
+    "cluster": "originals_c",
+    "name": "coin",
+    "verdict": "PASS",
+    "kind": "tint",
+    "n": 32,
+    "problems": [],
+    "warnings": [],
+    "stats": {
+      "fill": 0.35,
+      "dark_body": 0.112,
+      "pieces": 1,
+      "body": 276,
+      "line": 77,
+      "shine": 5
+    }
+  },
+  {
+    "cluster": "originals_c",
+    "name": "orb",
+    "verdict": "WARN",
+    "kind": "tint",
+    "n": 32,
+    "problems": [],
+    "warnings": [
+      "silhouette 93% the same as food_round"
+    ],
+    "stats": {
+      "fill": 0.564,
+      "dark_body": 0.0,
+      "pieces": 1,
+      "body": 471,
+      "line": 105,
+      "shine": 2
+    }
+  },
+  {
+    "cluster": "originals_c",
+    "name": "small_pile",
+    "verdict": "PASS",
+    "kind": "tint",
+    "n": 32,
+    "problems": [],
+    "warnings": [],
+    "stats": {
+      "fill": 0.436,
+      "dark_body": 0.0,
+      "pieces": 1,
+      "body": 268,
+      "line": 174,
+      "shine": 4
+    }
+  },
+  {
+    "cluster": "originals_c",
+    "name": "wand",
+    "verdict": "PASS",
+    "kind": "tint",
+    "n": 32,
+    "problems": [],
+    "warnings": [],
+    "stats": {
+      "fill": 0.325,
+      "dark_body": 0.0,
+      "pieces": 1,
+      "body": 233,
+      "fixed": 8,
+      "line": 90,
+      "shine": 2
+    }
+  },
+  {
+    "cluster": "originals_c",
+    "name": "bow",
+    "verdict": "PASS",
+    "kind": "tint",
+    "n": 32,
+    "problems": [],
+    "warnings": [],
+    "stats": {
+      "fill": 0.439,
+      "dark_body": 0.0,
+      "pieces": 1,
+      "body": 263,
+      "line": 183,
+      "shine": 4
+    }
+  },
+  {
+    "cluster": "originals_c",
+    "name": "key",
+    "verdict": "PASS",
+    "kind": "tint",
+    "n": 32,
+    "problems": [],
+    "warnings": [],
+    "stats": {
+      "fill": 0.301,
+      "dark_body": 0.0,
+      "pieces": 1,
+      "body": 176,
+      "line": 127,
+      "shine": 5
+    }
+  },
+  {
+    "cluster": "originals_c",
+    "name": "egg",
+    "verdict": "PASS",
+    "kind": "tint",
+    "n": 32,
+    "problems": [],
+    "warnings": [],
+    "stats": {
+      "fill": 0.456,
+      "dark_body": 0.0,
+      "pieces": 1,
+      "body": 397,
+      "line": 68,
+      "shine": 2
+    }
+  },
+  {
+    "cluster": "originals_c",
+    "name": "sword",
+    "verdict": "WARN",
+    "kind": "tint",
+    "n": 32,
+    "problems": [],
+    "warnings": [
+      "fill 19% (want 30-85%)"
+    ],
+    "stats": {
+      "fill": 0.186,
+      "dark_body": 0.206,
+      "pieces": 1,
+      "body": 107,
+      "line": 81,
+      "shine": 2
+    }
+  }
+]

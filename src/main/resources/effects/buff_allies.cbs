@@ -1,0 +1,7 @@
+# This creature's own kind get an effect. The "the king makes his soldiers strong" shape.
+#
+# WHO  = every creature carrying the ALLY tag
+# WHEN = continuously
+clock tick
+    /execute as @e[tag=${TAG}] at @s run effect give @e[tag=${ALLY_TAG},distance=..${RADIUS}] ${EFFECT} ${SECONDS} ${AMPLIFIER}
+end

@@ -1,0 +1,46 @@
+# WORN — he PUTS IT ON, and it works for as long as he wears it.
+#
+# Boots, a helmet, a chestplate, leggings, a cape. Every other shape fires when he DOES something; a
+# worn thing works while it is ON him, which is what "boots that let me jump super high" means. The
+# item goes in one armour slot (the slot is the shape's name — worn head, chest, legs or feet) and
+# this clock watches that slot on every player:
+#
+#   the tick he puts it on, the effect runs once — so the power arrives when the boots do;
+#   while it stays on, the effect runs again each time it would wear off, and at no other time;
+#   the tick he takes it off, the count is cleared, so putting it back on fires it again at once.
+#
+# THAT IS THE QUIET PART. A clock that ran the effect every tick would replay its sound and its
+# particles twenty times a second for as long as he wore it. Re-applying only as it runs out keeps a
+# status effect (speed, jump, glowing, protection) continuously on him with one sound per renewal.
+# The renewal interval is chosen by MakeItemTool from the effect's own duration, a little short of
+# it so the power never flickers off between two runs.
+#
+# Recognised by the item's own name (the WishItem entry in its custom data), never by what it looks
+# like, so two different pairs of wished boots cannot set each other off.
+#
+# (A placeholder written in a COMMENT is still a placeholder — the renderer scans the whole source.
+# So the slot, the interval and the tags are described in words here rather than named.)
+import common
+
+reset
+    /scoreboard objectives add ${WORN_OBJECTIVE} dummy
+end
+
+function give()
+${GIVES}
+    /tellraw @s {"text":"${GIVE_MESSAGE}","color":"${HEX}"}
+end
+
+clock tick
+    /execute as @a unless items entity @s armor.${SLOT} *[minecraft:custom_data~{WishItem:"${FEATURE}"}] run scoreboard players reset @s ${WORN_OBJECTIVE}
+    /execute as @a if items entity @s armor.${SLOT} *[minecraft:custom_data~{WishItem:"${FEATURE}"}] run scoreboard players add @s ${WORN_OBJECTIVE} 1
+    /execute as @a[scores={${WORN_OBJECTIVE}=1}] at @s run function $namespace:act
+    /execute as @a[scores={${WORN_OBJECTIVE}=${RENEW_TICKS}..}] at @s run function $namespace:act
+    /execute as @a[scores={${WORN_OBJECTIVE}=${RENEW_TICKS}..}] run scoreboard players set @s ${WORN_OBJECTIVE} 1
+end
+
+function act()
+    /function $namespace:effect
+end
+
+${EFFECT_BLOCK}

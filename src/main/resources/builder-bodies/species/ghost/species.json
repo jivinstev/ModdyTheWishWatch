@@ -1,0 +1,22 @@
+{
+ "vehicle": false,
+ "armor": 0.0,
+ "behaves": "buzzer",
+ "body": "humanoid",
+ "damage": 0.0,
+ "health": 20.0,
+ "id": "ghost",
+ "knockbackResistance": 0.0,
+ "modelKey": "ghost",
+ "name": "Little Ghost",
+ "powers": [
+  "friendly",
+  "flies",
+  "glowing"
+ ],
+ "scale": 0.8,
+ "speed": 0.25,
+ "texture": "zombie",
+ "tint": "#FFFFFF",
+ "voice": "allay"
+}

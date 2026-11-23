@@ -1,0 +1,17 @@
+{
+ "base_item": "minecraft:potion",
+ "count": 4,
+ "effects": [
+  "food"
+ ],
+ "id": "fizzy_soda_food",
+ "name": "Fizzy Soda",
+ "params": {
+  "BONUS": "minecraft:speed",
+  "SECONDS": "30"
+ },
+ "parts": [],
+ "properties": {},
+ "shape": "on_consume",
+ "variants": []
+}

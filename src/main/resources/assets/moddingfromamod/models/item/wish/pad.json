@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "moddingfromamod:item/wish/pad",
+    "layer1": "moddingfromamod:item/wish/pad_detail"
+  }
+}

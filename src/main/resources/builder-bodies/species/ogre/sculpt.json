@@ -1,0 +1,394 @@
+{
+ "behaves_like": "bruiser",
+ "damage": 0,
+ "health": 200,
+ "id": "ogre",
+ "name": "Big Green Ogre",
+ "note": "Invented ogre (no mod has one): chunky green humanoid, brown fur tunic, big belly, little ears, underbite tusks, cartoon-grumpy face (brows low at inner end) but friendly so it never hurts him. Scale 2.2 for BIG.",
+ "palette": [
+  {
+   "colour": "green",
+   "percent": 55
+  },
+  {
+   "colour": "brown",
+   "percent": 40
+  }
+ ],
+ "parts": [
+  {
+   "colour": "#5E7A2E",
+   "from": [
+    -7,
+    0,
+    -3
+   ],
+   "name": "legL",
+   "pattern": "speckle",
+   "pattern_colour": "#4C6524",
+   "to": [
+    -1,
+    10,
+    3
+   ]
+  },
+  {
+   "colour": "#5E7A2E",
+   "from": [
+    1,
+    0,
+    -3
+   ],
+   "name": "legR",
+   "pattern": "speckle",
+   "pattern_colour": "#4C6524",
+   "to": [
+    7,
+    10,
+    3
+   ]
+  },
+  {
+   "colour": "#7A5230",
+   "from": [
+    -9,
+    9,
+    -5
+   ],
+   "name": "body",
+   "pattern": "fur",
+   "pattern_colour": "#5C3A1E",
+   "to": [
+    9,
+    26,
+    5
+   ]
+  },
+  {
+   "colour": "#7FA040",
+   "from": [
+    -6,
+    10,
+    -6
+   ],
+   "name": "belly",
+   "parent": "body",
+   "to": [
+    6,
+    22,
+    -4
+   ]
+  },
+  {
+   "colour": "#3B2A16",
+   "from": [
+    -9,
+    12,
+    -6
+   ],
+   "name": "belt",
+   "parent": "body",
+   "to": [
+    9,
+    14,
+    6
+   ]
+  },
+  {
+   "colour": "#7FA040",
+   "from": [
+    -14,
+    10,
+    -3
+   ],
+   "name": "armL",
+   "pattern": "speckle",
+   "pattern_colour": "#6A8A34",
+   "to": [
+    -8,
+    25,
+    3
+   ]
+  },
+  {
+   "colour": "#7FA040",
+   "from": [
+    8,
+    10,
+    -3
+   ],
+   "name": "armR",
+   "pattern": "speckle",
+   "pattern_colour": "#6A8A34",
+   "to": [
+    14,
+    25,
+    3
+   ]
+  },
+  {
+   "colour": "#7FA040",
+   "from": [
+    -6,
+    25,
+    -5
+   ],
+   "name": "head",
+   "pattern": "speckle",
+   "pattern_colour": "#6A8A34",
+   "to": [
+    6,
+    36,
+    5
+   ]
+  },
+  {
+   "colour": "#7FA040",
+   "from": [
+    -8,
+    30,
+    -1
+   ],
+   "name": "earL",
+   "parent": "head",
+   "to": [
+    -5,
+    33,
+    1
+   ]
+  },
+  {
+   "colour": "#7FA040",
+   "from": [
+    5,
+    30,
+    -1
+   ],
+   "name": "earR",
+   "parent": "head",
+   "to": [
+    8,
+    33,
+    1
+   ]
+  },
+  {
+   "colour": "white",
+   "from": [
+    -4,
+    31,
+    -6
+   ],
+   "name": "eyeL",
+   "parent": "head",
+   "to": [
+    -1,
+    33,
+    -4
+   ]
+  },
+  {
+   "colour": "black",
+   "from": [
+    -3,
+    31,
+    -6.5
+   ],
+   "name": "pupilL",
+   "parent": "head",
+   "to": [
+    -2,
+    32,
+    -5
+   ]
+  },
+  {
+   "colour": "white",
+   "from": [
+    1,
+    31,
+    -6
+   ],
+   "name": "eyeR",
+   "parent": "head",
+   "to": [
+    4,
+    33,
+    -4
+   ]
+  },
+  {
+   "colour": "black",
+   "from": [
+    2,
+    31,
+    -6.5
+   ],
+   "name": "pupilR",
+   "parent": "head",
+   "to": [
+    3,
+    32,
+    -5
+   ]
+  },
+  {
+   "colour": "#3B2A16",
+   "from": [
+    -5,
+    34,
+    -6
+   ],
+   "name": "browL1",
+   "parent": "head",
+   "to": [
+    -3,
+    35,
+    -4
+   ]
+  },
+  {
+   "colour": "#3B2A16",
+   "from": [
+    -3,
+    33.5,
+    -6
+   ],
+   "name": "browL2",
+   "parent": "head",
+   "to": [
+    -1,
+    34.5,
+    -4
+   ]
+  },
+  {
+   "colour": "#3B2A16",
+   "from": [
+    3,
+    34,
+    -6
+   ],
+   "name": "browR1",
+   "parent": "head",
+   "to": [
+    5,
+    35,
+    -4
+   ]
+  },
+  {
+   "colour": "#3B2A16",
+   "from": [
+    1,
+    33.5,
+    -6
+   ],
+   "name": "browR2",
+   "parent": "head",
+   "to": [
+    3,
+    34.5,
+    -4
+   ]
+  },
+  {
+   "colour": "#6A8A34",
+   "from": [
+    -1,
+    29,
+    -7
+   ],
+   "name": "nose",
+   "parent": "head",
+   "to": [
+    1,
+    31,
+    -4
+   ]
+  },
+  {
+   "colour": "#3B1A10",
+   "from": [
+    -4,
+    27,
+    -6
+   ],
+   "name": "mouthL",
+   "parent": "head",
+   "to": [
+    -2,
+    28,
+    -4
+   ]
+  },
+  {
+   "colour": "#3B1A10",
+   "from": [
+    -2,
+    26.5,
+    -6
+   ],
+   "name": "mouthM",
+   "parent": "head",
+   "to": [
+    2,
+    27.5,
+    -4
+   ]
+  },
+  {
+   "colour": "#3B1A10",
+   "from": [
+    2,
+    27,
+    -6
+   ],
+   "name": "mouthR",
+   "parent": "head",
+   "to": [
+    4,
+    28,
+    -4
+   ]
+  },
+  {
+   "colour": "#F2EAD0",
+   "from": [
+    -3,
+    27,
+    -6.5
+   ],
+   "name": "tuskL",
+   "parent": "head",
+   "to": [
+    -2,
+    29,
+    -5
+   ]
+  },
+  {
+   "colour": "#F2EAD0",
+   "from": [
+    2,
+    27,
+    -6.5
+   ],
+   "name": "tuskR",
+   "parent": "head",
+   "to": [
+    3,
+    29,
+    -5
+   ]
+  }
+ ],
+ "powers": [
+  "friendly",
+  "persistent"
+ ],
+ "scale": 2.2,
+ "speed": 0.22,
+ "status": "Sculpting your big green ogre",
+ "voice": "ravager"
+}

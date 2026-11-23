@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:item/potion",
+  "textures": {
+    "layer0": "wishpack:item/tinted/potion_tint",
+    "layer1": "wishpack:item/tinted/potion_keep"
+  }
+}

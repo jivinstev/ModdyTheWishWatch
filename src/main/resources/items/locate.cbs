@@ -1,0 +1,9 @@
+# LOCATE — "a compass that finds villages". Points him at the nearest place of a kind.
+#
+# Finding it is Java's (Locate): the search is vanilla's own /locate, which a function cannot run and
+# still hand the answer to a compass. This only asks, by tagging him, and makes it heard; Locate puts
+# the real compass on the place (lodestone_tracker), tells him how far, and draws the way in sparkles.
+function effect()
+    /execute as ${TARGET} run tag @s add mfam_locate_${PLACE}
+    /playsound minecraft:item.lodestone_compass.lock master @a ~ ~ ~ 1 1.2
+end

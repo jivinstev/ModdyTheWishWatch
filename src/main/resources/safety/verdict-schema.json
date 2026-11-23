@@ -1,0 +1,55 @@
+{
+  "$comment": "THE TYPED BOUNDARY between a grader model and this mod (docs/CHILD_SAFETY_PLAN.md §4). Handed to the CLI as --json-schema, so the model cannot return a shape SafetyVerdict.parse has never seen. Every enum here is pinned to the Java enum by SafetyVerdictSchemaTest, in BOTH directions: a value in one and not the other is a silent hole (the model says a word the parser drops, or the parser expects a word the model was never offered). additionalProperties is false because one unclaimed string is all an injected instruction needs (docs/PATTERNS.md).",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "violence": {
+      "type": "string",
+      "description": "Realistic blood/gore, torture, cruelty presented as fun, mutilation, violence against a real named person. Minecraft combat, killing mobs and bosses, explosions, cartoon villains, traps and arenas are FINE.",
+      "enum": ["FINE", "MAYBE", "LIKELY", "CLEARLY"]
+    },
+    "sexual": {
+      "type": "string",
+      "description": "Any sexual content, nudity, sexualised bodies, adult romance. Bathroom and gross-out humour is FINE.",
+      "enum": ["FINE", "MAYBE", "LIKELY", "CLEARLY"]
+    },
+    "hate": {
+      "type": "string",
+      "description": "Slurs, demeaning a group, mocking a disability or appearance, cruelty aimed at a real person, bullying. Brands, mascots and public figures used as characters are FINE.",
+      "enum": ["FINE", "MAYBE", "LIKELY", "CLEARLY"]
+    },
+    "danger": {
+      "type": "string",
+      "description": "Glorifying or instructing real drugs, alcohol, tobacco, real weapon-making, dangerous stunts, self-harm; personal information; contacting strangers. In-game potions, TNT, swords and cartoon guns are FINE.",
+      "enum": ["FINE", "MAYBE", "LIKELY", "CLEARLY"]
+    },
+    "wellbeing": {
+      "type": "boolean",
+      "description": "True ONLY when the text reads as real distress about the child's real life. Never a block: it writes a note for a grown-up and the wish is still answered kindly."
+    },
+    "reasons": {
+      "type": "array",
+      "maxItems": 4,
+      "description": "Why, from a closed vocabulary, so a log can be counted. Empty when everything is FINE.",
+      "items": {
+        "type": "string",
+        "enum": [
+          "GORE", "TORTURE", "CRUELTY", "SEXUAL", "NUDITY", "SLUR", "DEMEANING_GROUP",
+          "REAL_PERSON_CRUELTY", "DRUGS", "ALCOHOL", "REAL_WEAPON", "SELF_HARM",
+          "PERSONAL_INFO", "STRANGER_CONTACT", "DISTRESS", "OTHER"
+        ]
+      }
+    },
+    "redirect": {
+      "type": "string",
+      "maxLength": 200,
+      "description": "ONLY when the highest band is LIKELY: a fun, kid-appropriate Minecraft wish to make instead, in the child's own register. Empty otherwise."
+    },
+    "stageIndex": {
+      "type": "integer",
+      "minimum": -1,
+      "description": "PLAN grading only: the 0-based index of the step that caused the highest band. -1 when no single step is responsible. REQUIRED for a plan grade (SafetyGrader.planSchema appends it to `required`); absent from `required` here because an input grade has no stages."
+    }
+  },
+  "required": ["violence", "sexual", "hate", "danger", "wellbeing", "reasons"]
+}

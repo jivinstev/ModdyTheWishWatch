@@ -1,0 +1,9 @@
+# LIGHTNING — it strikes where you point.
+#
+# No particle and no sound of our own: a lightning bolt is already the loudest, brightest thing in
+# the game, and adding a telegraph to it only muddies the strike.
+# the one who used it is spared (item/WishBoltGuard) — a bolt at what a sword hit reaches him too.
+function effect()
+    /tag @s[type=minecraft:player] add moddy_bolt_maker
+${BOLTS}
+end

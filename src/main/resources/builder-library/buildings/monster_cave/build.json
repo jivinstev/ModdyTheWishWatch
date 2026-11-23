@@ -1,0 +1,126 @@
+{
+ "id": "monster_cave",
+ "name": "Monster Cave",
+ "shapes": [
+  {
+   "block": "minecraft:air",
+   "depth": 11,
+   "dx": 0,
+   "dy": 0,
+   "dz": 0,
+   "height": 4,
+   "hollow": false,
+   "kind": "box",
+   "name": "clear",
+   "width": 11
+  },
+  {
+   "block": "minecraft:stone",
+   "depth": 11,
+   "dx": 0,
+   "dy": -1,
+   "dz": 0,
+   "height": 1,
+   "hollow": false,
+   "kind": "box",
+   "name": "floor",
+   "width": 11
+  },
+  {
+   "block": "minecraft:cobblestone",
+   "depth": 11,
+   "dx": 0,
+   "dy": 0,
+   "dz": 0,
+   "height": 3,
+   "hollow": false,
+   "kind": "box",
+   "name": "rock",
+   "width": 11
+  },
+  {
+   "block": "minecraft:stone",
+   "depth": 11,
+   "dx": 0,
+   "dy": 3,
+   "dz": 0,
+   "height": 1,
+   "hollow": false,
+   "kind": "box",
+   "name": "roof",
+   "width": 11
+  },
+  {
+   "block": "minecraft:air",
+   "depth": 1,
+   "dx": 5,
+   "dy": 0,
+   "dz": 0,
+   "height": 2,
+   "hollow": false,
+   "kind": "box",
+   "name": "doorway",
+   "width": 1
+  },
+  {
+   "block": "minecraft:air",
+   "depth": 1,
+   "dx": 1,
+   "dy": 0,
+   "dz": 1,
+   "height": 2,
+   "hollow": false,
+   "kind": "box",
+   "name": "tunnel_front",
+   "width": 5
+  },
+  {
+   "block": "minecraft:air",
+   "depth": 9,
+   "dx": 1,
+   "dy": 0,
+   "dz": 1,
+   "height": 2,
+   "hollow": false,
+   "kind": "box",
+   "name": "tunnel_side",
+   "width": 1
+  },
+  {
+   "block": "minecraft:air",
+   "depth": 1,
+   "dx": 1,
+   "dy": 0,
+   "dz": 9,
+   "height": 2,
+   "hollow": false,
+   "kind": "box",
+   "name": "tunnel_back",
+   "width": 3
+  },
+  {
+   "block": "minecraft:air",
+   "depth": 1,
+   "dx": 3,
+   "dy": 0,
+   "dz": 8,
+   "height": 2,
+   "hollow": false,
+   "kind": "box",
+   "name": "room_entrance",
+   "width": 1
+  },
+  {
+   "block": "minecraft:air",
+   "depth": 5,
+   "dx": 3,
+   "dy": 0,
+   "dz": 3,
+   "height": 3,
+   "hollow": false,
+   "kind": "box",
+   "name": "dark_room",
+   "width": 7
+  }
+ ]
+}

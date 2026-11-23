@@ -1,0 +1,78 @@
+[
+ {
+  "cluster": "2a",
+  "name": "donut",
+  "verdict": "PASS",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.606,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "accent": 199,
+   "body": 258,
+   "fixed": 18,
+   "line": 138,
+   "shine": 8
+  }
+ },
+ {
+  "cluster": "2a",
+  "name": "pizza_slice",
+  "verdict": "PASS",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.425,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "body": 219,
+   "fixed": 127,
+   "line": 87,
+   "shine": 2
+  }
+ },
+ {
+  "cluster": "2a",
+  "name": "rooster",
+  "verdict": "FAIL",
+  "n": 32,
+  "problems": [
+   "touches the edge (needs a 1px margin)"
+  ],
+  "warnings": [
+   "closed 3 outline gap(s) automatically"
+  ],
+  "stats": {
+   "fill": 0.467,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "body": 263,
+   "fixed": 63,
+   "line": 151,
+   "shine": 1
+  }
+ },
+ {
+  "cluster": "2a",
+  "name": "shark",
+  "verdict": "WARN",
+  "n": 32,
+  "problems": [],
+  "warnings": [
+   "closed 1 outline gap(s) automatically"
+  ],
+  "stats": {
+   "fill": 0.454,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "accent": 37,
+   "body": 305,
+   "fixed": 1,
+   "line": 121,
+   "shine": 1
+  }
+ }
+]

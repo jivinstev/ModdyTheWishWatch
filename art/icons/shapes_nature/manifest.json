@@ -1,0 +1,70 @@
+{
+ "cluster": "shapes_nature",
+ "order": [
+  "flower",
+  "plant",
+  "mushroom",
+  "coral",
+  "powder",
+  "lump",
+  "crystal",
+  "bowl_food",
+  "sheet"
+ ],
+ "icons": [
+  {
+   "name": "flower",
+   "status": "ok",
+   "attempts": 4,
+   "note": "Flower on a green stem with two leaves; cyan petals, grey centre."
+  },
+  {
+   "name": "plant",
+   "status": "ok",
+   "attempts": 2,
+   "note": "Tuft of five leaning grass blades."
+  },
+  {
+   "name": "mushroom",
+   "status": "ok",
+   "attempts": 1,
+   "note": "Small mushroom: spotted grey dome cap, pale fixed stem."
+  },
+  {
+   "name": "coral",
+   "status": "ok",
+   "attempts": 3,
+   "note": "Branching coral like little antlers, light tips to dark base."
+  },
+  {
+   "name": "powder",
+   "status": "ok",
+   "attempts": 1,
+   "note": "Small heap of powder with texture dashes and dust specks."
+  },
+  {
+   "name": "lump",
+   "status": "ok",
+   "attempts": 1,
+   "note": "Chunky lump, grey body with one cyan accent patch."
+  },
+  {
+   "name": "crystal",
+   "status": "ok",
+   "attempts": 1,
+   "note": "Three crystal points growing from a merged base."
+  },
+  {
+   "name": "bowl_food",
+   "status": "ok",
+   "attempts": 1,
+   "note": "Wooden bowl in fixed browns, cyan food heap."
+  },
+  {
+   "name": "sheet",
+   "status": "ok",
+   "attempts": 1,
+   "note": "Sheet of paper, curled flap at the top-right corner."
+  }
+ ]
+}

@@ -1,0 +1,19 @@
+{
+ "count": 1,
+ "effects": [
+  "turn_into"
+ ],
+ "id": "lemonade_stand_machine_convert",
+ "name": "Lemonade Stand Machine",
+ "params": {
+  "FROM": "minecraft:sugar",
+  "TO": "lemonade_food",
+  "_kit": {
+   "items": "minecraft:sugar 32"
+  }
+ },
+ "parts": [],
+ "properties": {},
+ "shape": "machine",
+ "variants": []
+}

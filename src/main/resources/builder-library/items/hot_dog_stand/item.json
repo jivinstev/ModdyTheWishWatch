@@ -1,0 +1,19 @@
+{
+ "count": 1,
+ "effects": [
+  "turn_into"
+ ],
+ "id": "hot_dog_machine_convert",
+ "name": "Hot Dog Machine",
+ "params": {
+  "FROM": "minecraft:porkchop",
+  "TO": "hot_dog_food",
+  "_kit": {
+   "items": "minecraft:porkchop 32"
+  }
+ },
+ "parts": [],
+ "properties": {},
+ "shape": "machine",
+ "variants": []
+}

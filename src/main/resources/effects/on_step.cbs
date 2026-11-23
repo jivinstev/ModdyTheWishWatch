@@ -1,0 +1,44 @@
+# ON STEP — something happens as it WALKS: every few blocks along the ground, a stomp, a puff, a
+# spark — and never while it stands still. chunk 3: "it hurts the monsters when it steps" (and
+# NOT when it stands about) had no trigger that knew whether it was moving, so it was given a slam
+# or an aura and hurt them standing still.
+#
+# How far it has walked is measured here, from where it is each tick: |dx| + |dz| in tenths of a
+# block, added up only while it is on the ground. A move of more than a block in one tick is a
+# teleport (a blink, a respawn), never a step.
+#
+# The final executor is each VICTIM, near where it stepped: write @s in COMMAND to mean "whoever it
+# steps near". WHO can be a victim is TARGET (default: everything but players), filled in as VICTIMS.
+reset
+    /scoreboard objectives add mfam_stepx dummy
+    /scoreboard objectives add mfam_stepz dummy
+    /scoreboard objectives add mfam_steppx dummy
+    /scoreboard objectives add mfam_steppz dummy
+    /scoreboard objectives add mfam_stepd dummy
+    /scoreboard objectives add mfam_stepe dummy
+    /scoreboard objectives add mfam_stepw dummy
+    /scoreboard objectives add mfam_stepk dummy
+    /scoreboard players set #neg mfam_stepk -1
+end
+
+clock tick
+    /execute as @e[tag=${TAG}] store result score @s mfam_stepx run data get entity @s Pos[0] 10
+    /execute as @e[tag=${TAG}] store result score @s mfam_stepz run data get entity @s Pos[2] 10
+    /execute as @e[tag=${TAG}] run scoreboard players operation @s mfam_stepd = @s mfam_stepx
+    /execute as @e[tag=${TAG}] run scoreboard players operation @s mfam_stepd -= @s mfam_steppx
+    /execute as @e[tag=${TAG},scores={mfam_stepd=..-1}] run scoreboard players operation @s mfam_stepd *= #neg mfam_stepk
+    /execute as @e[tag=${TAG}] run scoreboard players operation @s mfam_stepe = @s mfam_stepz
+    /execute as @e[tag=${TAG}] run scoreboard players operation @s mfam_stepe -= @s mfam_steppz
+    /execute as @e[tag=${TAG},scores={mfam_stepe=..-1}] run scoreboard players operation @s mfam_stepe *= #neg mfam_stepk
+    /execute as @e[tag=${TAG}] run scoreboard players operation @s mfam_stepd += @s mfam_stepe
+    /execute as @e[tag=${TAG},scores={mfam_stepd=11..}] run scoreboard players set @s mfam_stepd 0
+    /execute as @e[tag=${TAG},nbt={OnGround:1b}] run scoreboard players operation @s mfam_stepw += @s mfam_stepd
+    /execute as @e[tag=${TAG}] run scoreboard players operation @s mfam_steppx = @s mfam_stepx
+    /execute as @e[tag=${TAG}] run scoreboard players operation @s mfam_steppz = @s mfam_stepz
+    /execute unless entity @e[tag=${TAG},tag=mfam_veiled,limit=1] as @e[tag=${TAG},scores={mfam_stepw=${STRIDE_TENTHS}..}] at @s run particle ${PARTICLE} ~ ~0.1 ~ 0.4 0.05 0.4 0.02 8 force
+    /execute if entity @e[tag=${TAG},tag=mfam_veiled,limit=1] as @e[tag=${TAG},scores={mfam_stepw=${STRIDE_TENTHS}..}] at @s run particle ${PARTICLE} ~ ~0.1 ~ 0.4 0.05 0.4 0.02 8 force @a[tag=!mfam_veil_blind]
+    /execute unless entity @e[tag=${TAG},tag=mfam_veiled,limit=1] as @e[tag=${TAG},scores={mfam_stepw=${STRIDE_TENTHS}..}] at @s run playsound ${SOUND} master @a ~ ~ ~ 1 1
+    /execute if entity @e[tag=${TAG},tag=mfam_veiled,limit=1] as @e[tag=${TAG},scores={mfam_stepw=${STRIDE_TENTHS}..}] at @s run playsound ${SOUND} master @a[tag=!mfam_veil_blind] ~ ~ ~ 1 1
+    /execute as @e[tag=${TAG},scores={mfam_stepw=${STRIDE_TENTHS}..}] at @s as @e[distance=..${RADIUS},tag=!${TAG},tag=!mfam_flank${VICTIMS}] run ${COMMAND}
+    /execute as @e[tag=${TAG},scores={mfam_stepw=${STRIDE_TENTHS}..}] run scoreboard players set @s mfam_stepw 0
+end

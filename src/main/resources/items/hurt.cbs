@@ -1,0 +1,12 @@
+# HURT — it damages what it is aimed at.
+#
+# /damage takes ONE target (a primer gotcha that has cost real debugging), so this is
+# `execute as <them> run damage @s`, never `damage @e[...]`.
+#
+# minecraft:magic is deliberate: it ignores armour, so "it kills a Bloop in one hit" is true of an
+# armoured Bloop too. A weapon that works on everything except the boss is the wish not granted.
+function effect()
+    /execute as ${TARGET} run damage @s ${DAMAGE} minecraft:magic
+    /particle minecraft:crit ~ ~1 ~ 0.5 0.5 0.5 0.15 25 force
+    /playsound minecraft:entity.player.attack.crit master @a ~ ~ ~ 1 1
+end

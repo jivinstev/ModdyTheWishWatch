@@ -1,0 +1,138 @@
+{
+ "id": "tree_nursery",
+ "name": "Tree Nursery",
+ "shapes": [
+  {
+   "block": "minecraft:air",
+   "depth": 9,
+   "dx": 0,
+   "dy": 0,
+   "dz": 0,
+   "height": 3,
+   "hollow": false,
+   "kind": "box",
+   "name": "clear",
+   "width": 9
+  },
+  {
+   "block": "minecraft:dirt",
+   "depth": 9,
+   "dx": 0,
+   "dy": -1,
+   "dz": 0,
+   "height": 1,
+   "hollow": false,
+   "kind": "box",
+   "name": "ground",
+   "width": 9
+  },
+  {
+   "block": "minecraft:oak_sapling",
+   "depth": 1,
+   "dx": 1,
+   "dy": 0,
+   "dz": 1,
+   "height": 1,
+   "hollow": false,
+   "kind": "box",
+   "name": "sapling_1",
+   "width": 1
+  },
+  {
+   "block": "minecraft:oak_sapling",
+   "depth": 1,
+   "dx": 4,
+   "dy": 0,
+   "dz": 1,
+   "height": 1,
+   "hollow": false,
+   "kind": "box",
+   "name": "sapling_2",
+   "width": 1
+  },
+  {
+   "block": "minecraft:oak_sapling",
+   "depth": 1,
+   "dx": 7,
+   "dy": 0,
+   "dz": 1,
+   "height": 1,
+   "hollow": false,
+   "kind": "box",
+   "name": "sapling_3",
+   "width": 1
+  },
+  {
+   "block": "minecraft:oak_sapling",
+   "depth": 1,
+   "dx": 1,
+   "dy": 0,
+   "dz": 4,
+   "height": 1,
+   "hollow": false,
+   "kind": "box",
+   "name": "sapling_4",
+   "width": 1
+  },
+  {
+   "block": "minecraft:oak_sapling",
+   "depth": 1,
+   "dx": 7,
+   "dy": 0,
+   "dz": 4,
+   "height": 1,
+   "hollow": false,
+   "kind": "box",
+   "name": "sapling_5",
+   "width": 1
+  },
+  {
+   "block": "minecraft:oak_sapling",
+   "depth": 1,
+   "dx": 1,
+   "dy": 0,
+   "dz": 7,
+   "height": 1,
+   "hollow": false,
+   "kind": "box",
+   "name": "sapling_6",
+   "width": 1
+  },
+  {
+   "block": "minecraft:oak_sapling",
+   "depth": 1,
+   "dx": 4,
+   "dy": 0,
+   "dz": 7,
+   "height": 1,
+   "hollow": false,
+   "kind": "box",
+   "name": "sapling_7",
+   "width": 1
+  },
+  {
+   "block": "minecraft:oak_sapling",
+   "depth": 1,
+   "dx": 7,
+   "dy": 0,
+   "dz": 7,
+   "height": 1,
+   "hollow": false,
+   "kind": "box",
+   "name": "sapling_8",
+   "width": 1
+  },
+  {
+   "block": "minecraft:torch",
+   "depth": 1,
+   "dx": 4,
+   "dy": 0,
+   "dz": 4,
+   "height": 1,
+   "hollow": false,
+   "kind": "box",
+   "name": "torch_centre",
+   "width": 1
+  }
+ ]
+}

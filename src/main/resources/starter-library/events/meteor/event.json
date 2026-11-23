@@ -1,0 +1,17 @@
+{
+  "name": "meteor",
+  "motion": "falling_body",
+  "size": "medium",
+  "material": "minecraft:magma_block",
+  "then": [
+    {
+      "if": "water_near",
+      "design": "meteor_splash"
+    },
+    {
+      "if": "on_land",
+      "design": "meteor_crater"
+    }
+  ],
+  "title": "METEOR!"
+}

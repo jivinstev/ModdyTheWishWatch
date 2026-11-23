@@ -1,0 +1,19 @@
+# EFFECT: colour_cycle — an ORDINARY mob shimmers through its own colours.
+#
+# "a rainbow axolotl" is a vanilla axolotl whose Variant steps pink → gold → cyan → blue for ever.
+# No model, no pack, no reload: the palette is the mob's own. ColourCycle knows the saved field and
+# the rainbow order per mob and writes one step per colour, each gated on the clock reaching its
+# period. (Never name a placeholder in a comment here: it is substituted there too.)
+reset
+    /scoreboard objectives add mfam_hue dummy
+    /scoreboard players set #t_${KEY} mfam_hue 0
+    /scoreboard players set #h_${KEY} mfam_hue 0
+end
+
+clock tick
+    /scoreboard players add #t_${KEY} mfam_hue 1
+    ${STEPS}
+    /execute if score #t_${KEY} mfam_hue matches ${PERIOD_TICKS}.. run scoreboard players add #h_${KEY} mfam_hue 1
+    /execute if score #h_${KEY} mfam_hue matches ${COUNT}.. run scoreboard players set #h_${KEY} mfam_hue 0
+    /execute if score #t_${KEY} mfam_hue matches ${PERIOD_TICKS}.. run scoreboard players set #t_${KEY} mfam_hue 0
+end

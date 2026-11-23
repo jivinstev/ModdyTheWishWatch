@@ -1,0 +1,355 @@
+{
+  "id": "person",
+  "name": "Person",
+  "note": "Plain friendly human base, player-sized (32 tall). Skin tan head, brown hair parented to head (top+back only so face visible), blue shirt, dark blue trousers, grey shoes. Smile is 3 stepped boxes, flat paired brows = friendly. Meant as reusable base for start_from.",
+  "status": "Sculpting a friendly person",
+  "base": "wild",
+  "powers": [
+    "friendly"
+  ],
+  "damage": 0,
+  "health": 20,
+  "palette": [
+    {
+      "colour": "#3B6FD6",
+      "percent": 35
+    },
+    {
+      "colour": "#2B3A67",
+      "percent": 30
+    },
+    {
+      "colour": "#E0AC80",
+      "percent": 25
+    },
+    {
+      "colour": "#5A3A1E",
+      "percent": 6
+    }
+  ],
+  "parts": [
+    {
+      "name": "legL",
+      "from": [
+        0,
+        0,
+        -2
+      ],
+      "to": [
+        4,
+        12,
+        2
+      ],
+      "colour": "#2B3A67",
+      "pattern": "speckle",
+      "pattern_colour": "#24315A"
+    },
+    {
+      "name": "legR",
+      "from": [
+        -4,
+        0,
+        -2
+      ],
+      "to": [
+        0,
+        12,
+        2
+      ],
+      "colour": "#2B3A67",
+      "pattern": "speckle",
+      "pattern_colour": "#24315A"
+    },
+    {
+      "name": "shoeL",
+      "from": [
+        0,
+        0,
+        -3
+      ],
+      "to": [
+        4,
+        2,
+        2
+      ],
+      "colour": "#555555",
+      "parent": "legL"
+    },
+    {
+      "name": "shoeR",
+      "from": [
+        -4,
+        0,
+        -3
+      ],
+      "to": [
+        0,
+        2,
+        2
+      ],
+      "colour": "#555555",
+      "parent": "legR"
+    },
+    {
+      "name": "body",
+      "from": [
+        -4,
+        11,
+        -2
+      ],
+      "to": [
+        4,
+        24,
+        2
+      ],
+      "colour": "#3B6FD6",
+      "pattern": "fur",
+      "pattern_colour": "#335FC0"
+    },
+    {
+      "name": "armL",
+      "from": [
+        4,
+        12,
+        -2
+      ],
+      "to": [
+        7,
+        24,
+        2
+      ],
+      "colour": "#3B6FD6",
+      "pattern": "fur",
+      "pattern_colour": "#335FC0"
+    },
+    {
+      "name": "armR",
+      "from": [
+        -7,
+        12,
+        -2
+      ],
+      "to": [
+        -4,
+        24,
+        2
+      ],
+      "colour": "#3B6FD6",
+      "pattern": "fur",
+      "pattern_colour": "#335FC0"
+    },
+    {
+      "name": "handL",
+      "from": [
+        4,
+        11,
+        -2
+      ],
+      "to": [
+        7,
+        14,
+        2
+      ],
+      "colour": "#E0AC80",
+      "parent": "armL"
+    },
+    {
+      "name": "handR",
+      "from": [
+        -7,
+        11,
+        -2
+      ],
+      "to": [
+        -4,
+        14,
+        2
+      ],
+      "colour": "#E0AC80",
+      "parent": "armR"
+    },
+    {
+      "name": "head",
+      "from": [
+        -4,
+        23,
+        -4
+      ],
+      "to": [
+        4,
+        31,
+        4
+      ],
+      "colour": "#E0AC80",
+      "pattern": "gradient",
+      "pattern_colour": "#D69E70"
+    },
+    {
+      "name": "hair",
+      "from": [
+        -4.5,
+        29,
+        -4.5
+      ],
+      "to": [
+        4.5,
+        32,
+        4.5
+      ],
+      "colour": "#5A3A1E",
+      "parent": "head",
+      "pattern": "fur",
+      "pattern_colour": "#4A2F17"
+    },
+    {
+      "name": "hairBack",
+      "from": [
+        -4.5,
+        25,
+        0
+      ],
+      "to": [
+        4.5,
+        30,
+        4.5
+      ],
+      "colour": "#5A3A1E",
+      "parent": "head"
+    },
+    {
+      "name": "eyeL",
+      "from": [
+        1.0,
+        27.0,
+        -4.9
+      ],
+      "to": [
+        3.0,
+        28.5,
+        -3.9
+      ],
+      "colour": "#FFFFFF",
+      "parent": "head"
+    },
+    {
+      "name": "eyeR",
+      "from": [
+        -3.0,
+        27.0,
+        -4.9
+      ],
+      "to": [
+        -1.0,
+        28.5,
+        -3.9
+      ],
+      "colour": "#FFFFFF",
+      "parent": "head"
+    },
+    {
+      "name": "pupilL",
+      "from": [
+        1.5,
+        27.0,
+        -5.2
+      ],
+      "to": [
+        2.5,
+        28.5,
+        -4.2
+      ],
+      "colour": "#3A2A1A",
+      "parent": "head"
+    },
+    {
+      "name": "pupilR",
+      "from": [
+        -2.5,
+        27.0,
+        -5.2
+      ],
+      "to": [
+        -1.5,
+        28.5,
+        -4.2
+      ],
+      "colour": "#3A2A1A",
+      "parent": "head"
+    },
+    {
+      "name": "browL",
+      "from": [
+        1.0,
+        28.75,
+        -5.0
+      ],
+      "to": [
+        3.0,
+        29.75,
+        -4.0
+      ],
+      "colour": "#4A2F17",
+      "parent": "head"
+    },
+    {
+      "name": "browR",
+      "from": [
+        -3.0,
+        28.75,
+        -5.0
+      ],
+      "to": [
+        -1.0,
+        29.75,
+        -4.0
+      ],
+      "colour": "#4A2F17",
+      "parent": "head"
+    },
+    {
+      "name": "mouthMid",
+      "from": [
+        -1.0,
+        24.25,
+        -4.9
+      ],
+      "to": [
+        1.0,
+        25.25,
+        -3.9
+      ],
+      "colour": "#A0524A",
+      "parent": "head"
+    },
+    {
+      "name": "mouthL",
+      "from": [
+        1.0,
+        24.75,
+        -4.9
+      ],
+      "to": [
+        2.0,
+        25.75,
+        -3.9
+      ],
+      "colour": "#A0524A",
+      "parent": "head"
+    },
+    {
+      "name": "mouthR",
+      "from": [
+        -2.0,
+        24.75,
+        -4.9
+      ],
+      "to": [
+        -1.0,
+        25.75,
+        -3.9
+      ],
+      "colour": "#A0524A",
+      "parent": "head"
+    }
+  ]
+}

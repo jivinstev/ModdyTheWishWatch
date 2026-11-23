@@ -1,0 +1,20 @@
+# ARROW — he SHOOTS it. A bow, crossbow or trident whose arrow makes the wish happen where
+# it lands. The weapon carries the function to run; WishShapeEvents arms every arrow it fires, and
+# WishThrowImpact runs the function at the impact, as the shooter. Nothing here throws anything:
+# the arrows are his own and the weapon shoots them the way it always does.
+import common
+
+function give()
+${GIVES}
+    /tellraw @s {"text":"${GIVE_MESSAGE}","color":"${HEX}"}
+end
+
+function act()
+    /function $namespace:effect
+end
+
+clock tick
+    /execute as @e[tag=${FEATURE}_fly] at @s run particle ${TRAIL} ~ ~ ~ 0.05 0.05 0.05 0.01 3 force
+end
+
+${EFFECT_BLOCK}

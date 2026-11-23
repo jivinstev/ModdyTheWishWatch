@@ -1,0 +1,15 @@
+# ON_MINE — he MINES with it. The wish happens at every block he breaks while holding it:
+# WishShapeEvents runs the function as him, at the centre of the block, the tick AFTER it breaks —
+# so an effect that places something there is not erased by the break itself.
+import common
+
+function give()
+${GIVES}
+    /tellraw @s {"text":"${GIVE_MESSAGE}","color":"${HEX}"}
+end
+
+function act()
+    /function $namespace:effect
+end
+
+${EFFECT_BLOCK}

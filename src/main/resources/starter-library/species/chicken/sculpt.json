@@ -1,0 +1,308 @@
+{
+  "id": "chicken",
+  "name": "Chicken",
+  "scale": 1.2,
+  "base": "companion",
+  "damage": 0,
+  "health": 20,
+  "powers": [
+    "friendly",
+    "persistent"
+  ],
+  "parts": [
+    {
+      "name": "body",
+      "from": [
+        -4.0,
+        5.0,
+        -5.0
+      ],
+      "to": [
+        4.0,
+        12.0,
+        5.0
+      ],
+      "pivot": [
+        0.0,
+        5.0,
+        0.0
+      ],
+      "colour": "#FFFFFF",
+      "pattern": "fur",
+      "patternColour": "#FFFFFF"
+    },
+    {
+      "name": "tail",
+      "parent": "body",
+      "from": [
+        -3.0,
+        9.0,
+        5.0
+      ],
+      "to": [
+        3.0,
+        14.0,
+        7.0
+      ],
+      "pivot": [
+        0.0,
+        14.0,
+        6.0
+      ],
+      "colour": "#FFFFFF"
+    },
+    {
+      "name": "wingL",
+      "parent": "body",
+      "from": [
+        4.0,
+        6.0,
+        -3.0
+      ],
+      "to": [
+        5.0,
+        11.0,
+        4.0
+      ],
+      "pivot": [
+        4.5,
+        11.0,
+        0.5
+      ],
+      "colour": "#F0F0F0"
+    },
+    {
+      "name": "wingR",
+      "parent": "body",
+      "from": [
+        -5.0,
+        6.0,
+        -3.0
+      ],
+      "to": [
+        -4.0,
+        11.0,
+        4.0
+      ],
+      "pivot": [
+        -4.5,
+        11.0,
+        0.5
+      ],
+      "colour": "#F0F0F0"
+    },
+    {
+      "name": "head",
+      "from": [
+        -3.0,
+        11.0,
+        -7.0
+      ],
+      "to": [
+        3.0,
+        18.0,
+        -2.0
+      ],
+      "pivot": [
+        0.0,
+        12.0,
+        -4.0
+      ],
+      "colour": "#FFFFFF"
+    },
+    {
+      "name": "comb",
+      "parent": "head",
+      "from": [
+        -1.0,
+        18.0,
+        -7.0
+      ],
+      "to": [
+        1.0,
+        21.0,
+        -2.0
+      ],
+      "pivot": [
+        0.0,
+        18.0,
+        -4.5
+      ],
+      "colour": "#FF4040"
+    },
+    {
+      "name": "beak",
+      "parent": "head",
+      "from": [
+        -2.0,
+        14.0,
+        -10.0
+      ],
+      "to": [
+        2.0,
+        16.0,
+        -7.0
+      ],
+      "pivot": [
+        0.0,
+        14.0,
+        -8.5
+      ],
+      "colour": "#FFE040"
+    },
+    {
+      "name": "wattle",
+      "parent": "head",
+      "from": [
+        -1.0,
+        11.0,
+        -9.0
+      ],
+      "to": [
+        2.0,
+        14.0,
+        -7.0
+      ],
+      "pivot": [
+        0.5,
+        11.0,
+        -8.0
+      ],
+      "colour": "#FF4040"
+    },
+    {
+      "name": "legL",
+      "from": [
+        1.0,
+        0.0,
+        -1.0
+      ],
+      "to": [
+        3.0,
+        5.0,
+        1.0
+      ],
+      "pivot": [
+        2.0,
+        5.0,
+        0.0
+      ],
+      "colour": "#FFE040"
+    },
+    {
+      "name": "legR",
+      "from": [
+        -3.0,
+        0.0,
+        -1.0
+      ],
+      "to": [
+        -1.0,
+        5.0,
+        1.0
+      ],
+      "pivot": [
+        -2.0,
+        5.0,
+        0.0
+      ],
+      "colour": "#FFE040"
+    },
+    {
+      "name": "footL",
+      "parent": "legL",
+      "from": [
+        0.0,
+        0.0,
+        -4.0
+      ],
+      "to": [
+        3.0,
+        1.0,
+        1.0
+      ],
+      "pivot": [
+        1.5,
+        0.0,
+        -1.5
+      ],
+      "colour": "#FFE040"
+    },
+    {
+      "name": "footR",
+      "parent": "legR",
+      "from": [
+        -3.0,
+        0.0,
+        -4.0
+      ],
+      "to": [
+        0.0,
+        1.0,
+        1.0
+      ],
+      "pivot": [
+        -1.5,
+        0.0,
+        -1.5
+      ],
+      "colour": "#FFE040"
+    },
+    {
+      "name": "eyeL",
+      "parent": "head",
+      "from": [
+        1.0,
+        15.0,
+        -8.0
+      ],
+      "to": [
+        3.0,
+        17.0,
+        -7.0
+      ],
+      "pivot": [
+        2.0,
+        15.0,
+        -7.5
+      ],
+      "colour": "#404040"
+    },
+    {
+      "name": "eyeR",
+      "parent": "head",
+      "from": [
+        -3.0,
+        15.0,
+        -8.0
+      ],
+      "to": [
+        -1.0,
+        17.0,
+        -7.0
+      ],
+      "pivot": [
+        -2.0,
+        15.0,
+        -7.5
+      ],
+      "colour": "#404040"
+    }
+  ],
+  "palette": [
+    {
+      "colour": "white",
+      "percent": 86
+    },
+    {
+      "colour": "yellow",
+      "percent": 9
+    },
+    {
+      "colour": "red",
+      "percent": 5
+    }
+  ],
+  "note": "Restoring name/scale/friendly powers lost on the face-fix revision; body unchanged.",
+  "status": "Adding the last sparkles"
+}

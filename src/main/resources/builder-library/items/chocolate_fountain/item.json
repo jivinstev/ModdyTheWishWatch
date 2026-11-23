@@ -1,0 +1,19 @@
+{
+ "count": 1,
+ "effects": [
+  "turn_into"
+ ],
+ "id": "chocolate_fountain_machine_convert",
+ "name": "Chocolate Fountain Machine",
+ "params": {
+  "FROM": "minecraft:cocoa_beans",
+  "TO": "chocolate_drink_food",
+  "_kit": {
+   "items": "minecraft:cocoa_beans 32"
+  }
+ },
+ "parts": [],
+ "properties": {},
+ "shape": "machine",
+ "variants": []
+}

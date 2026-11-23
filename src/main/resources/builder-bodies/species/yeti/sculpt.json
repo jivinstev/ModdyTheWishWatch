@@ -1,0 +1,277 @@
+{
+ "base": "wild",
+ "behaves_like": "grazer",
+ "damage": 0,
+ "health": 60,
+ "id": "yeti",
+ "name": "Fluffy Yeti",
+ "note": "Friendly big white yeti: fur-patterned white body, pale blue face with a 3-box smile and relaxed brows so it reads cuddly, not scary. Wild+friendly, polar bear voice.",
+ "palette": [
+  {
+   "colour": "white",
+   "percent": 85
+  },
+  {
+   "colour": "#BFD8E8",
+   "percent": 8
+  }
+ ],
+ "parts": [
+  {
+   "colour": "white",
+   "from": [
+    -6,
+    0,
+    -3
+   ],
+   "name": "legL",
+   "pattern": "fur",
+   "pattern_colour": "#E6EEF2",
+   "to": [
+    -1,
+    10,
+    3
+   ]
+  },
+  {
+   "colour": "white",
+   "from": [
+    1,
+    0,
+    -3
+   ],
+   "name": "legR",
+   "pattern": "fur",
+   "pattern_colour": "#E6EEF2",
+   "to": [
+    6,
+    10,
+    3
+   ]
+  },
+  {
+   "colour": "white",
+   "from": [
+    -8,
+    9,
+    -5
+   ],
+   "inflate": 1,
+   "name": "body",
+   "pattern": "fur",
+   "pattern_colour": "#E6EEF2",
+   "to": [
+    8,
+    26,
+    5
+   ]
+  },
+  {
+   "colour": "#EEF4F8",
+   "from": [
+    -5,
+    11,
+    -6
+   ],
+   "name": "belly",
+   "parent": "body",
+   "to": [
+    5,
+    22,
+    -4
+   ]
+  },
+  {
+   "colour": "white",
+   "from": [
+    -12,
+    10,
+    -3
+   ],
+   "name": "armL",
+   "pattern": "fur",
+   "pattern_colour": "#E6EEF2",
+   "to": [
+    -7,
+    25,
+    3
+   ]
+  },
+  {
+   "colour": "white",
+   "from": [
+    7,
+    10,
+    -3
+   ],
+   "name": "armR",
+   "pattern": "fur",
+   "pattern_colour": "#E6EEF2",
+   "to": [
+    12,
+    25,
+    3
+   ]
+  },
+  {
+   "colour": "white",
+   "from": [
+    -5,
+    25,
+    -5
+   ],
+   "inflate": 1,
+   "name": "head",
+   "pattern": "fur",
+   "pattern_colour": "#E6EEF2",
+   "to": [
+    5,
+    35,
+    4
+   ]
+  },
+  {
+   "colour": "#BFD8E8",
+   "from": [
+    -4,
+    26,
+    -6
+   ],
+   "name": "face",
+   "parent": "head",
+   "to": [
+    4,
+    32,
+    -4
+   ]
+  },
+  {
+   "colour": "black",
+   "from": [
+    -3,
+    30,
+    -7
+   ],
+   "name": "eyeL",
+   "parent": "head",
+   "to": [
+    -1,
+    32,
+    -5
+   ]
+  },
+  {
+   "colour": "black",
+   "from": [
+    1,
+    30,
+    -7
+   ],
+   "name": "eyeR",
+   "parent": "head",
+   "to": [
+    3,
+    32,
+    -5
+   ]
+  },
+  {
+   "colour": "#D0D8DE",
+   "from": [
+    -3,
+    33,
+    -7
+   ],
+   "name": "browL",
+   "parent": "head",
+   "to": [
+    -1,
+    34,
+    -5
+   ]
+  },
+  {
+   "colour": "#D0D8DE",
+   "from": [
+    1,
+    33,
+    -7
+   ],
+   "name": "browR",
+   "parent": "head",
+   "to": [
+    3,
+    34,
+    -5
+   ]
+  },
+  {
+   "colour": "#5A6A80",
+   "from": [
+    -1,
+    27,
+    -7
+   ],
+   "name": "mouthM",
+   "parent": "head",
+   "to": [
+    1,
+    28,
+    -5
+   ]
+  },
+  {
+   "colour": "#5A6A80",
+   "from": [
+    -3,
+    28,
+    -7
+   ],
+   "name": "mouthL",
+   "parent": "head",
+   "to": [
+    -1,
+    29,
+    -5
+   ]
+  },
+  {
+   "colour": "#5A6A80",
+   "from": [
+    1,
+    28,
+    -7
+   ],
+   "name": "mouthR",
+   "parent": "head",
+   "to": [
+    3,
+    29,
+    -5
+   ]
+  },
+  {
+   "colour": "#6A7A90",
+   "from": [
+    -1,
+    29,
+    -7
+   ],
+   "name": "nose",
+   "parent": "head",
+   "to": [
+    1,
+    30,
+    -6
+   ]
+  }
+ ],
+ "powers": [
+  "friendly",
+  "persistent"
+ ],
+ "scale": 1.6,
+ "speed": 0.25,
+ "status": "Sculpting your fluffy yeti",
+ "voice": "polar_bear"
+}

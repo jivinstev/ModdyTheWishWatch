@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:item/breeze_rod",
+  "textures": {
+    "layer0": "wishpack:item/tinted/breeze_rod_tint"
+  }
+}

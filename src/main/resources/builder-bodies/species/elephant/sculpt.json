@@ -1,0 +1,266 @@
+{
+  "id": "elephant",
+  "name": "Elephant",
+  "status": "Sculpting your elephant",
+  "note": "Plain base elephant: grey fur-skinned body, 4 pillar legs, head at -z with 3-segment trunk, big flat ears, small ivory tusks, black eyes, thin tail. No accessories so it can be start_from'd.",
+  "powers": [
+    "friendly"
+  ],
+  "damage": 0,
+  "health": 40,
+  "speed": 0.2,
+  "palette": [
+    {
+      "colour": "#8A8A8A",
+      "percent": 90
+    },
+    {
+      "colour": "#7A6E6E",
+      "percent": 5
+    }
+  ],
+  "parts": [
+    {
+      "name": "body",
+      "from": [
+        -10,
+        14,
+        -12
+      ],
+      "to": [
+        10,
+        33,
+        14
+      ],
+      "colour": "#8A8A8A",
+      "pattern": "fur",
+      "pattern_colour": "#777777"
+    },
+    {
+      "name": "legFL",
+      "from": [
+        -9,
+        0,
+        -10
+      ],
+      "to": [
+        -3,
+        16,
+        -4
+      ],
+      "colour": "#858585",
+      "parent": "body"
+    },
+    {
+      "name": "legFR",
+      "from": [
+        3,
+        0,
+        -10
+      ],
+      "to": [
+        9,
+        16,
+        -4
+      ],
+      "colour": "#858585",
+      "parent": "body"
+    },
+    {
+      "name": "legBL",
+      "from": [
+        -9,
+        0,
+        6
+      ],
+      "to": [
+        -3,
+        16,
+        12
+      ],
+      "colour": "#858585",
+      "parent": "body"
+    },
+    {
+      "name": "legBR",
+      "from": [
+        3,
+        0,
+        6
+      ],
+      "to": [
+        9,
+        16,
+        12
+      ],
+      "colour": "#858585",
+      "parent": "body"
+    },
+    {
+      "name": "head",
+      "from": [
+        -7,
+        20,
+        -21
+      ],
+      "to": [
+        7,
+        34,
+        -10
+      ],
+      "colour": "#8A8A8A",
+      "pattern": "fur",
+      "pattern_colour": "#777777"
+    },
+    {
+      "name": "trunk1",
+      "from": [
+        -2,
+        15,
+        -23
+      ],
+      "to": [
+        2,
+        24,
+        -19
+      ],
+      "colour": "#828282",
+      "parent": "head"
+    },
+    {
+      "name": "trunk2",
+      "from": [
+        -2,
+        8,
+        -24
+      ],
+      "to": [
+        2,
+        16,
+        -20
+      ],
+      "colour": "#7E7E7E",
+      "parent": "head"
+    },
+    {
+      "name": "trunk3",
+      "from": [
+        -1.5,
+        3,
+        -25
+      ],
+      "to": [
+        1.5,
+        9,
+        -21
+      ],
+      "colour": "#7A7A7A",
+      "parent": "head"
+    },
+    {
+      "name": "earL",
+      "from": [
+        -15,
+        18,
+        -15
+      ],
+      "to": [
+        -6,
+        33,
+        -13
+      ],
+      "colour": "#7A6E6E",
+      "parent": "head"
+    },
+    {
+      "name": "earR",
+      "from": [
+        6,
+        18,
+        -15
+      ],
+      "to": [
+        15,
+        33,
+        -13
+      ],
+      "colour": "#7A6E6E",
+      "parent": "head"
+    },
+    {
+      "name": "tuskL",
+      "from": [
+        -5,
+        15,
+        -23
+      ],
+      "to": [
+        -3,
+        22,
+        -19
+      ],
+      "colour": "#F2EBD9",
+      "parent": "head"
+    },
+    {
+      "name": "tuskR",
+      "from": [
+        3,
+        15,
+        -23
+      ],
+      "to": [
+        5,
+        22,
+        -19
+      ],
+      "colour": "#F2EBD9",
+      "parent": "head"
+    },
+    {
+      "name": "eyeL",
+      "from": [
+        -6,
+        27,
+        -22
+      ],
+      "to": [
+        -4,
+        29,
+        -20
+      ],
+      "colour": "black",
+      "parent": "head"
+    },
+    {
+      "name": "eyeR",
+      "from": [
+        4,
+        27,
+        -22
+      ],
+      "to": [
+        6,
+        29,
+        -20
+      ],
+      "colour": "black",
+      "parent": "head"
+    },
+    {
+      "name": "tail",
+      "from": [
+        -1,
+        18,
+        13
+      ],
+      "to": [
+        1,
+        30,
+        15
+      ],
+      "colour": "#7A7A7A",
+      "parent": "body"
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+# PRE-COMMIT: refuse a commit whose staged changes ADD an API key or token.
+#
+# Installed by tools/public-hooks/install.sh with pre-push. It runs tools/secret-scan.py --staged: every credential
+# shape in tools/secret_patterns.py, and the live secret values of the environment you commit from (any *_KEY,
+# *_TOKEN, *_SECRET with a long value). A finding names the file, the line and the kind; never the value. pre-push
+# scans every outgoing commit again (tools/leak-scan.py --commits, which holds the same secret rules).
+set -uo pipefail
+top="$(git rev-parse --show-toplevel)" || exit 1
+scan="$top/tools/secret-scan.py"
+if [ ! -f "$scan" ]; then
+    echo "pre-commit: $scan is missing, so no secret can be checked; refusing the commit" >&2
+    exit 1
+fi
+if ! python3 "$scan" --repo "$top" --staged >&2; then
+    echo "pre-commit: REFUSED. Take the credential out (refer to it by its environment variable), and rotate it if" >&2
+    echo "pre-commit: it was real. A documented fake goes on a line marked 'secret-scan: allow'." >&2
+    exit 1
+fi

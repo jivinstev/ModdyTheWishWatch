@@ -1,0 +1,25 @@
+{
+  "values": [
+    "#minecraft:dirt",
+    "#minecraft:sand",
+    "#minecraft:base_stone_overworld",
+    "#minecraft:base_stone_nether",
+    "#minecraft:logs",
+    "#minecraft:planks",
+    "#minecraft:leaves",
+    "#minecraft:wool",
+    "#minecraft:terracotta",
+    "#minecraft:stone_bricks",
+    "#minecraft:ice",
+    "#minecraft:snow",
+    "minecraft:cobblestone",
+    "minecraft:mossy_cobblestone",
+    "minecraft:gravel",
+    "minecraft:glass",
+    "minecraft:sandstone",
+    "minecraft:red_sandstone",
+    "minecraft:clay",
+    "minecraft:end_stone",
+    "minecraft:bricks"
+  ]
+}

@@ -1,0 +1,34 @@
+// §5: THE TEST KIT -- a second artifact, never the shipped jar. What a mod built against this one (the house mod)
+// needs to run its own GameTests and corpus tests on the same harness: the GameTest harness and helpers (testing/, minus
+// the GameTests that live there), its test-only mixin config, and CorpusSource (the corpus switch, from the test classes).
+// Its own file, applied from gate-a.gradle: no GameTest server reads it, so gate-select skips it for Gate B (and
+// tools/test-gate-select.py fails it if it ever configures a run, jarJar, processResources or the minecraft block). Its own folder, not build/libs: Port CI releases every jar in build/libs, and this one is not for players. The ship
+// excludes (build.gradle's SHIP_EXCLUDES) are unchanged, so nothing here can reach a player's jar; NEVER_SHIP still checks that on the jar itself.
+// Built by every `./gradlew build` (assemble), alone by `./gradlew testKitJar`, or by resolving `testKit` from another build.
+configurations { testKit { canBeConsumed = true; canBeResolved = false } }
+def testKitJar = tasks.register('testKitJar', Jar) {
+    group = 'build'
+    description = 'The test kit (#2708 §5): the GameTest harness, testing/ helpers and CorpusSource, as its own jar'
+    archiveClassifier = 'testkit'
+    destinationDirectory = layout.buildDirectory.dir('test-kit')
+    from(sourceSets.main.output) {
+        include 'com/moddingfromamod/testing/**', 'gametest/*.gametest.mixins.json'
+        exclude '**/?*GameTest.class', '**/?*GameTest$*.class'
+    }
+    from(sourceSets.test.output) {
+        include 'com/moddingfromamod/CorpusSource.class', 'com/moddingfromamod/CorpusSource$*.class'
+    }
+    doLast {
+        def names = []
+        new java.util.zip.ZipFile(archiveFile.get().asFile).withCloseable { z -> z.entries().each { names << it.name } }
+        def harness = names.findAll { it.startsWith('com/moddingfromamod/testing/') && it.endsWith('.class') }
+        def tests = names.findAll { it ==~ /.*\/[^\/]+GameTest(\$[^\/]*)?\.class$/ }
+        if (harness.isEmpty()) throw new GradleException("test kit: no harness classes (testing/) in ${archiveFile.get().asFile}")
+        if (!tests.isEmpty()) throw new GradleException("test kit: GameTests are not the harness: ${tests.take(5)}")
+        logger.lifecycle("test kit: ${harness.size()} harness classes, CorpusSource " +
+                (names.contains('com/moddingfromamod/CorpusSource.class') ? 'included' : 'not in this tree yet') +
+                ", ${archiveFile.get().asFile}")
+    }
+}
+artifacts { testKit testKitJar }
+tasks.named('assemble') { dependsOn testKitJar }   // so every `./gradlew build` builds and checks it (about a second)

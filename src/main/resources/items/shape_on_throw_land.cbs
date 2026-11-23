@@ -1,0 +1,16 @@
+# ON_THROW_LAND — he THROWS a real throwable (a snowball, an egg, a pearl, a splash potion, a wind
+# charge…) and the wish happens WHERE IT LANDS. Vanilla throws it exactly as it always does,
+# once, as itself; WishShapeEvents arms the thing it threw and WishThrowImpact runs act() at the
+# impact, as him. Nothing here throws anything.
+import common
+
+function give()
+${GIVES}
+    /tellraw @s {"text":"${GIVE_MESSAGE}","color":"${HEX}"}
+end
+
+function act()
+    /function $namespace:effect
+end
+
+${EFFECT_BLOCK}

@@ -1,0 +1,21 @@
+# FLY — it lifts the CHILD off the ground. The one thing nothing else here could do.
+#
+# WHY LEVITATION AND NOT Motion. Every other "move something" effect in this catalogue sets Motion
+# NBT, and that is a dead end for a player: the client simulates its own movement and overwrites
+# whatever the server wrote, so `launch` genuinely cannot move the person holding it. Levitation is
+# a real potion effect the client applies itself, which is why it is the only honest primitive for
+# a rocket, a jetpack or a pair of bouncy boots.
+#
+# SLOW FALLING IS NOT OPTIONAL, for the same reason it is not optional in launch: a wish for a
+# rocket is a wish for the flight, not for the crater at the end of it. It outlasts the lift on
+# purpose, so the ride down is covered too.
+#
+# The amplifier is the CLIMB RATE, not the height: levitation lifts about 0.9 blocks a second per
+# level, so how high he gets is rate x time and both come from his own words.
+function effect()
+    /execute as ${TARGET} run effect give @s minecraft:levitation ${SECONDS} ${RATE}
+    /execute as ${TARGET} run effect give @s minecraft:slow_falling ${FALL_SECONDS} 0 true
+    /particle minecraft:cloud ~ ~0.2 ~ 0.3 0.1 0.3 0.02 30 force
+    /particle minecraft:firework ~ ~0.5 ~ 0.2 0.2 0.2 0.05 20 force
+    /playsound minecraft:entity.firework_rocket.launch master @a ~ ~ ~ 1 0.8
+end

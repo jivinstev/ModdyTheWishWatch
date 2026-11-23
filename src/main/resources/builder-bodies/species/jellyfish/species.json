@@ -1,0 +1,23 @@
+{
+ "vehicle": false,
+ "armor": 0.0,
+ "behaves": "buzzer",
+ "body": "humanoid",
+ "damage": 0.0,
+ "health": 20.0,
+ "id": "jellyfish",
+ "knockbackResistance": 0.0,
+ "modelKey": "jellyfish",
+ "name": "Glowing Pink Jellyfish",
+ "powers": [
+  "friendly",
+  "flies",
+  "glowing",
+  "persistent"
+ ],
+ "scale": 1.0,
+ "speed": 0.25,
+ "texture": "zombie",
+ "tint": "#FFFFFF",
+ "voice": "silent"
+}

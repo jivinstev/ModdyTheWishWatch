@@ -1,0 +1,294 @@
+[
+ {
+  "cluster": "kitchen_drinks",
+  "name": "potion",
+  "verdict": "PASS",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.474,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "body": 161,
+   "fixed": 233,
+   "line": 86,
+   "shine": 5
+  }
+ },
+ {
+  "cluster": "kitchen_drinks",
+  "name": "juice_box",
+  "verdict": "PASS",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.457,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "body": 278,
+   "fixed": 42,
+   "line": 146,
+   "shine": 2
+  }
+ },
+ {
+  "cluster": "kitchen_drinks",
+  "name": "soup_bowl",
+  "verdict": "WARN",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [
+   "silhouette 87% the same as smoothie",
+   "silhouette 86% the same as bread_loaf"
+  ],
+  "stats": {
+   "fill": 0.673,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "body": 299,
+   "fixed": 232,
+   "line": 155,
+   "shine": 3
+  }
+ },
+ {
+  "cluster": "kitchen_drinks",
+  "name": "milkshake",
+  "verdict": "PASS",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.347,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "body": 233,
+   "fixed": 21,
+   "line": 99,
+   "shine": 2
+  }
+ },
+ {
+  "cluster": "kitchen_drinks",
+  "name": "smoothie",
+  "verdict": "WARN",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [
+   "silhouette 87% the same as soup_bowl"
+  ],
+  "stats": {
+   "fill": 0.654,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "body": 420,
+   "fixed": 73,
+   "line": 174,
+   "shine": 3
+  }
+ },
+ {
+  "cluster": "kitchen_drinks",
+  "name": "bread_loaf",
+  "verdict": "WARN",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [
+   "silhouette 86% the same as soup_bowl"
+  ],
+  "stats": {
+   "fill": 0.621,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "body": 187,
+   "fixed": 339,
+   "line": 105,
+   "shine": 5
+  }
+ },
+ {
+  "cluster": "kitchen_drinks",
+  "name": "apple",
+  "verdict": "PASS",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.579,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "body": 64,
+   "fixed": 381,
+   "line": 143,
+   "shine": 5
+  }
+ },
+ {
+  "cluster": "kitchen_drinks",
+  "name": "pickle",
+  "verdict": "PASS",
+  "kind": "fixed",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.322,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "fixed": 257,
+   "line": 71,
+   "shine": 2
+  }
+ },
+ {
+  "cluster": "kitchen_drinks",
+  "name": "cookie_jar",
+  "verdict": "PASS",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.512,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "body": 308,
+   "fixed": 69,
+   "line": 144,
+   "shine": 3
+  }
+ },
+ {
+  "cluster": "kitchen_drinks",
+  "name": "toaster",
+  "verdict": "PASS",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.377,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "body": 265,
+   "fixed": 26,
+   "line": 92,
+   "shine": 3
+  }
+ },
+ {
+  "cluster": "kitchen_drinks",
+  "name": "frying_pan",
+  "verdict": "PASS",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.325,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "body": 238,
+   "fixed": 21,
+   "line": 71,
+   "shine": 3
+  }
+ },
+ {
+  "cluster": "kitchen_drinks",
+  "name": "teapot",
+  "verdict": "PASS",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.443,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "accent": 36,
+   "body": 299,
+   "line": 115,
+   "shine": 4
+  }
+ },
+ {
+  "cluster": "kitchen_drinks",
+  "name": "sandwich",
+  "verdict": "PASS",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.505,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "body": 87,
+   "fixed": 228,
+   "line": 199,
+   "shine": 3
+  }
+ },
+ {
+  "cluster": "kitchen_drinks",
+  "name": "cheese",
+  "verdict": "PASS",
+  "kind": "fixed",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.391,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "fixed": 254,
+   "line": 142,
+   "shine": 4
+  }
+ },
+ {
+  "cluster": "kitchen_drinks",
+  "name": "carrot",
+  "verdict": "PASS",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.337,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "body": 37,
+   "fixed": 209,
+   "line": 97,
+   "shine": 2
+  }
+ },
+ {
+  "cluster": "kitchen_drinks",
+  "name": "watermelon",
+  "verdict": "PASS",
+  "kind": "fixed",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.46,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "fixed": 363,
+   "line": 105,
+   "shine": 3
+  }
+ }
+]

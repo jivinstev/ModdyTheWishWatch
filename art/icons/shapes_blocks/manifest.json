@@ -1,0 +1,77 @@
+{
+ "cluster": "shapes_blocks",
+ "order": [
+  "cube_plain",
+  "cube_ore",
+  "cube_planks",
+  "cube_log",
+  "cube_bricks",
+  "cube_fluffy",
+  "cube_leafy",
+  "cube_glow",
+  "cube_machine",
+  "table"
+ ],
+ "icons": [
+  {
+   "name": "cube_plain",
+   "status": "ok",
+   "attempts": 1,
+   "note": "Plain chunky cube, smooth faces, a little edge shading."
+  },
+  {
+   "name": "cube_ore",
+   "status": "ok",
+   "attempts": 1,
+   "note": "Stone cube with 6 chunky cyan specks and 2 stone pits."
+  },
+  {
+   "name": "cube_planks",
+   "status": "ok",
+   "attempts": 1,
+   "note": "Cube of wooden boards, three planks across each face."
+  },
+  {
+   "name": "cube_log",
+   "status": "ok",
+   "attempts": 2,
+   "note": "Log cube: bark on the sides, growth rings on the top face."
+  },
+  {
+   "name": "cube_bricks",
+   "status": "ok",
+   "attempts": 1,
+   "note": "Cube of small bricks with cyan mortar lines."
+  },
+  {
+   "name": "cube_fluffy",
+   "status": "ok",
+   "attempts": 2,
+   "note": "Soft fluffy cube with tufts at the edges."
+  },
+  {
+   "name": "cube_leafy",
+   "status": "ok",
+   "attempts": 1,
+   "note": "Cube of leaves with a few gaps showing."
+  },
+  {
+   "name": "cube_glow",
+   "status": "ok",
+   "attempts": 1,
+   "note": "Cube glowing from inside: bright face centres, darker frame."
+  },
+  {
+   "name": "cube_machine",
+   "status": "ok",
+   "attempts": 1,
+   "note": "Stone box with an oven-like opening on the left face."
+  },
+  {
+   "name": "table",
+   "status": "ok",
+   "attempts": 2,
+   "note": "Work-table cube: tool grid on the top face, hanging tools on the sides."
+  }
+ ]
+}

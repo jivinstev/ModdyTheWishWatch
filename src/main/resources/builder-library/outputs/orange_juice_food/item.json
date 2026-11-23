@@ -1,0 +1,17 @@
+{
+ "base_item": "minecraft:cookie",
+ "count": 4,
+ "effects": [
+  "food"
+ ],
+ "id": "orange_juice_food",
+ "name": "Orange Juice",
+ "params": {
+  "BONUS": "minecraft:speed",
+  "SECONDS": "30"
+ },
+ "parts": [],
+ "properties": {},
+ "shape": "on_consume",
+ "variants": []
+}

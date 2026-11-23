@@ -1,0 +1,74 @@
+[
+ {
+  "cluster": "2b",
+  "name": "crown",
+  "verdict": "PASS",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.449,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "body": 282,
+   "fixed": 36,
+   "line": 138,
+   "shine": 4
+  }
+ },
+ {
+  "cluster": "2b",
+  "name": "headphones",
+  "verdict": "PASS",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.463,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "accent": 124,
+   "body": 194,
+   "fixed": 1,
+   "line": 153,
+   "shine": 2
+  }
+ },
+ {
+  "cluster": "2b",
+  "name": "race_car",
+  "verdict": "WARN",
+  "n": 32,
+  "problems": [],
+  "warnings": [
+   "closed 11 outline gap(s) automatically"
+  ],
+  "stats": {
+   "fill": 0.401,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "accent": 99,
+   "body": 124,
+   "fixed": 28,
+   "line": 158,
+   "shine": 2
+  }
+ },
+ {
+  "cluster": "2b",
+  "name": "rubber_duck",
+  "verdict": "PASS",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.42,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "body": 335,
+   "fixed": 8,
+   "line": 85,
+   "shine": 2
+  }
+ }
+]

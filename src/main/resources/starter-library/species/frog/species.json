@@ -1,0 +1,19 @@
+{
+  "armor": 0.0,
+  "body": "humanoid",
+  "damage": 0.0,
+  "health": 20.0,
+  "id": "frog",
+  "knockbackResistance": 0.0,
+  "modelKey": "frog",
+  "name": "Frog",
+  "powers": [
+    "friendly",
+    "leaps"
+  ],
+  "scale": 1.5,
+  "speed": 0.25,
+  "texture": "zombie",
+  "tint": "#FFFFFF",
+  "voice": "frog"
+}

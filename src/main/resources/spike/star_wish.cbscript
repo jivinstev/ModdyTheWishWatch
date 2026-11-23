@@ -1,0 +1,25 @@
+# "a shooting star you can throw that leaves a trail of light" — the THROWABLE class, end to end.
+#
+# The mod's wish_item throws a snowball carrying the wish's own tag, which is exactly the entity a
+# CBScript throwable already knows how to watch. So the behaviour stays here, in the wish, and the
+# only thing the mod supplied was the throw and the icon.
+
+import common
+
+define @Star = @Entity[type=snowball, tag=starwish]
+end
+
+function give()
+    /give @s moddingfromamod:wish_item[minecraft:custom_model_data={floats:[9f]},minecraft:dyed_color={rgb:16768256},minecraft:custom_name='{"text":"Shooting Star","color":"gold","bold":true,"italic":false}',minecraft:lore=['{"text":"Throw it and watch the trail","color":"gray","italic":false}'],minecraft:enchantment_glint_override=true,minecraft:custom_data={WishThrowTag:"starwish"}] 4
+    /tellraw @s {"text":"You got 4 Shooting Stars! Throw them. ✨","color":"gold"}
+end
+
+clock tick
+    as @Star at @s
+        /particle minecraft:end_rod ~ ~ ~ 0.1 0.1 0.1 0.01 6 force
+        /execute if block ~ ~-1 ~ #minecraft:replaceable run setblock ~ ~-1 ~ minecraft:glowstone
+    end
+end
+
+reset
+end

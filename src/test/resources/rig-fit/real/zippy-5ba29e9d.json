@@ -1,0 +1,441 @@
+{
+ "id": "zippy",
+ "name": "Zippy",
+ "scale": 1.2,
+ "powers": [
+  "friendly",
+  "persistent"
+ ],
+ "parts": [
+  {
+   "name": "legL",
+   "from": [
+    1,
+    0,
+    -2
+   ],
+   "to": [
+    4,
+    8,
+    1
+   ],
+   "colour": "blue"
+  },
+  {
+   "name": "legR",
+   "from": [
+    -4,
+    0,
+    -2
+   ],
+   "to": [
+    -1,
+    8,
+    1
+   ],
+   "colour": "blue"
+  },
+  {
+   "name": "shoeL",
+   "parent": "legL",
+   "from": [
+    0,
+    0,
+    -6
+   ],
+   "to": [
+    5,
+    3,
+    2
+   ],
+   "colour": "red"
+  },
+  {
+   "name": "shoeR",
+   "parent": "legR",
+   "from": [
+    -5,
+    0,
+    -6
+   ],
+   "to": [
+    0,
+    3,
+    2
+   ],
+   "colour": "red"
+  },
+  {
+   "name": "strapL",
+   "parent": "legL",
+   "from": [
+    0,
+    3,
+    -3
+   ],
+   "to": [
+    5,
+    4,
+    2
+   ],
+   "colour": "white"
+  },
+  {
+   "name": "strapR",
+   "parent": "legR",
+   "from": [
+    -5,
+    3,
+    -3
+   ],
+   "to": [
+    0,
+    4,
+    2
+   ],
+   "colour": "white"
+  },
+  {
+   "name": "body",
+   "from": [
+    -5,
+    8,
+    -3
+   ],
+   "to": [
+    5,
+    17,
+    3
+   ],
+   "colour": "blue"
+  },
+  {
+   "name": "belly",
+   "parent": "body",
+   "from": [
+    -3,
+    9,
+    -4
+   ],
+   "to": [
+    3,
+    16,
+    -3
+   ],
+   "colour": "#E8C07A"
+  },
+  {
+   "name": "armL",
+   "from": [
+    5,
+    10,
+    -1
+   ],
+   "to": [
+    7,
+    17,
+    1
+   ],
+   "colour": "blue"
+  },
+  {
+   "name": "armR",
+   "from": [
+    -7,
+    10,
+    -1
+   ],
+   "to": [
+    -5,
+    17,
+    1
+   ],
+   "colour": "blue"
+  },
+  {
+   "name": "gloveL",
+   "parent": "armL",
+   "from": [
+    4,
+    7,
+    -2
+   ],
+   "to": [
+    8,
+    10,
+    2
+   ],
+   "colour": "white"
+  },
+  {
+   "name": "gloveR",
+   "parent": "armR",
+   "from": [
+    -8,
+    7,
+    -2
+   ],
+   "to": [
+    -4,
+    10,
+    2
+   ],
+   "colour": "white"
+  },
+  {
+   "name": "head",
+   "from": [
+    -6,
+    17,
+    -5
+   ],
+   "to": [
+    6,
+    29,
+    5
+   ],
+   "colour": "blue"
+  },
+  {
+   "name": "muzzle",
+   "parent": "head",
+   "from": [
+    -4,
+    17,
+    -7
+   ],
+   "to": [
+    4,
+    22,
+    -5
+   ],
+   "colour": "#E8C07A"
+  },
+  {
+   "name": "nose",
+   "parent": "head",
+   "from": [
+    -1,
+    21,
+    -8
+   ],
+   "to": [
+    1,
+    23,
+    -7
+   ],
+   "colour": "black"
+  },
+  {
+   "name": "eyewhite",
+   "parent": "head",
+   "from": [
+    -5,
+    22,
+    -6
+   ],
+   "to": [
+    5,
+    27,
+    -5
+   ],
+   "colour": "white"
+  },
+  {
+   "name": "eyeL",
+   "parent": "head",
+   "from": [
+    1,
+    23,
+    -7
+   ],
+   "to": [
+    3,
+    26,
+    -6
+   ],
+   "colour": "green"
+  },
+  {
+   "name": "eyeR",
+   "parent": "head",
+   "from": [
+    -3,
+    23,
+    -7
+   ],
+   "to": [
+    -1,
+    26,
+    -6
+   ],
+   "colour": "green"
+  },
+  {
+   "name": "browL",
+   "parent": "head",
+   "from": [
+    1,
+    27,
+    -6
+   ],
+   "to": [
+    4,
+    28,
+    -5
+   ],
+   "colour": "#1A3FA0"
+  },
+  {
+   "name": "browR",
+   "parent": "head",
+   "from": [
+    -4,
+    27,
+    -6
+   ],
+   "to": [
+    -1,
+    28,
+    -5
+   ],
+   "colour": "#1A3FA0"
+  },
+  {
+   "name": "smileM",
+   "parent": "head",
+   "from": [
+    -2,
+    18,
+    -8
+   ],
+   "to": [
+    2,
+    19,
+    -7
+   ],
+   "colour": "black"
+  },
+  {
+   "name": "smileL",
+   "parent": "head",
+   "from": [
+    2,
+    19,
+    -8
+   ],
+   "to": [
+    3,
+    20,
+    -7
+   ],
+   "colour": "black"
+  },
+  {
+   "name": "smileR",
+   "parent": "head",
+   "from": [
+    -3,
+    19,
+    -8
+   ],
+   "to": [
+    -2,
+    20,
+    -7
+   ],
+   "colour": "black"
+  },
+  {
+   "name": "earL",
+   "parent": "head",
+   "from": [
+    3,
+    29,
+    -1
+   ],
+   "to": [
+    6,
+    33,
+    1
+   ],
+   "colour": "blue"
+  },
+  {
+   "name": "earR",
+   "parent": "head",
+   "from": [
+    -6,
+    29,
+    -1
+   ],
+   "to": [
+    -3,
+    33,
+    1
+   ],
+   "colour": "blue"
+  },
+  {
+   "name": "quill1",
+   "parent": "head",
+   "from": [
+    -4,
+    24,
+    5
+   ],
+   "to": [
+    4,
+    28,
+    13
+   ],
+   "colour": "blue",
+   "rotation": [
+    25,
+    0,
+    0
+   ]
+  },
+  {
+   "name": "quill2",
+   "parent": "head",
+   "from": [
+    -4,
+    19,
+    5
+   ],
+   "to": [
+    4,
+    23,
+    14
+   ],
+   "colour": "blue",
+   "rotation": [
+    10,
+    0,
+    0
+   ]
+  },
+  {
+   "name": "quill3",
+   "parent": "head",
+   "from": [
+    -3,
+    14,
+    4
+   ],
+   "to": [
+    3,
+    18,
+    11
+   ],
+   "colour": "blue",
+   "rotation": [
+    -15,
+    0,
+    0
+   ]
+  }
+ ],
+ "source": "claude/opus-5.5-creature-eval-xzu1ee:docs/evidence-opus55/ab1-panel/w2/o55/run2/sculpt.json"
+}

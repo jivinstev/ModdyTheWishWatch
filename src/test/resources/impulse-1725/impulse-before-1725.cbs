@@ -1,0 +1,43 @@
+# IMPULSE — push, launch or pull, spread over several ticks so a child can SEE it happen.
+#
+# WHY THIS IS NOT ONE BIG SHOVE. A single large Motion set moves the victim the whole distance in
+# one tick. There is no motion to watch: you were here, now you are there, and a seven-year-old
+# reads that as the game glitching rather than as the monster hitting them. Real games ramp it, and
+# the difference between "it teleported me" and "it PUNCHED me" is entirely in those few frames.
+#
+# So the movement is applied as a SLICE PER TICK for RAMP_TICKS ticks, counted down on the victim
+# itself. That needs per-victim state, which is why impulse earns a template instead of riding the
+# COMMAND parameter like every other effect so far.
+#
+# MOVE and VICTIM_SELECTOR are built by apply_effect from friendly words (direction, strength,
+# feel, target), because the child says "so hard i fly backwards" and not "0.8 blocks per tick".
+#
+# THE SOURCE CARRIES ITS OWN CLOCK (mfam_impt) so "every 5 seconds" is a parameter rather than a
+# different template. With PERIOD_TICKS=1 it fires whenever the selector matches, which is what
+# on_hit and proximity want; with PERIOD_TICKS=100 it is a stomp every five seconds. Tier 3.5 found
+# this gap by reading the description: impulse offered no timed trigger at all, so "Spikor knocks
+# everyone back every 5 seconds" collapsed to a continuous proximity push.
+reset
+    /scoreboard objectives add mfam_imp dummy
+    /scoreboard objectives add mfam_impt dummy
+    /scoreboard objectives add mfam_noop dummy
+end
+
+clock tick
+    # 1. the source's own clock. PERIOD_TICKS=1 means "as often as the trigger allows".
+    /execute as @e[tag=${TAG}] run scoreboard players add @s mfam_impt 1
+    # 2. when the clock is up, whoever the trigger catches starts a countdown
+    /execute as @e[tag=${TAG},scores={mfam_impt=${PERIOD_TICKS}..}] at @s run execute as ${VICTIM_SELECTOR} run scoreboard players set @s mfam_imp ${RAMP_TICKS}
+    # 3. TELEGRAPH: something has to happen where the push starts, or the movement has no cause
+    /execute unless entity @e[tag=${TAG},tag=mfam_veiled,limit=1] as @e[tag=${TAG},scores={mfam_impt=${PERIOD_TICKS}..}] at @s run particle ${PARTICLE} ~ ~0.2 ~ ${RADIUS} 0.2 ${RADIUS} 0.06 60 force
+    /execute if entity @e[tag=${TAG},tag=mfam_veiled,limit=1] as @e[tag=${TAG},scores={mfam_impt=${PERIOD_TICKS}..}] at @s run particle ${PARTICLE} ~ ~0.2 ~ ${RADIUS} 0.2 ${RADIUS} 0.06 60 force @a[tag=!mfam_veil_blind]
+    /execute unless entity @e[tag=${TAG},tag=mfam_veiled,limit=1] as @e[tag=${TAG},scores={mfam_impt=${PERIOD_TICKS}..}] at @s run playsound ${SOUND} master @a ~ ~ ~ 1 1
+    /execute if entity @e[tag=${TAG},tag=mfam_veiled,limit=1] as @e[tag=${TAG},scores={mfam_impt=${PERIOD_TICKS}..}] at @s run playsound ${SOUND} master @a[tag=!mfam_veil_blind] ~ ~ ~ 1 1
+    /execute as @e[tag=${TAG},scores={mfam_impt=${PERIOD_TICKS}..}] run scoreboard players set @s mfam_impt 0
+    # 4. LANDING: a big upward launch is lethal on the way down, which is not what anybody wished
+    #    for. For up-launches this hands out slow falling; otherwise it is a no-op.
+    /execute as @e[scores={mfam_imp=${RAMP_TICKS}}] at @s run ${LANDING}
+    # 5. one slice of the movement per tick, so it READS as a shove rather than a teleport
+    /execute as @e[scores={mfam_imp=1..}] at @s run ${MOVE}
+    /execute as @e[scores={mfam_imp=1..}] run scoreboard players remove @s mfam_imp 1
+end

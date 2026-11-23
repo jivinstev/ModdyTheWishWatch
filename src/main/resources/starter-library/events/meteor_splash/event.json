@@ -1,0 +1,16 @@
+{
+  "name": "meteor_splash",
+  "motion": "moving_front",
+  "size": "medium",
+  "material": "minecraft:water",
+  "catch": [
+    {
+      "where": "inside",
+      "do": [
+        "carry",
+        "lift"
+      ]
+    }
+  ],
+  "afterwards": "restore"
+}

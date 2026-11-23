@@ -1,0 +1,19 @@
+{
+ "count": 1,
+ "effects": [
+  "turn_into"
+ ],
+ "id": "sushi_machine_convert",
+ "name": "Sushi Machine",
+ "params": {
+  "FROM": "minecraft:cod",
+  "TO": "sushi_food",
+  "_kit": {
+   "items": "minecraft:cod 16"
+  }
+ },
+ "parts": [],
+ "properties": {},
+ "shape": "machine",
+ "variants": []
+}

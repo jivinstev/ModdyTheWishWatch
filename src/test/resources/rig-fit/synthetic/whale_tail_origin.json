@@ -1,0 +1,163 @@
+{
+ "name": "Blue Whale (origin at the tail, as 's video)",
+ "scale": 1.5,
+ "powers": [
+  "friendly"
+ ],
+ "parts": [
+  {
+   "name": "body",
+   "from": [
+    -8,
+    2,
+    -56
+   ],
+   "to": [
+    8,
+    18,
+    0
+   ],
+   "pivot": [
+    0,
+    2,
+    0
+   ],
+   "colour": "#3050E0"
+  },
+  {
+   "name": "head",
+   "from": [
+    -7,
+    3,
+    -72
+   ],
+   "to": [
+    7,
+    16,
+    -56
+   ],
+   "pivot": [
+    0,
+    3,
+    0
+   ],
+   "colour": "#3050E0"
+  },
+  {
+   "name": "jaw",
+   "from": [
+    -6,
+    1,
+    -70
+   ],
+   "to": [
+    6,
+    3,
+    -56
+   ],
+   "pivot": [
+    0,
+    1,
+    0
+   ],
+   "colour": "#E0E0E0"
+  },
+  {
+   "name": "tail",
+   "from": [
+    -5,
+    6,
+    0
+   ],
+   "to": [
+    5,
+    14,
+    12
+   ],
+   "pivot": [
+    0,
+    6,
+    0
+   ],
+   "colour": "#3050E0"
+  },
+  {
+   "name": "fluke",
+   "from": [
+    -14,
+    8,
+    12
+   ],
+   "to": [
+    14,
+    10,
+    20
+   ],
+   "pivot": [
+    0,
+    8,
+    0
+   ],
+   "colour": "#3050E0"
+  },
+  {
+   "name": "finL",
+   "from": [
+    8,
+    4,
+    -44
+   ],
+   "to": [
+    16,
+    6,
+    -36
+   ],
+   "pivot": [
+    0,
+    4,
+    0
+   ],
+   "colour": "#3050E0"
+  },
+  {
+   "name": "finR",
+   "from": [
+    -16,
+    4,
+    -44
+   ],
+   "to": [
+    -8,
+    6,
+    -36
+   ],
+   "pivot": [
+    0,
+    4,
+    0
+   ],
+   "colour": "#3050E0"
+  },
+  {
+   "name": "dorsal_fin",
+   "from": [
+    -1,
+    18,
+    -20
+   ],
+   "to": [
+    1,
+    22,
+    -12
+   ],
+   "pivot": [
+    0,
+    18,
+    0
+   ],
+   "colour": "#3050E0"
+  }
+ ],
+ "id": "whale_tail_origin",
+ "source": "synthetic \u2014 shapes the committed corpus does not contain"
+}

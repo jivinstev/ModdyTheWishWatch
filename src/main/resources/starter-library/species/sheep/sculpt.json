@@ -1,0 +1,360 @@
+{
+  "id": "sheep",
+  "name": "Sheep",
+  "base": "companion",
+  "powers": [
+    "friendly"
+  ],
+  "damage": 0,
+  "parts": [
+    {
+      "name": "body",
+      "from": [
+        -6.0,
+        8.0,
+        -8.0
+      ],
+      "to": [
+        6.0,
+        19.0,
+        8.0
+      ],
+      "pivot": [
+        0.0,
+        8.0,
+        0.0
+      ],
+      "inflate": 1.0,
+      "colour": "#FFFFFF",
+      "pattern": "fur",
+      "patternColour": "#FFFFFF"
+    },
+    {
+      "name": "head",
+      "from": [
+        -4.0,
+        13.0,
+        -14.0
+      ],
+      "to": [
+        4.0,
+        21.0,
+        -7.0
+      ],
+      "pivot": [
+        0.0,
+        13.0,
+        -10.5
+      ],
+      "colour": "#E8C9A8"
+    },
+    {
+      "name": "wooltop",
+      "parent": "head",
+      "from": [
+        -4.0,
+        21.0,
+        -13.0
+      ],
+      "to": [
+        4.0,
+        23.0,
+        -8.0
+      ],
+      "pivot": [
+        0.0,
+        21.0,
+        -10.5
+      ],
+      "colour": "#FFFFFF"
+    },
+    {
+      "name": "earL",
+      "parent": "head",
+      "from": [
+        4.0,
+        18.0,
+        -11.0
+      ],
+      "to": [
+        7.0,
+        19.0,
+        -9.0
+      ],
+      "pivot": [
+        5.5,
+        18.0,
+        -10.0
+      ],
+      "colour": "#E8C9A8"
+    },
+    {
+      "name": "earR",
+      "parent": "head",
+      "from": [
+        -7.0,
+        18.0,
+        -11.0
+      ],
+      "to": [
+        -4.0,
+        19.0,
+        -9.0
+      ],
+      "pivot": [
+        -5.5,
+        18.0,
+        -10.0
+      ],
+      "colour": "#E8C9A8"
+    },
+    {
+      "name": "legL",
+      "from": [
+        1.0,
+        0.0,
+        -6.0
+      ],
+      "to": [
+        4.0,
+        8.0,
+        -3.0
+      ],
+      "pivot": [
+        2.5,
+        8.0,
+        -4.5
+      ],
+      "colour": "#E8C9A8"
+    },
+    {
+      "name": "legR",
+      "from": [
+        -4.0,
+        0.0,
+        -6.0
+      ],
+      "to": [
+        -1.0,
+        8.0,
+        -3.0
+      ],
+      "pivot": [
+        -2.5,
+        8.0,
+        -4.5
+      ],
+      "colour": "#E8C9A8"
+    },
+    {
+      "name": "legBL",
+      "from": [
+        1.0,
+        0.0,
+        3.0
+      ],
+      "to": [
+        4.0,
+        8.0,
+        6.0
+      ],
+      "pivot": [
+        2.5,
+        8.0,
+        4.5
+      ],
+      "colour": "#E8C9A8"
+    },
+    {
+      "name": "legBR",
+      "from": [
+        -4.0,
+        0.0,
+        3.0
+      ],
+      "to": [
+        -1.0,
+        8.0,
+        6.0
+      ],
+      "pivot": [
+        -2.5,
+        8.0,
+        4.5
+      ],
+      "colour": "#E8C9A8"
+    },
+    {
+      "name": "tail",
+      "parent": "body",
+      "from": [
+        -2.0,
+        15.0,
+        8.0
+      ],
+      "to": [
+        2.0,
+        18.0,
+        10.0
+      ],
+      "pivot": [
+        0.0,
+        18.0,
+        9.0
+      ],
+      "colour": "#FFFFFF"
+    },
+    {
+      "name": "eyeL",
+      "parent": "head",
+      "from": [
+        1.0,
+        17.0,
+        -15.0
+      ],
+      "to": [
+        3.0,
+        19.0,
+        -14.0
+      ],
+      "pivot": [
+        2.0,
+        17.0,
+        -14.5
+      ],
+      "colour": "#404040"
+    },
+    {
+      "name": "eyeR",
+      "parent": "head",
+      "from": [
+        -3.0,
+        17.0,
+        -15.0
+      ],
+      "to": [
+        -1.0,
+        19.0,
+        -14.0
+      ],
+      "pivot": [
+        -2.0,
+        17.0,
+        -14.5
+      ],
+      "colour": "#404040"
+    },
+    {
+      "name": "mouthM",
+      "parent": "head",
+      "from": [
+        -1.0,
+        14.0,
+        -15.0
+      ],
+      "to": [
+        1.0,
+        15.0,
+        -14.0
+      ],
+      "pivot": [
+        0.0,
+        14.0,
+        -14.5
+      ],
+      "colour": "#8B4B4B"
+    },
+    {
+      "name": "mouthL",
+      "parent": "head",
+      "from": [
+        1.0,
+        15.0,
+        -15.0
+      ],
+      "to": [
+        2.0,
+        16.0,
+        -14.0
+      ],
+      "pivot": [
+        1.5,
+        15.0,
+        -14.5
+      ],
+      "colour": "#8B4B4B"
+    },
+    {
+      "name": "mouthR",
+      "parent": "head",
+      "from": [
+        -2.0,
+        15.0,
+        -15.0
+      ],
+      "to": [
+        -1.0,
+        16.0,
+        -14.0
+      ],
+      "pivot": [
+        -1.5,
+        15.0,
+        -14.5
+      ],
+      "colour": "#8B4B4B"
+    },
+    {
+      "name": "cheekL",
+      "parent": "head",
+      "from": [
+        3.0,
+        15.0,
+        -15.0
+      ],
+      "to": [
+        4.0,
+        16.0,
+        -14.0
+      ],
+      "pivot": [
+        3.5,
+        15.0,
+        -14.5
+      ],
+      "colour": "#FF7FBF"
+    },
+    {
+      "name": "cheekR",
+      "parent": "head",
+      "from": [
+        -4.0,
+        15.0,
+        -15.0
+      ],
+      "to": [
+        -3.0,
+        16.0,
+        -14.0
+      ],
+      "pivot": [
+        -3.5,
+        15.0,
+        -14.5
+      ],
+      "colour": "#FF7FBF"
+    }
+  ],
+  "palette": [
+    {
+      "colour": "white",
+      "percent": 74
+    },
+    {
+      "colour": "tan/orange",
+      "percent": 25
+    }
+  ],
+  "note": "Restore name/friendly stats after face revision.",
+  "status": "Naming your sheep"
+}

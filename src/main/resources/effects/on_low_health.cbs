@@ -1,0 +1,38 @@
+# ON LOW HEALTH — "when he's nearly beaten, he changes". A boss's second phase.
+#
+# WHY THIS NEEDS A TEMPLATE. Minecraft selectors cannot compare a number in NBT, so "below half
+# health" is not expressible as a selector at all. It has to go through the scoreboard: read Health,
+# work out the percentage, and compare that.
+#
+# WHERE MAX HEALTH COMES FROM. Reading the max-health attribute out of NBT is fragile and differs by
+# entity. But a mob spawns at full health, so the FIRST health we ever see for a creature IS its
+# maximum -- recorded once, in mfam_hpmax, and used from then on. That makes this work for a mob
+# from any mod without knowing anything about it.
+#
+# IT FIRES ONCE. A phase change that re-fires every tick below the threshold is a stuck boss
+# screaming twenty times a second. mfam_lowfired latches it.
+reset
+    /scoreboard objectives add mfam_hp dummy
+    /scoreboard objectives add mfam_hpmax dummy
+    /scoreboard objectives add mfam_pct dummy
+    /scoreboard objectives add mfam_c100 dummy
+    /scoreboard objectives add mfam_lowfired dummy
+end
+
+clock tick
+    # make the scores EXIST -- an entity with no score is matched by no scores={} selector at all,
+    # which would silently mean "never fires" rather than "fires at full health".
+    /execute as @e[tag=${TAG}] run scoreboard players add @s mfam_hpmax 0
+    /execute as @e[tag=${TAG}] run scoreboard players add @s mfam_lowfired 0
+    /execute as @e[tag=${TAG}] store result score @s mfam_hp run data get entity @s Health
+    # first sight = full health
+    /execute as @e[tag=${TAG},scores={mfam_hpmax=0}] run scoreboard players operation @s mfam_hpmax = @s mfam_hp
+    # percent = health * 100 / max
+    /execute as @e[tag=${TAG}] run scoreboard players set @s mfam_c100 100
+    /execute as @e[tag=${TAG}] run scoreboard players operation @s mfam_pct = @s mfam_hp
+    /execute as @e[tag=${TAG}] run scoreboard players operation @s mfam_pct *= @s mfam_c100
+    /execute as @e[tag=${TAG}] run scoreboard players operation @s mfam_pct /= @s mfam_hpmax
+    # cross the line ONCE
+    /execute as @e[tag=${TAG},scores={mfam_pct=..${PERCENT},mfam_lowfired=0}] at @s run ${COMMAND}
+    /execute as @e[tag=${TAG},scores={mfam_pct=..${PERCENT}}] run scoreboard players set @s mfam_lowfired 1
+end

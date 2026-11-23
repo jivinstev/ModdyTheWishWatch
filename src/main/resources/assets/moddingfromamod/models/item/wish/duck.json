@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "moddingfromamod:item/wish/duck",
+    "layer1": "moddingfromamod:item/wish/duck_detail"
+  }
+}

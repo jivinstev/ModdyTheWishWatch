@@ -1,0 +1,47 @@
+# The Builder's own bodies: read ONLY by wishbuilder/ (Catalogue, LibraryPresets), never by the
+# wish library, so the wish worker does not see them until B0c's A/B says it should.
+# BuilderBodiesTest fails if this and the directory disagree.
+species/bear
+species/boat
+species/butterfly
+species/car
+species/crab
+species/dolphin
+species/duck
+species/eagle
+species/elephant
+species/flying_saucer
+species/ghost
+species/gnome
+species/griffin
+species/hamster
+species/helicopter
+species/horse
+species/hot_air_balloon
+species/jellyfish
+species/lion
+species/long_neck_dinosaur
+species/monkey
+species/motorbike
+species/octopus
+species/ogre
+species/owl
+species/penguin
+species/person
+species/phoenix
+species/pig
+species/plane
+species/rabbit
+species/raptor
+species/robot
+species/rock_golem
+species/rocket
+species/shark
+species/snake
+species/submarine
+species/t_rex
+species/tank
+species/triceratops
+species/truck
+species/whale
+species/yeti

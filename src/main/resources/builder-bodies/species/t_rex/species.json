@@ -1,0 +1,20 @@
+{
+  "vehicle": false,
+  "armor": 0.0,
+  "body": "humanoid",
+  "createdAt": 1793163585765,
+  "damage": 0.0,
+  "health": 80.0,
+  "id": "t_rex",
+  "knockbackResistance": 0.0,
+  "modelKey": "t_rex",
+  "name": "T-Rex",
+  "powers": [
+    "friendly"
+  ],
+  "scale": 2.0,
+  "speed": 0.25,
+  "texture": "zombie",
+  "tint": "#FFFFFF",
+  "updatedAt": 1793163585765
+}

@@ -1,0 +1,11 @@
+# Anything that comes close to this creature gets an effect. The "its bite poisons you" shape.
+#
+# WHO  = TARGET (default: everything nearby but players and this creature --)
+# WHEN = continuously, by proximity
+#
+# Proximity rather than a true on-damage hook, and the catalogue summary says so: a child reads
+# "get near the snake, get poisoned" as the snake poisoning them, but an agent must not be told
+# this fires on the bite when it does not.
+clock tick
+    /execute as @e[tag=${TAG}] at @s run effect give @e[distance=..${RADIUS},tag=!${TAG}${VICTIMS}] ${EFFECT} ${SECONDS} ${AMPLIFIER}
+end

@@ -1,0 +1,208 @@
+[
+ {
+  "cluster": "originals_b",
+  "name": "sword",
+  "verdict": "PASS",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.361,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "body": 223,
+   "fixed": 35,
+   "line": 107,
+   "shine": 5
+  }
+ },
+ {
+  "cluster": "originals_b",
+  "name": "axe",
+  "verdict": "PASS",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.36,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "body": 174,
+   "fixed": 72,
+   "line": 120,
+   "shine": 3
+  }
+ },
+ {
+  "cluster": "originals_b",
+  "name": "spear",
+  "verdict": "WARN",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [
+   "fill 29% (want 30-85%)"
+  ],
+  "stats": {
+   "fill": 0.292,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "body": 147,
+   "fixed": 73,
+   "line": 77,
+   "shine": 2
+  }
+ },
+ {
+  "cluster": "originals_b",
+  "name": "bow",
+  "verdict": "PASS",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.307,
+   "dark_body": 0.476,
+   "pieces": 1,
+   "body": 21,
+   "fixed": 147,
+   "line": 141,
+   "shine": 5
+  }
+ },
+ {
+  "cluster": "originals_b",
+  "name": "shield",
+  "verdict": "PASS",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.422,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "body": 345,
+   "line": 82,
+   "shine": 5
+  }
+ },
+ {
+  "cluster": "originals_b",
+  "name": "hammer",
+  "verdict": "PASS",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.358,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "body": 195,
+   "fixed": 60,
+   "line": 107,
+   "shine": 5
+  }
+ },
+ {
+  "cluster": "originals_b",
+  "name": "helmet",
+  "verdict": "WARN",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [
+   "silhouette 91% the same as egg",
+   "silhouette 90% the same as snowball"
+  ],
+  "stats": {
+   "fill": 0.582,
+   "dark_body": 0.044,
+   "pieces": 1,
+   "body": 409,
+   "line": 182,
+   "shine": 5
+  }
+ },
+ {
+  "cluster": "originals_b",
+  "name": "key",
+  "verdict": "PASS",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.31,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "body": 22,
+   "fixed": 182,
+   "line": 108,
+   "shine": 5
+  }
+ },
+ {
+  "cluster": "originals_b",
+  "name": "egg",
+  "verdict": "WARN",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [
+   "silhouette 91% the same as helmet",
+   "silhouette 86% the same as snowball"
+  ],
+  "stats": {
+   "fill": 0.6,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "body": 114,
+   "fixed": 391,
+   "line": 104,
+   "shine": 5
+  }
+ },
+ {
+  "cluster": "originals_b",
+  "name": "bomb",
+  "verdict": "PASS",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.389,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "body": 253,
+   "fixed": 24,
+   "line": 116,
+   "shine": 5
+  }
+ },
+ {
+  "cluster": "originals_b",
+  "name": "snowball",
+  "verdict": "WARN",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [
+   "silhouette 90% the same as helmet",
+   "silhouette 86% the same as egg"
+  ],
+  "stats": {
+   "fill": 0.571,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "body": 459,
+   "line": 121,
+   "shine": 5
+  }
+ }
+]

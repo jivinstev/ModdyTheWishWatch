@@ -1,0 +1,1 @@
+{"store":"machines","v":1,"machines":[{"id":"rock_crusher","name":"Rock Crusher","description":"crushes rocks","parts":[{"dx":0,"dy":0,"dz":0,"block":"minecraft:iron_block"}],"anchorX":1,"anchorY":64,"anchorZ":1,"dimension":"minecraft:overworld"}]}

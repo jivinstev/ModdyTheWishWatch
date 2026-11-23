@@ -1,0 +1,32 @@
+# Validation 2: an Apprentice wish. The Apprentice matches typed words to ready-made things (no AI, offline),
+# offers them on a chest page, and the player's pick is made in the world.
+@intent A typed wish goes to Moddy's Apprentice, which offers ready-made picks, and the picked creature appears in the world
+
+@step a clear stage
+gamemode creative
+time set noon
+weather clear
+gamerule doDaylightCycle false
+gamerule doMobSpawning false
+tp @s ~ ~ ~ 0 10
+
+@step type a wish for the Apprentice
+/moddy apprentice a dragon that breathes fire
+@expect chat Moddy's Apprentice within 20s
+@expect screen Apprentice within 20s
+@shot the-apprentice-offers
+
+@step pick its best offer
+# Slot 0 is the Apprentice's best match; slot 1 is "wish it from scratch" (the Magician), never picked here.
+@click slot 0
+@expect chat is ready within 90s
+@wait 2s
+@shot the-wish-made
+
+@step the creature is in the world
+# A wished creature's body carries the tags wishmob and mfamrig (its name varies: Scorch, Torch, ... the Dragon).
+# It flies, so look world-wide (a fresh world holds no other wished creature), polling while it settles.
+@repeat 10 until execute if entity @e[tag=wishmob,tag=mfamrig]
+@wait 1s
+@end-repeat
+@assert execute if entity @e[tag=wishmob,tag=mfamrig]

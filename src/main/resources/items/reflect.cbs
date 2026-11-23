@@ -1,0 +1,9 @@
+# REFLECT — a blocked arrow goes back where it came from. Built on `on_block`: the moment he blocks, the
+# arrow he blocked goes back the way he is facing, his now, instead of dropping at his feet. The
+# turning-round is Java's (ReflectProjectiles), because an arrow's motion cannot be reversed by a
+# command; this function only says "reflect this block", by tagging him, and makes it seen and heard.
+function effect()
+    /tag @s add mfam_reflect
+    /particle minecraft:crit ~ ~1.2 ~ 0.4 0.4 0.4 0.3 20 force
+    /playsound minecraft:item.shield.block master @a ~ ~ ~ 1 1.6
+end

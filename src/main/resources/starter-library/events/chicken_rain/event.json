@@ -1,0 +1,8 @@
+{
+  "name": "chicken_rain",
+  "motion": "from_the_sky",
+  "size": "little",
+  "drop": "minecraft:chicken",
+  "afterwards": "until_undo",
+  "title": "IT'S RAINING CHICKENS!"
+}

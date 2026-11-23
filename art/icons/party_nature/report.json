@@ -1,0 +1,289 @@
+[
+ {
+  "cluster": "party_nature",
+  "name": "treasure_chest",
+  "verdict": "PASS",
+  "kind": "fixed",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.573,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "fixed": 385,
+   "line": 198,
+   "shine": 4
+  }
+ },
+ {
+  "cluster": "party_nature",
+  "name": "dynamite",
+  "verdict": "PASS",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.504,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "body": 52,
+   "fixed": 286,
+   "line": 175,
+   "shine": 3
+  }
+ },
+ {
+  "cluster": "party_nature",
+  "name": "firework",
+  "verdict": "PASS",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.363,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "body": 154,
+   "fixed": 84,
+   "line": 130,
+   "shine": 4
+  }
+ },
+ {
+  "cluster": "party_nature",
+  "name": "party_hat",
+  "verdict": "PASS",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.468,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "body": 89,
+   "fixed": 256,
+   "line": 129,
+   "shine": 5
+  }
+ },
+ {
+  "cluster": "party_nature",
+  "name": "music_note",
+  "verdict": "PASS",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.344,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "body": 32,
+   "fixed": 98,
+   "line": 217,
+   "shine": 5
+  }
+ },
+ {
+  "cluster": "party_nature",
+  "name": "heart",
+  "verdict": "PASS",
+  "kind": "fixed",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.434,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "fixed": 342,
+   "line": 97,
+   "shine": 5
+  }
+ },
+ {
+  "cluster": "party_nature",
+  "name": "star",
+  "verdict": "PASS",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.347,
+   "dark_body": 0.5,
+   "pieces": 1,
+   "body": 36,
+   "fixed": 227,
+   "line": 87,
+   "shine": 5
+  }
+ },
+ {
+  "cluster": "party_nature",
+  "name": "sun",
+  "verdict": "PASS",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.445,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "body": 19,
+   "fixed": 238,
+   "line": 194,
+   "shine": 5
+  }
+ },
+ {
+  "cluster": "party_nature",
+  "name": "flower",
+  "verdict": "PASS",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.438,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "body": 48,
+   "fixed": 248,
+   "line": 152,
+   "shine": 1
+  }
+ },
+ {
+  "cluster": "party_nature",
+  "name": "tree",
+  "verdict": "PASS",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.334,
+   "dark_body": 0.5,
+   "pieces": 1,
+   "body": 10,
+   "fixed": 231,
+   "line": 96,
+   "shine": 5
+  }
+ },
+ {
+  "cluster": "party_nature",
+  "name": "cactus",
+  "verdict": "PASS",
+  "kind": "fixed",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.398,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "fixed": 274,
+   "line": 130,
+   "shine": 4
+  }
+ },
+ {
+  "cluster": "party_nature",
+  "name": "mushroom",
+  "verdict": "PASS",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.509,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "body": 20,
+   "fixed": 396,
+   "line": 102,
+   "shine": 3
+  }
+ },
+ {
+  "cluster": "party_nature",
+  "name": "campfire",
+  "verdict": "PASS",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.496,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "body": 53,
+   "fixed": 293,
+   "line": 161,
+   "shine": 1
+  }
+ },
+ {
+  "cluster": "party_nature",
+  "name": "bubble_wand",
+  "verdict": "WARN",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [
+   "silhouette is 2 pieces",
+   "fill 25% (want 30-85%)"
+  ],
+  "stats": {
+   "fill": 0.254,
+   "dark_body": 0.0,
+   "pieces": 2,
+   "body": 135,
+   "fixed": 16,
+   "line": 109
+  }
+ },
+ {
+  "cluster": "party_nature",
+  "name": "kite",
+  "verdict": "PASS",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.357,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "body": 86,
+   "fixed": 156,
+   "line": 120,
+   "shine": 4
+  }
+ },
+ {
+  "cluster": "party_nature",
+  "name": "volcano",
+  "verdict": "PASS",
+  "kind": "tint",
+  "n": 32,
+  "problems": [],
+  "warnings": [],
+  "stats": {
+   "fill": 0.437,
+   "dark_body": 0.0,
+   "pieces": 1,
+   "body": 95,
+   "fixed": 270,
+   "line": 80,
+   "shine": 2
+  }
+ }
+]

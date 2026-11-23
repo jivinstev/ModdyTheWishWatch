@@ -1,0 +1,14 @@
+{"store":"library-icons","v":1,"icons":[
+  {"id": "starter_creeper_picture", "item": "minecraft:painting"},
+  {"id": "starter_pet_dragon", "item": "minecraft:dragon_head"},
+  {"id": "starter_leaping_beast", "item": "minecraft:saddle"},
+  {"id": "starter_helper_caller", "item": "minecraft:allay_spawn_egg"},
+  {"id": "starter_fireball_thrower", "item": "minecraft:fire_charge"},
+  {"id": "starter_lightning_sword", "item": "minecraft:diamond_sword"},
+  {"id": "starter_lava_castle", "item": "minecraft:lava_bucket"},
+  {"id": "starter_jump_boots", "item": "minecraft:leather_boots"},
+  {"id": "starter_slushie_machine", "item": "minecraft:blue_ice"},
+  {"id": "starter_lucky_block", "item": "minecraft:gold_block"},
+  {"id": "starter_meteor", "item": "minecraft:magma_block"},
+  {"id": "starter_chicken_rain", "item": "minecraft:egg"}
+]}

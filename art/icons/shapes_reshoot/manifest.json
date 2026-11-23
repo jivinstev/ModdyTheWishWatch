@@ -1,0 +1,98 @@
+{
+ "cluster": "shapes_reshoot",
+ "order": [
+  "rail",
+  "fence",
+  "trapdoor",
+  "goat_horn",
+  "horse_armor",
+  "flint_and_steel",
+  "brewing_stand",
+  "elytra",
+  "name_tag",
+  "coral",
+  "crystal",
+  "cube_leafy",
+  "cube_fluffy"
+ ],
+ "icons": [
+  {
+   "name": "rail",
+   "status": "ok",
+   "attempts": 3,
+   "note": "Track from above at a slight angle: twin grey rails over brown sleepers with clear magenta between them."
+  },
+  {
+   "name": "fence",
+   "status": "ok",
+   "attempts": 2,
+   "note": "Front-view garden fence: two posts with pointed caps joined by two horizontal rails."
+  },
+  {
+   "name": "trapdoor",
+   "status": "ok",
+   "attempts": 3,
+   "note": "Square hatch seen from slightly above: plank lines, dark latch and hinges, shadowed front face; rectangular, not a diamond."
+  },
+  {
+   "name": "goat_horn",
+   "status": "ok",
+   "attempts": 2,
+   "note": "Fat crescent horn: thick base, pointed tip, ridged bands."
+  },
+  {
+   "name": "horse_armor",
+   "status": "ok",
+   "attempts": 3,
+   "note": "Side-view horse head and neck as a plated shell; reads as horse."
+  },
+  {
+   "name": "flint_and_steel",
+   "status": "ok",
+   "attempts": 3,
+   "note": "C-shaped grey striker beside a dark flint chunk, two white sparks between."
+  },
+  {
+   "name": "brewing_stand",
+   "status": "ok",
+   "attempts": 2,
+   "note": "Central rod on a round base with three hanging cyan bottles."
+  },
+  {
+   "name": "elytra",
+   "status": "ok",
+   "attempts": 2,
+   "note": "Two long tapered wings from a shoulder bar, vein lines; reads as wings, not the letter A."
+  },
+  {
+   "name": "name_tag",
+   "status": "ok",
+   "attempts": 1,
+   "note": "Paper tag with cut corner, punched hole, string loop, dark writing dashes."
+  },
+  {
+   "name": "coral",
+   "status": "ok",
+   "attempts": 2,
+   "note": "Six rounded finger-like branches rising from a mound base."
+  },
+  {
+   "name": "crystal",
+   "status": "ok",
+   "attempts": 1,
+   "note": "Three pointed crystal prisms, middle tallest, white glint on a facet."
+  },
+  {
+   "name": "cube_leafy",
+   "status": "ok",
+   "attempts": 1,
+   "note": "Cube with leaf texture: leaf clumps and dark holes across all faces."
+  },
+  {
+   "name": "cube_fluffy",
+   "status": "ok",
+   "attempts": 1,
+   "note": "Previous fluffy design kept; outline regenerated clean all round."
+  }
+ ]
+}

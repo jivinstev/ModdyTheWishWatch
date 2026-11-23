@@ -1,0 +1,19 @@
+The Apprentice wish box's trained layer reads clauses with a frozen sentence model:
+
+  all-MiniLM-L6-v2 (sentence-transformers, https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2),
+  exported to ONNX, used unmodified
+  model.onnx  sha256 4f148ba8ae9c2c7fbee4af2b132db8d06c6a6545b47fc83bbb98c3d22b8393e6
+  vocab.txt   sha256 07eced375cec144d27c900241f3e339478dec958f92fddbc551f295c992038a3
+  from the archive Chroma publishes for its default embedding function
+  (https://chroma-onnx-models.s3.amazonaws.com/all-MiniLM-L6-v2/onnx.tar.gz; tools/fetch-apprentice-model.sh)
+
+Licence: Apache License 2.0, as the model card states (`license: apache-2.0`). Its full text is in
+apprentice/sentence-model.LICENSE.txt beside this file. The model's base, MiniLM-L6-H384-uncased (Microsoft), is MIT.
+
+Where the files are:
+  * the store release (the public jar) carries both files INSIDE the jar, at apprentice/model/, and copies them
+    into <game folder>/moddingfromamod/apprentice-model/ the first time a world starts. Nothing is downloaded.
+  * other builds do not carry them; a server operator places the two files in that folder.
+
+What every jar carries is apprentice/layer.bin and layer.json: weights we trained ourselves, on clauses we wrote,
+over that model's output. They contain none of the model.

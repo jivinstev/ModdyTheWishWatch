@@ -1,0 +1,25 @@
+{
+  "abilities": [
+    "ranged"
+  ],
+  "armor": 0.0,
+  "base": "guardian",
+  "body": "humanoid",
+  "damage": 6.0,
+  "health": 80.0,
+  "id": "fire_imp",
+  "knockbackResistance": 0.0,
+  "modelKey": "fire_imp",
+  "name": "Fire Guardian",
+  "powers": [
+    "friendly",
+    "fireproof",
+    "persistent"
+  ],
+  "scale": 1.2,
+  "speed": 0.25,
+  "texture": "zombie",
+  "throws": "minecraft:fire_charge",
+  "tint": "#FFFFFF",
+  "voice": "blaze"
+}

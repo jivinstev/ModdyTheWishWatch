@@ -1,0 +1,125 @@
+{
+ "name": "Whale (origin under the middle)",
+ "scale": 1.5,
+ "powers": [
+  "friendly"
+ ],
+ "parts": [
+  {
+   "name": "body",
+   "from": [
+    -8,
+    2,
+    -28
+   ],
+   "to": [
+    8,
+    18,
+    28
+   ],
+   "pivot": [
+    0,
+    2,
+    0
+   ],
+   "colour": "#3050E0"
+  },
+  {
+   "name": "head",
+   "from": [
+    -7,
+    3,
+    -44
+   ],
+   "to": [
+    7,
+    16,
+    -28
+   ],
+   "pivot": [
+    0,
+    3,
+    0
+   ],
+   "colour": "#3050E0"
+  },
+  {
+   "name": "tail",
+   "from": [
+    -5,
+    6,
+    28
+   ],
+   "to": [
+    5,
+    14,
+    40
+   ],
+   "pivot": [
+    0,
+    6,
+    0
+   ],
+   "colour": "#3050E0"
+  },
+  {
+   "name": "fluke",
+   "from": [
+    -14,
+    8,
+    40
+   ],
+   "to": [
+    14,
+    10,
+    48
+   ],
+   "pivot": [
+    0,
+    8,
+    0
+   ],
+   "colour": "#3050E0"
+  },
+  {
+   "name": "finL",
+   "from": [
+    8,
+    4,
+    -16
+   ],
+   "to": [
+    16,
+    6,
+    -8
+   ],
+   "pivot": [
+    0,
+    4,
+    0
+   ],
+   "colour": "#3050E0"
+  },
+  {
+   "name": "finR",
+   "from": [
+    -16,
+    4,
+    -16
+   ],
+   "to": [
+    -8,
+    6,
+    -8
+   ],
+   "pivot": [
+    0,
+    4,
+    0
+   ],
+   "colour": "#3050E0"
+  }
+ ],
+ "id": "whale_centred",
+ "source": "synthetic \u2014 shapes the committed corpus does not contain"
+}

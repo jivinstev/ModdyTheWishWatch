@@ -1,0 +1,8 @@
+# EVENT — it sets off a world event he wished for (E5): the wave, the meteor, the quake.
+#
+# The event itself is a kept design, staged by name where the item is aimed; everything about it —
+# what it is made of, what it catches, what follows, how it is given back — lives in the design,
+# not here. `moddyevent stage` is the only part of that command a function may run.
+function effect()
+    /moddyevent stage ${DESIGN} at ~ ~ ~
+end

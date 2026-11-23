@@ -1,0 +1,23 @@
+{
+ "vehicle": true,
+ "armor": 0.0,
+ "behaves": "vehicle",
+ "body": "humanoid",
+ "damage": 0.0,
+ "health": 100.0,
+ "id": "rocket",
+ "knockbackResistance": 0.0,
+ "modelKey": "rocket",
+ "name": "Rocket Ship",
+ "powers": [
+  "friendly",
+  "rideable",
+  "flies",
+  "persistent"
+ ],
+ "scale": 1.6,
+ "speed": 0.5,
+ "texture": "zombie",
+ "tint": "#FFFFFF",
+ "voice": "silent"
+}

@@ -1,0 +1,16 @@
+{
+  "count": 1,
+  "effects": [
+    "jump"
+  ],
+  "id": "double_jump_boots_jump",
+  "name": "Double Jump Boots",
+  "params": {
+    "SECONDS": "30",
+    "LEVEL": "3"
+  },
+  "parts": [],
+  "properties": {},
+  "shape": "worn_feet",
+  "variants": []
+}

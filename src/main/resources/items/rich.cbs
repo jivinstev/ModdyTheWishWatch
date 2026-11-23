@@ -1,0 +1,10 @@
+# RICH — treasure, into the nearest player's bag.
+#
+# @p rather than the shape's usual target: /give only accepts players, and this is the one effect
+# is always a person no matter which shape it is wrapped in. A thrown money bag should pay whoever
+# picked the spot, and that is the nearest player to where it landed.
+function effect()
+    /give @p[distance=..12] ${ITEM} ${COUNT}
+    /particle minecraft:happy_villager ~ ~1 ~ 0.6 0.6 0.6 0.2 40 force
+    /playsound minecraft:entity.player.levelup master @a ~ ~ ~ 1 1.2
+end
