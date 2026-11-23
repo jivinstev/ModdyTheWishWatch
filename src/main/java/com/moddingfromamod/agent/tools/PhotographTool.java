@@ -1994,7 +1994,11 @@ public final class PhotographTool implements McpTool {
                 if (player == null) {
                     return "nobody";
                 }
-                if (!com.moddingfromamod.net.ModdedClient.can(player, com.moddingfromamod.net.ModdedClient.Channel.SPIN)) {
+                // A GameTest's mock answers yes to EVERY channel (MockPlayerNetwork), so ask the seam too: a mock has
+                // no client to play a take, and waiting for its strip cost a 36 s timeout per make (release smoke,
+                // 2026-11-23, ApprenticeGameTest.fromTheWordsToTheThingNoModelAndNoWebCall).
+                if (com.moddingfromamod.seam.MockPlayers.is(player)
+                        || !com.moddingfromamod.net.ModdedClient.can(player, com.moddingfromamod.net.ModdedClient.Channel.SPIN)) {
                     return "noclient";   // a stock client (or a GameTest's mock) cannot play a take: stills
                 }
                 double eyeH = player.getEyeHeight();

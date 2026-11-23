@@ -69,19 +69,32 @@ class NativeItemModelsTest {
             return model;
         }
         JsonArray layers = model.getAsJsonArray("models");
-        assertEquals(IconNodes.PICTURE + 2, layers.size(), model.toString());
-        JsonObject select = layers.get(layers.size() - 1).getAsJsonObject();
+        // glow, twinkles, the picture, the overlay select, and the hotbar badge's layers (HotbarBadgeTest)
+        assertEquals(IconNodes.PICTURE + 2 + HotbarBadge.sprites().size(), layers.size(), model.toString());
+        JsonObject select = overlaySelect(model);
         assertEquals("minecraft:select", select.get("type").getAsString());
         assertEquals("minecraft:empty", select.getAsJsonObject("fallback").get("type").getAsString(),
                 "a stack with no overlay string must draw NOTHING over its icon");
         return IconNodes.picture(model);
     }
 
+    /** The icon composite's overlay layer: its one select. */
+    private static JsonObject overlaySelect(JsonObject model) {
+        JsonObject found = null;
+        for (var e : model.getAsJsonArray("models")) {
+            if ("minecraft:select".equals(e.getAsJsonObject().get("type").getAsString())) {
+                assertNull(found, "two selects in one icon composite");
+                found = e.getAsJsonObject();
+            }
+        }
+        assertNotNull(found, model.toString());
+        return found;
+    }
+
     /** The overlay names an icon's composite selects on, in order. */
     private static List<String> overlayCases(JsonObject model, String ns, java.util.function.Predicate<String> exists) {
         List<String> out = new ArrayList<>();
-        JsonArray models = model.getAsJsonArray("models");
-        JsonArray cases = models.get(models.size() - 1).getAsJsonObject().getAsJsonArray("cases");
+        JsonArray cases = overlaySelect(model).getAsJsonArray("cases");
         for (int i = 0; i < cases.size(); i++) {
             JsonObject c = cases.get(i).getAsJsonObject();
             String name = c.get("when").getAsString();

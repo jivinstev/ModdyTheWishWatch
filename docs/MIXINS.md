@@ -49,6 +49,8 @@ integrated server). Needed in single-player: yes for every row, which is why eac
 | `ProjectileHitInvoker` | `moddingfromamod.mixins.json` | `Projectile#hitTargetOrDeflectSelf` | `@Invoker` | a projectile that reached a rig's hit proxy lands on the carrier |
 | `ProxyProjectileMixin` | `moddingfromamod.mixins.json` | `Projectile#canHitEntity` | `@Inject` HEAD, cancellable | a projectile may hit a hit proxy exactly when it may hit the carrier |
 | `RigMoveRotationMixin` | `moddingfromamod.mixins.json` | `ServerEntity#sendChanges` | `@Inject` HEAD | a rig atom that moved is sent its rotation with the move, so a client's easing never freezes a part mid-turn; on by default (`vanilla/RigMoveRotation.ON`; `rigrotwithmove=off` is the arm), and with it off it changes nothing |
+| `RigBundleBroadcastMixin` | `moddingfromamod.mixins.json` | `ChunkMap$TrackedEntity#broadcast` | `@Inject` HEAD, cancellable | while the tracker's pass is held, a rig atom's packet is held for the players that see it, to go out in its rig's bundle (`vanilla/RigBundle`); every other entity, and any broadcast outside the pass, untouched |
+| `RigBundleTickMixin` | `moddingfromamod.mixins.json` | `ChunkMap#tick` | `@Inject` HEAD and RETURN | holds the tracker's pass and, when it ends, sends each viewer what its rigs sent as ONE bundle, which a client applies on one tick, so a beat's moves cannot split across two client ticks and leave parts off their body for the whole beat (`vanilla/RigBundle`; `rigbundle=off` is the A/B arm) |
 | `RigTrackerCadenceMixin` | `moddingfromamod.mixins.json` | `ServerEntity#sendChanges` | `@Inject` HEAD, cancellable | a rig atom's move goes out on the rig's beat, every 3rd tick, and only its changed data off the beat, so every part of a body moves on the same ticks (`vanilla/RigCadence`); and a look change (light, tint, item) sent while a pose is easing re-arms that ease for the ticks it has left, so it cannot jump the pose (`RigCadence.REARM`). Every other entity untouched |
 | `RigDisplayEaseMixin` | `moddingfromamod.mixins.json` | `Display#onSyncedDataUpdated` | `@Inject` TAIL | on the server, a display remembers whether its pose ease restarted and whether a field that rebuilds a client's render state changed, for `RigTrackerCadenceMixin` (`vanilla/RigEaseState`); it only remembers, and does nothing on a client |
 | `ItemDisplayLookKeys` | `moddingfromamod.mixins.json` | `Display.ItemDisplay` item and item-context keys | `@Accessor` | `RigDisplayEaseMixin` knows an item display's item change rebuilds its render state |
@@ -88,3 +90,17 @@ is off". 24 of the 26 mixins applied at boot, beside the others' on the same cla
 Lithium; `LivingEntity` with Lithium); the other two (`BookTextMixin`, `SoundSentMixin`) target the player connection classes, which load only
 when a player joins. Re-run it after adding a mixin: install a server, put the jar and the mods in `mods/`, boot, and
 read `logs/debug.log` for `Mixing … from moddingfromamod.mixins.json` and any mixin error.
+
+**With a client and a join, 2026-11-23: `./tools/boot-beside.sh`** (a dev server plus an xvfb dev client that
+joins it, both with the same 10 mods, Jade at 19.3.1). The client joined. 27 of our public mixins applied on the server
+and 23 on the client, including the two the server-only boot could not reach (`BookTextMixin` and
+`ExecutionContextHardStopMixin`, both on the player connection). Our private config's mixins also applied (12 server, 8
+client). There were no mixin apply failures or conflicts on either side. Every ERROR line came from somewhere else:
+NeoForge's `@OnlyIn` warnings about Architectury, AppleSkin and Cloth Config; no audio device under xvfb; and the
+sandbox refusing the Mojang session servers. Two things the first runs taught, both now in the script:
+- NeoForge stops on a "Warnings while loading mods" screen when another mod uses `@OnlyIn`, and the quick-join waits
+  behind it forever; the script presses "Proceed" with xdotool.
+- The build's `-Psmokejars` check read the floor of a jar's Minecraft range as its version, so it refused Balm
+  (`[1.21.7,)`, built for 1.21.8). It now checks that 1.21.8 is inside the declared range.
+
+`SoundSentMixin` is in the GameTest-only config, so neither boot applies it.

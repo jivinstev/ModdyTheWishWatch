@@ -17,6 +17,7 @@ import com.moddingfromamod.wish.RealBuilds;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import com.moddingfromamod.UsesCorpus;
 
 /**
  * <b>Every building we already have can stand where it was designed to stand.</b>
@@ -30,6 +31,7 @@ import org.junit.jupiter.api.Test;
  * generator, never the artifact"); a real build that does not stand is named in {@link #KNOWN}
  * with its count, so the sweep is green, the defect is on record, and a NEW one fails.
  */
+@UsesCorpus
 class BuildSupportSweepTest {
 
     private static final Path STARTERS = Path.of("src/main/resources/starter-library/buildings");
@@ -119,8 +121,7 @@ class BuildSupportSweepTest {
     @Test
     @DisplayName("every real build stands, except the ones on record — and those still fail as recorded")
     void everyRealBuildStandsOrIsOnRecord() {
-        com.moddingfromamod.PrivateCorpora.require("real-builds.jsonl");   // private: skipped in the public cut
-        List<RealBuilds.Real> real = RealBuilds.load();
+        List<RealBuilds.Real> real = com.moddingfromamod.CorpusSource.realBuilds();
         assertTrue(real.size() >= 15, "the real-build corpus did not load: " + real.size());
         Map<String, Integer> got = new TreeMap<>();
         for (RealBuilds.Real r : real) {
@@ -129,7 +130,9 @@ class BuildSupportSweepTest {
                 got.put(r.id(), n);
             }
         }
-        assertEquals(new TreeMap<>(KNOWN), got,
+        // KNOWN names builds of the real corpus; every row of the public fixture is a shipped preset, and
+        // those all stand (everyBuilderPresetStands, everyStarterStands).
+        assertEquals(new TreeMap<>(com.moddingfromamod.CorpusSource.real() ? KNOWN : Map.of()), got,
                 "the real builds that cannot stand changed. A new id is a new defect; a known one "
                         + "vanishing means the check stopped seeing it");
     }

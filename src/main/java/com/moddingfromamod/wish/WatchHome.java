@@ -156,7 +156,7 @@ public final class WatchHome {
     }
 
     /** This player's facts, now. Server thread. */
-    static Facts facts(ServerPlayer p) {
+    public static Facts facts(ServerPlayer p) {
         boolean builder = com.moddingfromamod.wishbuilder.BuilderSettings.forPlayer(p.getUUID()).enabled();
         var snapshot = WatchSnapshot.forPlayer(p);
         String making = null;
@@ -224,7 +224,7 @@ public final class WatchHome {
     }
 
     /** A Bedrock press: the same paths the Java buttons' commands run. */
-    static void press(ServerPlayer p, String id, List<Act> acts) {
+    public static void press(ServerPlayer p, String id, List<Act> acts) {
         if (IDEA_ID.equals(id)) {
             // the idea, sent as it was offered: the same instant way a Java box sent unchanged takes
             NextWish.Idea idea = NextWish.offered(p.getUUID());

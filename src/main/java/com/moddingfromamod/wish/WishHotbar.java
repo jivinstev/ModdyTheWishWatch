@@ -14,22 +14,30 @@ import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.CustomData;
+import net.minecraft.world.item.component.CustomModelData;
 import net.minecraft.world.item.component.ItemLore;
 import net.minecraft.world.item.component.UseCooldown;
+import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.entity.item.ItemTossEvent;
+import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
 import net.neoforged.neoforge.event.entity.living.LivingDropsEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 
 /**
@@ -42,8 +50,9 @@ import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
  * the safety layers are the ones every wish meets. Each proxy has its own vanilla item cooldown, which a stock
  * client draws as the sweep over the slot.
  *
- * <p>A proxy is his alone (another player using it is told so and nothing is made), it vanishes when dropped or
- * when he dies rather than lying in the world, and the same tile takes it off again.
+ * <p>A proxy is his alone (another player using it is told so and nothing is made), it vanishes when dropped rather
+ * than lying in the world, it is kept when he is knocked out and back in the same slot when he respawns,
+ * and the same tile takes it off again.
  */
 @EventBusSubscriber(modid = ModdingFromAModMod.MODID)
 public final class WishHotbar {
@@ -125,9 +134,10 @@ public final class WishHotbar {
                         .setStyle(Style.EMPTY.withColor(ChatFormatting.GRAY).withItalic(false)),
                 Component.literal("A wish, not the thing itself.")
                         .setStyle(Style.EMPTY.withColor(ChatFormatting.DARK_GRAY).withItalic(false)))));
-        // The glint is what tells a wish for an item from the item (until the watch overlay), but it washes a
-        // dye-tinted picture out: the green dragon sprite drew pale lavender (docs/evidence-2755, 4-controls.png).
-        if (!picture.has(DataComponents.DYED_COLOR)) {
+        // The Moddy badge says "a wish, not the thing". With it the glint goes: it only lightened the
+        // picture (and washed a dyed sprite out to pale lavender, docs/evidence-2755, 4-controls.png). A picture
+        // the badge cannot draw keeps the old marker.
+        if (!badge(s) && !picture.has(DataComponents.DYED_COLOR)) {
             s.set(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, true);
         }
         s.set(DataComponents.MAX_STACK_SIZE, 1);
@@ -139,6 +149,54 @@ public final class WishHotbar {
         tag.putString(ICON, cell.icon());
         s.set(DataComponents.CUSTOM_DATA, CustomData.of(tag));
         return s;
+    }
+
+    /**
+     * <b>Put the Moddy badge on a proxy</b>, through the item pack every client already has (no reload,
+     * {@link com.moddingfromamod.pack.HotbarBadge}): an icon of ours gets the badge flag beside the number,
+     * overlay and accent it already carries; a vanilla picture is drawn by the hotbar definition, which reads its
+     * id from the string. False, and the stack untouched, for a picture neither can draw.
+     */
+    static boolean badge(ItemStack s) {
+        ResourceLocation model = s.get(DataComponents.ITEM_MODEL);
+        if (model == null) {
+            return false;
+        }
+        CustomModelData cmd = s.get(DataComponents.CUSTOM_MODEL_DATA);
+        if (com.moddingfromamod.pack.VanillaItemPack.NAMESPACE.equals(model.getNamespace())
+                && model.getPath().startsWith(com.moddingfromamod.pack.NativeItemModels.DIR + "/")) {
+            var sprite = com.moddingfromamod.item.IconSprites.byName(
+                    model.getPath().substring(com.moddingfromamod.pack.NativeItemModels.DIR.length() + 1));
+            if (sprite == null || !sprite.model().startsWith("wish/")) {
+                return false;   // only a wish's own pictures are composed (pack.VanillaItemPack.nodes)
+            }
+            CustomModelData was = cmd == null ? new CustomModelData(List.of(), List.of(), List.of(), List.of()) : cmd;
+            s.set(DataComponents.CUSTOM_MODEL_DATA, new CustomModelData(was.floats(),
+                    flagged(was.flags()), was.strings(), was.colors()));
+            return true;
+        }
+        if (com.moddingfromamod.pack.HotbarBadge.drawsVanilla(model.toString())) {
+            s.set(DataComponents.ITEM_MODEL, ResourceLocation.parse(com.moddingfromamod.pack.HotbarBadge.ITEM_MODEL));
+            s.set(DataComponents.CUSTOM_MODEL_DATA, new CustomModelData(List.of(), List.of(true),
+                    List.of(model.toString()), List.of()));
+            return true;
+        }
+        return false;
+    }
+
+    private static List<Boolean> flagged(List<Boolean> flags) {
+        List<Boolean> out = new ArrayList<>(flags);
+        while (out.size() <= com.moddingfromamod.pack.HotbarBadge.FLAG_INDEX) {
+            out.add(false);
+        }
+        out.set(com.moddingfromamod.pack.HotbarBadge.FLAG_INDEX, true);
+        return out;
+    }
+
+    /** Does this proxy wear the Moddy badge? */
+    public static boolean badged(ItemStack s) {
+        CustomModelData cmd = s.get(DataComponents.CUSTOM_MODEL_DATA);
+        return cmd != null && Boolean.TRUE.equals(cmd.getBoolean(com.moddingfromamod.pack.HotbarBadge.FLAG_INDEX));
     }
 
     private static <T> boolean copy(ItemStack from, ItemStack to, DataComponentType<T> type) {
@@ -383,7 +441,118 @@ public final class WishHotbar {
         }
     }
 
-    /** He died: his proxies do not drop. */
+    // ── knocked out ───────────────────────────────────────────────────────────────────────
+
+    /**
+     * His wishes kept through a death, under the tag NeoForge copies onto the new body: a list of
+     * {@code {slot, stack}}. Written at the death, read and cleared at the respawn's Clone, so it survives him logging
+     * out (or the server restarting) before he presses Respawn, exactly as {@code player/SurviveDeath}'s effects do.
+     */
+    static final String KEPT = "mfam_hotbar_kept";
+
+    /**
+     * He was knocked out: take his wishes off before anything drops or is kept, and write down where each was. So
+     * they never lie in the world, and with {@code keepInventory} on, the kept inventory holds none for the respawn to
+     * double. LOWEST and not for a cancelled death (a death prevented is not a death).
+     */
+    @SubscribeEvent(priority = EventPriority.LOWEST)
+    public static void onDeath(LivingDeathEvent event) {
+        if (event.getEntity() instanceof ServerPlayer sp) {
+            keep(sp);
+        }
+    }
+
+    /** The respawn's new body: his wishes back in their slots. */
+    @SubscribeEvent
+    public static void onClone(PlayerEvent.Clone event) {
+        if (event.isWasDeath() && event.getEntity() instanceof ServerPlayer sp) {
+            giveBack(sp);
+        }
+    }
+
+    /** Take every proxy off and write it down with its slot; how many. */
+    static int keep(ServerPlayer dying) {
+        Inventory inv = dying.getInventory();
+        var ops = RegistryOps.create(NbtOps.INSTANCE, dying.registryAccess());
+        CompoundTag persisted = dying.getPersistentData().getCompoundOrEmpty(Player.PERSISTED_NBT_TAG);
+        ListTag kept = persisted.getListOrEmpty(KEPT).copy();   // a death before an earlier one was given back
+        for (int i = 0; i < inv.getContainerSize(); i++) {
+            ItemStack s = inv.getItem(i);
+            if (recipeOf(s) == null) {
+                continue;
+            }
+            var encoded = ItemStack.CODEC.encodeStart(ops, s).result();
+            if (encoded.isPresent()) {
+                CompoundTag one = new CompoundTag();
+                one.putInt("slot", i);
+                one.put("stack", encoded.get());
+                kept.add(one);
+            }
+            inv.setItem(i, ItemStack.EMPTY);   // unwritable or not, it never drops: My wishes still has it
+        }
+        if (kept.isEmpty()) {
+            persisted.remove(KEPT);
+        } else {
+            persisted.put(KEPT, kept);
+        }
+        dying.getPersistentData().put(Player.PERSISTED_NBT_TAG, persisted);
+        return kept.size();
+    }
+
+    /** Has a death been written down and not yet given back? */
+    static boolean keeping(Player p) {
+        return p.getPersistentData().getCompoundOrEmpty(Player.PERSISTED_NBT_TAG).contains(KEPT);
+    }
+
+    /** Give back what {@link #keep} wrote down, once: its own slot, else the first free one; how many went back. */
+    static int giveBack(ServerPlayer reborn) {
+        CompoundTag persisted = reborn.getPersistentData().getCompoundOrEmpty(Player.PERSISTED_NBT_TAG);
+        if (!persisted.contains(KEPT)) {
+            return 0;
+        }
+        ListTag kept = persisted.getListOrEmpty(KEPT);
+        persisted.remove(KEPT);
+        reborn.getPersistentData().put(Player.PERSISTED_NBT_TAG, persisted);
+        var ops = RegistryOps.create(NbtOps.INSTANCE, reborn.registryAccess());
+        Inventory inv = reborn.getInventory();
+        List<ItemStack> stacks = new ArrayList<>();
+        List<Integer> wanted = new ArrayList<>();
+        for (int i = 0; i < kept.size(); i++) {
+            CompoundTag one = kept.getCompoundOrEmpty(i);
+            ItemStack s = ItemStack.CODEC.parse(ops, one.getCompoundOrEmpty("stack")).result().orElse(ItemStack.EMPTY);
+            String recipe = recipeOf(s);
+            if (recipe == null || has(reborn, recipe)
+                    || stacks.stream().anyMatch(o -> recipe.equals(recipeOf(o)))) {
+                continue;   // never two of one wish
+            }
+            stacks.add(s);
+            wanted.add(one.getIntOr("slot", -1));
+        }
+        List<Boolean> empty = new ArrayList<>();
+        for (int i = 0; i < inv.getContainerSize(); i++) {
+            empty.add(inv.getItem(i).isEmpty());
+        }
+        List<Integer> to = WishHotbarPlan.restore(empty, wanted);
+        int given = 0;
+        for (int i = 0; i < stacks.size(); i++) {
+            int slot = to.get(i);
+            String name = stacks.get(i).getHoverName().getString();
+            if (slot < 0) {
+                reborn.sendSystemMessage(Component.literal("🎯 No room for " + name
+                        + " on your hotbar. It is still in My wishes."));
+                continue;
+            }
+            inv.setItem(slot, stacks.get(i));
+            given++;
+            if (slot != wanted.get(i)) {
+                reborn.sendSystemMessage(Component.literal("🎯 " + name + " is in slot " + (slot + 1)
+                        + " now: its own slot was taken."));
+            }
+        }
+        return given;
+    }
+
+    /** A safety net: should a proxy ever reach his death drops, it is gone rather than lying in the world. */
     @SubscribeEvent
     public static void onDrops(LivingDropsEvent event) {
         if (event.getEntity() instanceof ServerPlayer) {

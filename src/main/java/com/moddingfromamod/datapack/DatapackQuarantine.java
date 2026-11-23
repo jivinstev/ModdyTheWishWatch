@@ -426,7 +426,7 @@ public final class DatapackQuarantine {
     }
 
     /** Test seam for the event log. */
-    static void eventsTo(Path f) {
+    public static void eventsTo(Path f) {
         eventsOverride = f;
     }
 

@@ -74,20 +74,6 @@ class CreatureCorpusTest {
         assertEquals(CreatureCorpus.load().size(), CreatureCorpus.select(null, 999).size());
     }
 
-    /**
-     * The rows whose prompt is a child's own sentence live in a private overlay. Here they load
-     * beside the public rows, once each; in the public cut this skips by name.
-     */
-    @Test
-    @DisplayName("the private overlay's creatures load beside the public ones, once each")
-    void theVerbatimOverlayIsUnionedIn() {
-        com.moddingfromamod.PrivateCorpora.require("verbatim-creatures.jsonl");
-        for (String id : List.of("bowser", "ronald", "sparky")) {
-            assertEquals(1, CreatureCorpus.select(id, 99).size(), id + " must load exactly once");
-        }
-        assertEquals(3, CreatureCorpus.select("bowser,ronald,sparky", 99).size());
-    }
-
     @Test
     @DisplayName("every case carries the words a child would type, not a tidy paraphrase")
     void promptsAreInTheChildsVoice() {

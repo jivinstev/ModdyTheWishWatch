@@ -27,6 +27,7 @@ import com.moddingfromamod.agent.tools.RemoveBuildTool;
 import com.moddingfromamod.wish.RealBuilds;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import com.moddingfromamod.UsesCorpus;
 
 /**
  * <b>Buildings on a client with no mod: the parity claims that can be settled without a world.</b>
@@ -54,6 +55,7 @@ import org.junit.jupiter.api.Test;
  * <p>Everything here is pure, so the whole corpus runs in milliseconds and can sit on the unit
  * suite — the same argument {@code RealBuildCalibrationTest} makes for the oracle it shares.
  */
+@UsesCorpus
 class VanillaBuildParityTest {
 
     /** The only namespace a stock 1.21.1 client can render. */
@@ -100,8 +102,7 @@ class VanillaBuildParityTest {
     @Test
     @DisplayName("every block in the real-build corpus is vanilla")
     void everyBlockTheAgentReallyNamedIsVanilla() {
-        com.moddingfromamod.PrivateCorpora.require("real-builds.jsonl");   // private: skipped in the public cut
-        List<RealBuilds.Real> corpus = RealBuilds.load();
+        List<RealBuilds.Real> corpus = com.moddingfromamod.CorpusSource.realBuilds();
         assertTrue(corpus.size() >= 15,
                 "the real-build corpus did not load (" + corpus.size() + " plans), so every "
                         + "assertion here would be vacuous. Re-mine it with tools/mine-real-builds.py.");
@@ -177,9 +178,8 @@ class VanillaBuildParityTest {
     @Test
     @DisplayName("the real corpus covers every shape kind in the schema")
     void theRealCorpusCoversEveryShapeKindTheSchemaOffers() {
-        com.moddingfromamod.PrivateCorpora.require("real-builds.jsonl");   // private: skipped in the public cut
         Set<BuildShape.Kind> seen = new LinkedHashSet<>();
-        for (RealBuilds.Real r : RealBuilds.load()) {
+        for (RealBuilds.Real r : com.moddingfromamod.CorpusSource.realBuilds()) {
             for (BuildShape s : r.plan().shapes()) {
                 seen.add(s.kind());
             }

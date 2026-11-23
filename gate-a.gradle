@@ -210,13 +210,13 @@ tasks.named('test') { finalizedBy 'gateAPlanRecord' }
 //                           plug-in list written EMPTY (TRANSFORMS), neoforge.mods.toml with no private mixins, and the
 //                           resources build.gradle's processResources adds from outside src/ (the creator list, the
 //                           world manifests: both private today) only where the reader calls them public.
-//   compilePublicTestJava   the public tests (private_tests and held_tests left out) against the public classes only.
+//   compilePublicTestJava   the public tests (private_tests left out) against the public classes only.
 //   publicTest              THOSE tests, on that classpath and nothing private: no private class, no private resource,
 //                           no plug-in. A public test that reads a private resource or needs a private plug-in fails
 //                           Gate A by name. The full `compileJava` and `compileTestJava` are unchanged (the jar, the runs,
 //                           the IDE and every tool reading build/classes/java/main see the whole mod, as before).
 //   test                    depends on publicTest and runs only the test classes publicTest did NOT (private tests,
-//                           held tests, private packages' tests) on the full classpath. Each test runs exactly once.
+//                           CorpusSource readers, private packages' tests) on the full classpath. Each test runs exactly once.
 // So `./gradlew test` still means all of Gate A, `--tests X` reaches X in whichever half has it, `cleanTest` cleans both,
 // and `-x test` skips both. Public files that a test reads by PATH (docs/, tools/, corpus/) are on disk here either
 // way: only tools/public-build.sh, which builds the materialised tree, sees those (docs/TESTING.md → "Gate A").
@@ -248,6 +248,8 @@ def publicSplit = {
     publicSplitMemo = new groovy.json.JsonSlurper().parseText(out.toString())
     return publicSplitMemo
 }
+// build.gradle's processResources asks it too (the core jar IS the public cut, the house jar takes the rest).
+ext.publicSplit = publicSplit
 // Gradle patterns treat * ? and ** specially; a literal file name never carries them here (PublicSplitTest names files).
 def asPatterns = { List<String> rels -> rels.collect { it.toString() } }
 
@@ -329,23 +331,22 @@ def compilePublicTestJava = tasks.register('compilePublicTestJava', JavaCompile)
 tasks.named('compileTestJava') { mustRunAfter compilePublicTestJava }
 
 // Which half runs a test class: publicTest runs every class compilePublicTestJava compiled EXCEPT one that reads a
-// private corpus through PrivateCorpora. Such a test is public and SKIPS in the materialised cut, by name; here
-// the corpus is required, so it runs in `test`, on the full classpath that carries it. Decided per top-level class
+// corpus through CorpusSource. Such a test is public and reads its public fixture in the materialised cut and
+// the public repo (which have no split.json); here it runs in `test`, which hands it the REAL corpus (moddy.corpus.dir
+// below), on the full classpath that carries it. Decided per top-level class
 // (its nested classes follow it), from the class files themselves, at the moment Gradle reads a task's inputs (after
 // compilePublicTestJava ran). Cached by each class file's timestamp, so a recompile is never answered from memory.
 def publicTestClasses = compilePublicTestJava.flatMap { it.destinationDirectory }
-// a CorpusSource reader goes the same way, and `test` hands it the REAL corpus (moddy.corpus.dir below); the
-// materialised cut and the public repo, which have no split.json, read its public fixture instead.
-def PRIVATE_CORPORA_REFS = ['com/moddingfromamod/PrivateCorpora', 'com/moddingfromamod/CorpusSource']
-def readsPrivateCorpora = [:]
-def namesPrivateCorpora = { File f ->
+def CORPUS_SOURCE_REFS = ['com/moddingfromamod/CorpusSource']
+def readsCorpusSource = [:]
+def namesCorpusSource = { File f ->
     def key = f.path
     def stamp = f.lastModified() + ':' + f.length()
-    def hit = readsPrivateCorpora[key]
+    def hit = readsCorpusSource[key]
     if (hit == null || hit[0] != stamp) {
         def text = new String(f.bytes, 'ISO-8859-1')
-        hit = [stamp, PRIVATE_CORPORA_REFS.any { text.contains(it) }]
-        readsPrivateCorpora[key] = hit
+        hit = [stamp, CORPUS_SOURCE_REFS.any { text.contains(it) }]
+        readsCorpusSource[key] = hit
     }
     hit[1]
 }
@@ -358,7 +359,7 @@ def runsInPublicHalf = { String rel ->
     def pkg = new File(dir, slash < 0 ? '' : rel.substring(0, slash))
     def top = rel.substring(slash + 1).replaceFirst(/(\$.*)?\.class$/, '')
     def family = pkg.listFiles({ File x -> x.name == top + '.class' || x.name.startsWith(top + '$') } as FileFilter) ?: []
-    !family.any { namesPrivateCorpora(it) }
+    !family.any { namesCorpusSource(it) }
 }
 tasks.register('publicTest', Test) {
     enabled = splitPresent
@@ -371,8 +372,8 @@ tasks.register('publicTest', Test) {
 }
 
 // `./gradlew test` is still all of Gate A: the public half first, then the rest. Every class the public half runs is
-// left out of `test`, by its class file, so nothing runs twice and nothing is missed (a held test, compiled only in the
-// full set, and a PrivateCorpora reader both run here).
+// left out of `test`, by its class file, so nothing runs twice and nothing is missed (a private test, compiled only in
+// the full set, and a CorpusSource reader both run here).
 if (splitPresent) {
     tasks.named('test') {
         dependsOn 'publicTest', compilePublicTestJava

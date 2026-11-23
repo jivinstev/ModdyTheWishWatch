@@ -374,6 +374,29 @@ public final class ActionLog {
      * and what he did with it ({@code offered}, then {@code sent} as it was, {@code edited}, or {@code cleared}). No words:
      * the rung and the outcome are what the acceptance is measured from.
      */
+    /**
+     * a model or web call REFUSED because it was asked during a Wish Builder make (a Builder, Apprentice,
+     * re-wish or free-change make), which is local only ({@code marshal/LocalOnly}). One record per refused call; any at
+     * all is a regression. {@code what} names the call, never a word of the wish.
+     */
+    public static void localOnly(String what) {
+        try {
+            JsonObject o = new JsonObject();
+            o.addProperty("at", java.time.Instant.now().toString());
+            o.addProperty("kind", "local_only");
+            o.addProperty("test", com.moddingfromamod.RunContext.isTestRun());
+            stampLineage(o);
+            var run = AgentContext.currentRun();
+            if (run != null) {
+                o.addProperty("wishId", run.shortId());
+            }
+            o.addProperty("refused", what == null ? "" : what);
+            append(o);
+        } catch (RuntimeException e) {
+            // the log never stands between a child and his wish
+        }
+    }
+
     /** a typed re-wish read by the local reader: what it read and what it did, never the words. */
     public static void rewish(String playerId, String intent, String band, String verb, java.util.List<String> slots,
                               String outcome) {

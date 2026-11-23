@@ -116,6 +116,9 @@ public final class WikiArtwork {
 
     /** With {@code includeOpaque}, a page's JPEGs too — for a {@link SubjectKind#CREATURE}. */
     public static List<Art> forPage(String sourceUrl, boolean includeOpaque) {
+        if (com.moddingfromamod.marshal.LocalOnly.refuse("a wiki artwork fetch")) {   //: a Wish Builder make is local only
+            return List.of();
+        }
         try {
             URI page = URI.create(sourceUrl.trim());
             if (!ReferenceImages.allowed(page)) {
@@ -240,6 +243,9 @@ public final class WikiArtwork {
     }
 
     public static List<String> urlsFrom(List<String> sources, int limit, boolean includeOpaque) {
+        if (com.moddingfromamod.marshal.LocalOnly.refuse("a wiki artwork fetch")) {   //: a Wish Builder make is local only
+            return List.of();
+        }
         // IN PARALLEL, UNDER ONE DEADLINE (step 5). Each page now costs a head read plus
         // an API call, and serially that put Spikor's three wikis at 6-13 s. One slow or
         // tar-pitted site may not hold the rest hostage: what has not answered by the deadline

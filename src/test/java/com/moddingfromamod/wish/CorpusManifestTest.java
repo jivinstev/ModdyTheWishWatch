@@ -10,7 +10,9 @@ import java.util.List;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.moddingfromamod.CorpusSource;
 import org.junit.jupiter.api.Test;
+import com.moddingfromamod.UsesCorpus;
 
 /**
  * The manifest is only worth having if it cannot fall out of step with the directory.
@@ -21,6 +23,7 @@ import org.junit.jupiter.api.Test;
  * by a tool that globbed the directory. One was invisible, the other was invisible in the other
  * direction, and both looked completely normal.
  */
+@UsesCorpus
 class CorpusManifestTest {
 
     private static JsonObject manifest() throws Exception {
@@ -42,8 +45,8 @@ class CorpusManifestTest {
         List<String> missing = new ArrayList<>();
         for (String f : declared()) {
             if (WishCorpus.class.getResourceAsStream("/corpus/" + f) == null
-                    && !(com.moddingfromamod.PrivateCorpora.publicCut() && com.moddingfromamod.PrivateCorpora.NAMES.contains(f))) {
-                missing.add(f);   // a private corpus is absent only in the public cut
+                    && !(!CorpusSource.real() && CorpusSource.PRIVATE_RESOURCES.contains(f))) {
+                missing.add(f);   // a private corpus is absent only with no real corpus, as in the public repo
             }
         }
         assertEquals(List.of(), missing, "the manifest declares files that are not there: " + missing);
@@ -102,7 +105,7 @@ class CorpusManifestTest {
         // 340 cases (wishes 307, pictures 13, creatures 20); the private corpora add 244 more here (a child's real
         // wishes 84, the mod-repo history 154, the verbatim rows 6), 584 in all. A floor under each with headroom:
         // a damaged manifest drops a whole file, which falls through either one.
-        boolean publicCut = com.moddingfromamod.PrivateCorpora.publicCut();
+        boolean publicCut = !CorpusSource.real();
         int floor = publicCut ? 300 : 500;
         int loaded = WishCorpus.load().size();
         assertTrue(loaded > floor,

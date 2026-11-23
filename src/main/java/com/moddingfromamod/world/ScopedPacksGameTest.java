@@ -118,7 +118,7 @@ public final class ScopedPacksGameTest {
         };
     }
 
-    private static McpProtocol.Headers headers(String session) {
+    static McpProtocol.Headers headers(String session) {
         Map<String, String> m = new HashMap<>();
         m.put("Content-Type", "application/json");
         m.put("Accept", "application/json, text/event-stream");
@@ -126,6 +126,11 @@ public final class ScopedPacksGameTest {
             m.put("Mcp-Session-Id", session);
         }
         return McpProtocol.Headers.of(m);
+    }
+
+    /** The plan_wish stand-in, for another test's protocol. */
+    static McpTool planStub() {
+        return plan();
     }
 
     private static McpTool plan() {

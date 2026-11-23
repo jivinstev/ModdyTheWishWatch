@@ -24,9 +24,9 @@ import com.moddingfromamod.testing.gt.GameTestHolder;
 @GameTestHolder(ModdingFromAModMod.MODID)
 public class WatchHideGameTest {
 
-    static final String BATCH = "watch_hide";
+    public static final String BATCH = "watch_hide";
 
-    static ItemStack wand(String name, String feature) {
+    public static ItemStack wand(String name, String feature) {
         ItemStack made = new ItemStack(Items.STICK);
         made.set(net.minecraft.core.component.DataComponents.CUSTOM_NAME,
                 net.minecraft.network.chat.Component.literal(name));
@@ -37,7 +37,7 @@ public class WatchHideGameTest {
         return made;
     }
 
-    static int op(MinecraftServer server, String line) {
+    public static int op(MinecraftServer server, String line) {
         try {
             return server.getCommands().getDispatcher().execute(line, server.createCommandSourceStack());
         } catch (com.mojang.brigadier.exceptions.CommandSyntaxException e) {

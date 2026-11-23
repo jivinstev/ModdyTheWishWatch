@@ -117,6 +117,21 @@ public final class Deployment {
      * boot here, such as a server with a mod nobody has written yet.
      */
     public static Verdict classify(Collection<String> loadedModIds) {
+        return classify(loadedModIds, Set.of());
+    }
+
+    /**
+     * As {@link #classify(Collection)}, where {@code builtOnUs} are the loaded mods that REQUIRE this one: an extension
+     * of this mod (a level, a server's own mod) answers for its channels with ours, so it is ours, never a companion
+     * (our servers load the house mod beside the core, and it registers no channel of its own).
+     */
+    public static Verdict classify(Collection<String> loadedModIds, Collection<String> builtOnUs) {
+        Set<String> ours = new java.util.HashSet<>();
+        for (String id : builtOnUs) {
+            if (id != null) {
+                ours.add(id.trim().toLowerCase(java.util.Locale.ROOT));
+            }
+        }
         Set<String> companions = new TreeSet<>();
         for (String id : loadedModIds) {
             if (id == null || id.isBlank()) {
@@ -124,7 +139,7 @@ public final class Deployment {
             }
             String norm = id.trim().toLowerCase(java.util.Locale.ROOT);
             if (norm.equals(ModdingFromAModMod.MODID) || PLATFORM.contains(norm)
-                    || BUNDLED.contains(norm)) {
+                    || BUNDLED.contains(norm) || ours.contains(norm)) {
                 continue;
             }
             companions.add(norm);
@@ -136,8 +151,15 @@ public final class Deployment {
     /** Classify the server this code is running on. */
     public static Verdict here() {
         List<String> ids = new ArrayList<>();
-        ModList.get().forEachModContainer((id, c) -> ids.add(id));
-        return classify(ids);
+        List<String> builtOnUs = new ArrayList<>();
+        ModList.get().forEachModContainer((id, c) -> {
+            ids.add(id);
+            if (c.getModInfo().getDependencies().stream().anyMatch(d -> ModdingFromAModMod.MODID.equals(d.getModId())
+                    && d.getType() == net.neoforged.neoforgespi.language.IModInfo.DependencyType.REQUIRED)) {
+                builtOnUs.add(id);
+            }
+        });
+        return classify(ids, builtOnUs);
     }
 
     /**

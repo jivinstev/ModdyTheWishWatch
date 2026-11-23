@@ -134,7 +134,7 @@ public final class WatchSnapshot {
         // half second, which a live server's [tick] sampler caught as one slow tick in ten.
         Recipes outer = RECIPES.get();
         if (outer == null) {
-            RECIPES.set(new Recipes(LearnedTemplates.asPresets(), LearnedTemplates.taught()));
+            RECIPES.set(new Recipes(LearnedTemplates.asPresets(), LearnedTemplates.taught(), builderMakes(me)));
         }
         try {
             return creationsForUncached(me);
@@ -147,7 +147,8 @@ public final class WatchSnapshot {
 
     /** His recipes for the refresh in progress, read once ({@link #creationsFor}). */
     private record Recipes(List<WishCatalog.Preset> presets,
-                           List<com.moddingfromamod.marshal.TaughtJoin.Taught> taught) {
+                           List<com.moddingfromamod.marshal.TaughtJoin.Taught> taught,
+                           java.util.Map<String, com.moddingfromamod.wishbuilder.BuilderSpecStore.Made> builder) {
     }
 
     private static final ThreadLocal<Recipes> RECIPES = new ThreadLocal<>();
@@ -160,6 +161,20 @@ public final class WatchSnapshot {
     private static List<com.moddingfromamod.marshal.TaughtJoin.Taught> taughtAll() {
         Recipes r = RECIPES.get();
         return r != null ? r.taught() : LearnedTemplates.taught();
+    }
+
+    /** His kept Builder makes, read once per refresh like his recipes. */
+    private static java.util.Map<String, com.moddingfromamod.wishbuilder.BuilderSpecStore.Made> builderMakes(String me) {
+        Recipes r = RECIPES.get();
+        if (r != null) {
+            return r.builder();
+        }
+        try {
+            return com.moddingfromamod.wishbuilder.BuilderSpecStore.all(
+                    com.moddingfromamod.runtime.RuntimeConfig.playersDir(), me);
+        } catch (RuntimeException e) {
+            return java.util.Map.of();   // no shelf here (a gate's world): no Builder recipes, nothing else changes
+        }
     }
 
     private static List<String> creationsForUncached(String me) {
@@ -499,7 +514,16 @@ public final class WatchSnapshot {
             answersTo.addAll(aliases);
             recipe = com.moddingfromamod.marshal.WishSeed.bestMatch(answersTo, templates);
         }
-        String recipeId = !linked.isEmpty() ? linked : recipe == null ? "" : recipe.id();
+        // a thing the Builder or the Apprentice made carries its own recipe, the kept make ("builder:<id>"),
+        // so its page offers "Make another one" and "Add to hotbar". After a taught recipe that names it (that IS
+        // his recipe for it) and before a word match (a guess beats nothing, never an explicit link).
+        String builderRecipe = !linked.isEmpty() ? ""
+                : com.moddingfromamod.wishbuilder.BuilderAgain.recipeFor(builderMakes(me), id, name);
+        if (!builderRecipe.isEmpty()) {
+            recipe = null;
+        }
+        String recipeId = !linked.isEmpty() ? linked : !builderRecipe.isEmpty() ? builderRecipe
+                : recipe == null ? "" : recipe.id();
         String seed = recipe == null ? name : String.join(" ", recipe.terms());
 
         return new WatchRow.Creation(id, kind, name, aliases, vitals, tier, powers, intent,

@@ -37,11 +37,11 @@ import com.moddingfromamod.testing.gt.GameTestHolder;
 public final class RigVeilGameTest {
 
     /** Its own batch: mock players and the service-client set are both process-wide. */
-    static final String BATCH = "rigveil";
+    public static final String BATCH = "rigveil";
 
     private static final List<UUID> REGISTERED = new ArrayList<>();
 
-    static List<Object> drain(GameTestHelper helper, ServerPlayer p) {
+    public static List<Object> drain(GameTestHelper helper, ServerPlayer p) {
         var channel = p.connection.getConnection().channel();
         helper.assertTrue(channel instanceof io.netty.channel.embedded.EmbeddedChannel,
                 Component.literal("the instrument cannot see the wire: the mock's channel is a "
@@ -58,7 +58,7 @@ public final class RigVeilGameTest {
     }
 
     /** Every entity id this client was told to forget, across all remove packets seen. */
-    static java.util.Set<Integer> removed(List<Object> packets) {
+    public static java.util.Set<Integer> removed(List<Object> packets) {
         java.util.Set<Integer> out = new java.util.HashSet<>();
         for (Object o : packets) {
             if (o instanceof ClientboundRemoveEntitiesPacket rm) {
@@ -89,7 +89,7 @@ public final class RigVeilGameTest {
                         new float[] { -2, 2, 4 }, new float[] { 2, 5, 8 }, 0xaa8844));
     }
 
-    static void isolated(GameTestHelper helper, Runnable body) {
+    public static void isolated(GameTestHelper helper, Runnable body) {
         MockPlayerNetwork.clearStaleMocks(helper);
         RigReveal.forgetForTest();
         RigVeil.forget();
@@ -106,7 +106,7 @@ public final class RigVeilGameTest {
         }
     }
 
-    static ServerPlayer camera(GameTestHelper helper) {
+    public static ServerPlayer camera(GameTestHelper helper) {
         ServerPlayer cam = MockPlayerNetwork.inLevel(helper);
         PlayerKind.registerServiceClient(cam.getUUID());
         REGISTERED.add(cam.getUUID());
@@ -114,7 +114,7 @@ public final class RigVeilGameTest {
     }
 
     /** Publish a pack so the deferral has something to withhold, exactly as a sculpt would. */
-    static void publish(GameTestHelper helper, String key) {
+    public static void publish(GameTestHelper helper, String key) {
         try {
             RigReveal.publish(helper.getLevel().getServer(), key, threeParts(), 1.0);
         } catch (Exception e) {
@@ -122,11 +122,11 @@ public final class RigVeilGameTest {
         }
     }
 
-    static DisplayRig build(GameTestHelper helper, Vec3 at) {
+    public static DisplayRig build(GameTestHelper helper, Vec3 at) {
         return DisplayRig.spawn(helper.getLevel(), at, 0f, threeParts(), 1.0, 1.0, 2.0);
     }
 
-    static void tearDown(DisplayRig rig) {
+    public static void tearDown(DisplayRig rig) {
         if (rig == null) {
             return;
         }

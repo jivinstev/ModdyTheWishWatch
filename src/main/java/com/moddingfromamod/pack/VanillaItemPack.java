@@ -275,6 +275,10 @@ public final class VanillaItemPack {
         for (String fx : BACKING) {
             out.put(extraModelPath(FX_DIR + "/" + fx), spriteModel(FX_DIR + "/" + fx));
         }
+        for (String badge : HotbarBadge.sprites()) {
+            out.put(extraModelPath(badge), HotbarBadge.model(NAMESPACE, badge));
+        }
+        out.put(HotbarBadge.DEFINITION_PATH, HotbarBadge.definition(NAMESPACE));
         out.putAll(nativeDefinitions(spec));
         return out;
     }
@@ -384,8 +388,13 @@ public final class VanillaItemPack {
           .append(dyeTint == null ? "" : ", \"tints\": [ { \"type\": \"minecraft:dye\", \"default\": "
                   + BACKING_DEFAULT + " } ]")
           .append(" }, { \"type\": \"minecraft:model\", \"model\": \"").append(modelNs)
-          .append(":item/").append(FX_DIR).append("/backing_twinkle\" }, ")
-          .append(baseNode)
+          .append(":item/").append(FX_DIR).append("/backing_twinkle\" }, ");
+        // the Moddy badge a HOTBAR wish wears, drawn only when the stack sets the flag (HotbarBadge).
+        String[] badge = HotbarBadge.iconLayers(modelNs);
+        if (badge[0] != null) {
+            sb.append(badge[0]).append(", ");
+        }
+        sb.append(baseNode)
           .append(", { \"type\": \"minecraft:select\", \"property\": \"")
           .append(dispatchProperty()).append("\", \"index\": ").append(OVERLAY_INDEX)
           .append(", \"cases\": [");
@@ -396,7 +405,11 @@ public final class VanillaItemPack {
               .append("\"minecraft:model\", \"model\": \"").append(modelNs).append(":item/")
               .append(overlaySprite(names.get(i))).append("\" } }");
         }
-        sb.append(" ], \"fallback\": { \"type\": \"minecraft:empty\" } } ] }");
+        sb.append(" ], \"fallback\": { \"type\": \"minecraft:empty\" } }");
+        if (badge[1] != null) {
+            sb.append(", ").append(badge[1]);
+        }
+        sb.append(" ] }");
         return sb.toString();
     }
 

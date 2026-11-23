@@ -144,8 +144,8 @@ public final class BaseReach {
             Map.entry("conjure_at", Rule.of(Kind.CHILD_RELATIVE, 0,
                     "moves the anchor to forward/up from him: the next build lands there", "forward", "up")),
             Map.entry("modify_mob", Rule.of(Kind.CHILD_RELATIVE, 24,
-                    "the mobs within `radius` of him (default 24); scope=category is every one of that "
-                            + "kind, forever, on every island — refused", "radius")),
+                    "the mobs within `radius` of him (default 24) that are on his base (KEEPS_TO_BASE, #2806); "
+                            + "scope=category is every one of that kind, forever, on every island — refused", "radius")),
             // ── things he already made ───────────────────────────────────────────────────────────
             Map.entry("paint_creature", Rule.of(Kind.ARTIFACT, "his creature's colours")),
             Map.entry("apply_effect", Rule.of(Kind.ARTIFACT,
@@ -276,6 +276,13 @@ public final class BaseReach {
         }
         if (rule.kind() == Kind.CHILD_RELATIVE) {
             double r = radius(a, rule);
+            if (KEEPS_TO_BASE.contains(tool)) {
+                // the radius is where the tool LOOKS, and the tool keeps the look to his base (fence):
+                // what it changes is the creatures inside his base, so what is asked is that he stands on it. Asking
+                // whether the whole square round him fits refused every such call on a base smaller than the radius.
+                return onBase(tool, noun, island, child, "it acts on the creatures within " + (int) r
+                        + " blocks of him that are on his " + noun);
+            }
             return nearChild(tool, noun, island, child, r, "it acts within " + (int) r + " blocks of him");
         }
         if (rule.kind() == Kind.ABSOLUTE) {
@@ -395,6 +402,52 @@ public final class BaseReach {
         String why = DatapackScope.refusal(lines, "", world.baseOf(caster), owned(caster), in,
                 h -> com.moddingfromamod.wish.CommandGuard.rule(h) != null);
         return why == null ? null : why.replace("this datapack's function do", "this rule's `do`");
+    }
+
+    /**
+     * the tools whose radius is a SEARCH round the child ("the creatures within N blocks") and that keep the
+     * search to his base themselves, by {@link #fence}: they act only on what stands inside it. For these the reach
+     * rule asks whether he stands on his base, not whether the whole search square fits inside it, which no search
+     * wider than the base ever did. A tool joins this set only once it reads the fence (BaseReachTest holds each to it).
+     */
+    public static final java.util.Set<String> KEEPS_TO_BASE = java.util.Set.of("modify_mob");
+
+    /**
+     * <b>where a search round the child may act</b> — his base's area on a world whose rules fence wishes to a
+     * base, else null (no fence: the search is not limited here). A caster with no base gets a region holding nothing,
+     * so a search that somehow ran finds nothing to change. Pure: {@code WorldModuleHost.fenceFor} asks it of the
+     * running world.
+     *
+     * @param caster the child whose wish this is; null = no wish bound, no fence (as {@link #refusal} judges none)
+     */
+    public static Region fence(UUID caster, Bases world, WorldRules rules) {
+        if (world == null || caster == null) {
+            return null;
+        }
+        WorldRules in = rules == null ? WorldRules.CLOSED : rules;
+        if (!in.baseReach()) {
+            return null;
+        }
+        Base b = world.baseOf(caster);
+        return b == null ? NOWHERE : b.area();
+    }
+
+    /** A region no column is inside (min above max). */
+    static final Region NOWHERE = new Region(1, 0, 1, 0);
+
+    /** He stands on his base (the overworld, inside its area): a search from there is kept to it by the tool. */
+    private static String onBase(String tool, String noun, Base island, Bases.Pos child, String what) {
+        if (child == null) {
+            return message(tool, noun, island, "he is not in the world, so there is nowhere near him");
+        }
+        if (!OVERWORLD.equals(child.dimension())) {
+            return message(tool, noun, island, "he is not in the overworld, where the " + noun + "s are");
+        }
+        if (!island.area().contains(child.x(), child.z())) {
+            return message(tool, noun, island, what + ", and he is standing at (" + (int) child.x() + ", "
+                    + (int) child.z() + "), off his " + noun);
+        }
+        return null;
     }
 
     private static String nearChild(String tool, String noun, Base island, Bases.Pos child, double r,
@@ -551,7 +604,10 @@ public final class BaseReach {
         return out;
     }
 
-    /** The radius a rule's fields add up to, with the default for any that are absent. */
+    /** Fields that lift a thing rather than move it across the map: they count as given, never as distance. */
+    static final java.util.Set<String> VERTICAL = java.util.Set.of("up", "offsetY");
+
+    /** The radius a rule's fields add up to across the map, with the default for any that are absent. */
     static double radius(JsonObject a, Rule rule) {
         if (rule.fields().isEmpty()) {
             return rule.defaultRadius();
@@ -560,7 +616,8 @@ public final class BaseReach {
         boolean any = false;
         for (String f : rule.fields()) {
             if (has(a, f)) {
-                r += Math.abs(num(a, f));
+                // a height is not a distance across his base — "up 20" lands no further from him on the map.
+                r += VERTICAL.contains(f) ? 0 : Math.abs(num(a, f));
                 any = true;
             }
         }

@@ -50,7 +50,7 @@ public final class BuilderSuppliesGameTest {
     }
 
     /** How many of {@code itemId} he holds: every inventory slot and his Wish Bag. On the server thread. */
-    static int held(ServerPlayer p, String itemId) {
+    public static int held(ServerPlayer p, String itemId) {
         Item item = BuiltInRegistries.ITEM.getValue(ResourceLocation.parse(itemId));
         int n = 0;
         var inv = p.getInventory();
@@ -82,8 +82,8 @@ public final class BuilderSuppliesGameTest {
      * A shipped world's Builder, read from the manifest the jar ships (so its supplies knob is the one tested), or
      * {@link #PUBLIC_BUILDER} where the jar carries none (the public mod).
      */
-    static BuilderAllowlist shippedWorldBuilder() {
-        try (InputStream in = BuilderSuppliesGameTest.class.getResourceAsStream(com.moddingfromamod.world.WorldFacts.RESOURCE_DIR + "isle.json")) {
+    public static BuilderAllowlist shippedWorldBuilder() {
+        try (InputStream in = com.moddingfromamod.plugin.ModResources.open(com.moddingfromamod.world.WorldFacts.RESOURCE_DIR + "isle.json")) {
             String json = in == null ? PUBLIC_BUILDER : new String(in.readAllBytes(), StandardCharsets.UTF_8);
             return BuilderSettings.parse(json).allow();
         } catch (java.io.IOException | RuntimeException e) {

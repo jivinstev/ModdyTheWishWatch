@@ -38,7 +38,7 @@ fail() { say "FAIL — $*"; exit 1; }
 # class no config the jar registers lists (a private mixin left behind, whatever its name); and, where this repo's
 # private config is at hand, any class it lists.
 mixin_checks() {
-    local jar="$1" priv="$ROOT/src/main/resources/moddingfromamod.private.mixins.json" why
+    local jar="$1" priv="$ROOT/house/src/main/resources/moddingfromamod.private.mixins.json" why
     [ -f "$priv" ] || priv=""
     why="$(python3 -I - "$jar" "$priv" <<'PY'
 import json, re, sys, zipfile
@@ -63,7 +63,7 @@ for c in configs:
     pkg = j["package"].replace(".", "/")
     for lst in ("mixins", "client", "server"):
         listed |= {pkg + "/" + m.replace(".", "/") + ".class" for m in j.get(lst, [])}
-orphans = sorted(n for n in names if re.fullmatch(r"com/moddingfromamod/mixin/[^/$]+\.class", n) and n not in listed)
+orphans = sorted(n for n in names if re.fullmatch(r"com/moddingfromamod/(house/)?mixin/[^/$]+\.class", n) and n not in listed)
 if orphans:
     bad.append("mixin classes no registered config lists (a private mixin left in the jar?): " + ", ".join(orphans))
 if priv:

@@ -108,7 +108,7 @@ public final class FilmPathPlayer {
     private static Playback current;
 
     /** The current (or last) playback; for a GameTest. */
-    static Playback current() {
+    public static Playback current() {
         return current;
     }
 
@@ -116,39 +116,39 @@ public final class FilmPathPlayer {
     }
 
     /** One play of one path for one player. */
-    static final class Playback {
-        final String name;
-        final CameraKeys.Path path;
-        final UUID player;
-        final String playerName;
-        final long startTick;
-        final boolean trace;
-        final long[] reachedTick;
-        final Map<String, EntitySelector> selectors;
-        long lastT = -1;
-        boolean playing = true;
-        double[] lastLook;
-        long lookLostTicks;
-        long hash = 0xcbf29ce484222325L;   // FNV-1a 64
-        long hashedTicks;
+    public static final class Playback {
+        public final String name;
+        public final CameraKeys.Path path;
+        public final UUID player;
+        public final String playerName;
+        public final long startTick;
+        public final boolean trace;
+        public final long[] reachedTick;
+        public final Map<String, EntitySelector> selectors;
+        public long lastT = -1;
+        public boolean playing = true;
+        public double[] lastLook;
+        public long lookLostTicks;
+        public long hash = 0xcbf29ce484222325L;   // FNV-1a 64
+        public long hashedTicks;
         /** The read-back {x, y, z, yaw, pitch} of each hashed tick, for a test to compare (capped). */
-        final List<double[]> readBack = new ArrayList<>();
-        double[] pos;
-        float yaw, pitch;
-        double fov;
-        int key;
+        public final List<double[]> readBack = new ArrayList<>();
+        public double[] pos;
+        public float yaw, pitch;
+        public double fov;
+        public int key;
         /** Per key, the network id its look resolved to (FilmPathHandover.NO_ENTITY for a point or none). */
-        final int[] lookIds;
+        public final int[] lookIds;
         /** The server level's game time on play tick 0, as last handed to the viewer. */
-        long startGameTime;
+        public long startGameTime;
         /** What the viewer was last handed: the rig id and the look ids (the handover is re-sent on a change). */
-        int sentRig = Integer.MIN_VALUE;
-        int[] sentLookIds;
-        long sentStart = Long.MIN_VALUE;
+        public int sentRig = Integer.MIN_VALUE;
+        public int[] sentLookIds;
+        public long sentStart = Long.MIN_VALUE;
         /** How many times the path was handed to the viewer's client (0 for a stock client). */
-        int handovers;
+        public int handovers;
         /** The path as CameraKeys JSON, written once, or null when it is too big to hand over. */
-        String json;
+        public String json;
 
         Playback(String name, CameraKeys.Path path, ServerPlayer p, long startTick, boolean trace,
                  Map<String, EntitySelector> selectors) {
@@ -294,7 +294,7 @@ public final class FilmPathPlayer {
      * What a modded viewer is handed for this playback as it stands, or null when the path is too
      * big to hand over (the server still plays it; the viewer sees the per-tick rig).
      */
-    static FilmPathHandover payload(Playback pb) {
+    public static FilmPathHandover payload(Playback pb) {
         if (pb.json == null) {
             if (pb.path.keys().size() > FilmPathHandover.MAX_KEYS) {
                 return null;
@@ -549,7 +549,7 @@ public final class FilmPathPlayer {
     }
 
     /** Stop {@code p}'s playback, if it is his, and give him his own eyes back. True if one stopped. */
-    static boolean stop(ServerPlayer p) {
+    public static boolean stop(ServerPlayer p) {
         Playback pb = current;
         boolean was = pb != null && pb.playing && pb.player.equals(p.getUUID());
         if (was) {

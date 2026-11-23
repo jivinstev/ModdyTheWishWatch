@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Set;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import com.moddingfromamod.UsesCorpus;
 
 /**
  * <b>The shipped matcher over every wish we have</b> (S3): the 870 corpus wishes and their misspelt twins
@@ -32,6 +33,7 @@ import org.junit.jupiter.api.Test;
  *   <li>It is timed: the p99 decides whether the match may run on the server thread.</li>
  * </ul>
  */
+@UsesCorpus
 class ApprenticeCorpusTest {
 
     /**

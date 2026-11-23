@@ -283,9 +283,19 @@ public final class WishCommands {
      */
     static WishService.Outcome again(ServerPlayer player, String recipe) {
         String[] part = com.moddingfromamod.marshal.TaughtJoin.splitPart(recipe);
-        String text = part == null ? recipe
+        // a kept Builder make's recipe says the make's own name ("Red dragon"), never its id, and carries no
+        // "Builder: " prefix: it is a REPLAY, and the world's charge and his history read it as one.
+        String text = com.moddingfromamod.wishbuilder.BuilderAgain.is(recipe) ? builderWords(player, recipe)
+                : part == null ? recipe
                 : part[1].replace('_', ' ').replaceAll("~.*$", "").trim();
         return WishService.submit(player, text.isEmpty() ? recipe : text, WishSource.PRESET, recipe);
+    }
+
+    /** What a Builder recipe's wish says: the make's name when he keeps it, else the id (it is refused anyway). */
+    private static String builderWords(ServerPlayer player, String recipe) {
+        var r = com.moddingfromamod.wishbuilder.BuilderAgain.resolve(com.moddingfromamod.wishbuilder.BuilderSpecStore.all(
+                com.moddingfromamod.runtime.RuntimeConfig.playersDir(), player.getStringUUID()), recipe);
+        return r.ok() && !r.words().isBlank() ? r.words() : recipe;
     }
 
     /** {@code /moddy hide <tile>} — {@link WatchMenu#hideFor}, which also says what happened. */

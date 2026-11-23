@@ -19,9 +19,14 @@ import net.minecraft.gametest.framework.GameTestInfo;
 import net.minecraft.gametest.framework.GameTestListener;
 import net.minecraft.gametest.framework.GameTestRunner;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.GameRules;
+import net.minecraft.world.phys.AABB;
 
 /**
  * <b>A wish on the hotbar, where it runs</b>: the tile on a thing's real page, the proxy in a real
@@ -110,8 +115,9 @@ public final class WishHotbarGameTest {
                     java.util.Set.of(WishHotbar.RECIPE, WishHotbar.OWNER, WishHotbar.ICON)),
                     "it carries nothing of the thing's own data, only the recipe, the owner and its picture's icon");
             check(helper, WatchIcons.UNKNOWN.equals(WishHotbar.iconOf(proxy)), "it remembers its picture: " + WishHotbar.iconOf(proxy));
-            check(helper, Boolean.TRUE.equals(proxy.get(DataComponents.ENCHANTMENT_GLINT_OVERRIDE)),
-                    "an undyed picture keeps the glint that marks it a wish");
+            // the Moddy badge marks it a wish now, so the glint has gone
+            check(helper, WishHotbar.badged(proxy) && !proxy.has(DataComponents.ENCHANTMENT_GLINT_OVERRIDE),
+                    "the proxy wears the Moddy badge and no glint: " + proxy.getComponentsPatch());
             check(helper, ThingPage.describe(ThingPage.verbs(thing, p.getUUID(), p)).contains(WishHotbar.REMOVE_LABEL),
                     "once it is there the tile takes it off");
 
@@ -132,6 +138,30 @@ public final class WishHotbarGameTest {
             check(helper, potion.has(DataComponents.POTION_CONTENTS) && shown != null
                     && shown.hiddenComponents().contains(DataComponents.POTION_CONTENTS),
                     "a potion's picture brings its colour, not its 'No Effects' line: " + shown);
+            // A VANILLA picture the rule draws goes under the badge, named by its id; one the rule cannot draw (a
+            // tinted potion, an exception) keeps its own picture and the glint (pack/HotbarBadge).
+            ItemStack cake = WishHotbar.proxy(new WatchPanel.Cell(0, WatchPanel.Family.CREATION,
+                    WatchPanel.Action.CARD, "Cake " + tag, "Cake " + tag, recipe + "c", "Cake " + tag,
+                    "minecraft:cake", List.of()), p.getUUID());
+            var cakeModel = cake.get(DataComponents.CUSTOM_MODEL_DATA);
+            check(helper, com.moddingfromamod.pack.HotbarBadge.ITEM_MODEL.equals(String.valueOf(cake.get(DataComponents.ITEM_MODEL)))
+                    && cakeModel != null && "minecraft:cake".equals(cakeModel.getString(
+                            com.moddingfromamod.pack.HotbarBadge.VANILLA_INDEX)) && WishHotbar.badged(cake),
+                    "a vanilla picture is drawn by the hotbar definition, named by its id: " + cake.getComponentsPatch());
+            check(helper, !WishHotbar.badged(potion) && Boolean.TRUE.equals(potion.get(DataComponents.ENCHANTMENT_GLINT_OVERRIDE))
+                    && "minecraft:potion".equals(String.valueOf(potion.get(DataComponents.ITEM_MODEL))),
+                    "an exception (a tinted potion) keeps its own picture and the glint: " + potion.getComponentsPatch());
+            // THE RULE AGREES WITH THE ITEM REGISTRY: every id it draws is a real item, drawn as a block exactly
+            // when it is one (or on the flat list), and no exception is drawn.
+            for (String id : com.moddingfromamod.pack.HotbarBadge.vanillaIds()) {
+                var rl = net.minecraft.resources.ResourceLocation.parse(id);
+                boolean block = net.minecraft.core.registries.BuiltInRegistries.BLOCK.containsKey(rl);
+                check(helper, net.minecraft.core.registries.BuiltInRegistries.ITEM.containsKey(rl), id + " is not an item here");
+                check(helper, com.moddingfromamod.pack.HotbarBadge.ruleModel(id, block,
+                                com.moddingfromamod.pack.HotbarBadge.flatBlocks().contains(id))
+                                .equals(com.moddingfromamod.pack.HotbarBadge.modelOf(id)),
+                        id + ": the registry says block=" + block + " but the definition draws " + com.moddingfromamod.pack.HotbarBadge.modelOf(id));
+            }
 
             // A DYE-TINTED picture loses the glint (it washed the sprite out); the "Which slot?" tile draws each
             // stack as a picture a tile accepts: the watch, a sprite as its wish: string, a proxy as its picture.
@@ -142,6 +172,13 @@ public final class WishHotbarGameTest {
                     spriteIcon, List.of()), p.getUUID());
             if (dyedPicture.has(DataComponents.DYED_COLOR)) {   // a world with the carrier off draws no sprite
                 check(helper, !dragon.has(DataComponents.ENCHANTMENT_GLINT_OVERRIDE), "a dyed sprite's proxy has no glint");
+                // A SPRITE keeps its own definition and number, and sets the badge flag; its picture in the
+                // history does not, so the history draws no badge.
+                check(helper, WishHotbar.badged(dragon) && !WishHotbar.badged(dyedPicture)
+                        && java.util.Objects.equals(dragon.get(DataComponents.ITEM_MODEL), dyedPicture.get(DataComponents.ITEM_MODEL))
+                        && java.util.Objects.equals(dragon.get(DataComponents.CUSTOM_MODEL_DATA).floats(),
+                                dyedPicture.get(DataComponents.CUSTOM_MODEL_DATA).floats()),
+                        "a sprite's proxy wears the badge over the same picture: " + dragon.getComponentsPatch());
                 check(helper, spriteIcon.equals(WishHotbar.tileItem(dyedPicture)), "a sprite tile: " + WishHotbar.tileItem(dyedPicture));
             }
             check(helper, spriteIcon.equals(WishHotbar.tileItem(dragon)), "a proxy's tile is its picture: " + WishHotbar.tileItem(dragon));
@@ -179,5 +216,75 @@ public final class WishHotbarGameTest {
                     "the tile takes it off again");
         });
         helper.succeed();
+    }
+
+    // ── knocked out ────────────────────────────────────────────────────────────────────────
+
+    /**
+     * A REAL death and respawn ({@code PlayerList.respawn}, which fires the Clone from vanilla's own
+     * {@code restoreFrom}): two wishes in slots 2 and 6 are back in exactly those slots, one of each, and none lay in
+     * the world, with {@code keepInventory} as given. Each arm in a batch of its own: the game rule is the server's.
+     */
+    private static void knockedOut(GameTestHelper helper, String name, boolean keepInventory) {
+        ServerLevel level = helper.getLevel();
+        var rule = level.getGameRules().getRule(GameRules.RULE_KEEPINVENTORY);
+        boolean was = rule.get();
+        rule.set(keepInventory, level.getServer());
+        ServerPlayer p = MockPlayerNetwork.asSurvival(MockPlayerNetwork.inLevel(helper, name));
+        ServerPlayer reborn = null;
+        BlockPos where = p.blockPosition();
+        try {
+            String tag = UUID.randomUUID().toString().substring(0, 6);
+            String a = "gt2804_a_" + tag;
+            String b = "gt2804_b_" + tag;
+            var inv = p.getInventory();
+            inv.clearContent();
+            inv.setItem(2, WishHotbar.proxy(cell("Knocked A " + tag, a), p.getUUID()));
+            inv.setItem(3, new ItemStack(Items.DIRT, 5));
+            inv.setItem(6, WishHotbar.proxy(cell("Knocked B " + tag, b), p.getUUID()));
+
+            p.die(p.damageSources().generic());
+            check(helper, WishHotbar.keeping(p), "his wishes were not written down at the death");
+            check(helper, level.getEntitiesOfClass(ItemEntity.class, new AABB(where).inflate(8),
+                    e -> WishHotbar.recipeOf(e.getItem()) != null).isEmpty(),
+                    "keepInventory=" + keepInventory + ": a wish lay in the world after he was knocked out");
+            boolean dirtDropped = !level.getEntitiesOfClass(ItemEntity.class, new AABB(where).inflate(8),
+                    e -> e.getItem().is(Items.DIRT)).isEmpty();
+            check(helper, dirtDropped == !keepInventory, "keepInventory=" + keepInventory
+                    + " but the dirt " + (dirtDropped ? "dropped" : "did not drop") + ", so the rule was not in force");
+
+            reborn = p.getServer().getPlayerList().respawn(p, false, Entity.RemovalReason.KILLED);
+            check(helper, reborn != p, "respawn returned the same body, so nothing was tested");
+            var after = reborn.getInventory();
+            check(helper, a.equals(WishHotbar.recipeOf(after.getItem(2))) && b.equals(WishHotbar.recipeOf(after.getItem(6))),
+                    "keepInventory=" + keepInventory + ": his wishes are not back in slots 3 and 7: "
+                            + after.getItem(2) + ", " + after.getItem(6));
+            int count = 0;
+            for (int i = 0; i < after.getContainerSize(); i++) {
+                count += WishHotbar.recipeOf(after.getItem(i)) != null ? 1 : 0;
+            }
+            check(helper, count == 2, "keepInventory=" + keepInventory + ": " + count + " wishes, not one of each");
+            check(helper, after.getItem(3).is(Items.DIRT) == keepInventory,
+                    "keepInventory=" + keepInventory + ": the rest of his inventory did not follow the rule");
+            check(helper, !WishHotbar.keeping(reborn), "the stash was given back and kept, so the next death doubles it");
+            check(helper, reborn.getStringUUID().equals(WishHotbar.ownerOf(after.getItem(2))), "the wish is still his");
+            helper.succeed();
+        } finally {
+            rule.set(was, level.getServer());
+            level.getEntitiesOfClass(ItemEntity.class, new AABB(where).inflate(8)).forEach(Entity::discard);
+            if (reborn != null && reborn != p) {
+                MockPlayerNetwork.remove(reborn);
+            }
+        }
+    }
+
+    @GameTest(template = "empty_test", batch = "wishhotbar_death_drop", timeoutTicks = 100)
+    public static void knockedOutWithoutKeepInventoryKeepsHisWishesInTheirSlots(GameTestHelper helper) {
+        knockedOut(helper, "mfam-hotbar-ko", false);
+    }
+
+    @GameTest(template = "empty_test", batch = "wishhotbar_death_keep", timeoutTicks = 100)
+    public static void knockedOutWithKeepInventoryKeepsExactlyOneOfEach(GameTestHelper helper) {
+        knockedOut(helper, "mfam-hotbar-keep", true);
     }
 }

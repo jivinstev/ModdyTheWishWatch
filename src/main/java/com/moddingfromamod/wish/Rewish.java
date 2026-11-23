@@ -93,6 +93,11 @@ public final class Rewish {
      * the Builder cannot); false to let it go on as typed. Server thread.
      */
     public static boolean tryAnswer(ServerPlayer p, String text, WishSource source, WishRoute.Hint hint) {
+        // the re-wish reader is LOCAL ONLY, like the Apprentice: it runs inside the guard (marshal/LocalOnly).
+        return com.moddingfromamod.marshal.LocalOnly.during(() -> tryAnswerLocally(p, text, source, hint));
+    }
+
+    private static boolean tryAnswerLocally(ServerPlayer p, String text, WishSource source, WishRoute.Hint hint) {
         if (p == null || source != WishSource.TYPED || hint == WishRoute.Hint.MAGICIAN || WishIntent.isQuestion(text)) {
             return false;   // a press, a preset, a question, or "the Magician, please": never read here
         }

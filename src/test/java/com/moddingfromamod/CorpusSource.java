@@ -33,13 +33,21 @@ import org.junit.jupiter.api.Assertions;
  * hand-written rows): {@link #real()} says which it got. What it checks must be the same code path either way.
  *
  * <p>Gate A routes a test class that names this class to the {@code test} task (the full classpath, with the real
- * corpus), as it does for {@link PrivateCorpora}; the public cut runs it on the fixture. A test that is only about
+ * corpus); the public cut runs it on the fixture. A test that is only about
  * private data does not belong here: it is a {@code private_tests} row in {@code docs/public-repo/split.json}.
  */
 public final class CorpusSource {
 
     /** The system property naming the real corpus directories ({@link File#pathSeparator}-separated). */
     public static final String PROPERTY = "moddy.corpus.dir";
+
+    /**
+     * The corpora under {@code src/main/resources/corpus/} that never go public ({@code split.json}'s
+     * {@code private_resources}). A test that reads one through the classpath (the corpus manifest, which declares them)
+     * may find it absent only when {@link #real()} is false, as in the public repo.
+     */
+    public static final List<String> PRIVATE_RESOURCES = List.of("bol-wishes.jsonl", "real-builds.jsonl",
+            "real-tool-calls.jsonl", "real-wishes.jsonl", "verbatim-creatures.jsonl", "verbatim-wishes.jsonl");
 
     /** Where the public fixtures live, relative to the repo root (the working directory of a Gate A run). */
     public static final Path FIXTURES = Path.of("corpus", "fixtures");

@@ -512,7 +512,9 @@ public final class BuilderMake {
         marshal.assign(session, wish.id());
 
         CompletableFuture<Result> result = new CompletableFuture<>();
-        Thread t = new Thread(() -> {
+        // the whole make runs LOCAL ONLY (marshal/LocalOnly): any model or web call asked on this thread is refused
+        // and recorded. A Builder, Apprentice, re-wish or free-change make never calls either.
+        Thread t = new Thread(() -> com.moddingfromamod.marshal.LocalOnly.during(() -> {
             // The pillar's rise before anything is made: a served wish's three beats (FanfareTiming.FULL_RISE), so the
             // wish is SEEN being granted where it will appear instead of the thing popping into being.
             if (rise > 0) {
@@ -599,7 +601,8 @@ public final class BuilderMake {
                     MAKING.remove(who);
                 }
             });
-        }, "builder-make-" + wish.shortId());
+            return null;
+        }), "builder-make-" + wish.shortId());
         t.setDaemon(true);
         t.start();
         return result;

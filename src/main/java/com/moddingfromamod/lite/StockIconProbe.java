@@ -135,6 +135,14 @@ public final class StockIconProbe {
                 }
             }
             case 1 -> {
+                // the wish hotbar arm stages its own pages and waits for the client's clicks.
+                if (StockHotbarProbe.on()) {
+                    if (StockHotbarProbe.tick(player, StockIconProbe::mark)) {
+                        mark("done", "the hotbar arm held");
+                        stage = 3;
+                    }
+                    return;
+                }
                 // The overlay shoot PAGES the hotbar (every overlay on a vanilla base,
                 // nine at a time) and never opens the panel, so no page is ever covered.
                 if (Boolean.getBoolean(LIBRARY_PROPERTY)) {
@@ -199,6 +207,10 @@ public final class StockIconProbe {
      * than the artwork.
      */
     private static void fillHotbar(ServerPlayer player) {
+        if (StockHotbarProbe.on()) {
+            StockHotbarProbe.setup(player, StockIconProbe::mark);
+            return;
+        }
         if (Boolean.getBoolean(PAIRS_PROPERTY)) {
             fillPairs(player);
             return;

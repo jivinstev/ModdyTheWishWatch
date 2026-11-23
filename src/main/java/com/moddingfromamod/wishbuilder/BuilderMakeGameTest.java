@@ -108,6 +108,7 @@ public final class BuilderMakeGameTest {
         boolean[] first = {true};
         List<String> buildings = java.util.Collections.synchronizedList(new ArrayList<>());
         takeDownWhenDone(helper, buildings);
+        final long localBefore = com.moddingfromamod.marshal.LocalOnly.refusedSoFar();
         for (String json : BuilderExamples.ONE_PER_KIND) {
             BuilderSpec spec = BuilderSpec.read(JsonParser.parseString(json).getAsJsonObject());
             CompletableFuture<?> next = chain.get().thenComposeAsync(x -> {
@@ -164,6 +165,12 @@ public final class BuilderMakeGameTest {
         }
         CompletableFuture<?> all = chain.get();
         com.moddingfromamod.test.RealTime.succeedWhen(helper, () -> {
+            //, LOCAL ONLY: not one model or web call was asked during any make (marshal/LocalOnly refuses and
+            // counts each). Before, every creature make asked Muse Ember who the creature was and could start a web
+            // researcher on its name. Any refusal is a Builder make reaching for a model, wherever it came from.
+            helper.assertTrue(com.moddingfromamod.marshal.LocalOnly.refusedSoFar() == localBefore,
+                    Component.literal((com.moddingfromamod.marshal.LocalOnly.refusedSoFar() - localBefore)
+                            + " model or web call(s) asked during a Builder make (see the 'local only: refused' lines)"));
             // Every landed check is asked on EVERY poll, before the "all made" gate below: a creature's where-check
             // latches the moment it is seen at its spot (whereCheck), so it must be asked while the rest are still
             // being made, not only at the end. A copy, since a make that finishes adds to the map.
@@ -539,7 +546,7 @@ public final class BuilderMakeGameTest {
         });
     }
 
-    static void takeDownWhenDone(GameTestHelper helper, List<String> ids) {
+    public static void takeDownWhenDone(GameTestHelper helper, List<String> ids) {
         takeDownWhenDone(helper, () -> ids);
     }
 

@@ -50,8 +50,8 @@ import com.moddingfromamod.testing.gt.GameTestHolder;
 @GameTestHolder(ModdingFromAModMod.MODID)
 public class PerChildForkGameTest {
 
-    static final String BATCH = "perchildfork";
-    static final String DIR_PROP = ModdingFromAModMod.MODID + ".libraryDir";
+    public static final String BATCH = "perchildfork";
+    public static final String DIR_PROP = ModdingFromAModMod.MODID + ".libraryDir";
 
     /**
      * A creature with THREE real boxes in it, not an empty geometry object.
@@ -85,7 +85,7 @@ public class PerChildForkGameTest {
      * {@code GateShardsTest} fails the build over it). Unique ids make the cleanup unnecessary
      * rather than careful.
      */
-    static Path libraryWith(String key) throws Exception {
+    public static Path libraryWith(String key) throws Exception {
         Path dir = Path.of("gametest-hd7-" + key + "-" + System.nanoTime()).toAbsolutePath();
         Path species = dir.resolve("species").resolve(key);
         Files.createDirectories(species);
@@ -100,7 +100,7 @@ public class PerChildForkGameTest {
         return dir;
     }
 
-    static Species creature(String id) {
+    public static Species creature(String id) {
         return Species.fromJson(JsonParser.parseString(
                 "{\"id\":\"" + id + "\",\"name\":\"Spikor\",\"body\":\"humanoid\","
                         + "\"texture\":\"zombie\",\"scale\":2.0,\"health\":60,\"speed\":0.25,"
@@ -108,7 +108,7 @@ public class PerChildForkGameTest {
     }
 
     /** Put a child mid-wish and hand back the worker id to bind when speaking as his agent. */
-    static String startWishing(ServerPlayer child, UUID wishId, String text) {
+    public static String startWishing(ServerPlayer child, UUID wishId, String text) {
         Marshal m = Marshal.global();
         m.submit(wishId, child.getUUID(), text);
         String worker = "gt-hd7-" + wishId;
@@ -116,7 +116,7 @@ public class PerChildForkGameTest {
         return worker;
     }
 
-    static void asAgentFor(String workerId, Runnable body) {
+    public static void asAgentFor(String workerId, Runnable body) {
         AgentContext.bind(workerId);
         try {
             body.run();
@@ -125,7 +125,7 @@ public class PerChildForkGameTest {
         }
     }
 
-    static void cleanUp(MinecraftServer server, UUID... wishIds) {
+    public static void cleanUp(MinecraftServer server, UUID... wishIds) {
         for (UUID id : wishIds) {
             try {
                 Marshal.global().finish(id);
@@ -140,7 +140,7 @@ public class PerChildForkGameTest {
     /** Drive a real operator command. Returns its result, so a command that never PARSED is
      * distinguishable from one that ran and did nothing — the two look identical from the world,
      * and telling them apart is what found the `~`-in-a-Brigadier-word bug. */
-    static int rcon(MinecraftServer server, String command) {
+    public static int rcon(MinecraftServer server, String command) {
         try {
             // THE DISPATCHER, not performPrefixedCommand, because that one returns void and
             // swallows a syntax error into a chat message nobody reads in a headless run.
@@ -151,7 +151,7 @@ public class PerChildForkGameTest {
         }
     }
 
-    static long hashOf(Path file) throws Exception {
+    public static long hashOf(Path file) throws Exception {
         return java.util.Arrays.hashCode(Files.readAllBytes(file));
     }
 
@@ -230,7 +230,7 @@ public class PerChildForkGameTest {
 
 
     /** A creature directory the library will accept once it is promoted. */
-    static void writeGeometry(String key) {
+    public static void writeGeometry(String key) {
         try {
             Path dir = com.moddingfromamod.runtime.ModelRepository.dir(key);
             Files.createDirectories(dir);

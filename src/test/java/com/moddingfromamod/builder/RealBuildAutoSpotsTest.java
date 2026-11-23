@@ -8,6 +8,7 @@ import java.util.List;
 
 import com.moddingfromamod.wish.RealBuilds;
 import org.junit.jupiter.api.Test;
+import com.moddingfromamod.UsesCorpus;
 
 /**
  * <b>an earlier issue's automatic spots over the buildings the agent really built</b>, not only hand-made
@@ -15,14 +16,14 @@ import org.junit.jupiter.api.Test;
  * Prints every building's spots, because whether {@code inside} found the hall a child would call
  * "inside" can only be judged by reading them.
  */
+@UsesCorpus
 class RealBuildAutoSpotsTest {
 
     @Test
     void everyRealBuildingHasATopFourSidesAndAroundAndItsSpotsAreNotInsideItsWalls() {
-        com.moddingfromamod.PrivateCorpora.require("real-builds.jsonl");   // private: skipped in the public cut
         List<String> rows = new ArrayList<>();
         int withInside = 0;
-        for (RealBuilds.Real r : RealBuilds.load()) {
+        for (RealBuilds.Real r : com.moddingfromamod.CorpusSource.realBuilds()) {
             BuildPlan plan = r.plan();
             BuildSpots.Cells c = BuildSpots.Cells.of(plan);
             long t0 = System.nanoTime();

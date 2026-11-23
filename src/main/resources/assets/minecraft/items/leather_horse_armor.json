@@ -196,6 +196,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -384,6 +396,18 @@
                 }
               ],
               "fallback": {
+                "type": "minecraft:empty"
+              }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
                 "type": "minecraft:empty"
               }
             }
@@ -582,6 +606,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -778,6 +814,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -966,6 +1014,18 @@
                 }
               ],
               "fallback": {
+                "type": "minecraft:empty"
+              }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
                 "type": "minecraft:empty"
               }
             }
@@ -1158,6 +1218,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -1346,6 +1418,18 @@
                 }
               ],
               "fallback": {
+                "type": "minecraft:empty"
+              }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
                 "type": "minecraft:empty"
               }
             }
@@ -1538,6 +1622,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -1728,6 +1824,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -1916,6 +2024,18 @@
                 }
               ],
               "fallback": {
+                "type": "minecraft:empty"
+              }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
                 "type": "minecraft:empty"
               }
             }
@@ -2114,6 +2234,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -2302,6 +2434,18 @@
                 }
               ],
               "fallback": {
+                "type": "minecraft:empty"
+              }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
                 "type": "minecraft:empty"
               }
             }
@@ -2494,6 +2638,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -2684,6 +2840,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -2872,6 +3040,18 @@
                 }
               ],
               "fallback": {
+                "type": "minecraft:empty"
+              }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
                 "type": "minecraft:empty"
               }
             }
@@ -3070,6 +3250,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -3258,6 +3450,18 @@
                 }
               ],
               "fallback": {
+                "type": "minecraft:empty"
+              }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
                 "type": "minecraft:empty"
               }
             }
@@ -3450,6 +3654,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -3640,6 +3856,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -3828,6 +4056,18 @@
                 }
               ],
               "fallback": {
+                "type": "minecraft:empty"
+              }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
                 "type": "minecraft:empty"
               }
             }
@@ -4026,6 +4266,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -4214,6 +4466,18 @@
                 }
               ],
               "fallback": {
+                "type": "minecraft:empty"
+              }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
                 "type": "minecraft:empty"
               }
             }
@@ -4406,6 +4670,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -4594,6 +4870,18 @@
                 }
               ],
               "fallback": {
+                "type": "minecraft:empty"
+              }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
                 "type": "minecraft:empty"
               }
             }
@@ -4792,6 +5080,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -4982,6 +5282,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -5170,6 +5482,18 @@
                 }
               ],
               "fallback": {
+                "type": "minecraft:empty"
+              }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
                 "type": "minecraft:empty"
               }
             }
@@ -5368,6 +5692,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -5562,6 +5898,18 @@
                 }
               ],
               "fallback": {
+                "type": "minecraft:empty"
+              }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
                 "type": "minecraft:empty"
               }
             }
@@ -5765,6 +6113,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -5964,6 +6324,18 @@
                 }
               ],
               "fallback": {
+                "type": "minecraft:empty"
+              }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
                 "type": "minecraft:empty"
               }
             }
@@ -6167,6 +6539,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -6366,6 +6750,18 @@
                 }
               ],
               "fallback": {
+                "type": "minecraft:empty"
+              }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
                 "type": "minecraft:empty"
               }
             }
@@ -6569,6 +6965,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -6763,6 +7171,18 @@
                 }
               ],
               "fallback": {
+                "type": "minecraft:empty"
+              }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
                 "type": "minecraft:empty"
               }
             }
@@ -6961,6 +7381,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -7155,6 +7587,18 @@
                 }
               ],
               "fallback": {
+                "type": "minecraft:empty"
+              }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
                 "type": "minecraft:empty"
               }
             }
@@ -7358,6 +7802,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -7559,6 +8015,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -7753,6 +8221,18 @@
                 }
               ],
               "fallback": {
+                "type": "minecraft:empty"
+              }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
                 "type": "minecraft:empty"
               }
             }
@@ -7956,6 +8436,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -8152,6 +8644,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -8346,6 +8850,18 @@
                 }
               ],
               "fallback": {
+                "type": "minecraft:empty"
+              }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
                 "type": "minecraft:empty"
               }
             }
@@ -8549,6 +9065,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -8743,6 +9271,18 @@
                 }
               ],
               "fallback": {
+                "type": "minecraft:empty"
+              }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
                 "type": "minecraft:empty"
               }
             }
@@ -8946,6 +9486,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -9147,6 +9699,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -9341,6 +9905,18 @@
                 }
               ],
               "fallback": {
+                "type": "minecraft:empty"
+              }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
                 "type": "minecraft:empty"
               }
             }
@@ -9544,6 +10120,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -9738,6 +10326,18 @@
                 }
               ],
               "fallback": {
+                "type": "minecraft:empty"
+              }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
                 "type": "minecraft:empty"
               }
             }
@@ -9941,6 +10541,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -10142,6 +10754,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -10336,6 +10960,18 @@
                 }
               ],
               "fallback": {
+                "type": "minecraft:empty"
+              }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
                 "type": "minecraft:empty"
               }
             }
@@ -10534,6 +11170,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -10728,6 +11376,18 @@
                 }
               ],
               "fallback": {
+                "type": "minecraft:empty"
+              }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
                 "type": "minecraft:empty"
               }
             }
@@ -10926,6 +11586,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -11120,6 +11792,18 @@
                 }
               ],
               "fallback": {
+                "type": "minecraft:empty"
+              }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
                 "type": "minecraft:empty"
               }
             }
@@ -11318,6 +12002,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -11512,6 +12208,18 @@
                 }
               ],
               "fallback": {
+                "type": "minecraft:empty"
+              }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
                 "type": "minecraft:empty"
               }
             }
@@ -11715,6 +12423,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -11916,6 +12636,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -12110,6 +12842,18 @@
                 }
               ],
               "fallback": {
+                "type": "minecraft:empty"
+              }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
                 "type": "minecraft:empty"
               }
             }
@@ -12313,6 +13057,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -12509,6 +13265,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -12703,6 +13471,18 @@
                 }
               ],
               "fallback": {
+                "type": "minecraft:empty"
+              }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
                 "type": "minecraft:empty"
               }
             }
@@ -12906,6 +13686,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -13107,6 +13899,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -13301,6 +14105,18 @@
                 }
               ],
               "fallback": {
+                "type": "minecraft:empty"
+              }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
                 "type": "minecraft:empty"
               }
             }
@@ -13499,6 +14315,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -13693,6 +14521,18 @@
                 }
               ],
               "fallback": {
+                "type": "minecraft:empty"
+              }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
                 "type": "minecraft:empty"
               }
             }
@@ -13896,6 +14736,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -14095,6 +14947,18 @@
                 }
               ],
               "fallback": {
+                "type": "minecraft:empty"
+              }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
                 "type": "minecraft:empty"
               }
             }
@@ -14298,6 +15162,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -14494,6 +15370,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -14688,6 +15576,18 @@
                 }
               ],
               "fallback": {
+                "type": "minecraft:empty"
+              }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
                 "type": "minecraft:empty"
               }
             }
@@ -14891,6 +15791,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -15092,6 +16004,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -15288,6 +16212,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -15482,6 +16418,18 @@
                 }
               ],
               "fallback": {
+                "type": "minecraft:empty"
+              }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
                 "type": "minecraft:empty"
               }
             }
@@ -15685,6 +16633,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -15886,6 +16846,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -16080,6 +17052,18 @@
                 }
               ],
               "fallback": {
+                "type": "minecraft:empty"
+              }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
                 "type": "minecraft:empty"
               }
             }
@@ -16278,6 +17262,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -16472,6 +17468,18 @@
                 }
               ],
               "fallback": {
+                "type": "minecraft:empty"
+              }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
                 "type": "minecraft:empty"
               }
             }
@@ -16675,6 +17683,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -16874,6 +17894,18 @@
                 }
               ],
               "fallback": {
+                "type": "minecraft:empty"
+              }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
                 "type": "minecraft:empty"
               }
             }
@@ -17077,6 +18109,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -17271,6 +18315,18 @@
                 }
               ],
               "fallback": {
+                "type": "minecraft:empty"
+              }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
                 "type": "minecraft:empty"
               }
             }
@@ -17474,6 +18530,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -17668,6 +18736,18 @@
                 }
               ],
               "fallback": {
+                "type": "minecraft:empty"
+              }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
                 "type": "minecraft:empty"
               }
             }
@@ -17866,6 +18946,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -18060,6 +19152,18 @@
                 }
               ],
               "fallback": {
+                "type": "minecraft:empty"
+              }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
                 "type": "minecraft:empty"
               }
             }
@@ -18263,6 +19367,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -18459,6 +19575,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -18653,6 +19781,18 @@
                 }
               ],
               "fallback": {
+                "type": "minecraft:empty"
+              }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
                 "type": "minecraft:empty"
               }
             }
@@ -18856,6 +19996,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -19050,6 +20202,18 @@
                 }
               ],
               "fallback": {
+                "type": "minecraft:empty"
+              }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
                 "type": "minecraft:empty"
               }
             }
@@ -19248,6 +20412,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -19442,6 +20618,18 @@
                 }
               ],
               "fallback": {
+                "type": "minecraft:empty"
+              }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
                 "type": "minecraft:empty"
               }
             }
@@ -19645,6 +20833,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -19846,6 +21046,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -20040,6 +21252,18 @@
                 }
               ],
               "fallback": {
+                "type": "minecraft:empty"
+              }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
                 "type": "minecraft:empty"
               }
             }
@@ -20243,6 +21467,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -20439,6 +21675,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -20633,6 +21881,18 @@
                 }
               ],
               "fallback": {
+                "type": "minecraft:empty"
+              }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
                 "type": "minecraft:empty"
               }
             }
@@ -20836,6 +22096,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -21037,6 +22309,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -21231,6 +22515,18 @@
                 }
               ],
               "fallback": {
+                "type": "minecraft:empty"
+              }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
                 "type": "minecraft:empty"
               }
             }
@@ -21429,6 +22725,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -21623,6 +22931,18 @@
                 }
               ],
               "fallback": {
+                "type": "minecraft:empty"
+              }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
                 "type": "minecraft:empty"
               }
             }
@@ -21821,6 +23141,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -22015,6 +23347,18 @@
                 }
               ],
               "fallback": {
+                "type": "minecraft:empty"
+              }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
                 "type": "minecraft:empty"
               }
             }
@@ -22213,6 +23557,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -22407,6 +23763,18 @@
                 }
               ],
               "fallback": {
+                "type": "minecraft:empty"
+              }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
                 "type": "minecraft:empty"
               }
             }
@@ -22605,6 +23973,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -22799,6 +24179,18 @@
                 }
               ],
               "fallback": {
+                "type": "minecraft:empty"
+              }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
                 "type": "minecraft:empty"
               }
             }
@@ -22997,6 +24389,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -23191,6 +24595,18 @@
                 }
               ],
               "fallback": {
+                "type": "minecraft:empty"
+              }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
                 "type": "minecraft:empty"
               }
             }
@@ -23389,6 +24805,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -23583,6 +25011,18 @@
                 }
               ],
               "fallback": {
+                "type": "minecraft:empty"
+              }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
                 "type": "minecraft:empty"
               }
             }
@@ -23781,6 +25221,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -23975,6 +25427,18 @@
                 }
               ],
               "fallback": {
+                "type": "minecraft:empty"
+              }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
                 "type": "minecraft:empty"
               }
             }
@@ -24173,6 +25637,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -24367,6 +25843,18 @@
                 }
               ],
               "fallback": {
+                "type": "minecraft:empty"
+              }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
                 "type": "minecraft:empty"
               }
             }
@@ -24570,6 +26058,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -24764,6 +26264,18 @@
                 }
               ],
               "fallback": {
+                "type": "minecraft:empty"
+              }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
                 "type": "minecraft:empty"
               }
             }
@@ -24967,6 +26479,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -25168,6 +26692,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -25362,6 +26898,18 @@
                 }
               ],
               "fallback": {
+                "type": "minecraft:empty"
+              }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
                 "type": "minecraft:empty"
               }
             }
@@ -25560,6 +27108,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -25756,6 +27316,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -25950,6 +27522,18 @@
                 }
               ],
               "fallback": {
+                "type": "minecraft:empty"
+              }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
                 "type": "minecraft:empty"
               }
             }
@@ -26153,6 +27737,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -26347,6 +27943,18 @@
                 }
               ],
               "fallback": {
+                "type": "minecraft:empty"
+              }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
                 "type": "minecraft:empty"
               }
             }
@@ -26550,6 +28158,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -26749,6 +28369,18 @@
                 }
               ],
               "fallback": {
+                "type": "minecraft:empty"
+              }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
                 "type": "minecraft:empty"
               }
             }
@@ -26952,6 +28584,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -27146,6 +28790,18 @@
                 }
               ],
               "fallback": {
+                "type": "minecraft:empty"
+              }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
                 "type": "minecraft:empty"
               }
             }
@@ -27349,6 +29005,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -27543,6 +29211,18 @@
                 }
               ],
               "fallback": {
+                "type": "minecraft:empty"
+              }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
                 "type": "minecraft:empty"
               }
             }
@@ -27746,6 +29426,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -27947,6 +29639,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -28141,6 +29845,18 @@
                 }
               ],
               "fallback": {
+                "type": "minecraft:empty"
+              }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
                 "type": "minecraft:empty"
               }
             }
@@ -28344,6 +30060,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -28538,6 +30266,18 @@
                 }
               ],
               "fallback": {
+                "type": "minecraft:empty"
+              }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
                 "type": "minecraft:empty"
               }
             }
@@ -28736,6 +30476,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -28930,6 +30682,18 @@
                 }
               ],
               "fallback": {
+                "type": "minecraft:empty"
+              }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
                 "type": "minecraft:empty"
               }
             }
@@ -29133,6 +30897,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -29329,6 +31105,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -29523,6 +31311,18 @@
                 }
               ],
               "fallback": {
+                "type": "minecraft:empty"
+              }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
                 "type": "minecraft:empty"
               }
             }
@@ -29726,6 +31526,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -29925,6 +31737,18 @@
                 }
               ],
               "fallback": {
+                "type": "minecraft:empty"
+              }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
                 "type": "minecraft:empty"
               }
             }
@@ -30128,6 +31952,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -30322,6 +32158,18 @@
                 }
               ],
               "fallback": {
+                "type": "minecraft:empty"
+              }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
                 "type": "minecraft:empty"
               }
             }
@@ -30520,6 +32368,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -30714,6 +32574,18 @@
                 }
               ],
               "fallback": {
+                "type": "minecraft:empty"
+              }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
                 "type": "minecraft:empty"
               }
             }
@@ -30917,6 +32789,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -31116,6 +33000,18 @@
                 }
               ],
               "fallback": {
+                "type": "minecraft:empty"
+              }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
                 "type": "minecraft:empty"
               }
             }
@@ -31319,6 +33215,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -31513,6 +33421,18 @@
                 }
               ],
               "fallback": {
+                "type": "minecraft:empty"
+              }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
                 "type": "minecraft:empty"
               }
             }
@@ -31716,6 +33636,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -31910,6 +33842,18 @@
                 }
               ],
               "fallback": {
+                "type": "minecraft:empty"
+              }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
                 "type": "minecraft:empty"
               }
             }
@@ -32113,6 +34057,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -32314,6 +34270,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -32508,6 +34476,18 @@
                 }
               ],
               "fallback": {
+                "type": "minecraft:empty"
+              }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
                 "type": "minecraft:empty"
               }
             }
@@ -32706,6 +34686,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -32902,6 +34894,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -33096,6 +35100,18 @@
                 }
               ],
               "fallback": {
+                "type": "minecraft:empty"
+              }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
                 "type": "minecraft:empty"
               }
             }
@@ -33299,6 +35315,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -33493,6 +35521,18 @@
                 }
               ],
               "fallback": {
+                "type": "minecraft:empty"
+              }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
                 "type": "minecraft:empty"
               }
             }
@@ -33691,6 +35731,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -33885,6 +35937,18 @@
                 }
               ],
               "fallback": {
+                "type": "minecraft:empty"
+              }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
                 "type": "minecraft:empty"
               }
             }
@@ -34083,6 +36147,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -34277,6 +36353,18 @@
                 }
               ],
               "fallback": {
+                "type": "minecraft:empty"
+              }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
                 "type": "minecraft:empty"
               }
             }
@@ -34475,6 +36563,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -34669,6 +36769,18 @@
                 }
               ],
               "fallback": {
+                "type": "minecraft:empty"
+              }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
                 "type": "minecraft:empty"
               }
             }
@@ -34867,6 +36979,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -35061,6 +37185,18 @@
                 }
               ],
               "fallback": {
+                "type": "minecraft:empty"
+              }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
                 "type": "minecraft:empty"
               }
             }
@@ -35259,6 +37395,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -35453,6 +37601,18 @@
                 }
               ],
               "fallback": {
+                "type": "minecraft:empty"
+              }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
                 "type": "minecraft:empty"
               }
             }
@@ -35651,6 +37811,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -35845,6 +38017,18 @@
                 }
               ],
               "fallback": {
+                "type": "minecraft:empty"
+              }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
                 "type": "minecraft:empty"
               }
             }
@@ -36043,6 +38227,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -36237,6 +38433,18 @@
                 }
               ],
               "fallback": {
+                "type": "minecraft:empty"
+              }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
                 "type": "minecraft:empty"
               }
             }
@@ -36440,6 +38648,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -36634,6 +38854,18 @@
                 }
               ],
               "fallback": {
+                "type": "minecraft:empty"
+              }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
                 "type": "minecraft:empty"
               }
             }
@@ -36832,6 +39064,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -37026,6 +39270,18 @@
                 }
               ],
               "fallback": {
+                "type": "minecraft:empty"
+              }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
                 "type": "minecraft:empty"
               }
             }
@@ -37224,6 +39480,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -37418,6 +39686,18 @@
                 }
               ],
               "fallback": {
+                "type": "minecraft:empty"
+              }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
                 "type": "minecraft:empty"
               }
             }
@@ -37616,6 +39896,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -37812,6 +40104,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -38006,6 +40310,18 @@
                 }
               ],
               "fallback": {
+                "type": "minecraft:empty"
+              }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
                 "type": "minecraft:empty"
               }
             }
@@ -38209,6 +40525,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -38403,6 +40731,18 @@
                 }
               ],
               "fallback": {
+                "type": "minecraft:empty"
+              }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
                 "type": "minecraft:empty"
               }
             }
@@ -38601,6 +40941,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -38795,6 +41147,18 @@
                 }
               ],
               "fallback": {
+                "type": "minecraft:empty"
+              }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
                 "type": "minecraft:empty"
               }
             }
@@ -38993,6 +41357,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -39187,6 +41563,18 @@
                 }
               ],
               "fallback": {
+                "type": "minecraft:empty"
+              }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
                 "type": "minecraft:empty"
               }
             }
@@ -39385,6 +41773,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -39579,6 +41979,18 @@
                 }
               ],
               "fallback": {
+                "type": "minecraft:empty"
+              }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
                 "type": "minecraft:empty"
               }
             }
@@ -39777,6 +42189,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -39971,6 +42395,18 @@
                 }
               ],
               "fallback": {
+                "type": "minecraft:empty"
+              }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
                 "type": "minecraft:empty"
               }
             }
@@ -40169,6 +42605,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -40365,6 +42813,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -40559,6 +43019,18 @@
                 }
               ],
               "fallback": {
+                "type": "minecraft:empty"
+              }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
                 "type": "minecraft:empty"
               }
             }
@@ -40762,6 +43234,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -40956,6 +43440,18 @@
                 }
               ],
               "fallback": {
+                "type": "minecraft:empty"
+              }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
                 "type": "minecraft:empty"
               }
             }
@@ -41154,6 +43650,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -41348,6 +43856,18 @@
                 }
               ],
               "fallback": {
+                "type": "minecraft:empty"
+              }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
                 "type": "minecraft:empty"
               }
             }
@@ -41546,6 +44066,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -41740,6 +44272,18 @@
                 }
               ],
               "fallback": {
+                "type": "minecraft:empty"
+              }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
                 "type": "minecraft:empty"
               }
             }
@@ -41938,6 +44482,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -42134,6 +44690,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -42328,6 +44896,18 @@
                 }
               ],
               "fallback": {
+                "type": "minecraft:empty"
+              }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
                 "type": "minecraft:empty"
               }
             }
@@ -42531,6 +45111,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -42725,6 +45317,18 @@
                 }
               ],
               "fallback": {
+                "type": "minecraft:empty"
+              }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
                 "type": "minecraft:empty"
               }
             }
@@ -42923,6 +45527,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -43119,6 +45735,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -43313,6 +45941,18 @@
                 }
               ],
               "fallback": {
+                "type": "minecraft:empty"
+              }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
                 "type": "minecraft:empty"
               }
             }
@@ -43516,6 +46156,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -43710,6 +46362,18 @@
                 }
               ],
               "fallback": {
+                "type": "minecraft:empty"
+              }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
                 "type": "minecraft:empty"
               }
             }
@@ -43908,6 +46572,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -44102,6 +46778,18 @@
                 }
               ],
               "fallback": {
+                "type": "minecraft:empty"
+              }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
                 "type": "minecraft:empty"
               }
             }
@@ -44300,6 +46988,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -44494,6 +47194,18 @@
                 }
               ],
               "fallback": {
+                "type": "minecraft:empty"
+              }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
                 "type": "minecraft:empty"
               }
             }
@@ -44692,6 +47404,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -44886,6 +47610,18 @@
                 }
               ],
               "fallback": {
+                "type": "minecraft:empty"
+              }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
                 "type": "minecraft:empty"
               }
             }
@@ -45084,6 +47820,18 @@
               "fallback": {
                 "type": "minecraft:empty"
               }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
+                "type": "minecraft:empty"
+              }
             }
           ]
         }
@@ -45278,6 +48026,18 @@
                 }
               ],
               "fallback": {
+                "type": "minecraft:empty"
+              }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
                 "type": "minecraft:empty"
               }
             }
@@ -45479,6 +48239,18 @@
                 }
               ],
               "fallback": {
+                "type": "minecraft:empty"
+              }
+            },
+            {
+              "type": "minecraft:condition",
+              "property": "minecraft:custom_model_data",
+              "index": 0,
+              "on_true": {
+                "type": "minecraft:model",
+                "model": "moddingfromamod:item/hotbar/badge"
+              },
+              "on_false": {
                 "type": "minecraft:empty"
               }
             }

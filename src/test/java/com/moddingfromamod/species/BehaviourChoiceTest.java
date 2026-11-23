@@ -18,12 +18,14 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import org.junit.jupiter.api.Test;
+import com.moddingfromamod.UsesCorpus;
 
 /**
  * the Builder's behaviour chooser is the Python reference's, on every creature Sonnet labelled
  * ({@code corpus/behaviour-choice/expected.jsonl}, written by {@code tools/behaviour-train.py}), through the REAL
  * lowering, so how a body's facts are read (does it fly, swim, park) is held as well as the choice itself.
  */
+@UsesCorpus
 class BehaviourChoiceTest {
 
     /**

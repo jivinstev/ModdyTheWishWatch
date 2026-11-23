@@ -114,6 +114,15 @@ public final class WorldModuleHost {
 
     private static volatile Bases testBases;
 
+    /**
+     * where a search round {@code caster} may act on the running world — {@link BaseReach#fence} over
+     * {@link #liveBases()} and the loaded world rules, the same two the reach rule reads at {@code tools/call}. Null
+     * when nothing fences it (no bases, no base-reach rule, no wish bound).
+     */
+    public static Region fenceFor(java.util.UUID caster) {
+        return BaseReach.fence(caster, liveBases(), WorldRulesService.loadedOrNull());
+    }
+
     /** Pin the bases for a test (null restores) — like {@code WorldRulesService.forTest}; a batch of its own. */
     public static void forTest(Bases b) {
         testBases = b;

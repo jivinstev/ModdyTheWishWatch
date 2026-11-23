@@ -38,13 +38,13 @@ import com.moddingfromamod.testing.gt.GameTestHolder;
 public final class ItemPackGameTest {
 
     /** Its own batch: the mock players are process-wide, same reason as {@code rigveil}. */
-    static final String BATCH = "itempack";
+    public static final String BATCH = "itempack";
 
     /** The carrier's item definition — the one binding table the pack writes (step 3). */
     private static final String CARRIER_DEF = com.moddingfromamod.pack.VanillaItemPack
             .itemDefinitionPath(com.moddingfromamod.pack.WishPackWriter.BASE_ITEM);
 
-    static List<Object> drain(GameTestHelper helper, ServerPlayer p) {
+    public static List<Object> drain(GameTestHelper helper, ServerPlayer p) {
         var channel = p.connection.getConnection().channel();
         helper.assertTrue(channel instanceof io.netty.channel.embedded.EmbeddedChannel,
                 Component.literal("the instrument cannot see the wire: the mock's channel is a "
@@ -59,7 +59,7 @@ public final class ItemPackGameTest {
         return out;
     }
 
-    static List<ClientboundResourcePackPushPacket> pushes(List<Object> packets) {
+    public static List<ClientboundResourcePackPushPacket> pushes(List<Object> packets) {
         List<ClientboundResourcePackPushPacket> out = new ArrayList<>();
         for (Object o : packets) {
             if (o instanceof ClientboundResourcePackPushPacket push) {
@@ -69,7 +69,7 @@ public final class ItemPackGameTest {
         return out;
     }
 
-    static String[] published(GameTestHelper helper) {
+    public static String[] published(GameTestHelper helper) {
         String sha1 = ItemPackService.currentSha1();
         helper.assertTrue(sha1 != null,
                 Component.literal("this server published no item pack, so every wished thing and Moddy himself "

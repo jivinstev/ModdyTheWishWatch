@@ -391,6 +391,13 @@ public final class ModifyMobTool implements McpTool {
                 // Spikor. The rules are CreatureMatch's, and they are unit-tested.
                 List<LivingEntity> candidates = com.moddingfromamod.mob.Creatures.nearby(
                         level, origin, tweak.radius());
+                // on a world that fences a wish to its caster's base, the search keeps to his base — the
+                // reach rule let this call run because he stands on it (BaseReach.KEEPS_TO_BASE), not because the
+                // whole radius fits inside it, so a creature past its edge is never changed.
+                var fence = fenceOfThisWish();
+                if (fence != null) {
+                    candidates.removeIf(e -> !fence.contains(e.getX(), e.getZ()));
+                }
 
                 List<LivingEntity> matching = new ArrayList<>();
                 for (LivingEntity e : candidates) {
@@ -1149,6 +1156,12 @@ public final class ModifyMobTool implements McpTool {
             sb.append(sb.length() == 0 ? "" : ", ").append(h.name());
         }
         return sb.toString();
+    }
+
+    /** where this wish's search may act (his base's area), or null when nothing fences it. */
+    private static com.moddingfromamod.world.Region fenceOfThisWish() {
+        var run = com.moddingfromamod.agent.AgentContext.currentRun();
+        return run == null ? null : com.moddingfromamod.world.WorldModuleHost.fenceFor(run.playerId());
     }
 
     private static String typeId(LivingEntity e) {
