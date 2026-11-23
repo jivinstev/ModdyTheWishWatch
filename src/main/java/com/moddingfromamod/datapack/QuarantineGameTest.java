@@ -55,7 +55,7 @@ public final class QuarantineGameTest {
     // ── the rig ─────────────────────────────────────────────────────────────────────────────────────────
 
     /** A hand-written wish pack, in the store and switched on the way a wish's is. */
-    static void install(MinecraftServer server, String ns, Map<String, String> functions, boolean ticks)
+    public static void install(MinecraftServer server, String ns, Map<String, String> functions, boolean ticks)
             throws IOException {
         Path dir = DatapackStore.featureDir(ns);
         Files.createDirectories(dir);
@@ -83,7 +83,7 @@ public final class QuarantineGameTest {
                 .anyMatch(f -> ns.equals(f.id().getNamespace()));
     }
 
-    static void cleanUp(MinecraftServer server, String ns) {
+    public static void cleanUp(MinecraftServer server, String ns) {
         try {
             DatapackQuarantine.restore(null, ns, "gametest");
         } finally {

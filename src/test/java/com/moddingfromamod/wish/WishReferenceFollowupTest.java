@@ -13,12 +13,14 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.moddingfromamod.CorpusSource;
 import org.junit.jupiter.api.Test;
+import com.moddingfromamod.UsesCorpus;
 
 /**
  * a follow-up that names nothing ("give it wings too") must reach the agent as one, not the
  * offline cache — and a NEW-thing wish must not. Positives are the step-6 pilot's nine follow-ups;
  * negatives are every other wish in that pre-registered sample (synthetic, never typed by a child).
  */
+@UsesCorpus
 class WishReferenceFollowupTest {
 
     /** The pilot's nine follow-ups (corpus/synthetic-player/sample.json, class followup). */

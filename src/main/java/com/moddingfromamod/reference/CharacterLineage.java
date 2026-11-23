@@ -45,6 +45,20 @@ public final class CharacterLineage {
      * the subject; only when it names nobody do we fall back to the creature being edited.
      */
     public static Optional<String> resolve(String wishText, String speciesId) {
+        return resolve(wishText, speciesId, com.moddingfromamod.marshal.LocalOnly.active());
+    }
+
+    /**
+     * NOTHING during a Wish Builder make (a Builder pick, an Apprentice make, a typed re-wish change, the free
+     * change). Its tool calls are lowered from reviewed picks, so there is no character to find: the text this would
+     * read is the make's own name ("Sparky"), and asking about it cost a Muse Ember call (2–3 s, blocking the make) and
+     * started the web reference researcher on a fan wiki; a species' remembered character started it too. Every reader
+     * of the answer is agent-facing (the stand-in colour lever, the palette check), and a make has no agent.
+     */
+    static Optional<String> resolve(String wishText, String speciesId, boolean builderMake) {
+        if (builderMake) {
+            return Optional.empty();
+        }
         Optional<String> fromWish = CharacterResolver.resolve(wishText);
         return fromWish.isPresent() ? fromWish : forSpecies(speciesId);
     }

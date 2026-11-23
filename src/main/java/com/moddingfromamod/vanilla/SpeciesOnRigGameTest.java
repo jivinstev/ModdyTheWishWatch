@@ -56,7 +56,7 @@ public final class SpeciesOnRigGameTest {
      * A species with the starter pet dragon's behaviour (read from its own shipped species.json),
      * on the corpus Spikor sculpt, under {@code id}. {@code extra} overrides fields.
      */
-    static String plant(GameTestHelper helper, String id, String extraJson) {
+    public static String plant(GameTestHelper helper, String id, String extraJson) {
         try {
             com.moddingfromamod.testing.SpeciesForTest.putSaved(helper, plantedSpecies(id, extraJson));
             return id;
@@ -132,7 +132,7 @@ public final class SpeciesOnRigGameTest {
     }
 
     /** This species' carrier, found by its species tag anywhere near the plot. */
-    static Mob carrier(GameTestHelper helper, String id) {
+    public static Mob carrier(GameTestHelper helper, String id) {
         String tag = WishMobTags.forSpecies(id);
         AABB near = new AABB(helper.absolutePos(SPOT)).inflate(48);
         for (Entity e : helper.getLevel().getEntities((Entity) null, near,

@@ -173,7 +173,8 @@ public final class ReferenceResearcher {
 
     /** With the {@link SubjectKind} the resolver gave, which decides where pictures come from. */
     public static void prefetch(String character, SubjectKind kind) {
-        if (character == null || character.isBlank()) {
+        if (character == null || character.isBlank()
+                || com.moddingfromamod.marshal.LocalOnly.refuse("the reference researcher (a web lookup)")) {   //: before the hand-off to another thread
             return;
         }
         String key = key(character);
@@ -241,7 +242,8 @@ public final class ReferenceResearcher {
     /** With the kind, for when this call is the one that starts the fetch. */
     public static ReferenceSpec lookUp(String character, int waitSeconds, SubjectKind kind) {
         long started = System.nanoTime();
-        if (character == null || character.isBlank()) {
+        if (character == null || character.isBlank()
+                || com.moddingfromamod.marshal.LocalOnly.refuse("the reference researcher (a web lookup)")) {   //: before the hand-off to another thread
             return ReferenceSpec.none();
         }
         String key = key(character);

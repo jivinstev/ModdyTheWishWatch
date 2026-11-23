@@ -51,6 +51,49 @@ public final class ApprenticeGameTest {
         p.getServer().getCommands().performPrefixedCommand(p.createCommandSourceStack(), command);
     }
 
+    /**
+     * <b>Words to a finished thing, LOCAL ONLY</b>. A Crafter types a wish, the Apprentice offers its page, he
+     * presses the first tile and the REAL make runs (no seam): from the words to DONE, not one model or web call is
+     * asked ({@code marshal/LocalOnly} refuses and counts each). The matching, the page and the make are all covered;
+     * a regression anywhere on the path turns this red and names itself in the log ("local only: refused …").
+     */
+    @GameTest(template = "empty_test", batch = "apprentice_local", timeoutTicks = 12000)
+    public static void fromTheWordsToTheThingNoModelAndNoWebCall(GameTestHelper helper) {
+        MockPlayerNetwork.clearStaleMocks(helper);
+        ServerPlayer p = MockPlayerNetwork.inLevel(helper, "apprentice_local");
+        net.minecraft.core.BlockPos at = helper.absolutePos(new net.minecraft.core.BlockPos(1, 2, 1));
+        p.setPos(at.getX() + 0.5, at.getY(), at.getZ() + 0.5);
+        MockPlayerNetwork.actingChildFor(helper, p);
+        WishService.forget(p);
+        CrafterService.forgetForTest(p.getUUID());
+        ApprenticeService.forget(p.getUUID());
+        com.moddingfromamod.apprentice.LayerHost.useForTest(null, 0);
+        System.setProperty(WorldCrafters.OPEN_PROPERTY, "true");
+        System.setProperty(BuilderSettings.ENABLED_PROPERTY, "true");
+        MockPlayerNetwork.afterTest(helper, () -> {
+            System.clearProperty(WorldCrafters.OPEN_PROPERTY);
+            System.clearProperty(BuilderSettings.ENABLED_PROPERTY);
+            p.closeContainer();
+        });
+        long refusedBefore = com.moddingfromamod.marshal.LocalOnly.refusedSoFar();
+        long startedMs = System.currentTimeMillis();
+        run(p, "moddy wishbox a green dino i can ride");
+        helper.assertTrue(p.containerMenu instanceof MenuKit.PickMenu, Component.literal("the Apprentice's page opened: " + p.containerMenu));
+        ApprenticeService.pressForTest(p, ApprenticeWords.OFFER + 0);   // the real make: no seam
+        var book = WishBook.get(helper.getLevel().getServer());
+        com.moddingfromamod.test.RealTime.succeedWhen(helper, () -> {
+            long refused = com.moddingfromamod.marshal.LocalOnly.refusedSoFar() - refusedBefore;
+            helper.assertTrue(refused == 0, Component.literal(refused + " model or web call(s) asked between his words and "
+                    + "the finished thing (see the 'local only: refused' lines)"));
+            var made = book.recent(50).stream()
+                    .filter(w -> p.getUUID().equals(w.playerId()) && w.source() == WishSource.BUILDER
+                            && w.createdMs() >= startedMs)
+                    .findFirst();
+            helper.assertTrue(made.isPresent() && made.get().status() == WishStatus.DONE,
+                    Component.literal("the Apprentice make settled DONE: " + made.map(w -> w.status().name()).orElse("not made yet")));
+        });
+    }
+
     @GameTest(template = "empty_test", batch = "apprentice", timeoutTicks = 400)
     public static void bothDoorsEndWhereTheRouteSaysForACrafterAndAMagician(GameTestHelper helper) {
         MockPlayerNetwork.clearStaleMocks(helper);

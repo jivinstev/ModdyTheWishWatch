@@ -148,7 +148,9 @@ class VanillaItemPackTest {
         // …+ one model per overlay in the library (shipped once, whatever the icons are).
         int overlays = com.moddingfromamod.item.IconOverlays.NAMES.size();
         int backing = VanillaItemPack.BACKING.size();   // The sparkle backing's layers
-        assertEquals(1 + 1 + 2 * icons.size() + overlays + backing, files.size(), files.keySet().toString());
+        // …+ the hotbar badge's model(s) and its vanilla-picture definition (HotbarBadgeTest).
+        int badge = HotbarBadge.sprites().size() + 1;
+        assertEquals(1 + 1 + 2 * icons.size() + overlays + backing + badge, files.size(), files.keySet().toString());
         for (String o : com.moddingfromamod.item.IconOverlays.NAMES) {
             assertTrue(files.containsKey("assets/wishpack/models/item/overlay/" + o + ".json"), o);
         }

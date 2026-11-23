@@ -42,4 +42,40 @@ public interface Bases {
     default boolean standsYet(UUID player) {
         return true;
     }
+
+    // ── a server's own upkeep: what a house asks of the running world's bases without naming the level ──
+
+    /** Where a service player stands on its own base, and whether the base was put back to bare first. */
+    record ServiceStand(int x, int y, int z, boolean reset) {
+    }
+
+    /**
+     * Give a SERVICE player (a server's own monitoring player, never a child) a base of its own on this world, so a
+     * wish it makes may change something at all. Called once the world's module has started. Default: this
+     * world keeps no bases for service players, and nothing happens.
+     */
+    default void reserveService(UUID service) {
+    }
+
+    /**
+     * Ready a service player's base for a wish it is about to make: keep its chunks loaded, put it back to bare,
+     * and say where it stands. Null when it has no base built here yet (the default: the service player then wishes
+     * from the world's spawn, as on a world with no bases).
+     */
+    default ServiceStand readyService(UUID service) {
+        return null;
+    }
+
+    /** Keep a service player's base loaded while its wish runs (nobody else is near it). Default: nothing to hold. */
+    default void holdService(UUID service) {
+    }
+
+    /**
+     * An operator's tool: retire ONE player's base now, by its owner id (an orphaned base nobody can reach).
+     * Returns {@code "rested"}, {@code "absent"}, or a line starting {@code "refused"}. Default: refused, because
+     * this world's bases cannot be rested.
+     */
+    default String rest(UUID owner, long nowMs) {
+        return "refused: this world's " + noun() + "s cannot be rested";
+    }
 }

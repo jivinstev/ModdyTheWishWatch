@@ -150,13 +150,13 @@ public final class JoinIntroService {
     }
 
     /** Queue {@code player}'s intro against {@code store} (the GameTest hands its own). */
-    static void schedule(ServerPlayer player, IntroSeenStore store, WorldFacts world) {
+    public static void schedule(ServerPlayer player, IntroSeenStore store, WorldFacts world) {
         PENDING.computeIfAbsent(player.getUUID(),
                 id -> new Pending(player.getServer().getTickCount() + DELAY_TICKS, store, world));
     }
 
     /** {@link #schedule}, with the line the wish bank would hand over (the GameTest's path to it). */
-    static void schedule(ServerPlayer player, IntroSeenStore store, WorldFacts world, String bankLine) {
+    public static void schedule(ServerPlayer player, IntroSeenStore store, WorldFacts world, String bankLine) {
         schedule(player, store, world);
         Pending p = PENDING.get(player.getUUID());
         if (p != null) {
@@ -164,7 +164,7 @@ public final class JoinIntroService {
         }
     }
 
-    static boolean pending(UUID player) {
+    public static boolean pending(UUID player) {
         return PENDING.containsKey(player);
     }
 

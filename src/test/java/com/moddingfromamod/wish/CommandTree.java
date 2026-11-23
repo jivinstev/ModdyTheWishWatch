@@ -72,8 +72,32 @@ public final class CommandTree {
     }
 
     private static List<Class<?>> handlers() throws Exception {
-        Path dir = Path.of(WishCommands.class.getProtectionDomain().getCodeSource().getLocation().toURI());
         List<Class<?>> out = new ArrayList<>();
+        for (Path dir : modClassDirs()) {
+            handlersIn(dir, out);
+        }
+        return out;
+    }
+
+    /**
+     * The core's classes, plus every other mod's the build put on this classpath (the house's and each level's
+     * source set, build/classes/java/&lt;name&gt;); never the test classes or the public half's copy of the core.
+     */
+    private static List<Path> modClassDirs() throws Exception {
+        Path core = Path.of(WishCommands.class.getProtectionDomain().getCodeSource().getLocation().toURI());
+        List<Path> dirs = new ArrayList<>(List.of(core));
+        for (String e : System.getProperty("java.class.path", "").split(java.io.File.pathSeparator)) {
+            Path p = Path.of(e);
+            Path parent = p.getParent();
+            if (Files.isDirectory(p) && parent != null && parent.equals(core.getParent()) && !p.equals(core)
+                    && !List.of("test", "public", "publicTest").contains(p.getFileName().toString())) {
+                dirs.add(p);
+            }
+        }
+        return dirs;
+    }
+
+    private static void handlersIn(Path dir, List<Class<?>> out) throws Exception {
         try (Stream<Path> s = Files.walk(dir)) {
             for (Path f : s.filter(p -> p.toString().endsWith(".class")).sorted().toList()) {
                 if (!contains(Files.readAllBytes(f), EVENT)) {
@@ -84,7 +108,6 @@ public final class CommandTree {
                         CommandTree.class.getClassLoader()));
             }
         }
-        return out;
     }
 
     private static boolean contains(byte[] hay, byte[] needle) {

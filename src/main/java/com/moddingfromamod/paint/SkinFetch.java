@@ -97,6 +97,9 @@ public final class SkinFetch {
 
     /** The skin for a username. Never throws. */
     public static Result fetch(String username) {
+        if (com.moddingfromamod.marshal.LocalOnly.refuse("a Minecraft skin download")) {   //: a Wish Builder make is local only
+            return new Failed("local only: a Wish Builder make makes no web call (#2789)");
+        }
         String name = username == null ? "" : username.trim();
         if (!USERNAME.matcher(name).matches()) {
             return new NoSuchPlayer(name);

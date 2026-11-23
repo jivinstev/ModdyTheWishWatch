@@ -254,6 +254,10 @@ public final class HelperRoute {
      * skipped.
      */
     public static <T> T first(List<Step> steps, Function<List<Step>, T> muse, Function<Step, T> claude) {
+        // every helper job's model call comes through here; a Wish Builder make is local only.
+        if (com.moddingfromamod.marshal.LocalOnly.refuse("a helper model call")) {
+            return null;
+        }
         int i = 0;
         while (i < steps.size()) {
             Step st = steps.get(i);

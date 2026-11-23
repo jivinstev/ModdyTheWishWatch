@@ -54,6 +54,20 @@ class DeploymentTest {
     // ── The bundled-library trap, which is the one that would have shipped wrong ─────────
 
     @Test
+    void aModBuiltOnOursIsOursNotACompanion() {
+        // our servers load an extension mod (and a level) that REQUIRES this one; it is ours. Another mod still
+        // makes the server a companion deployment, extension or not.
+        Deployment.Verdict v = Deployment.classify(List.of("minecraft", "neoforge", US, "anextension", "alevel"),
+                List.of("anextension", "alevel"));
+        assertEquals(Deployment.Shape.MOD_ALONE, v.shape());
+        assertTrue(v.companions().isEmpty());
+        Deployment.Verdict w = Deployment.classify(List.of("minecraft", "neoforge", US, "anextension", "create"),
+                List.of("anextension"));
+        assertEquals(Deployment.Shape.WITH_COMPANIONS, w.shape());
+        assertEquals(List.of("create"), w.companions());
+    }
+
+    @Test
     void aJarJarredLibraryIsOurOwnFootprintAndNotACompanion() {
         // A JarJar'd library appears in ModList as a separate mod, so an allowlist that missed it
         // would report "other mods are loaded" on the deployment that is most certainly mod-alone.

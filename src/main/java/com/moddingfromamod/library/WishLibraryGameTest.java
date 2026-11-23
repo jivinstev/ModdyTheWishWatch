@@ -43,11 +43,11 @@ import com.moddingfromamod.testing.gt.GameTestHolder;
 @GameTestHolder(ModdingFromAModMod.MODID)
 public class WishLibraryGameTest {
 
-    static final String DIR_PROP = ModdingFromAModMod.MODID + ".libraryDir";
+    public static final String DIR_PROP = ModdingFromAModMod.MODID + ".libraryDir";
     static final String POLL_PROP = ModdingFromAModMod.MODID + ".libraryPollMs";
 
     /** A fixture library under the run directory, with a templates file if one is given. */
-    static Path fixture(String name, String templatesJson) throws Exception {
+    public static Path fixture(String name, String templatesJson) throws Exception {
         Path dir = Path.of("gametest-library-" + name + "-" + System.nanoTime()).toAbsolutePath();
         Files.createDirectories(dir);
         if (templatesJson != null) {
@@ -57,18 +57,18 @@ public class WishLibraryGameTest {
     }
 
     /** Point the mod at a library, exactly as the launcher's {@code -D} does, and reload. */
-    static void useLibrary(MinecraftServer server, Path dir) {
+    public static void useLibrary(MinecraftServer server, Path dir) {
         System.setProperty(DIR_PROP, dir.toString());
         LibraryService.reloadNow(server);
     }
 
-    static void restore(MinecraftServer server) {
+    public static void restore(MinecraftServer server) {
         System.clearProperty(DIR_PROP);
         System.clearProperty(POLL_PROP);
         LibraryService.reloadNow(server);
     }
 
-    static void rcon(MinecraftServer server, String command) {
+    public static void rcon(MinecraftServer server, String command) {
         server.getCommands().performPrefixedCommand(
                 server.createCommandSourceStack().withSuppressedOutput().withPermission(4),
                 command);

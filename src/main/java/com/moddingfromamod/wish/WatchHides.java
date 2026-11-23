@@ -252,7 +252,7 @@ public final class WatchHides {
     }
 
     /** Test only: forget what was read, as a server that just started would. */
-    static void dropCacheForTest() {
+    public static void dropCacheForTest() {
         CACHE.clear();
     }
 

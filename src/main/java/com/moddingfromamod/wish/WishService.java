@@ -272,8 +272,31 @@ public final class WishService {
         // The L0 lexicon above still reads every press (local, free), so a CLEARLY still refuses
         // and a wellbeing phrasing still gets its grown-up note. A TYPED wish that happens to
         // match a recipe by its words keeps every call: those are a child's own words.
-        final Optional<WishTemplates.Match> named = replay != null ? Optional.of(replay)
+        Optional<WishTemplates.Match> found = replay != null ? Optional.of(replay)
                 : WishCatalog.templates().byId(namedTemplateId, text);
+        // A KEPT BUILDER MAKE IS A RECIPE TOO ("builder:<make id>"), resolved on HIS OWN shelf, so a client
+        // cannot invent one and another child's finds nothing: the replay command of the thing it made, served from
+        // here on exactly as any recipe is (the same charge, clamp, fanfare and executor). One that cannot be made
+        // (gone, not his, written by a newer Moddy) is refused HERE, never handed to word matching or the agent: a
+        // hotbar fire must never start a model.
+        if (found.isEmpty() && com.moddingfromamod.wishbuilder.BuilderAgain.is(namedTemplateId)) {
+            var again = com.moddingfromamod.wishbuilder.BuilderAgain.resolve(
+                    com.moddingfromamod.wishbuilder.BuilderSpecStore.all(
+                            com.moddingfromamod.runtime.RuntimeConfig.playersDir(), player.getStringUUID()),
+                    namedTemplateId);
+            if (!again.ok()) {
+                LOGGER.info("not making '{}' again for {}: {}", namedTemplateId,
+                        player.getGameProfile().getName(), again.refusal());
+                player.sendSystemMessage(net.minecraft.network.chat.Component.literal(
+                        com.moddingfromamod.wishbuilder.BuilderAgain.GONE));
+                com.moddingfromamod.agent.ActionLog.wish(text, "EMPTY", source.name(), "",
+                        player.getStringUUID());
+                return Outcome.EMPTY;
+            }
+            found = Optional.of(new WishTemplates.Match(namedTemplateId,
+                    CommandPlan.of(again.commands(), again.ready())));
+        }
+        final Optional<WishTemplates.Match> named = found;
         final boolean models = PreAgentModels.wanted(named.isPresent());
 
         // ── WHO ANSWERS: THE AGENT, OR THE APPRENTICE (step 5, docs/OPEN_DOOR_PLAN.md §2). EVERY door

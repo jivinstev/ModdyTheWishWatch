@@ -8,6 +8,7 @@ import com.google.gson.JsonParser;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.Test;
+import com.moddingfromamod.UsesCorpus;
 
 /**
  * The 1.21.5 spelling corpus: 117 distinct lines out of the two live worlds' stored packs that
@@ -15,6 +16,7 @@ import org.junit.jupiter.api.Test;
  * {@code component_syntax.py} is held to the SAME file by {@code tools/test-spelling-parity.py} — the two
  * had drifted by 43 lines (sign messages, CustomName) before this pinned them.
  */
+@UsesCorpus
 class SpellingCorpusTest {
 
     @Test

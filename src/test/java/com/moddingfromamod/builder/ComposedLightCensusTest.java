@@ -18,6 +18,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import com.moddingfromamod.UsesCorpus;
 
 /**
  * <b>an earlier issue's census, kept: light shapes as DRAWN against light that SURVIVES composition.</b>
@@ -32,6 +33,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * committed here (the starter castle and the castle granted; a named real castle is pinned beside the
  * private corpus, in {@code BuildLightingRealBuildsTest}).
  */
+@UsesCorpus
 class ComposedLightCensusTest {
 
     /** One plan's row. */

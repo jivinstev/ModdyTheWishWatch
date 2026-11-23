@@ -484,9 +484,18 @@ public final class WorldRules {
             if (out == null) {
                 return Map.of();
             }
-            if (out.containsKey(null) || out.containsValue(null)) {
-                err.add(where + ": the " + plugin.key() + " plug-in returned a parameter with no value");
-                return Map.of();
+            // Walk the entries rather than ask containsKey(null)/containsValue(null): an immutable Map.of throws on
+            // those, and a map that cannot hold a null simply has none to find.
+            for (Map.Entry<String, Object> e : out.entrySet()) {
+                if (e.getKey() == null) {
+                    err.add(where + ": the " + plugin.key() + " plug-in returned a parameter with no name");
+                    return Map.of();
+                }
+                if (e.getValue() == null) {
+                    err.add(where + ": the " + plugin.key() + " plug-in returned a parameter with no value ('"
+                            + e.getKey() + "')");
+                    return Map.of();
+                }
             }
             return out;
         } catch (RuntimeException e) {

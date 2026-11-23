@@ -112,6 +112,10 @@ or internal-seam row in `docs/EXTENDING.md` in the same change, and so does a ne
   `ui/MenuKit`.** `MenuMappingTest` fails a dialog or a clickable chest built any other way.
 - **The typed-wish tier is the Magician.** Player-facing text says Apprentice and Magician, never "Wish Wizard"
   (`MagicianNameTest`). A wizard a player wishes for is content and keeps its name.
+- **A Builder or Apprentice make is local only: no model and no web call.** Every make, the Apprentice's reading of
+  typed words and the re-wish reader run inside `marshal/LocalOnly`, which refuses and records any such call (only
+  the hand-off to the Magician steps outside); `BuilderMakeGameTest` and `ApprenticeGameTest` require none. Code that opens an HTTP connection, starts a process or calls a model asks `LocalOnly.refuse(…)` first or
+  says in `LocalOnlyCoverageTest` why it can never run inside a make (Gate A fails it otherwise).
 - **Mechanisms are general.** Never special-case a particular wish, character or noun in engine code to make one
   example pass; fix the mechanism or the lesson so every similar wish gets it.
 - **A wish appears where it was aimed, locked when it was made**, never recomputed from where the player stands at

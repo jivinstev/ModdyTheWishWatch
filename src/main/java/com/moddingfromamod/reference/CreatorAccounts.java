@@ -1,6 +1,5 @@
 package com.moddingfromamod.reference;
 
-import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -172,16 +171,18 @@ public final class CreatorAccounts {
     }
 
     /**
-     * The table bundled at {@code resource}. The list is PRIVATE (D33, docs/public-repo/DECISIONS.md):
-     * the public mod's jar ships without it, so there it is simply absent and every lookup falls
+     * The table bundled at {@code resource}, in this mod's jar or another loaded mod's. The list is PRIVATE (D33,
+     * docs/public-repo/DECISIONS.md): the public mod's jar ships without it (our servers' house mod carries it), so there it is simply absent and every lookup falls
      * back to the normal skin lookup (minecraft.wiki), with no error.
      */
     static Table bundled(String resource) {
-        try (InputStream in = CreatorAccounts.class.getResourceAsStream(resource)) {
-            if (in == null) {
+        try {
+            // this jar, else the jar of the mod that ships it (on our servers, the house mod's)
+            int slash = resource.lastIndexOf('/');
+            String text = com.moddingfromamod.plugin.ModResources.text(resource.substring(1, slash), resource.substring(slash + 1));
+            if (text == null) {
                 return new Table(Map.of(), 0, "nowhere (no bundled table)");
             }
-            String text = new String(in.readAllBytes(), StandardCharsets.UTF_8);
             return parse(List.of(text.split("\n")), "the jar");
         } catch (Exception e) {
             LOGGER.warn("creator list: bundled table unreadable: {}", e.toString());

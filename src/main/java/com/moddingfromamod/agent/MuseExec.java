@@ -322,6 +322,10 @@ public final class MuseExec {
     private static Answer attempt(String bin, String shim, String systemPrompt, String userText,
                                  String strictSchemaJson, String modelId, String effort, String key,
                                  long timeoutMs, StringBuilder failure, List<String> images, List<String> flags) {
+        if (com.moddingfromamod.marshal.LocalOnly.refuse("a Muse call (" + modelId + ")")) {   //: a Wish Builder make is local only
+            failure.append("local only: a Wish Builder make calls no model (#2789)");
+            return null;
+        }
         boolean keyOnStdin = shim == null && key != null;
         String arm = shim != null ? ARM_SUBSCRIPTION : keyOnStdin ? ARM_API : ARM_LOGIN;
         Path dir = null;

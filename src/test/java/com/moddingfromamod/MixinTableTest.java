@@ -31,6 +31,7 @@ class MixinTableTest {
     static final List<String> CONFIGS = List.of("moddingfromamod.mixins.json", "moddingfromamod.gametest.mixins.json");
     static final Path RESOURCES = Path.of("src/main/resources");
     static final Path JAVA = Path.of("src/main/java");
+    static final Path HOUSE_RESOURCES = Path.of("house/src/main/resources");
     static final Path TABLE = Path.of("docs/MIXINS.md");
     /** A table row: {@code | `Name` | `config` | …}. */
     static final Pattern ROW = Pattern.compile("^\\|\\s*`([A-Za-z0-9_$]+)`\\s*\\|\\s*`([^`]+)`\\s*\\|", Pattern.MULTILINE);
@@ -41,6 +42,9 @@ class MixinTableTest {
 
     static JsonObject config(String name) throws IOException {
         Path file = name.contains(".gametest.") ? RESOURCES.resolve("gametest").resolve(name) : RESOURCES.resolve(name);
+        if (!Files.exists(file) && Files.exists(HOUSE_RESOURCES.resolve(name))) {
+            file = HOUSE_RESOURCES.resolve(name);   //: the private config moved with the private mixins
+        }
         return JsonParser.parseString(Files.readString(file)).getAsJsonObject();
     }
 
@@ -90,7 +94,8 @@ class MixinTableTest {
 
     /** A listed mixin's source file, which must exist. */
     static Path source(String config, String name) throws IOException {
-        Path src = JAVA.resolve(config(config).get("package").getAsString().replace('.', '/')).resolve(name + ".java");
+        Path src = com.moddingfromamod.testing.SourceRoots.file(
+                JAVA.resolve(config(config).get("package").getAsString().replace('.', '/')).resolve(name + ".java"));
         assertTrue(Files.isRegularFile(src), name + " is listed in " + config + " but " + src + " is missing");
         return src;
     }

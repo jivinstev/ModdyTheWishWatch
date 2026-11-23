@@ -58,4 +58,46 @@ class WishHotbarPlanTest {
         assertEquals("✨ Wish: one of your things", WishHotbarPlan.name(" "));
         assertEquals("✨ Wish: one of your things", WishHotbarPlan.name(null));
     }
+
+    private static List<Boolean> inventory(int... taken) {
+        List<Boolean> out = new ArrayList<>(Collections.nCopies(41, true));
+        for (int i : taken) {
+            out.set(i, false);
+        }
+        return out;
+    }
+
+    private static List<Boolean> full(int... free) {
+        List<Boolean> out = new ArrayList<>(Collections.nCopies(41, false));
+        for (int i : free) {
+            out.set(i, true);
+        }
+        return out;
+    }
+
+    @Test
+    void knockedOutWishesComeBackToTheirOwnSlots() {
+        assertEquals(List.of(2, 6), WishHotbarPlan.restore(inventory(0, 1), List.of(2, 6)));
+        assertEquals(List.of(), WishHotbarPlan.restore(inventory(), List.of()));
+        assertEquals(List.of(40), WishHotbarPlan.restore(inventory(), List.of(40)), "the off hand is a slot too");
+    }
+
+    @Test
+    void aTakenSlotSendsItsWishToTheFirstFreeOneWithoutPushingAnotherOut() {
+        // slot 2 was filled meanwhile; slot 0 is free but slot 0 is also the second wish's own, so 2's goes to 1
+        assertEquals(List.of(1, 0), WishHotbarPlan.restore(inventory(2), List.of(2, 0)));
+        // the hotbar is full: the bag takes it
+        assertEquals(List.of(9), WishHotbarPlan.restore(inventory(0, 1, 2, 3, 4, 5, 6, 7, 8), List.of(4)));
+        // two wishes that say the same slot (a broken stash) never share it
+        assertEquals(List.of(3, 0), WishHotbarPlan.restore(inventory(), List.of(3, 3)));
+        // a slot that does not exist is treated as taken
+        assertEquals(List.of(0), WishHotbarPlan.restore(inventory(), List.of(99)));
+    }
+
+    @Test
+    void withNoFreeSlotAWishIsNotPlacedAndNeverGoesToArmour() {
+        assertEquals(List.of(5, -1), WishHotbarPlan.restore(full(5), List.of(5, 1)));
+        // only an armour slot is free: armour is not where a wish goes
+        assertEquals(List.of(-1), WishHotbarPlan.restore(full(37), List.of(1)));
+    }
 }

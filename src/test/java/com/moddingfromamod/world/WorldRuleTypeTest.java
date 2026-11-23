@@ -1,8 +1,10 @@
 package com.moddingfromamod.world;
 
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 
 import com.google.gson.JsonObject;
 import com.moddingfromamod.plugin.PluginScope;
@@ -151,5 +153,51 @@ class WorldRuleTypeTest {
         WorldRules.Parsed p = WorldRules.parse(with(HOURS), "closed");
         assertTrue(p.ok(), p.errors().toString());
         assertEquals(20, p.rules().first("lighthouse_hours").integer("to", -1));
+    }
+
+    /** A rule type whose params() returns whatever map it is handed: the shape of the map is the test. */
+    private static WorldRuleType returning(Supplier<Map<String, Object>> map) {
+        return new WorldRuleType() {
+            @Override public String key() {
+                return "lighthouse_hours";
+            }
+
+            @Override public Map<String, Object> params(JsonObject raw, String where, List<String> err) {
+                return map.get();
+            }
+        };
+    }
+
+    /** Map.of (as docs/EXTENDING.md's example returns) throws on containsKey(null); it must parse. */
+    @Test
+    void aPluginMayReturnAnImmutableMap() {
+        WorldRules.Parsed p = WorldRules.parse(with(HOURS), null, List.of(returning(() -> Map.of("from", 6, "to", 20))));
+        assertTrue(p.ok(), p.errors().toString());
+        assertEquals(20, p.rules().first("lighthouse_hours").integer("to", -1));
+        WorldRules.Parsed empty = WorldRules.parse(with(HOURS), null, List.of(returning(Map::of)));
+        assertTrue(empty.ok(), empty.errors().toString());
+    }
+
+    @Test
+    void aPluginMayReturnAnOrdinaryMap() {
+        Map<String, Object> m = new HashMap<>();
+        m.put("from", 6);
+        m.put("to", 20);
+        WorldRules.Parsed p = WorldRules.parse(with(HOURS), null, List.of(returning(() -> m)));
+        assertTrue(p.ok(), p.errors().toString());
+        assertEquals(6, p.rules().first("lighthouse_hours").integer("from", -1));
+    }
+
+    @Test
+    void aNullValueOrANullKeyIsStillRefusedInWords() {
+        Map<String, Object> noValue = new HashMap<>();
+        noValue.put("from", 6);
+        noValue.put("to", null);
+        assertSays(errors(with(HOURS), List.of(returning(() -> noValue))),
+                "rules[0] 'open': the lighthouse_hours plug-in returned a parameter with no value ('to')");
+        Map<String, Object> noName = new HashMap<>();
+        noName.put(null, 6);
+        assertSays(errors(with(HOURS), List.of(returning(() -> noName))),
+                "rules[0] 'open': the lighthouse_hours plug-in returned a parameter with no name");
     }
 }

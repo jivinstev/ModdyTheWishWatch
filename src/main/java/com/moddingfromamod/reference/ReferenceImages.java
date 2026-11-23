@@ -264,6 +264,9 @@ public final class ReferenceImages {
      * {@link #PER_HOST} instead.
      */
     public static List<Fetched> fetch(List<String> urls) {
+        if (com.moddingfromamod.marshal.LocalOnly.refuse("a reference image download")) {   //: a Wish Builder make is local only
+            return List.of();
+        }
         long t0 = System.nanoTime();
         int early = warmed(urls);
         List<Fetched> out = fetch(urls, ReferenceImages::fetchOne, PER_HOST);
@@ -363,6 +366,9 @@ public final class ReferenceImages {
      * {@link #WARM_TTL_MS} each) because each one holds a decoded picture. Never throws.
      */
     public static void warm(List<String> urls) {
+        if (com.moddingfromamod.marshal.LocalOnly.refuse("a reference image download")) {   //: a Wish Builder make is local only
+            return;
+        }
         if (urls == null) {
             return;
         }
@@ -416,6 +422,9 @@ public final class ReferenceImages {
 
     /** One URL, or null for any reason at all. */
     public static Fetched fetchOne(String url) {
+        if (com.moddingfromamod.marshal.LocalOnly.refuse("a reference image download")) {   //: a Wish Builder make is local only
+            return null;
+        }
         long started = System.nanoTime();
         try {
             URI uri = URI.create(url.trim());

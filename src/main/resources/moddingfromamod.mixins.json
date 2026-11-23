@@ -21,6 +21,8 @@
     "ProjectileHitInvoker",
     "ProxyProjectileMixin",
     "RigMoveRotationMixin",
+    "RigBundleBroadcastMixin",
+    "RigBundleTickMixin",
     "RigTrackerCadenceMixin",
     "RigDisplayEaseMixin",
     "ItemDisplayLookKeys",

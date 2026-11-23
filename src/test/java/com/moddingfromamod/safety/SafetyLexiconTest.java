@@ -16,6 +16,7 @@ import org.junit.jupiter.api.io.TempDir;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import com.moddingfromamod.UsesCorpus;
 
 /**
  * The floor, and above all the thing the floor must NOT do.
@@ -27,6 +28,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * the feature it is protecting (EVAL_STRATEGY.md: "the obvious rule can be inverted, not merely
  * weak").
  */
+@UsesCorpus
 class SafetyLexiconTest {
 
     private static SafetyLexicon of(String... lines) {

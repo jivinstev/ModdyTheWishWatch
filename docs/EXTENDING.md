@@ -70,7 +70,7 @@ afford it, charging and refunding, and the words a menu, the guide book and `/mo
 
 | Method | Asked | Thread |
 |---|---|---|
-| `refusesAtSubmit(player, distress, text, recipe)` | as a wish is submitted, before anything runs; `true` refuses it (say why to the player yourself). Never refuse a child in `distress`: the core passes it so you can let that wish through | server |
+| `refusesAtSubmit(player, distress, text, recipe)` | as a wish is submitted, before anything runs; `true` refuses it (say why to the player yourself). Never refuse a child in `distress`: the core passes it so you can let that wish through. `recipe` is true for a wish served with no model: a button, a "make another one" (of a Builder make too, whose `text` is then the thing's own name), a Builder make (whose `text` starts `Builder: `) | server |
 | `waiveIfEmpty(player, wishId)` | a wish let through on nothing because of distress: never charge it | server |
 | `charge(player, wishId, agent)` | a wish served with no model starts (a button, a recipe, a Builder make): `agent` is false | server |
 | `atPickup(wish)` | the AI picks a wish up, after the safety and world-rule checks | **an agent thread**: do not touch the world directly; hop to the server thread (`server.submit(…).join()`) as the example does |
@@ -99,6 +99,11 @@ itself implements `com.moddingfromamod.world.WorldModule`.
   called on the server thread, by one set of handlers in the core, so a module is a plain object a GameTest can
   drive. `start` returns the world's `Bases` (where each player's home is) or `null`; `helpLines(player)` adds
   lines after 💡 Help & links and after the respawn-loop rescue offer.
+- **A server's upkeep on `Bases`** (all optional defaults): `reserveService(id)`, `readyService(id)` and
+  `holdService(id)` give a server's own monitoring player a base of its own, put back to bare before each wish it
+  makes and kept loaded while it runs; `rest(owner, now)` retires one orphaned base for an operator. A world that does
+  not override them keeps no service bases (the monitoring player wishes from spawn) and refuses a rest. This is how
+  a dedicated server reaches a level's bases without naming the level's own classes.
 - **`keepTicking()`** (default `null`): why an EMPTY dedicated server must keep ticking right now. Vanilla stops
   ticking a server nobody has been on for `pause-when-empty-seconds`, and `onTick` with it; return a reason while
   your module has work that must run with nobody on, and `null` again as soon as it is done, so the server rests.
@@ -217,6 +222,7 @@ change or disappear without notice.
 | `HealthHook` (`health/`) | `all` | a dedicated server's health thread and health endpoints |
 | `BusWiring` (`plugin/`) | `all` | a dedicated server's own event listeners (operator commands, AFK kick, join timings) |
 | `AlwaysMagician` (`wish/`) | `all` | a monitoring test player, whose wishes always go to the AI |
+| `PlayerRekey` (`store/`) | `all` | a plug-in's own per-player stores (a level's islands, its wish bank's book), moved or re-read when our proxy re-keys a player to a new id |
 
 ## Settings
 

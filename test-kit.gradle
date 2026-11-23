@@ -1,6 +1,7 @@
 // §5: THE TEST KIT -- a second artifact, never the shipped jar. What a mod built against this one (the house mod)
 // needs to run its own GameTests and corpus tests on the same harness: the GameTest harness and helpers (testing/, minus
-// the GameTests that live there), its test-only mixin config, and CorpusSource (the corpus switch, from the test classes).
+// the GameTests that live there), its test-only mixin config, CorpusSource (the corpus switch, from the test classes) and UsesCorpus (the tag on a
+// test that reads one).
 // Its own file, applied from gate-a.gradle: no GameTest server reads it, so gate-select skips it for Gate B (and
 // tools/test-gate-select.py fails it if it ever configures a run, jarJar, processResources or the minecraft block). Its own folder, not build/libs: Port CI releases every jar in build/libs, and this one is not for players. The ship
 // excludes (build.gradle's SHIP_EXCLUDES) are unchanged, so nothing here can reach a player's jar; NEVER_SHIP still checks that on the jar itself.
@@ -16,7 +17,8 @@ def testKitJar = tasks.register('testKitJar', Jar) {
         exclude '**/?*GameTest.class', '**/?*GameTest$*.class'
     }
     from(sourceSets.test.output) {
-        include 'com/moddingfromamod/CorpusSource.class', 'com/moddingfromamod/CorpusSource$*.class'
+        include 'com/moddingfromamod/CorpusSource.class', 'com/moddingfromamod/CorpusSource$*.class',
+                'com/moddingfromamod/UsesCorpus.class'
     }
     doLast {
         def names = []

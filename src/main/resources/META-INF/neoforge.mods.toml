@@ -49,6 +49,3 @@ ${mod_description}
 # declared here by reading this file as written.
 [[mixins]]
 config="moddingfromamod.mixins.json"
-# The private side's own mixins (Bedrock, a proxy's player identity, client input): registered only when
-# its config is in the tree (build.gradle sets private_mixins), so a public cut that drops the file loads cleanly.
-${private_mixins}

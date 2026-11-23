@@ -13,8 +13,10 @@ import java.nio.file.Files;
 import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import com.moddingfromamod.UsesCorpus;
 
 /** The Apprentice's page and words: what every tile says, for every make the corpus is offered. */
+@UsesCorpus
 class ApprenticeWordsTest {
 
     private static final BuilderTree TREE = BuilderTree.of(BuilderAllowlist.REVIEWED, LibraryPresets.SHIPPED);

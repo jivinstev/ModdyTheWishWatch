@@ -58,6 +58,9 @@ public final class EmberVision {
 
     /** The answer's text, or null. */
     public static String describe(String system, String prompt, List<java.awt.image.BufferedImage> pictures) {
+        if (com.moddingfromamod.marshal.LocalOnly.refuse("a Muse vision call")) {   //: a Wish Builder make is local only
+            return null;
+        }
         String key = keySource.get();
         if (key == null || key.isBlank() || "subscription".equals(key.strip()) || pictures == null
                 || pictures.isEmpty() || !com.moddingfromamod.config.Magician.allowsAi()) {

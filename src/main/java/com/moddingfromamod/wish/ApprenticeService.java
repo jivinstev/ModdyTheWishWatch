@@ -190,6 +190,12 @@ public final class ApprenticeService {
      * @return true when a page of makes was opened
      */
     public static boolean offer(ServerPlayer p, String words, WishSource source) {
+        // the Apprentice is LOCAL ONLY. Reading the words into a page runs inside the guard, so a model or web
+        // call asked from here is refused and recorded; only the hand-off to the Magician (show) steps outside it.
+        return com.moddingfromamod.marshal.LocalOnly.during(() -> offerLocally(p, words, source));
+    }
+
+    private static boolean offerLocally(ServerPlayer p, String words, WishSource source) {
         boolean crafter = CrafterService.isCrafter(p);
         if (crafter && WishIntent.isQuestion(words)) {
             // A question is not a make: the same answer a Crafter's question always had.
@@ -231,7 +237,8 @@ public final class ApprenticeService {
                     } else {
                         LOGGER.debug("apprentice: the layer answered in {} ms", (System.nanoTime() - t0) / 1_000_000);
                     }
-                    show(p, words, read, name, source, settings, answer == null ? matcher.match(read) : answer, true, answer != null);
+                    com.moddingfromamod.marshal.LocalOnly.run(() -> show(p, words, read, name, source, settings,
+                            answer == null ? matcher.match(read) : answer, true, answer != null));
                 }));
         return true;
     }
@@ -262,7 +269,8 @@ public final class ApprenticeService {
                 PENDING.remove(p.getUUID());
                 p.closeContainer();
                 p.sendSystemMessage(Component.literal(ApprenticeWords.TO_THE_MAGICIAN).withStyle(ChatFormatting.AQUA));
-                WishService.submit(p, words, source, WishRoute.Hint.MAGICIAN);
+                // the hand-off: the Magician may call models, so this steps outside the Apprentice's guard
+                com.moddingfromamod.marshal.LocalOnly.outside(() -> WishService.submit(p, words, source, WishRoute.Hint.MAGICIAN));
                 return true;
             }
         }

@@ -108,6 +108,7 @@ public final class WishPackWriter {
         for (String fx : VanillaItemPack.BACKING) {
             toCopy.add(VanillaItemPack.FX_DIR + "/" + fx);        // The sparkle backing
         }
+        toCopy.addAll(HotbarBadge.sprites());                      // The hotbar wish's Moddy badge
         for (String sprite : toCopy) {
             byte[] png = classpath("/assets/" + ModdingFromAModMod.MODID
                     + "/textures/item/" + sprite + ".png");

@@ -9,8 +9,10 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import com.moddingfromamod.UsesCorpus;
 
 /** The default that was missing: a building a child can walk into is not left pitch dark. */
+@UsesCorpus
 class BuildLightingTest {
 
     static BuildShape box(int dx, int dy, int dz, int w, int h, int d, String block,
