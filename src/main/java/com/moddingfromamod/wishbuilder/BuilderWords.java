@@ -49,6 +49,20 @@ public final class BuilderWords {
         return "Your " + thing(spec) + " didn't work this time.";
     }
 
+    /**
+     * What was made, as the subject of a sentence about it ("Your Cozy House can't go there: …"): "your X" only for a
+     * thing that is his, as {@link #failed} says it; an event or supplies are "That one" and "Those supplies".
+     */
+    public static String subject(BuilderSpec spec) {
+        if (spec.kind() == BuilderSpec.Kind.EVENT) {
+            return "That one";
+        }
+        if (spec.kind() == BuilderSpec.Kind.SUPPLIES) {
+            return "Those supplies";
+        }
+        return "Your " + thing(spec);
+    }
+
     /** The plan's one step, as a wish's plan reads ("make a Cozy House"). */
     public static String step(BuilderSpec spec, boolean edit) {
         String what = spec.kind() == BuilderSpec.Kind.EVENT ? eventWords(spec) : thing(spec);

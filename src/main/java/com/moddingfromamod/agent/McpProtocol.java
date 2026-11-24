@@ -637,14 +637,19 @@ public final class McpProtocol {
                     // agent actually DOES, so every refusal here is a wish the grader let through —
                     // counted as a grader miss (WorldRulesLog.backstop), per rule.
                     com.moddingfromamod.world.WorldRules inForce = rules.get();
-                    String reach = runNow == null ? null
-                            : com.moddingfromamod.world.BaseReach.refusal(name, args, runNow.playerId(),
-                                    runNow.anchor(), islands.get(), inForce);
+                    com.moddingfromamod.world.Bases bases = islands.get();
+                    com.moddingfromamod.world.BaseReach.Refusal reach = runNow == null ? null
+                            : com.moddingfromamod.world.BaseReach.judge(name, args, runNow.playerId(),
+                                    runNow.anchor(), bases, inForce);
                     if (reach != null) {
                         com.moddingfromamod.world.WorldRulesLog.backstop(wishId,
                                 runNow.playerId() == null ? "" : runNow.playerId().toString(), name,
-                                com.moddingfromamod.world.BaseReach.effectOf(name, args, reach), inForce);
-                        out = ToolResult.error(reach);
+                                reach.effect(), inForce);
+                        // which rule refused, as data on the wish: a make with no agent says it to the child
+                        // (BuilderMake), where the agent would have read these words and explained them.
+                        runNow.refusedByWorld(com.moddingfromamod.world.WorldRefusal.of(reach.effect(), inForce,
+                                bases == null ? null : bases.noun()));
+                        out = ToolResult.error(reach.words());
                         ActionLog.toolCall(name, args, out, 0, wishId);
                         return HttpReply.json(200, rpcResult(id, toolContent(out)), sessionId);
                     }

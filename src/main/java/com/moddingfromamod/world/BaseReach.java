@@ -208,6 +208,18 @@ public final class BaseReach {
      */
     public static String refusal(String tool, JsonObject args, UUID caster, Spot anchor, Bases world,
                                  WorldRules rules) {
+        Refusal r = judge(tool, args, caster, anchor, world, rules);
+        return r == null ? null : r.words();
+    }
+
+    /**
+     * <b>The refusal and the effect it enforced</b>, or {@code null} to let the call run: {@link #refusal}'s words for
+     * the agent, and, as data, which of this world's effects refused it ({@link Refusal#effect}), so the log counts the
+     * catch against its rule and a make with no agent tells the child that rule ({@link WorldRefusal}) without anyone
+     * reading the words back. Each place that refuses names its effect here, beside its words.
+     */
+    public static Refusal judge(String tool, JsonObject args, UUID caster, Spot anchor, Bases world,
+                                WorldRules rules) {
         if (world == null || caster == null || tool == null) {
             return null;
         }
@@ -217,8 +229,8 @@ public final class BaseReach {
         if (rule == null) {
             // Fail closed: a tool nobody decided about could land anywhere. BaseReachTest keeps
             // this unreachable for every tool the worker is offered.
-            return message(tool, noun, null, "this tool has no " + noun + " decision yet (BaseReach.RULES), "
-                    + "so it cannot run on a world with bases");
+            return no(null, message(tool, noun, null, "this tool has no " + noun + " decision yet (BaseReach.RULES), "
+                    + "so it cannot run on a world with bases"));
         }
         JsonObject a = args == null ? new JsonObject() : args;
         switch (rule.kind()) {
@@ -236,13 +248,13 @@ public final class BaseReach {
                     return null;
                 }
                 if (!scoped.isEmpty()) {
-                    return message(tool, noun, world.baseOf(caster), scoped);
+                    return no(WorldEffect.ofTool(tool), message(tool, noun, world.baseOf(caster), scoped));
                 }
-                return message(tool, noun, null, tool + " changes the whole world — " + rule.why()
+                return no(WorldEffect.ofTool(tool), message(tool, noun, null, tool + " changes the whole world — " + rule.why()
                         + " — so on this world it would land on every child's " + noun + ", not just his. "
                         + "Grant the wish with something placed on his " + noun + " instead (a building, a "
                         + "machine, a creature, an item for him), or tell him this kind of wish is for "
-                        + in.workshop());
+                        + in.workshop()));
             }
             default -> {
             }
@@ -253,8 +265,8 @@ public final class BaseReach {
         if ("modify_mob".equals(tool) && "category".equalsIgnoreCase(str(a, "scope"))
                 && in.denies(WorldEffect.WORLDWIDE_DATAPACKS_STANDING_RULES)) {
             Base b = world.baseOf(caster);
-            return message(tool, noun, b, "scope=category changes every mob of that kind, forever, "
-                    + "on every " + noun + ". Use scope 'one' or 'group' for the mobs on his " + noun);
+            return no(WorldEffect.WORLDWIDE_DATAPACKS_STANDING_RULES, message(tool, noun, b, "scope=category changes every mob of that kind, forever, "
+                    + "on every " + noun + ". Use scope 'one' or 'group' for the mobs on his " + noun));
         }
         if (rule.kind() == Kind.COMMAND && !in.baseReach()) {
             return commandWorldWide(tool, a, noun, world.baseOf(caster), in);
@@ -264,8 +276,8 @@ public final class BaseReach {
         }
         Base island = world.baseOf(caster);
         if (island == null) {
-            return message(tool, noun, null, "he has no " + noun + " yet — it is made the moment he first joins "
-                    + "this world. Nothing can be placed until it exists");
+            return no(null, message(tool, noun, null, "he has no " + noun + " yet — it is made the moment he first joins "
+                    + "this world. Nothing can be placed until it exists"));
         }
         Region reach = island.reach();
         Bases.Pos child = world.positionOf(caster);
@@ -290,10 +302,10 @@ public final class BaseReach {
                 double x = num(a, "x");
                 double z = num(a, "z");
                 if (child != null && !OVERWORLD.equals(child.dimension())) {
-                    return message(tool, noun, island, "he is not in the overworld, where the " + noun + "s are");
+                    return no(WorldEffect.OTHER_DIMENSIONS, message(tool, noun, island, "he is not in the overworld, where the " + noun + "s are"));
                 }
                 if (!reach.contains(x, z)) {
-                    return message(tool, noun, island, "(" + (int) x + ", " + (int) z + ") is off his " + noun);
+                    return no(WorldEffect.OUTSIDE_OWN_BASE, message(tool, noun, island, "(" + (int) x + ", " + (int) z + ") is off his " + noun));
                 }
                 return null;
             }
@@ -317,26 +329,26 @@ public final class BaseReach {
             // chooseAnchor: with no locked spot it goes in front of him, offsetForward away. With
             // one, an offset never moves it off the aim, so the aimed spot is checked below.
             if (child == null) {
-                return message(tool, noun, island, "he is not in the world, and the wish has no aimed "
-                        + "spot on his " + noun + ", so it would land at the world spawn — nobody's " + noun);
+                return no(WorldEffect.OUTSIDE_OWN_BASE, message(tool, noun, island, "he is not in the world, and the wish has no aimed "
+                        + "spot on his " + noun + ", so it would land at the world spawn — nobody's " + noun));
             }
             if (!OVERWORLD.equals(child.dimension())) {
-                return message(tool, noun, island, "he is not in the overworld, where the " + noun + "s are");
+                return no(WorldEffect.OTHER_DIMENSIONS, message(tool, noun, island, "he is not in the overworld, where the " + noun + "s are"));
             }
             double r = offsets ? radius(a, rule) : 0;
             if (!reach.containsBox(child.x(), child.z(), r)) {
-                return message(tool, noun, island, "it would be placed in front of him at up to " + (int) r
-                        + " blocks from (" + (int) child.x() + ", " + (int) child.z() + "), off his " + noun);
+                return no(WorldEffect.OUTSIDE_OWN_BASE, message(tool, noun, island, "it would be placed in front of him at up to " + (int) r
+                        + " blocks from (" + (int) child.x() + ", " + (int) child.z() + "), off his " + noun));
             }
         }
         if (anchor != null) {
             if (!anchor.dimension().isEmpty() && !OVERWORLD.equals(anchor.dimension())) {
-                return message(tool, noun, island, "the wish is aimed in " + anchor.dimension()
-                        + ", and the " + noun + "s are in the overworld");
+                return no(WorldEffect.OTHER_DIMENSIONS, message(tool, noun, island, "the wish is aimed in " + anchor.dimension()
+                        + ", and the " + noun + "s are in the overworld"));
             }
             if (!reach.contains(anchor.x() + 0.5, anchor.z() + 0.5)) {
-                return message(tool, noun, island, "the spot this wish is aimed at, (" + anchor.x() + ", "
-                        + anchor.y() + ", " + anchor.z() + "), is off his " + noun);
+                return no(WorldEffect.OUTSIDE_OWN_BASE, message(tool, noun, island, "the spot this wish is aimed at, (" + anchor.x() + ", "
+                        + anchor.y() + ", " + anchor.z() + "), is off his " + noun));
             }
         }
         return null;
@@ -436,31 +448,31 @@ public final class BaseReach {
     static final Region NOWHERE = new Region(1, 0, 1, 0);
 
     /** He stands on his base (the overworld, inside its area): a search from there is kept to it by the tool. */
-    private static String onBase(String tool, String noun, Base island, Bases.Pos child, String what) {
+    private static Refusal onBase(String tool, String noun, Base island, Bases.Pos child, String what) {
         if (child == null) {
-            return message(tool, noun, island, "he is not in the world, so there is nowhere near him");
+            return no(WorldEffect.OUTSIDE_OWN_BASE, message(tool, noun, island, "he is not in the world, so there is nowhere near him"));
         }
         if (!OVERWORLD.equals(child.dimension())) {
-            return message(tool, noun, island, "he is not in the overworld, where the " + noun + "s are");
+            return no(WorldEffect.OTHER_DIMENSIONS, message(tool, noun, island, "he is not in the overworld, where the " + noun + "s are"));
         }
         if (!island.area().contains(child.x(), child.z())) {
-            return message(tool, noun, island, what + ", and he is standing at (" + (int) child.x() + ", "
-                    + (int) child.z() + "), off his " + noun);
+            return no(WorldEffect.OUTSIDE_OWN_BASE, message(tool, noun, island, what + ", and he is standing at (" + (int) child.x() + ", "
+                    + (int) child.z() + "), off his " + noun));
         }
         return null;
     }
 
-    private static String nearChild(String tool, String noun, Base island, Bases.Pos child, double r,
+    private static Refusal nearChild(String tool, String noun, Base island, Bases.Pos child, double r,
                                     String what) {
         if (child == null) {
-            return message(tool, noun, island, "he is not in the world, so there is nowhere near him");
+            return no(WorldEffect.OUTSIDE_OWN_BASE, message(tool, noun, island, "he is not in the world, so there is nowhere near him"));
         }
         if (!OVERWORLD.equals(child.dimension())) {
-            return message(tool, noun, island, "he is not in the overworld, where the " + noun + "s are");
+            return no(WorldEffect.OTHER_DIMENSIONS, message(tool, noun, island, "he is not in the overworld, where the " + noun + "s are"));
         }
         if (!island.area().containsBox(child.x(), child.z(), r)) {
-            return message(tool, noun, island, what + ", and from (" + (int) child.x() + ", "
-                    + (int) child.z() + ") that reaches off his " + noun);
+            return no(WorldEffect.OUTSIDE_OWN_BASE, message(tool, noun, island, what + ", and from (" + (int) child.x() + ", "
+                    + (int) child.z() + ") that reaches off his " + noun));
         }
         return null;
     }
@@ -492,7 +504,7 @@ public final class BaseReach {
             CommandCoords.Result r = CommandCoords.analyse(command, new CommandCoords.Origin(x, z, 0, true),
                     in::allowsCommand);
             return r.refusal() != null && r.refusal().contains("changes the whole world")
-                    ? effectOf("run_command", null, "'" + head(command) + "' changes the whole world") : null;
+                    ? worldWide(command) : null;
         }
         if (dimension != null && !dimension.isEmpty() && !OVERWORLD.equals(dimension)) {
             return WorldEffect.OTHER_DIMENSIONS;
@@ -505,8 +517,7 @@ public final class BaseReach {
         CommandCoords.Result r = CommandCoords.analyse(command, new CommandCoords.Origin(x, z, 0, true),
                 in::allowsCommand, owned(caster));
         if (r.refusal() != null) {
-            return effectOf("run_command", null, r.refusal().contains("changes the whole world")
-                    ? "'" + head(command) + "' changes the whole world" : r.refusal());
+            return commandEffect(command, r.refusal());
         }
         for (CommandCoords.Area area : r.areas()) {
             if (area.onHisCreature()) {
@@ -519,7 +530,7 @@ public final class BaseReach {
         return null;
     }
 
-    /** The innermost command word ({@code execute … run time set day} → {@code time}), for {@link #effectOf}. */
+    /** The innermost command word ({@code execute … run time set day} → {@code time}), for {@link #worldWide}. */
     private static String head(String command) {
         String c = command.strip();
         int run;
@@ -534,27 +545,28 @@ public final class BaseReach {
         return w.contains(":") ? w.substring(w.indexOf(':') + 1) : w;
     }
 
-    private static String commandWorldWide(String tool, JsonObject a, String noun, Base island, WorldRules in) {
+    private static Refusal commandWorldWide(String tool, JsonObject a, String noun, Base island, WorldRules in) {
         List<String> lines = commands(a.get("command"));
         for (int i = 0; i < lines.size(); i++) {
             String c = lines.get(i);
             CommandCoords.Result r = CommandCoords.analyse(c, new CommandCoords.Origin(0, 0, 0, true),
                     in::allowsCommand);
             if (r.refusal() != null && r.refusal().contains("changes the whole world")) {
-                return message(tool, noun, island, "'" + c + "': " + r.refusal()
+                return no(worldWide(c), message(tool, noun, island, "'" + c + "': " + r.refusal()
                         + (lines.size() == 1 ? "" : " (command " + (i + 1) + " of " + lines.size()
-                        + "; nothing in the batch was run)"));
+                        + "; nothing in the batch was run)")));
             }
         }
         return null;
     }
 
-    private static String command(String tool, JsonObject a, String noun, Base island, Bases.Pos child,
+    private static Refusal command(String tool, JsonObject a, String noun, Base island, Bases.Pos child,
                                   Spot anchor, WorldRules in) {
         CommandCoords.Origin origin;
         if (child != null) {
             if (!OVERWORLD.equals(child.dimension())) {
-                return message(tool, noun, island, "he is not in the overworld, where the " + noun + "s are");
+                return no(WorldEffect.OTHER_DIMENSIONS, message(tool, noun, island,
+                        "he is not in the overworld, where the " + noun + "s are"));
             }
             origin = new CommandCoords.Origin(child.x(), child.z(), 0, true);
         } else if (anchor != null && (anchor.dimension().isEmpty() || OVERWORLD.equals(anchor.dimension()))) {
@@ -570,16 +582,17 @@ public final class BaseReach {
                     + "; nothing in the batch was run)";
             CommandCoords.Result r = CommandCoords.analyse(c, origin, in::allowsCommand, owned(island.owner()));
             if (r.refusal() != null) {
-                return message(tool, noun, island, "'" + c + "': " + r.refusal() + where);
+                return no(commandEffect(c, r.refusal()), message(tool, noun, island, "'" + c + "': " + r.refusal() + where));
             }
             for (CommandCoords.Area area : r.areas()) {
                 if (area.onHisCreature()) {
                     continue;                      // his own creature, by its tag
                 }
                 if (!cell.containsBox(area.x(), area.z(), area.radius())) {
-                    return message(tool, noun, island, "'" + c + "' reaches (" + (int) area.x() + ", "
-                            + (int) area.z() + ")" + (area.radius() > 0 ? " ± " + (int) area.radius() : "")
-                            + " — " + area.what() + " — which is off his " + noun + where);
+                    return no(WorldEffect.OUTSIDE_OWN_BASE, message(tool, noun, island, "'" + c + "' reaches ("
+                            + (int) area.x() + ", " + (int) area.z() + ")"
+                            + (area.radius() > 0 ? " ± " + (int) area.radius() : "")
+                            + " — " + area.what() + " — which is off his " + noun + where));
                 }
             }
         }
@@ -625,38 +638,36 @@ public final class BaseReach {
     }
 
     /**
-     * Which world effect a refusal from {@link #refusal} enforced — what a backstop catch is counted
-     * against on the Worlds page (every catch is a grader miss, per rule). Read from the
-     * call and the refusal this class wrote, so the two cannot disagree; null for a refusal that is
-     * no rule's (a tool with no decision, a child with no base yet).
+     * A refusal of the reach rule: the words the agent reads, and the world effect it enforced — what a backstop catch
+     * is counted against on the Worlds page, and which of this world's rules a child is told
+     * ({@link WorldRules#ruleFor}). {@code effect} is null for a refusal that is no rule's (a tool with no decision, a
+     * child with no base yet).
      */
-    public static WorldEffect effectOf(String tool, JsonObject args, String refusal) {
-        if (refusal == null) {
-            return null;
+    public record Refusal(String words, WorldEffect effect) {
+    }
+
+    private static Refusal no(WorldEffect effect, String words) {
+        return new Refusal(words, effect);
+    }
+
+    /**
+     * The effect a command {@link CommandCoords} refused enforces: a world-wide head's own effect, a command run in
+     * another dimension's, else a place off his base.
+     */
+    private static WorldEffect commandEffect(String command, String refusal) {
+        if (refusal.contains("changes the whole world")) {
+            return worldWide(command);
         }
-        WorldEffect byTool = WorldEffect.ofTool(tool);
-        if (byTool != null) {
-            return byTool;
-        }
-        if ("modify_mob".equals(tool) && args != null && "category".equalsIgnoreCase(str(args, "scope"))) {
-            return WorldEffect.WORLDWIDE_DATAPACKS_STANDING_RULES;
-        }
-        int q = refusal.indexOf("' changes the whole world");
-        if (q > 0) {
-            int open = refusal.lastIndexOf('\'', q - 1);
-            WorldEffect e = open >= 0 ? WorldEffect.ofCommand(refusal.substring(open + 1, q)) : null;
-            if (e != null) {
-                return e;
-            }
-        }
-        if (refusal.contains("decision yet") || refusal.contains("yet — it is made the moment")) {
-            return null;
-        }
-        if (refusal.contains("not in the overworld") || refusal.contains("the wish is aimed in ")
-                || refusal.contains(", and the islands are in the overworld") || refusal.contains("it runs in ")) {
+        if (refusal.contains("it runs in ")) {
             return WorldEffect.OTHER_DIMENSIONS;
         }
         return WorldEffect.OUTSIDE_OWN_BASE;
+    }
+
+    /** The effect of a command whose head changes the whole world; a head no effect lists is still a place. */
+    private static WorldEffect worldWide(String command) {
+        WorldEffect e = WorldEffect.ofCommand(head(command));
+        return e == null ? WorldEffect.OUTSIDE_OWN_BASE : e;
     }
 
     /** The refusal the agent reads: what did not happen, why, where his base is, what to do. */
