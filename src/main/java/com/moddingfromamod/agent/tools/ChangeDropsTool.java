@@ -211,9 +211,7 @@ public final class ChangeDropsTool implements McpTool {
         global.add("entries", entries);
         ByteArrayOutputStream buf = new ByteArrayOutputStream();
         try (ZipOutputStream out = new ZipOutputStream(buf)) {
-            put(out, "pack.mcmeta", "{\"pack\":{\"pack_format\":"
-                    + com.moddingfromamod.datapack.DatapackDialect.packFormat()
-                    + ",\"description\":\"wish drops\"}}");
+            put(out, "pack.mcmeta", com.moddingfromamod.datapack.DatapackDialect.mcmeta("wish drops"));
             put(out, "data/neoforge/loot_modifiers/global_loot_modifiers.json", global.toString());
             for (var e : rules.entrySet()) {
                 put(out, "data/" + PACK + "/loot_modifiers/" + e.getKey() + ".json", e.getValue());

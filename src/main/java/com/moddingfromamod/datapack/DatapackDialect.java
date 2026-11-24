@@ -19,6 +19,7 @@ import com.moddingfromamod.wish.AttributeIds;
 import com.moddingfromamod.wish.CommandDialect;
 import net.minecraft.SharedConstants;
 import net.minecraft.server.packs.PackType;
+import net.minecraft.server.packs.metadata.pack.PackFormat;
 
 /**
  * <b>A STORED datapack is text in the dialect of the build that compiled it</b>, and it is
@@ -59,6 +60,12 @@ public final class DatapackDialect {
      */
     public static Retargeted retarget(byte[] zip, UnaryOperator<String> correctFunction,
                                       int packFormat, List<String> notes) throws IOException {
+        return retarget(zip, correctFunction, packFormat, 0, notes);
+    }
+
+    /** {@link #retarget(byte[], UnaryOperator, int, List)} for a format with a minor number (1.21.9 on). */
+    public static Retargeted retarget(byte[] zip, UnaryOperator<String> correctFunction,
+                                      int packFormat, int packMinor, List<String> notes) throws IOException {
         List<String> applied = new ArrayList<>();
         ByteArrayOutputStream out = new ByteArrayOutputStream(zip.length + 256);
         try (ZipInputStream in = new ZipInputStream(new ByteArrayInputStream(zip));
@@ -82,7 +89,7 @@ public final class DatapackDialect {
                         data = after.getBytes(StandardCharsets.UTF_8);
                     }
                 } else if (name.equals("pack.mcmeta")) {
-                    byte[] fixed = withPackFormat(data, packFormat);
+                    byte[] fixed = withPackFormat(data, packFormat, packMinor);
                     if (fixed != data) {
                         applied.add("pack.mcmeta pack_format -> " + packFormat);
                         data = fixed;
@@ -148,15 +155,21 @@ public final class DatapackDialect {
 
     /** {@code pack.mcmeta} with {@code pack.pack_format} set, or the same array if it already was. */
     static byte[] withPackFormat(byte[] mcmeta, int packFormat) {
+        return withPackFormat(mcmeta, packFormat, 0);
+    }
+
+    /**
+     * {@code pack.mcmeta} declared for format {@code major.minor} ({@link #declare}), or the same array if it
+     * already was.
+     */
+    static byte[] withPackFormat(byte[] mcmeta, int major, int minor) {
         try {
             JsonObject root = JsonParser.parseString(new String(mcmeta, StandardCharsets.UTF_8))
                     .getAsJsonObject();
             JsonObject pack = root.getAsJsonObject("pack");
-            if (pack == null || (pack.has("pack_format")
-                    && pack.get("pack_format").getAsInt() == packFormat)) {
+            if (pack == null || !declare(pack, major, minor)) {
                 return mcmeta;
             }
-            pack.addProperty("pack_format", packFormat);
             return root.toString().getBytes(StandardCharsets.UTF_8);
         } catch (RuntimeException unreadable) {
             // Not ours to rewrite: Minecraft will report an unreadable mcmeta itself.
@@ -164,9 +177,62 @@ public final class DatapackDialect {
         }
     }
 
-    /** This build's server-data pack format (48 on 1.21.1, 61 on 1.21.4). */
+    /**
+     * The last data-pack format a bare {@code pack_format} may declare: from 1.21.9 the game refuses a pack whose
+     * {@code pack_format} is newer ("declares support for version newer than 81, but is missing mandatory fields
+     * min_format and max_format"), so such a pack also declares both (vanilla's {@code PackFormat.packCodec}).
+     */
+    public static final int LAST_BARE_FORMAT = PackFormat.lastPreMinorVersion(PackType.SERVER_DATA);
+
+    /**
+     * THE one way this mod declares a data pack's format: {@code pack} (the {@code pack} object of a
+     * {@code pack.mcmeta}) gets {@code pack_format = major}, and above {@link #LAST_BARE_FORMAT} also
+     * {@code min_format} and {@code max_format}, both {@code [major, minor]} (the shape the bundled compiler
+     * writes), with the old {@code supported_formats}, which the game refuses beside them, removed. Returns
+     * whether anything changed.
+     */
+    static boolean declare(JsonObject pack, int major, int minor) {
+        boolean changed = false;
+        if (!pack.has("pack_format") || !pack.get("pack_format").isJsonPrimitive()
+                || pack.get("pack_format").getAsDouble() != major) {
+            pack.addProperty("pack_format", major);
+            changed = true;
+        }
+        if (major > LAST_BARE_FORMAT) {
+            com.google.gson.JsonArray exact = new com.google.gson.JsonArray();
+            exact.add(major);
+            exact.add(minor);
+            for (String key : new String[] {"min_format", "max_format"}) {
+                if (!exact.equals(pack.get(key))) {
+                    pack.add(key, exact.deepCopy());
+                    changed = true;
+                }
+            }
+            if (pack.remove("supported_formats") != null) {
+                changed = true;
+            }
+        }
+        return changed;
+    }
+
+    /** This build's server-data pack format (48 on 1.21.1, 61 on 1.21.4, 88 on 1.21.10). */
     public static int packFormat() {
         return SharedConstants.getCurrentVersion().packVersion(PackType.SERVER_DATA).major();
+    }
+
+    /** The minor number of this build's server-data pack format (0 before 1.21.9, where formats had none). */
+    public static int packFormatMinor() {
+        return SharedConstants.getCurrentVersion().packVersion(PackType.SERVER_DATA).minor();
+    }
+
+    /** A whole {@code pack.mcmeta} for a data pack made by this build, declared through {@link #declare}. */
+    public static String mcmeta(String description) {
+        JsonObject pack = new JsonObject();
+        declare(pack, packFormat(), packFormatMinor());
+        pack.addProperty("description", description);
+        JsonObject root = new JsonObject();
+        root.add("pack", pack);
+        return root.toString();
     }
 
     /**
@@ -190,7 +256,7 @@ public final class DatapackDialect {
         List<String> corrections = new ArrayList<>();
         List<String> files = new ArrayList<>();
         Retargeted r = retarget(Files.readAllBytes(src), t -> correctFunction(t, corrections),
-                packFormat(), files);
+                packFormat(), packFormatMinor(), files);
         List<String> all = new ArrayList<>(files);
         all.addAll(corrections);
         return new Retargeted(r.zip(), r.changed() ? all : List.of());

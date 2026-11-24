@@ -86,6 +86,32 @@ class DatapackDialectTest {
     }
 
     @Test
+    void aFormatAboveTheLastBareOneAlsoDeclaresMinAndMaxFormat() {
+        // 1.21.9+ refuses a pack_format above 81 without min_format and max_format (PackFormat.packCodec),
+        // and refuses supported_formats beside a min_format above 81.
+        assertEquals(81, DatapackDialect.LAST_BARE_FORMAT);
+        byte[] old = "{\"pack\":{\"pack_format\":48,\"supported_formats\":[48,61],\"description\":\"x\"}}"
+                .getBytes(StandardCharsets.UTF_8);
+        com.google.gson.JsonObject pack = com.google.gson.JsonParser.parseString(new String(
+                DatapackDialect.withPackFormat(old, 88, 0), StandardCharsets.UTF_8))
+                .getAsJsonObject().getAsJsonObject("pack");
+        assertEquals(88, pack.get("pack_format").getAsInt());
+        assertEquals("[88,0]", pack.get("min_format").toString());
+        assertEquals("[88,0]", pack.get("max_format").toString());
+        assertTrue(!pack.has("supported_formats"), pack.toString());
+        assertEquals("x", pack.get("description").getAsString());
+        byte[] wrapped = ("{\"pack\":" + pack + "}").getBytes(StandardCharsets.UTF_8);
+        assertSame(wrapped, DatapackDialect.withPackFormat(wrapped, 88, 0), "already declared: the same array");
+    }
+
+    @Test
+    void aBareFormatStaysBare() {
+        byte[] in = "{\"pack\":{\"pack_format\":48,\"description\":\"x\"}}".getBytes(StandardCharsets.UTF_8);
+        String out = new String(DatapackDialect.withPackFormat(in, 81, 0), StandardCharsets.UTF_8);
+        assertTrue(out.contains("\"pack_format\":81") && !out.contains("min_format"), out);
+    }
+
+    @Test
     void anUnreadableMcmetaIsLeftForMinecraftToReport() {
         byte[] junk = "{not json".getBytes(StandardCharsets.UTF_8);
         assertArrayEquals(junk, DatapackDialect.withPackFormat(junk, 61));

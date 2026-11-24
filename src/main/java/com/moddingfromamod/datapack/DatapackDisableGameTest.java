@@ -78,8 +78,7 @@ public final class DatapackDisableGameTest {
         java.io.ByteArrayOutputStream bytes = new java.io.ByteArrayOutputStream();
         try (java.util.zip.ZipOutputStream zip = new java.util.zip.ZipOutputStream(bytes)) {
             zip.putNextEntry(new java.util.zip.ZipEntry("pack.mcmeta"));
-            zip.write(("{\"pack\":{\"pack_format\":" + DatapackDialect.packFormat()
-                    + ",\"description\":\"gt 1828\"}}").getBytes(java.nio.charset.StandardCharsets.UTF_8));
+            zip.write(DatapackDialect.mcmeta("gt 1828").getBytes(java.nio.charset.StandardCharsets.UTF_8));
             zip.closeEntry();
         }
         java.nio.file.Files.write(dir.resolve(featureId + ".zip"), bytes.toByteArray());

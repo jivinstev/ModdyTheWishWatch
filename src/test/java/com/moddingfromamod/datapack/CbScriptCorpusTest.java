@@ -238,6 +238,7 @@ class CbScriptCorpusTest {
         // a pack loads as "made for an older version" and the install path had to rewrite it.
         // Expected numbers are Minecraft's own (DatapackDialect.packFormat() at runtime).
         int expected = switch (com.moddingfromamod.compat.Target.MINECRAFT) {
+            case "1.21.10" -> 88;  //: SharedConstants.DATA_PACK_FORMAT_MAJOR = 88 (minor 0) in 1.21.10
             case "1.21.8" -> 81;   //: the bundled compiler's mc_target.py needs this row (VERSION_BUMP_1218 §8)
             case "1.21.4" -> 61;
             case "1.21.1" -> 48;
