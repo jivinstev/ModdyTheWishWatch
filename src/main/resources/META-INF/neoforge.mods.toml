@@ -14,14 +14,14 @@ ${mod_description}
 [[dependencies.${mod_id}]]
     modId="neoforge"
     type="required"
-    versionRange="[21.1,)"
+    versionRange="[21.10,21.11)"
     ordering="NONE"
     side="BOTH"
 
 [[dependencies.${mod_id}]]
     modId="minecraft"
     type="required"
-    versionRange="${minecraft_version_range}"
+    versionRange="[1.21.10,1.21.11)"
     ordering="NONE"
     side="BOTH"
 

@@ -58,7 +58,7 @@ public class WishWatchItem extends com.moddingfromamod.compat.UseItem {
         com.moddingfromamod.compat.Cooldowns.add(player, stack, COOLDOWN_TICKS);
         // ONE door, and it is the server's. An old watch out of an old chest opens exactly the
         // container the carrier opens; there is no second UI left to fork to.
-        if (!level.isClientSide && player instanceof net.minecraft.server.level.ServerPlayer sp) {
+        if (!level.isClientSide() && player instanceof net.minecraft.server.level.ServerPlayer sp) {
             com.moddingfromamod.wish.WatchHome.openWatch(sp);
         }
         // sidedSuccess on the CLIENT only, so the arm swings; the server must not also report

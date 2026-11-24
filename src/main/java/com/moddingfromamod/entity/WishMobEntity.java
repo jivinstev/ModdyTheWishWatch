@@ -88,7 +88,7 @@ public class WishMobEntity extends PathfinderMob {
     /** Set the species and (server-side) apply its stats and behaviour. */
     public void setSpeciesId(String id) {
         this.entityData.set(SPECIES_ID, id == null ? "" : id);
-        if (!this.level().isClientSide) {
+        if (!this.level().isClientSide()) {
             applySpecies(true);
         }
     }
@@ -500,7 +500,7 @@ public class WishMobEntity extends PathfinderMob {
     public void tick() {
         super.tick();
         // Pick up an agent's edits to the species without needing to re-spawn the creature.
-        if (!this.level().isClientSide) {
+        if (!this.level().isClientSide()) {
             String id = speciesId();
             // NOT just an id comparison: editing a creature keeps its id and changes its
             // contents, which is exactly the case "make it bigger" produces.
@@ -610,7 +610,7 @@ public class WishMobEntity extends PathfinderMob {
         super.readAdditionalSaveData(in);
         in.getString(NBT_SPECIES).ifPresent(species -> {
             this.entityData.set(SPECIES_ID, species);
-            if (!this.level().isClientSide) {
+            if (!this.level().isClientSide()) {
                 applySpecies();
             }
         });

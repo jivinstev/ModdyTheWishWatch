@@ -118,7 +118,7 @@ public final class WishItemActions {
             }
         }
         stack.consume(1, context.getPlayer());
-        return com.moddingfromamod.compat.Interactions.success(level.isClientSide);
+        return com.moddingfromamod.compat.Interactions.success(level.isClientSide());
     }
 
     /**

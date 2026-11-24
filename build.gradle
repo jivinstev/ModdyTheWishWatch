@@ -1131,3 +1131,7 @@ tasks.register('classpathFile') {
     outputs.file(out)
     doLast { out.get().asFile.text = sourceSets.main.runtimeClasspath.asPath }
 }
+
+// Version branch (community fork only; not the authors' code): reads .port/<minecraft_version>/branch.properties
+// for what gradle.properties cannot say (Java toolchain, dependency swaps, the client's game directory).
+apply from: '.port/branch.gradle'

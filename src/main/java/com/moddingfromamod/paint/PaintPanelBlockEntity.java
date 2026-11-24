@@ -88,7 +88,7 @@ public class PaintPanelBlockEntity extends BlockEntity {
         this.widthBlocks = PanelGeometry.clampSpan(width);
         this.heightBlocks = PanelGeometry.clampSpan(height);
         setChanged();
-        if (level != null && !level.isClientSide) {
+        if (level != null && !level.isClientSide()) {
             // Flag 3 = notify neighbours + send to clients. Without the client half the picture is
             // only ever right on the server.
             level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), 3);

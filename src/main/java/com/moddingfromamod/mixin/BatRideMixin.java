@@ -48,7 +48,7 @@ public abstract class BatRideMixin {
     @Inject(method = "tick", at = @At("HEAD"))
     private void moddingfromamod$carrierNeverRoosts(CallbackInfo ci) {
         Bat self = (Bat) (Object) this;
-        if (!self.level().isClientSide && self.isResting() && carrier(self)) {
+        if (!self.level().isClientSide() && self.isResting() && carrier(self)) {
             self.setResting(false);
         }
     }

@@ -308,7 +308,7 @@ public final class VanillaCarrierAbilities {
             if (event.getEntity() instanceof net.minecraft.server.level.ServerPlayer sp
                     && com.moddingfromamod.wish.WatchHome.openWatch(sp)) {
                 event.setCancellationResult(com.moddingfromamod.compat.Interactions.success(
-                        event.getLevel().isClientSide));
+                        event.getLevel().isClientSide()));
                 event.setCanceled(true);
                 markHandled(event.getEntity(), event.getHand());
             }
@@ -319,7 +319,7 @@ public final class VanillaCarrierAbilities {
             if (event.getEntity() instanceof net.minecraft.server.level.ServerPlayer sp
                     && com.moddingfromamod.bag.WishBagMenu.open(sp)) {
                 event.setCancellationResult(com.moddingfromamod.compat.Interactions.success(
-                        event.getLevel().isClientSide));
+                        event.getLevel().isClientSide()));
                 event.setCanceled(true);
                 markHandled(event.getEntity(), event.getHand());
             }
@@ -338,7 +338,7 @@ public final class VanillaCarrierAbilities {
         }
         if (WishItemActions.use(event.getLevel(), event.getEntity(), event.getHand(), stack)) {
             event.setCancellationResult(com.moddingfromamod.compat.Interactions.success(
-                    event.getLevel().isClientSide));
+                    event.getLevel().isClientSide()));
             event.setCanceled(true);
             markHandled(event.getEntity(), event.getHand());
         }
@@ -420,7 +420,7 @@ public final class VanillaCarrierAbilities {
             }
             if (WishItemActions.use(event.getLevel(), event.getEntity(), event.getHand(), stack)) {
                 event.setCancellationResult(com.moddingfromamod.compat.Interactions.success(
-                        event.getLevel().isClientSide));
+                        event.getLevel().isClientSide()));
                 event.setCanceled(true);
                 markHandled(event.getEntity(), event.getHand());
             }

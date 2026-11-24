@@ -25,7 +25,7 @@ import org.slf4j.LoggerFactory;
  * </ul>
  *
  * <p>Client-only code (renderers, screens, key handling) MUST be guarded by
- * {@code FMLEnvironment.dist == Dist.CLIENT} (or live in a {@code Dist.CLIENT}-scoped
+ * {@code FMLEnvironment.getDist() == Dist.CLIENT} (or live in a {@code Dist.CLIENT}-scoped
  * subscriber), or a dedicated server will crash trying to load client classes.
  */
 @Mod(ModdingFromAModMod.MODID)
@@ -205,7 +205,7 @@ public class ModdingFromAModMod {
         NeoForge.EVENT_BUS.register(com.moddingfromamod.paint.PictureCommand.class);
 
         // ── Client-only wiring ────────────────────────────────────────────────
-        if (FMLEnvironment.dist == Dist.CLIENT) {
+        if (FMLEnvironment.getDist() == Dist.CLIENT) {
             // ClientRenderers.register(modEventBus);
         }
 
