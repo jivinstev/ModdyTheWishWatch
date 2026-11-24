@@ -26,11 +26,70 @@ class NoJava2dTest {
             "\\.createGraphics\\s*\\(|\\.getGraphics\\s*\\(|\\bGraphics2D\\b|\\bjava\\.awt\\.Graphics\\b"
                     + "|\\bGraphicsEnvironment\\b|\\.drawString\\s*\\(");
 
-    /** The code alone: comments and string literals blanked, so an explanation is never a finding. */
+    /**
+     * The code alone: comments, string and text-block literals and char literals blanked (newlines kept, so line
+     * numbers stay right), so an explanation is never a finding. One linear pass, no regex backtracking: a regex
+     * stripper overflowed the stack on the largest sources.
+     */
     static String code(String src) {
-        return src.replaceAll("(?s)/\\*.*?\\*/", " ")
-                .replaceAll("\"(?:\\\\.|[^\"\\\\])*\"", "\"\"")
-                .replaceAll("//[^\\n]*", " ");
+        StringBuilder out = new StringBuilder(src.length());
+        int n = src.length();
+        int i = 0;
+        while (i < n) {
+            char c = src.charAt(i);
+            char next = i + 1 < n ? src.charAt(i + 1) : 0;
+            if (c == '/' && next == '/') {
+                while (i < n && src.charAt(i) != '\n') {
+                    out.append(' ');
+                    i++;
+                }
+            } else if (c == '/' && next == '*') {
+                out.append("  ");
+                i += 2;
+                while (i < n && !(src.charAt(i) == '*' && i + 1 < n && src.charAt(i + 1) == '/')) {
+                    out.append(src.charAt(i) == '\n' ? '\n' : ' ');
+                    i++;
+                }
+                if (i < n) {
+                    out.append("  ");
+                    i += 2;
+                }
+            } else if (c == '"' && src.startsWith("\"\"\"", i)) {
+                out.append("\"\"\"");
+                i += 3;
+                while (i < n && !src.startsWith("\"\"\"", i)) {
+                    if (src.charAt(i) == '\\' && i + 1 < n) {
+                        out.append(' ');
+                        i++;
+                    }
+                    out.append(src.charAt(i) == '\n' ? '\n' : ' ');
+                    i++;
+                }
+                if (i < n) {
+                    out.append("\"\"\"");
+                    i += 3;
+                }
+            } else if (c == '"' || c == '\'') {
+                out.append(c);
+                i++;
+                while (i < n && src.charAt(i) != c && src.charAt(i) != '\n') {
+                    if (src.charAt(i) == '\\' && i + 1 < n) {
+                        out.append(' ');
+                        i++;
+                    }
+                    out.append(' ');
+                    i++;
+                }
+                if (i < n && src.charAt(i) == c) {
+                    out.append(c);
+                    i++;
+                }
+            } else {
+                out.append(c);
+                i++;
+            }
+        }
+        return out.toString();
     }
 
     @Test
@@ -60,5 +119,9 @@ class NoJava2dTest {
         assertTrue(!JAVA2D.matcher(code("// no createGraphics() here")).find());
         assertTrue(!JAVA2D.matcher(code("/** never a Graphics2D */ int x;")).find());
         assertTrue(!JAVA2D.matcher(code("String s = \"createGraphics()\";")).find());
+        assertTrue(!JAVA2D.matcher(code("String s = \"\"\"\n  Graphics2D \\\"x\\\"\n  \"\"\";")).find());
+        assertTrue(!JAVA2D.matcher(code("String s = \"a \\\" createGraphics()\";")).find());
+        assertTrue(JAVA2D.matcher(code("char q = '\"'; var g = img.createGraphics();")).find());
+        assertEquals("a\n\nb", code("a\n/* x\n */b").replace(" ", ""));
     }
 }
