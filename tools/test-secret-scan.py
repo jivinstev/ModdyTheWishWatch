@@ -250,6 +250,27 @@ class Cli(unittest.TestCase):
         self.git(repo, "add", "ok.txt")
         self.git(repo, "commit", "-qm", "clean")
         self.git(repo, "push", "-q", "origin", "main")
+        # A commit the remote ALREADY publishes (as a web merge on main is, its metadata naming the account that
+        # merged it) is not refused again when another branch takes it in: this push does not publish it.
+        mail = "maintainer" + "@" + "mail-host.com"
+        who = {"GIT_AUTHOR_EMAIL": mail, "GIT_COMMITTER_EMAIL": mail}
+        self.git(repo, "checkout", "-q", "-b", "release", "main~1")
+        self.git(repo, "push", "-q", "origin", "release")
+        self.git(repo, "checkout", "-q", "main")
+        self.git(repo, "commit", "-q", "--allow-empty", "-m", "merged on the web", "--no-verify", env=who)
+        r = self.git(repo, "push", "-q", "origin", "main", check=False)
+        self.assertNotEqual(r.returncode, 0, "control: pre-push let a commit naming an email through")
+        self.assertNotIn(mail, r.stdout + r.stderr)
+        self.git(repo, "push", "-q", "--no-verify", "origin", "main")   # what the website does, with no hook
+        self.git(repo, "checkout", "-q", "release")
+        self.git(repo, "merge", "-q", "--no-edit", "main")
+        r = self.git(repo, "push", "-q", "origin", "release", check=False)
+        self.assertEqual(r.returncode, 0, "pre-push refused a commit the remote already publishes: " + r.stderr)
+        # ...while a commit NEW to the remote, on top of it, is still scanned and refused
+        self.git(repo, "commit", "-q", "--allow-empty", "-m", "new here", "--no-verify", env=who)
+        r = self.git(repo, "push", "-q", "origin", "release", check=False)
+        self.assertNotEqual(r.returncode, 0, "pre-push let a new commit naming an email through")
+        self.assertNotIn(mail, r.stdout + r.stderr)
 
 
 if __name__ == "__main__":
