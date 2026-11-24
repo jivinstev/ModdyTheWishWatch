@@ -95,6 +95,11 @@ public final class ActingChild {
         return resolveOwned(server, run == null ? null : run.playerId(), inTheWorld(standIn));
     }
 
+    /** The same, for a caller that already knows whose wish this is (as {@link #of(MinecraftServer, UUID)}). */
+    public static ServerPlayer person(MinecraftServer server, UUID owner) {
+        return resolveOwned(server, owner, inTheWorld(standIn));
+    }
+
     /**
      * Why {@link #person} answered nobody, in one sentence the agent can act on — so it does not
      * retry at someone else, and does not read "nobody is here" when another child plainly is.
