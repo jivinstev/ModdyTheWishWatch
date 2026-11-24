@@ -39,17 +39,17 @@
 # "owner/repo#RUN_ID/ARTIFACT/asset.jar=group:artifact:version@sha256" (a jar in a workflow run's artifact) builds and
 # gates against a library's candidate jar in place of the pinned one with the same group:artifact:version, on every
 # gates leg and in the shipped-jar job. A run with dep_override never releases. Inputs reach scripts only through env.
-name: Port CI (NeoForge 21.11.45 (Minecraft 1.21.11))
+name: Port CI (NeoForge 26.1.2.130 (Minecraft 26.1.2))
 
 on:
   push:
-    branches: ["neoforge-1.21.11"]
-    tags: ["*-mc1.21.11"]
+    branches: ["neoforge-26.1.2"]
+    tags: ["*-mc26.1.2"]
     # the known-issues ledger (tools/known-issues.py) and the root README are records, not port code: a push of only
     # those runs nothing (GitHub evaluates path filters on branch pushes only, so a release tag still runs)
     paths-ignore: [".port/KNOWN-ISSUES.json", ".port/*/KNOWN-ISSUES.json", "README.md", ".port/*.md", ".port/*/*.md"]
   pull_request:
-    branches: ["neoforge-1.21.11"]
+    branches: ["neoforge-26.1.2"]
   release:
     types: [released]
   workflow_dispatch:
@@ -120,7 +120,7 @@ jobs:
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: "21"
+          java-version: "25"
       - name: Software OpenGL for the client gate
         run: sudo apt-get update && sudo apt-get install -y xvfb mesa-utils libgl1-mesa-dri
 
@@ -184,11 +184,6 @@ jobs:
           done
           [ "$n" -gt 0 ] || { echo "::error::dep_override names no entry"; exit 1; }
       - name: Build and gates
-        env:
-          # Gate B runs our `ci` GameTest shard, not every shard (hand-added; KEEP IT when port-ci.py regenerates this
-          # file). The kit stops a Gate B run after a fixed 1500 s and the whole suite takes 22-32 min, so without it
-          # every Gate B here is stopped by the clock and reported as a crash. The full tier runs by hand.
-          PORT_GRADLE_ARGS: "-Pshard=ci"
         run: |
           git rev-parse "HEAD^{tree}" > "$RUNNER_TEMP/built-tree.txt"   # the tree this run built: a from_run release checks it
           git fetch --no-tags origin "main"
@@ -338,7 +333,7 @@ jobs:
           tag_commit() { git ls-remote origin "refs/tags/$1" "refs/tags/$1^{}" | awk '{c=$1} END {print c}'; }
           if [ "${{ github.ref_type }}" = tag ]; then TAG="${{ github.ref_name }}"; else
             v=$(sed -n 's/^mod_version[[:space:]]*=[[:space:]]*//p' gradle.properties | head -1)
-            TAG="moddingfromamod-${v}-mc1.21.11"
+            TAG="moddingfromamod-${v}-mc26.1.2"
             # the port was fixed but the author's version did not move: release it as -r2, -r3, ... -- a name is taken
             # when its release OR its tag exists (a tag with no release: gh release create would reuse that tag)
             base="$TAG"; n=2
@@ -352,7 +347,7 @@ jobs:
             exit 1
           fi
           {
-            echo "**moddingfromamod** for NeoForge 21.11.45 (Minecraft 1.21.11), built by this repository's own CI."
+            echo "**moddingfromamod** for NeoForge 26.1.2.130 (Minecraft 26.1.2), built by this repository's own CI."
             echo "Same licence and credits as the source in this repository."
             echo
             for e in full minimal; do
@@ -369,7 +364,7 @@ jobs:
             n=$(basename "$d"); cp "${d}gates.md" "gate-assets/gates-${n#gate-logs-}.md"; gates+=("gate-assets/gates-${n#gate-logs-}.md")
           done
           gh release create "$TAG" jars/*.jar ${gates[@]+"${gates[@]}"} --repo "${{ github.repository }}" --prerelease \
-            --title "$TAG (NeoForge 21.11.45 (Minecraft 1.21.11))" --notes-file notes.md --target "${{ github.sha }}"
+            --title "$TAG (NeoForge 26.1.2.130 (Minecraft 26.1.2))" --notes-file notes.md --target "${{ github.sha }}"
 
   promote:
     # A person played this pre-release: make it a full Release. Inputs reach the script only through env, never
@@ -426,14 +421,14 @@ jobs:
       # tag, so publish (needs: promote) still finds the tag in the branch's history. A failure here is reported and
       # never stops publish.
       - name: Port CI kit v71 (pinned by sha256)
-        if: ${{ github.ref_name == 'neoforge-1.21.11' && hashFiles('.github/port-install.json') != '' }}
+        if: ${{ github.ref_name == 'neoforge-26.1.2' && hashFiles('.github/port-install.json') != '' }}
         run: |
           curl -fsSL -o "$RUNNER_TEMP/kit.tar.gz" \
             "https://github.com/jivinstev/mc-mod-version-upgrade/releases/download/port-ci-kit-v71/port-ci-kit-v71.tar.gz"
           echo "cc0b5f7abd977928cd150575615e307e0004613a7dfc71e111f229678a7914c4  $RUNNER_TEMP/kit.tar.gz" | sha256sum -c -
           mkdir -p .port-tools && tar -xzf "$RUNNER_TEMP/kit.tar.gz" -C .port-tools
       - name: Refresh the install manifest
-        if: ${{ github.ref_name == 'neoforge-1.21.11' && hashFiles('.github/port-install.json') != '' }}
+        if: ${{ github.ref_name == 'neoforge-26.1.2' && hashFiles('.github/port-install.json') != '' }}
         continue-on-error: true
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -447,15 +442,15 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           for attempt in 1 2 3; do              # the branch can move under us: refresh again on its new tip
-            git fetch --no-tags -q origin "neoforge-1.21.11"
-            git checkout -q -B "neoforge-1.21.11" FETCH_HEAD
+            git fetch --no-tags -q origin "neoforge-26.1.2"
+            git checkout -q -B "neoforge-26.1.2" FETCH_HEAD
             python3 .port-tools/tools/port-manifest.py refresh --repo . --tag "$TAG" --commit
             if [ "$(git rev-parse HEAD)" = "$(git rev-parse FETCH_HEAD)" ]; then exit 0; fi
-            if git push -q origin "HEAD:refs/heads/neoforge-1.21.11"; then
+            if git push -q origin "HEAD:refs/heads/neoforge-26.1.2"; then
               echo "Install manifest refreshed for $TAG" >> "$GITHUB_STEP_SUMMARY"; exit 0
             fi
           done
-          echo "::error::could not push the refreshed install manifest to neoforge-1.21.11"; exit 1
+          echo "::error::could not push the refreshed install manifest to neoforge-26.1.2"; exit 1
 
   publish:
     # Upload a promoted Release to Modrinth and CurseForge. needs: promote, so a Claude- or CLI-driven promote
@@ -469,7 +464,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: "neoforge-1.21.11"
+          ref: "neoforge-26.1.2"
           fetch-depth: 0          # tags and history, to prove the tag was built from this branch
       - name: Port CI kit v71 (pinned by sha256)
         run: |
@@ -495,7 +490,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: "neoforge-1.21.11"
+          ref: "neoforge-26.1.2"
       - name: Port CI kit v71 (pinned by sha256)
         run: |
           curl -fsSL -o "$RUNNER_TEMP/kit.tar.gz" \
