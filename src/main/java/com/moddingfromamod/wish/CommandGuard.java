@@ -300,6 +300,9 @@ public final class CommandGuard {
         // swing — new in 26.1: makes the target entities swing their main or off hand (an animation only). DENY, the
         // verdict a root with no row already had: no wish has needed it, and a rig's arm moves through its own animator.
         deny("swing", "makes entities swing a hand (an animation only); no wish needs it yet");
+        // unpublish — new in 26.2: closes a world opened to LAN with /publish (owner level). DENY with publish: it is
+        // server control, and no wish needs it.
+        deny("unpublish", "server control, the undo of publish; no wish needs it");
 
         // ── this mod's own commands: each runs something SAVED, never anything arbitrary ───────
         allow("wishbuild", "runs a saved, volume-capped build plan by id");
