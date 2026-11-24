@@ -98,7 +98,7 @@ Every command this build registers. A player only ever needs the watch; the rest
 | `/wishvisit <id>` | Take a player to something they made. |
 | `/moddyevent …` | Make a kept event happen (a world rule's or an item's). |
 
-`PublicCommandsReadmeTest` builds this jar's real command tree and fails when this list misses a command or names one
+`PublicCommandsReadmeGameTest` builds this jar's real command tree and fails when this list misses a command or names one
 it does not register.
 
 ## Build on it

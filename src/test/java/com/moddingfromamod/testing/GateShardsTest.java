@@ -72,7 +72,8 @@ class GateShardsTest {
             "AgentSessionGameTest",        // the agent pool starts, counts and stops
             "ChildSafetyEnforceGameTest",  // the enforcement point a child's words cross
             "McpGameTest",                 // the MCP protocol the whole agent speaks
-            "ConcurrentWishGameTest");     // two wishes at once -- where a green suite lies most easily
+            "ConcurrentWishGameTest",      // two wishes at once -- where a green suite lies most easily
+            "PublicCommandsReadmeGameTest"); // the README lists the real command tree (Gate A's check until 1.21.11)
 
     /**
      * A cap.

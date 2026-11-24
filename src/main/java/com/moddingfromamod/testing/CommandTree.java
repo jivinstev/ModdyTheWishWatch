@@ -1,4 +1,6 @@
-package com.moddingfromamod.wish;
+package com.moddingfromamod.testing;
+
+import com.moddingfromamod.wish.WishCommands;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.tree.CommandNode;
@@ -21,13 +23,16 @@ import net.minecraft.core.HolderLookup;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 
 /**
- * <b>The command tree a build really registers</b>, without booting Minecraft: every class in the mod's own
+ * <b>The command tree a build really registers</b>: every class in the mod's own
  * classes directory that names {@link RegisterCommandsEvent} is loaded, and each of its static handlers is handed one
  * event over a fresh dispatcher, as NeoForge does at server start. On {@code publicTest}'s classpath that is the public
  * build alone (no private class, no plug-in); on {@code test}'s it is the whole mod. A handler that needs registries
  * gets a build context that answers every lookup with an empty one (registration only stores it).
  *
- * <p>Used by {@code PublicCommandsReadmeTest} and the private build's matching check.
+ * <p>From Minecraft 1.21.11 this needs a running game: {@code Commands}' static {@code PermissionCheck} fields reach
+ * {@code BuiltInRegistries}, which refuses to load before Bootstrap, and Bootstrap needs FML. So its user is
+ * {@code PublicCommandsReadmeGameTest} (Gate B), which hands {@link #build(CommandBuildContext)} the live server's
+ * context; {@link #paths} is pure brigadier and has its own unit test.
  */
 public final class CommandTree {
 
@@ -36,10 +41,26 @@ public final class CommandTree {
 
     private static final byte[] EVENT = "net/neoforged/neoforge/event/RegisterCommandsEvent".getBytes(StandardCharsets.UTF_8);
 
+    /** Where {@link #build} looked for handlers, and how many it found: for a failure message. */
+    public static String describeSearch() {
+        try {
+            return "class dirs " + modClassDirs() + ", code source "
+                    + WishCommands.class.getProtectionDomain().getCodeSource().getLocation() + ", " + handlers().size()
+                    + " handler class(es)";
+        } catch (Exception e) {
+            return "class dirs unreadable: " + e;
+        }
+    }
+
     /** Every root the build registers, with every literal under it. */
     public static CommandDispatcher<CommandSourceStack> build() throws Exception {
+        return build(emptyContext());
+    }
+
+    /** {@link #build()} with a real build context (a GameTest's: the live server's registries). */
+    public static CommandDispatcher<CommandSourceStack> build(CommandBuildContext context) throws Exception {
         CommandDispatcher<CommandSourceStack> d = new CommandDispatcher<>();
-        RegisterCommandsEvent ev = new RegisterCommandsEvent(d, Commands.CommandSelection.INTEGRATED, emptyContext());
+        RegisterCommandsEvent ev = new RegisterCommandsEvent(d, Commands.CommandSelection.INTEGRATED, context);
         for (Class<?> c : handlers()) {
             for (Method m : c.getDeclaredMethods()) {
                 if (Modifier.isStatic(m.getModifiers()) && m.getParameterCount() == 1
@@ -56,12 +77,12 @@ public final class CommandTree {
      * The commands as a README names them: each root ({@code wish}, {@code paint}, …) and, under {@code moddy} and
      * {@code moddyop}, each first-level branch ({@code moddy magician}).
      */
-    public static TreeSet<String> paths(CommandDispatcher<CommandSourceStack> d) {
+    public static <S> TreeSet<String> paths(CommandDispatcher<S> d) {
         TreeSet<String> out = new TreeSet<>();
-        for (CommandNode<CommandSourceStack> root : d.getRoot().getChildren()) {
+        for (CommandNode<S> root : d.getRoot().getChildren()) {
             out.add(root.getName());
             if (root.getName().equals("moddy") || root.getName().equals("moddyop")) {
-                for (CommandNode<CommandSourceStack> b : root.getChildren()) {
+                for (CommandNode<S> b : root.getChildren()) {
                     if (b instanceof LiteralCommandNode) {
                         out.add(root.getName() + " " + b.getName());
                     }
@@ -84,7 +105,7 @@ public final class CommandTree {
      * source set, build/classes/java/&lt;name&gt;); never the test classes or the public half's copy of the core.
      */
     private static List<Path> modClassDirs() throws Exception {
-        Path core = Path.of(WishCommands.class.getProtectionDomain().getCodeSource().getLocation().toURI());
+        Path core = coreClasses();
         List<Path> dirs = new ArrayList<>(List.of(core));
         for (String e : System.getProperty("java.class.path", "").split(java.io.File.pathSeparator)) {
             Path p = Path.of(e);
@@ -95,6 +116,30 @@ public final class CommandTree {
             }
         }
         return dirs;
+    }
+
+    /**
+     * The mod's own classes directory: its code source when that holds the classes (a unit test's classpath), else the
+     * checkout's build/classes/java/main (a dev run's code source is build/resources/main, the classes served beside
+     * it).
+     */
+    private static Path coreClasses() throws Exception {
+        try {
+            Path p = Path.of(WishCommands.class.getProtectionDomain().getCodeSource().getLocation().toURI());
+            if (Files.isRegularFile(p.resolve("com/moddingfromamod/wish/WishCommands.class"))) {
+                return p;
+            }
+        } catch (RuntimeException ignored) {
+            // not a file: URI (a union filesystem); look for the checkout instead
+        }
+        Path p = Path.of(System.getProperty("user.dir")).toAbsolutePath();
+        while (p != null && !Files.isDirectory(p.resolve("build/classes/java/main/com/moddingfromamod"))) {
+            p = p.getParent();
+        }
+        if (p == null) {
+            throw new IllegalStateException("cannot find the mod's classes directory from " + System.getProperty("user.dir"));
+        }
+        return p.resolve("build/classes/java/main");
     }
 
     private static void handlersIn(Path dir, List<Class<?>> out) throws Exception {
