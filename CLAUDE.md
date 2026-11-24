@@ -235,15 +235,16 @@ change.
 
 ## Pull requests
 
-This repository is where changes land: fork it, branch, open a pull request against `main`. CI runs the leak scan,
-Gate A and Gate B's `ci` shard on it, and a maintainer reviews and merges it.
+**A pull request is the only way a change reaches `main`**, the maintainers' own included: fork it (or branch, with
+write access), open a pull request against `main`. CI runs the leak scan, Gate A and Gate B's `ci` shard on it, and a
+maintainer reviews and merges it. Nobody pushes to `main` directly, and nothing arrives from anywhere else.
 
 - Run Gate A and the Gate B shard that covers what you changed before opening a PR; describe what you ran.
 - **Link only issues and pull requests in this repository**: a `#` number in a commit, a comment or a doc means this
   repository's tracker.
-- `main` also gets **sync commits** titled "Moddy the Wish Watch: sync": the project's own changes made outside a pull
-  request, as one commit. Their `Sync-from:` trailer is an internal id. A sync is made only after every merged pull
-  request has been taken in, so it never reverts one; rebase an open PR on `main` after one lands, as for any commit.
+- **Sync commits are history.** `main` holds older commits titled "Moddy the Wish Watch: sync", with a `Sync-from:`
+  trailer: the project's changes from before every change came through a pull request. No new ones are made; read them
+  as ordinary commits.
 - Keep a change to one concern. A new wish kind, tool, setting or hook brings its tests and its doc rows with it.
 - Code is MPL-2.0 and art and presets CC BY 4.0 ([LICENSE](LICENSE), [LICENSE-ASSETS.md](LICENSE-ASSETS.md)). "Moddy"
   is a trademark; a fork's name follows [TRADEMARKS.md](TRADEMARKS.md).
