@@ -1,5 +1,5 @@
 repo: https://github.com/jivinstev/moddy-cbscript
-branch: mc/26.1.2
-commit: 32d80e330688a0899e17f9a6ec5af96b623f4aed
+branch: mc/26.2-ladder
+commit: a851b38ddf319e563545381567b07c35992b66c1
 license: MPL-2.0
-zip-sha256: a853238edfc1c37b74569796d0eed16188613fbe9acebf8c199e147bff3c8c32
+zip-sha256: 3d6c69072c4ea998a2d91ba9498dade48aa0e2c6f6ae3d537e76fb9948a16bd7
