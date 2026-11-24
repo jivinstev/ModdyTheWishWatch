@@ -37,7 +37,7 @@ public class PaintUndoGameTest {
         helper.assertTrue(PaintPanels.paint(level, world, "fresh",
                 PaintPanels.demoFace(), 2, 1).ok(), Component.literal("painting failed"));
         PaintRegistry.put(level.getServer(), new PaintRecord("fresh",
-                level.dimension().location().toString(), world.getX(), world.getY(), world.getZ(),
+                level.dimension().identifier().toString(), world.getX(), world.getY(), world.getZ(),
                 "fresh", true, "", PaintRecipe.blank(), 1, 1));
 
         boolean undone = com.moddingfromamod.wish.WishUndo.undoOne(
@@ -72,7 +72,7 @@ public class PaintUndoGameTest {
 
         // The one that replaced it — recorded the way the tool records it.
         PaintRecord record = new PaintRecord("second",
-                level.dimension().location().toString(), world.getX(), world.getY(), world.getZ(),
+                level.dimension().identifier().toString(), world.getX(), world.getY(), world.getZ(),
                 "second", false, "first", wanted, wantedWide, be.heightBlocks());
         helper.assertTrue(PaintPanels.paint(level, world, "second",
                 "{\"size\":64,\"rects\":[{\"x\":0,\"y\":0,\"w\":64,\"h\":64,\"colour\":\"blue\"}]}",
@@ -104,7 +104,7 @@ public class PaintUndoGameTest {
         ServerLevel level = helper.getLevel();
         BlockPos world = helper.absolutePos(new BlockPos(1, 2, 1));
         PaintRegistry.put(level.getServer(), new PaintRecord("vanished",
-                level.dimension().location().toString(), world.getX(), world.getY(), world.getZ(),
+                level.dimension().identifier().toString(), world.getX(), world.getY(), world.getZ(),
                 "vanished", true, "", PaintRecipe.blank(), 1, 1));
         // Nothing is there — the block was never placed.
         helper.assertTrue(!com.moddingfromamod.wish.WishUndo.undoOne(

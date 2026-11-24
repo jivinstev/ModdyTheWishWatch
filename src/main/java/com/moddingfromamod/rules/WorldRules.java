@@ -24,7 +24,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
 import net.minecraft.nbt.Tag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -235,12 +235,12 @@ public final class WorldRules {
             return r.who() == null;
         }
         return r.whoMatches(e instanceof Player, typeId(e), tag -> e.getType().is(
-                TagKey.create(Registries.ENTITY_TYPE, ResourceLocation.parse(tag))), e.getTags()::contains);
+                TagKey.create(Registries.ENTITY_TYPE, Identifier.parse(tag))), e.getTags()::contains);
     }
 
     static boolean blockMatches(BlockState state, String block) {
         if (block.startsWith("#")) {
-            return state.is(TagKey.create(Registries.BLOCK, ResourceLocation.parse(block.substring(1))));
+            return state.is(TagKey.create(Registries.BLOCK, Identifier.parse(block.substring(1))));
         }
         return block.equals(String.valueOf(BuiltInRegistries.BLOCK.getKey(state.getBlock())));
     }
@@ -328,7 +328,7 @@ public final class WorldRules {
 
     private static boolean projectileMatches(String want, Entity p, String pid) {
         return want.startsWith("#")
-                ? p.getType().is(TagKey.create(Registries.ENTITY_TYPE, ResourceLocation.parse(want.substring(1))))
+                ? p.getType().is(TagKey.create(Registries.ENTITY_TYPE, Identifier.parse(want.substring(1))))
                 : want.equals(pid);
     }
 
@@ -542,7 +542,7 @@ public final class WorldRules {
         if (scoped != null && "his_island".equals(scoped.scope())) {
             var bases = com.moddingfromamod.world.WorldModuleHost.liveBases();
             var base = bases == null ? null : bases.baseOf(java.util.UUID.fromString(scoped.playerId()));
-            if (base == null || !base.holds(f.level().dimension().location().toString(), pos.x, pos.z)) {
+            if (base == null || !base.holds(f.level().dimension().identifier().toString(), pos.x, pos.z)) {
                 return;
             }
         }

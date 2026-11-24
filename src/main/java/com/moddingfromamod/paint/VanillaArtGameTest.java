@@ -640,7 +640,7 @@ public class VanillaArtGameTest {
             }
             byte[] wanted = level.getMapData(mapAt(level, at)).colors.clone();
             PaintRegistry.put(level.getServer(), new PaintRecord(id,
-                    level.dimension().location().toString(), at.getX(), at.getY(), at.getZ(),
+                    level.dimension().identifier().toString(), at.getX(), at.getY(), at.getZ(),
                     id, false, "", PaintRecipe.blank(), 1, 1, "north", 1, 1, first));
 
             if (!PaintPanels.paint(level, at, Direction.NORTH, id, second, 1, 1).ok()) {
@@ -650,7 +650,7 @@ public class VanillaArtGameTest {
                 helper.fail(Component.literal("the repaint changed nothing, so the undo below proves nothing"));
             }
             PaintRegistry.put(level.getServer(), new PaintRecord(id,
-                    level.dimension().location().toString(), at.getX(), at.getY(), at.getZ(),
+                    level.dimension().identifier().toString(), at.getX(), at.getY(), at.getZ(),
                     id, false, id, first, 1, 1, "north", 1, 1, second));
 
             if (!com.moddingfromamod.wish.WishUndo.undoOne(level.getServer(),

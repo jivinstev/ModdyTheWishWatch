@@ -50,7 +50,7 @@ public final class WatchIconStackGameTest {
         // An item he no longer has in the catalogue: the kind's icon, never an empty slot.
         ItemStack gone = WatchMenu.iconStack(WatchIcons.forItem("nobody_made_this|1"));
         helper.assertTrue(!gone.isEmpty() && gone.is(net.minecraft.core.registries.BuiltInRegistries.ITEM
-                        .getValue(net.minecraft.resources.ResourceLocation.parse(
+                        .getValue(net.minecraft.resources.Identifier.parse(
                                 WatchIcons.forKind(MadeKind.ITEM)))),
                 Component.literal("a missing catalogue item must fall back to the item kind: " + gone));
         // Garbage never empties a slot.

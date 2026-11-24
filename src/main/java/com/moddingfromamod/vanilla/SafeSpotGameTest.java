@@ -143,7 +143,7 @@ public final class SafeSpotGameTest {
         try {
             box(helper, 0, f + 1, 0, 8, f + 6, 8, Blocks.STONE);
             BlockPos aimed = helper.absolutePos(new BlockPos(4, f + 2, 4));
-            String dim = level.dimension().location().toString();
+            String dim = level.dimension().identifier().toString();
             run.defaultAnchor(new Spot(dim, aimed.getX(), aimed.getY(), aimed.getZ()));
             long now = 20_000;
             for (int i = 0; i < 4; i++) {

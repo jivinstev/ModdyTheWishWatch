@@ -400,7 +400,7 @@ public final class VanillaRigAnimator {
             }
         }
         if (adopted > 0) {
-            LOG.info("adopted {} orphaned rig(s) in {}", adopted, level.dimension().location());
+            LOG.info("adopted {} orphaned rig(s) in {}", adopted, level.dimension().identifier());
         }
         return adopted;
     }

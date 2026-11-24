@@ -152,7 +152,7 @@ public final class WishProgress {
         var run = com.moddingfromamod.agent.AgentContext.currentRun();
         if (run != null) {
             run.lockAnchor(new com.moddingfromamod.marshal.Spot(
-                    player.level().dimension().location().toString(),
+                    player.level().dimension().identifier().toString(),
                     where.getX(), where.getY(), where.getZ()));
         }
         focusOn(player.getUUID(), where);
@@ -177,7 +177,7 @@ public final class WishProgress {
         var run = com.moddingfromamod.agent.AgentContext.currentRun();
         if (run != null) {
             run.defaultAnchor(new com.moddingfromamod.marshal.Spot(
-                    player.level().dimension().location().toString(),
+                    player.level().dimension().identifier().toString(),
                     where.getX(), where.getY(), where.getZ()));
         }
         defaultAnchor(player.getUUID(), where);
@@ -853,7 +853,7 @@ public final class WishProgress {
         // A LANDMARK PER WISH. Sparkle beams are promises, and ten of them is a skyline of
         // promises rather than clutter -- the only channels that need arbitrating are the ones that
         // are physically singular, and the sky is not one of them.
-        String dim = player.level().dimension().location().toString();
+        String dim = player.level().dimension().identifier().toString();
         java.util.List<BlockPos> spots = new ArrayList<>();
         for (var run : com.moddingfromamod.marshal.Marshal.global().liveFor(player.getUUID())) {
             var s = run.anchor();

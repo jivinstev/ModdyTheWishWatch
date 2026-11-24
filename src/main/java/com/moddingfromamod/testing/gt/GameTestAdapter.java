@@ -12,7 +12,7 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.gametest.framework.TestData;
 import net.minecraft.gametest.framework.TestEnvironmentDefinition;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModList;
 import net.neoforged.neoforge.event.RegisterGameTestsEvent;
@@ -97,7 +97,7 @@ public final class GameTestAdapter {
         modBus.addListener(RegisterEvent.class, e -> e.register(Registries.TEST_FUNCTION, h -> {
             for (Found f : found()) {
                 Method m = f.method();
-                h.register(ResourceLocation.fromNamespaceAndPath(f.ns(), f.id()), (Consumer<GameTestHelper>) helper -> {
+                h.register(Identifier.fromNamespaceAndPath(f.ns(), f.id()), (Consumer<GameTestHelper>) helper -> {
                     CoverageMap.enter(CoverageMap.unitOf(m));
                     Set<UUID> live = TestHygiene.before();   //: a wish this body puts in flight ends with it
                     try {
@@ -137,26 +137,26 @@ public final class GameTestAdapter {
                 String batch = batchOf(f);
                 String key = f.ns() + ":" + batch;
                 Holder<TestEnvironmentDefinition> env = envs.computeIfAbsent(key, k -> e.registerEnvironment(
-                        ResourceLocation.fromNamespaceAndPath(f.ns(), "batch/" + batch.toLowerCase(Locale.ROOT)),
+                        Identifier.fromNamespaceAndPath(f.ns(), "batch/" + batch.toLowerCase(Locale.ROOT)),
                         new TestEnvironmentDefinition.AllOf(still.contains(k)
                                 ? List.of(Holder.direct(new TestEnvironmentDefinition.SetGameRules(List.of(), List.of(
                                         TestEnvironmentDefinition.SetGameRules.entry(
                                                 net.minecraft.world.level.GameRules.RULE_RANDOMTICKING, 0)))))
                                 : List.of())));
-                ResourceLocation id = ResourceLocation.fromNamespaceAndPath(f.ns(), f.id());
+                Identifier id = Identifier.fromNamespaceAndPath(f.ns(), f.id());
                 TestData<Holder<TestEnvironmentDefinition>> data = new TestData<>(env,
-                        ResourceLocation.fromNamespaceAndPath(f.ns(), f.spec().template()),
+                        Identifier.fromNamespaceAndPath(f.ns(), f.spec().template()),
                         CoverageMap.timeoutOf(f.method(), f.spec().timeoutTicks()), 0, f.spec().required(), net.minecraft.world.level.block.Rotation.NONE,
                         false, f.spec().attempts(), 1, f.spec().skyAccess());
                 e.registerTest(id, new FunctionGameTestInstance(ResourceKey.create(Registries.TEST_FUNCTION, id), data));
             }
             if (CoverageMap.on()) {
                 Holder<TestEnvironmentDefinition> idle = e.registerEnvironment(
-                        ResourceLocation.fromNamespaceAndPath(CoverageMap.IDLE_ID.getNamespace(), "batch/covmap_idle"),
+                        Identifier.fromNamespaceAndPath(CoverageMap.IDLE_ID.getNamespace(), "batch/covmap_idle"),
                         new TestEnvironmentDefinition.AllOf(List.of()));
                 e.registerTest(CoverageMap.IDLE_ID, new FunctionGameTestInstance(
                         ResourceKey.create(Registries.TEST_FUNCTION, CoverageMap.IDLE_ID),
-                        new TestData<>(idle, ResourceLocation.fromNamespaceAndPath(CoverageMap.IDLE_ID.getNamespace(), "empty_test"),
+                        new TestData<>(idle, Identifier.fromNamespaceAndPath(CoverageMap.IDLE_ID.getNamespace(), "empty_test"),
                                 CoverageMap.IDLE_TICKS * 2, 0, true, net.minecraft.world.level.block.Rotation.NONE,
                                 false, 1, 1, false)));
             }

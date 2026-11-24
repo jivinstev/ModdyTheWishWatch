@@ -66,7 +66,7 @@ public final class VanillaRideProbeGameTest {
         for (String id : ids) {
             seq.thenExecute(() -> {
                 cur[0] = null;
-                var type = BuiltInRegistries.ENTITY_TYPE.getValue(net.minecraft.resources.ResourceLocation.withDefaultNamespace(id));
+                var type = BuiltInRegistries.ENTITY_TYPE.getValue(net.minecraft.resources.Identifier.withDefaultNamespace(id));
                 var raw = type.create(helper.getLevel(), EntitySpawnReason.COMMAND);
                 if (!(raw instanceof Mob m)) {
                     if (raw != null) {

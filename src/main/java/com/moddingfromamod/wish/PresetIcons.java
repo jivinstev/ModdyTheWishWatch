@@ -65,7 +65,7 @@ public final class PresetIcons {
         String egg = WatchIcons.forVanillaMob(species.texture());
         try {
             if (net.minecraft.core.registries.BuiltInRegistries.ITEM.containsKey(
-                    net.minecraft.resources.ResourceLocation.parse(egg))) {
+                    net.minecraft.resources.Identifier.parse(egg))) {
                 return egg;
             }
         } catch (RuntimeException notAnId) {

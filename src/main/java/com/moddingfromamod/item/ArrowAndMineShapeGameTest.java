@@ -184,7 +184,7 @@ public final class ArrowAndMineShapeGameTest {
                 throw GameTestCompat.assertion("the mined block is " + helper.getLevel().getBlockState(rock) + ", not the wish; held "
                                 + p.getMainHandItem().get(net.minecraft.core.component.DataComponents.CUSTOM_DATA)
                                 + " fnExists=" + helper.getLevel().getServer().getFunctions().get(
-                                        net.minecraft.resources.ResourceLocation.parse(WishItem.onMine(pick))).isPresent());
+                                        net.minecraft.resources.Identifier.parse(WishItem.onMine(pick))).isPresent());
             }
             MockPlayerNetwork.remove(p);
         });

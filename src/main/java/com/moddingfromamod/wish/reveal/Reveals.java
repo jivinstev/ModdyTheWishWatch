@@ -468,7 +468,7 @@ public final class Reveals {
      * the pillar, turned to face the child the way {@code hangBoard} turns a board.
      */
     public static RevealFrame frameFor(ServerLevel level, String madeId, double[] spot, double[] orb, ServerPlayer player) {
-        String dim = level.dimension().location().toString();
+        String dim = level.dimension().identifier().toString();
         com.moddingfromamod.paint.PaintRecord r = com.moddingfromamod.paint.PaintRegistry.get(madeId);
         if (r == null || !dim.equals(r.dimension())) {
             r = com.moddingfromamod.paint.PaintRegistry.newestNear(dim, spot[0], spot[2], PICTURE_REACH);

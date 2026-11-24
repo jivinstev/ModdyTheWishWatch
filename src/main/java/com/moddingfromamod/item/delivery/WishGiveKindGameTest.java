@@ -30,7 +30,7 @@ import net.minecraft.core.component.DataComponents;
 import com.moddingfromamod.testing.gt.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.Item;
@@ -162,7 +162,7 @@ public class WishGiveKindGameTest {
         var functions = p.level().getServer().getFunctions();
         CommandSourceStack source = useSource(p);
         CommandFunction<CommandSourceStack> fn = CommandFunction.fromLines(
-                ResourceLocation.fromNamespaceAndPath(ModdingFromAModMod.MODID, "gt_give_kind"),
+                Identifier.fromNamespaceAndPath(ModdingFromAModMod.MODID, "gt_give_kind"),
                 functions.getDispatcher(), source, List.of(lines));
         functions.execute(fn, source);
     }
@@ -381,17 +381,17 @@ public class WishGiveKindGameTest {
                 })
                 .thenWaitUntil(() -> {
                     // An exception that is not an assertion crashes the whole server, so never
-                    // let a missing id reach ResourceLocation.
+                    // let a missing id reach Identifier.
                     helper.assertTrue(id.get() != null, Component.literal("make_item made nothing"));
                     helper.assertFalse(DatapackReloader.reloadInProgress(), Component.literal("reload still in flight"));
                     helper.assertTrue(helper.getLevel().getServer().getFunctions()
-                            .get(ResourceLocation.fromNamespaceAndPath(id.get(), "act")).isPresent(),
+                            .get(Identifier.fromNamespaceAndPath(id.get(), "act")).isPresent(),
                             Component.literal("no " + id.get() + ":act yet"));
                 })
                 .thenExecute(() -> {
                     // Exactly what a right-click runs: the made item's own use function, as him.
                     var functions = p.level().getServer().getFunctions();
-                    var act = functions.get(ResourceLocation.fromNamespaceAndPath(id.get(), "act")).orElseThrow();
+                    var act = functions.get(Identifier.fromNamespaceAndPath(id.get(), "act")).orElseThrow();
                     functions.execute(act, useSource(p));
                 })
                 .thenExecute(() -> {

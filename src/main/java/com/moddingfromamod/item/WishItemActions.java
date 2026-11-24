@@ -4,7 +4,7 @@ import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -167,7 +167,7 @@ public final class WishItemActions {
      * reads exactly like a typo in the wish's own script.
      */
     static void runFunction(ServerLevel level, Player player, String id) {
-        ResourceLocation rl = ResourceLocation.tryParse(id);
+        Identifier rl = Identifier.tryParse(id);
         if (rl == null) {
             return;
         }

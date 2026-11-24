@@ -154,7 +154,7 @@ public final class WishHotbarGameTest {
             // THE RULE AGREES WITH THE ITEM REGISTRY: every id it draws is a real item, drawn as a block exactly
             // when it is one (or on the flat list), and no exception is drawn.
             for (String id : com.moddingfromamod.pack.HotbarBadge.vanillaIds()) {
-                var rl = net.minecraft.resources.ResourceLocation.parse(id);
+                var rl = net.minecraft.resources.Identifier.parse(id);
                 boolean block = net.minecraft.core.registries.BuiltInRegistries.BLOCK.containsKey(rl);
                 check(helper, net.minecraft.core.registries.BuiltInRegistries.ITEM.containsKey(rl), id + " is not an item here");
                 check(helper, com.moddingfromamod.pack.HotbarBadge.ruleModel(id, block,

@@ -4,7 +4,7 @@ import java.util.Collection;
 
 import com.moddingfromamod.datapack.NoiseMeter;
 import net.minecraft.commands.CommandSourceStack;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.commands.PlaySoundCommand;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
@@ -20,7 +20,7 @@ public abstract class PlaySoundNoiseMixin {
 
     @Inject(method = "playSound", at = @At("HEAD"), cancellable = true)
     private static void moddingfromamod$noise(CommandSourceStack source, Collection<ServerPlayer> targets,
-                                              ResourceLocation sound, SoundSource category, Vec3 pos,
+                                              Identifier sound, SoundSource category, Vec3 pos,
                                               float volume, float pitch, float minVolume,
                                               CallbackInfoReturnable<Integer> cir) {
         if (!NoiseMeter.allowSound(source)) {

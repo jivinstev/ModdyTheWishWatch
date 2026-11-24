@@ -17,7 +17,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
@@ -134,7 +134,7 @@ public final class WishGo {
                 landing.yaw(), landing.pitch());
         // Where he was put down, so the NEXT hop can tell "still looking at this" from "went off
         // and played somewhere else".
-        LANDINGS.put(player.getUUID(), new Home(level.dimension().location().toString(),
+        LANDINGS.put(player.getUUID(), new Home(level.dimension().identifier().toString(),
                 landing.x(), feet.getY(), landing.z(),
                 landing.yaw(), landing.pitch(), System.currentTimeMillis()));
         // He may have arrived in the dark, 3,000 blocks from anywhere, beside whatever the wish
@@ -208,10 +208,10 @@ public final class WishGo {
         }
         Spot spot = run.anchor();
         boolean elsewhere = !spot.dimension().isEmpty()
-                && !spot.dimension().equals(player.level().dimension().location().toString());
+                && !spot.dimension().equals(player.level().dimension().identifier().toString());
         if (!elsewhere) {
             double distSq = spot.distanceSqTo(player.getX(), player.getY(), player.getZ(),
-                    player.level().dimension().location().toString());
+                    player.level().dimension().identifier().toString());
             if (distSq >= 0 && distSq < NEARBY_SQ) {
                 return;   // he is already looking at it
             }
@@ -280,12 +280,12 @@ public final class WishGo {
         UUID id = player.getUUID();
         Home landed = LANDINGS.get(id);
         boolean sameWorld = landed != null
-                && landed.dimension().equals(player.level().dimension().location().toString());
+                && landed.dimension().equals(player.level().dimension().identifier().toString());
         double away = landed == null || !sameWorld ? -1
                 : Math.sqrt(player.distanceToSqr(landed.x(), landed.y(), landed.z()));
         if (TripHome.shouldRecord(HOMES.containsKey(id), sameWorld, away)) {
             HOMES.put(id, new Home(
-                    player.level().dimension().location().toString(),
+                    player.level().dimension().identifier().toString(),
                     player.getX(), player.getY(), player.getZ(),
                     player.getYRot(), player.getXRot(), System.currentTimeMillis()));
         }
@@ -359,7 +359,7 @@ public final class WishGo {
         if (dimension == null || dimension.isEmpty()) {
             return player.level();
         }
-        ResourceLocation id = ResourceLocation.tryParse(dimension);
+        Identifier id = Identifier.tryParse(dimension);
         if (id == null) {
             return player.level();
         }

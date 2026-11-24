@@ -19,7 +19,7 @@ import net.minecraft.nbt.NbtOps;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
 import net.minecraft.resources.RegistryOps;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -142,7 +142,7 @@ public final class WishHotbar {
         }
         s.set(DataComponents.MAX_STACK_SIZE, 1);
         s.set(DataComponents.USE_COOLDOWN, new UseCooldown(REST_TICKS / 20f, Optional.of(
-                ResourceLocation.fromNamespaceAndPath(ModdingFromAModMod.MODID, WishHotbarPlan.group(cell.recipeId())))));
+                Identifier.fromNamespaceAndPath(ModdingFromAModMod.MODID, WishHotbarPlan.group(cell.recipeId())))));
         CompoundTag tag = new CompoundTag();
         tag.putString(RECIPE, cell.recipeId());
         tag.putString(OWNER, owner.toString());
@@ -158,7 +158,7 @@ public final class WishHotbar {
      * id from the string. False, and the stack untouched, for a picture neither can draw.
      */
     static boolean badge(ItemStack s) {
-        ResourceLocation model = s.get(DataComponents.ITEM_MODEL);
+        Identifier model = s.get(DataComponents.ITEM_MODEL);
         if (model == null) {
             return false;
         }
@@ -176,7 +176,7 @@ public final class WishHotbar {
             return true;
         }
         if (com.moddingfromamod.pack.HotbarBadge.drawsVanilla(model.toString())) {
-            s.set(DataComponents.ITEM_MODEL, ResourceLocation.parse(com.moddingfromamod.pack.HotbarBadge.ITEM_MODEL));
+            s.set(DataComponents.ITEM_MODEL, Identifier.parse(com.moddingfromamod.pack.HotbarBadge.ITEM_MODEL));
             s.set(DataComponents.CUSTOM_MODEL_DATA, new CustomModelData(List.of(), List.of(true),
                     List.of(model.toString()), List.of()));
             return true;
@@ -308,7 +308,7 @@ public final class WishHotbar {
         if (icon != null) {
             // a vanilla id or a sprite is already a tile's picture; a wished item's stack: key is drawn as its stack
             return icon.startsWith(com.moddingfromamod.marshal.WatchIcons.SPRITE_PREFIX)
-                    || ResourceLocation.tryParse(icon) != null && !icon.startsWith(com.moddingfromamod.marshal.WatchIcons.STACK_PREFIX)
+                    || Identifier.tryParse(icon) != null && !icon.startsWith(com.moddingfromamod.marshal.WatchIcons.STACK_PREFIX)
                     ? icon : tileItem(WatchMenu.iconStack(icon));
         }
         var cmd = s.get(DataComponents.CUSTOM_MODEL_DATA);

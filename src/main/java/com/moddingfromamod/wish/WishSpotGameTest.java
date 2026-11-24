@@ -164,7 +164,7 @@ public final class WishSpotGameTest {
         try {
             BlockPos a = helper.absolutePos(new BlockPos(1, 2, 1));
             BlockPos b = a.offset(14, 0, 6);
-            String dim = level.dimension().location().toString();
+            String dim = level.dimension().identifier().toString();
             run.defaultAnchor(new Spot(dim, a.getX(), a.getY(), a.getZ()));
             long now = 1000;
             for (int i = 0; i < 4; i++) {
@@ -201,7 +201,7 @@ public final class WishSpotGameTest {
         WishRun run = Marshal.global().submit(wishId, UUID.randomUUID(), "a finale");
         try {
             BlockPos a = helper.absolutePos(new BlockPos(2, 2, 2));
-            run.defaultAnchor(new Spot(level.dimension().location().toString(), a.getX(), a.getY(), a.getZ()));
+            run.defaultAnchor(new Spot(level.dimension().identifier().toString(), a.getX(), a.getY(), a.getZ()));
             long now = 5000;
             WishOrbs.tick(level.getServer(), List.of(run), now += 2);
             helper.assertTrue(WishOrbs.shown(wishId), Component.literal("no pillar before the end"));
@@ -252,7 +252,7 @@ public final class WishSpotGameTest {
         try {
             BlockPos a = helper.absolutePos(new BlockPos(2, 2, 2));
             camera.snapTo(a.getX() + 6.5, a.getY(), a.getZ() + 0.5, 90f, 0f);
-            run.defaultAnchor(new Spot(level.dimension().location().toString(), a.getX(), a.getY(), a.getZ()));
+            run.defaultAnchor(new Spot(level.dimension().identifier().toString(), a.getX(), a.getY(), a.getZ()));
             long sentBefore = FxVeil.sent();
             helper.assertTrue(WishCapture.claimCameraFor(camera.getUUID(), wishId), Component.literal("could not lease the camera"));
             helper.assertTrue(WishCapture.anyShooting(), Component.literal("the lease did not register as a shot"));
@@ -313,7 +313,7 @@ public final class WishSpotGameTest {
         WishRun run = Marshal.global().run(wishId);
         BlockPos aimed = o.offset(2, 10, 2);       // the canopy's top, where the watch pointed
         BlockPos ground = o.offset(2, 2, 2);       // on the grass below it
-        run.defaultAnchor(new Spot(level.dimension().location().toString(), aimed.getX(), aimed.getY(), aimed.getZ()));
+        run.defaultAnchor(new Spot(level.dimension().identifier().toString(), aimed.getX(), aimed.getY(), aimed.getZ()));
         String id = "gt_treetop_house";
 
         AtomicReference<ToolResult> built = new AtomicReference<>();
@@ -434,7 +434,7 @@ public final class WishSpotGameTest {
         BlockPos stand = o.offset(1, 2, 1);           // where he stands when the agent builds
         child.snapTo(stand.getX() + 0.5, stand.getY(), stand.getZ() + 0.5, 0f, 10f);
         WishRun run = Marshal.global().run(wishId);
-        run.defaultAnchor(new Spot(level.dimension().location().toString(), aimed.getX(), aimed.getY(), aimed.getZ()));
+        run.defaultAnchor(new Spot(level.dimension().identifier().toString(), aimed.getX(), aimed.getY(), aimed.getZ()));
         // Unique per run: the registry outlives a run, and a known id is an EDIT, rebuilt where it stood.
         String ground = "gt_offset_ground_" + level.getGameTime();
         String sky = "gt_offset_sky_" + level.getGameTime();

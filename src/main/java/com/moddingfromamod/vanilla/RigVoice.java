@@ -16,7 +16,7 @@ import com.moddingfromamod.species.Voice;
 import com.moddingfromamod.species.VoiceSounds;
 
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
@@ -66,7 +66,7 @@ public final class RigVoice {
     public static Set<String> knownSounds() {
         Set<String> k = known;
         if (k == null) {
-            k = BuiltInRegistries.SOUND_EVENT.keySet().stream().map(ResourceLocation::toString)
+            k = BuiltInRegistries.SOUND_EVENT.keySet().stream().map(Identifier::toString)
                     .collect(Collectors.toUnmodifiableSet());
             known = k;
         }
@@ -162,7 +162,7 @@ public final class RigVoice {
         if (id == null) {
             return;
         }
-        SoundEvent ev = BuiltInRegistries.SOUND_EVENT.getValue(ResourceLocation.parse(id));
+        SoundEvent ev = BuiltInRegistries.SOUND_EVENT.getValue(Identifier.parse(id));
         if (ev != null) {
             playEvent(level, at, ev, volume, pitch);
         }

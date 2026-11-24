@@ -68,7 +68,7 @@ public class WishGoGameTest {
     @GameTest(template = "empty_test")
     public static void aBlankIdMeansTheNewestOfHis(GameTestHelper helper) {
         UUID me = child("blank-id");
-        String dim = helper.getLevel().dimension().location().toString();
+        String dim = helper.getLevel().dimension().identifier().toString();
         WishRun older = run(me, "gt-go-1", "a dragon", new Spot(dim, 10, 64, 10));
         WishRun newer = run(me, "gt-go-2", "a castle", new Spot(dim, 900, 70, -400));
 
@@ -101,7 +101,7 @@ public class WishGoGameTest {
     @GameTest(template = "empty_test")
     public static void aFinishedWishIsStillSomewhereHeCanBeTaken(GameTestHelper helper) {
         UUID me = child("finished-wish");
-        String dim = helper.getLevel().dimension().location().toString();
+        String dim = helper.getLevel().dimension().identifier().toString();
         WishRun done = run(me, "gt-go-4", "a dragon", new Spot(dim, 5, 64, 5));
         Marshal.global().finish(done.wishId());
 

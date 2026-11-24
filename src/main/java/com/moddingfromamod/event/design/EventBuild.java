@@ -30,7 +30,7 @@ import com.moddingfromamod.event.shape.SlideShape;
 import com.moddingfromamod.event.shape.StampShape;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
@@ -619,7 +619,7 @@ public final class EventBuild {
             return null;
         }
         if (spec.startsWith("#")) {
-            ResourceLocation id = ResourceLocation.tryParse(spec.substring(1));
+            Identifier id = Identifier.tryParse(spec.substring(1));
             var key = id == null ? null
                     : net.minecraft.tags.TagKey.create(net.minecraft.core.registries.Registries.BLOCK, id);
             // Membership is tested block by block: the registry's own tag lookup is spelled
@@ -709,7 +709,7 @@ public final class EventBuild {
         if (id == null) {
             return null;
         }
-        var item = BuiltInRegistries.ITEM.getOptional(ResourceLocation.parse(id)).orElse(null);
+        var item = BuiltInRegistries.ITEM.getOptional(Identifier.parse(id)).orElse(null);
         return item == null || item == net.minecraft.world.item.Items.AIR ? null : item;
     }
 
@@ -765,7 +765,7 @@ public final class EventBuild {
         if (id == null) {
             return null;
         }
-        Block b = BuiltInRegistries.BLOCK.getOptional(ResourceLocation.parse(id)).orElse(null);
+        Block b = BuiltInRegistries.BLOCK.getOptional(Identifier.parse(id)).orElse(null);
         if (b == null || b == Blocks.AIR && !id.equals("minecraft:air")) {
             if (err != null) {
                 err.add(field + ": no block called " + id);
@@ -779,7 +779,7 @@ public final class EventBuild {
         if (id == null) {
             return null;
         }
-        return BuiltInRegistries.ENTITY_TYPE.getOptional(ResourceLocation.parse(id)).orElse(null);
+        return BuiltInRegistries.ENTITY_TYPE.getOptional(Identifier.parse(id)).orElse(null);
     }
 
     /**

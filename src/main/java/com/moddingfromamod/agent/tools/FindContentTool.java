@@ -11,7 +11,7 @@ import com.moddingfromamod.agent.Schemas;
 import com.moddingfromamod.agent.ToolResult;
 import com.moddingfromamod.mob.ContentSearch;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.neoforged.fml.ModList;
 
 /**

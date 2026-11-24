@@ -45,7 +45,7 @@ public final class PaintCommand {
     @SubscribeEvent
     public static void onRegisterCommands(RegisterCommandsEvent event) {
         event.getDispatcher().register(Commands.literal("paint")
-                .requires(src -> src.hasPermission(2))
+                .requires(net.minecraft.commands.Commands.hasPermission(net.minecraft.commands.Commands.LEVEL_GAMEMASTERS))
                 .then(Commands.literal("demo")
                         .executes(ctx -> demo(ctx, 1, 1))
                         .then(Commands.argument("wide", IntegerArgumentType.integer(1,

@@ -61,7 +61,7 @@ public final class WishSummonCommand {
     public static void onRegisterCommands(RegisterCommandsEvent event) {
         CommandBuildContext registries = event.getBuildContext();
         event.getDispatcher().register(Commands.literal("wishsummon")
-                .requires(src -> src.hasPermission(2))
+                .requires(net.minecraft.commands.Commands.hasPermission(net.minecraft.commands.Commands.LEVEL_GAMEMASTERS))
                 .then(Commands.argument("entity", ResourceArgument.resource(registries, Registries.ENTITY_TYPE))
                         .suggests(SuggestionProviders.cast(SuggestionProviders.SUMMONABLE_ENTITIES))
                         .executes(ctx -> run(ctx, "{}"))

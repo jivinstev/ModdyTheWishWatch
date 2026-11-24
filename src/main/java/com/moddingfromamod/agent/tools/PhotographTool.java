@@ -1055,7 +1055,7 @@ public final class PhotographTool implements McpTool {
             return null;
         }
         for (net.minecraft.server.level.ServerLevel level : server.getAllLevels()) {
-            if (level.dimension().location().toString().equals(pic.dimension())) {
+            if (level.dimension().identifier().toString().equals(pic.dimension())) {
                 return com.moddingfromamod.wish.reveal.Reveals.boardOf(level, pic);
             }
         }
@@ -2981,7 +2981,7 @@ public final class PhotographTool implements McpTool {
         // left it. The one a live wish spawned, else the one at a live wish's spot (SubjectPick).
         java.util.Set<java.util.UUID> spawned = new java.util.HashSet<>();
         java.util.List<double[]> anchors = new java.util.ArrayList<>();
-        String dim = level.dimension().location().toString();
+        String dim = level.dimension().identifier().toString();
         String want = subjectId.trim().toLowerCase(java.util.Locale.ROOT);
         for (var run : com.moddingfromamod.marshal.Marshal.global().live()) {
             boolean about = false;
@@ -3203,7 +3203,7 @@ public final class PhotographTool implements McpTool {
             pose = com.moddingfromamod.wish.WishSpotShot.fromHim(him.getX(), him.getY(), him.getZ(),
                     him.getYRot(), him.getXRot(), player.getEyeHeight());
         } else {
-            if (!level.dimension().location().toString().equals(spot.dimension())) {
+            if (!level.dimension().identifier().toString().equals(spot.dimension())) {
                 return "(Nothing was named to frame, and the wish's spot is in another dimension "
                         + "from the camera, so this picture is not of your wish.)";
             }

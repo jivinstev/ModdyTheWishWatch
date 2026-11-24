@@ -101,7 +101,7 @@ public class ChildSafetyReaimGameTest {
         String text = ORIGINAL + " " + tag + " " + UUID.randomUUID().toString().substring(0, 8);
         Wish wish = WishBook.get(helper.getLevel().getServer()).add(Wish.create(text, WishSource.COMMAND,
                 System.currentTimeMillis(), p.getUUID(), p.getGameProfile().name(),
-                p.level().dimension().location().toString(), p.getX(), p.getY(), p.getZ()));
+                p.level().dimension().identifier().toString(), p.getX(), p.getY(), p.getZ()));
         Marshal.global().submit(wish.id(), p.getUUID(), text);
         WishProgress.startThinking(p, wish.id(), text);
 

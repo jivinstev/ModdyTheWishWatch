@@ -117,7 +117,7 @@ public final class WishMobLimit {
             lastSaid = now;
             LOG.info("SPAWN-BUDGET {} {} turned away ({}): wish {} has made {}, {} holds {} wished {} (#1265)",
                     typeId, k, stop, scope.wishKey().isEmpty() ? "-" : scope.wishKey(),
-                    scope.madeByThisWish(k), level.dimension().location(), live, k);
+                    scope.madeByThisWish(k), level.dimension().identifier(), live, k);
         }
     }
 

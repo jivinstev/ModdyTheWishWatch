@@ -91,7 +91,7 @@ public final class LookAroundTool implements McpTool {
                 long dayTime = level.getDayTime() % 24000L;
                 String base = "player: " + player.getGameProfile().name()
                         + "\nposition: " + pos.getX() + " " + pos.getY() + " " + pos.getZ()
-                        + "\ndimension: " + level.dimension().location()
+                        + "\ndimension: " + level.dimension().identifier()
                         + "\nbiome: " + level.getBiome(pos).unwrapKey()
                             .map(k -> k.location().toString()).orElse("unknown")
                         + "\nstanding on: " + level.getBlockState(below).getBlock()

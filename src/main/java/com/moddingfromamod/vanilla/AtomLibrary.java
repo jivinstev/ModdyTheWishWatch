@@ -141,21 +141,21 @@ public final class AtomLibrary {
     public static final String SPRITE = ModdingFromAModMod.MODID + ":item/rig_atom";
 
     /**
-     * {@link #SPRITE} as a {@code ResourceLocation}, for a client-side caller that wants to compare
+     * {@link #SPRITE} as a {@code Identifier}, for a client-side caller that wants to compare
      * one.
      *
      * <p>⚠ <b>A METHOD rather than a constant, and that is load-bearing.</b> This class is loaded
      * off a Minecraft-free classpath by {@code tools/AtomPatternDump}, which is how
      * {@code gen-atom-library.py} draws the eight pattern sprites with {@link SculptPattern}'s own
-     * painter instead of a second copy of the rules (§5.9.1). A {@code ResourceLocation} in a
+     * painter instead of a second copy of the rules (§5.9.1). A {@code Identifier} in a
      * {@code static final} initialiser puts Minecraft in this class's {@code <clinit>} and the
      * generator dies with {@code NoClassDefFoundError} before it draws a pixel — measured, on the
      * merge that first put the two halves in one tree. A parameter or a return type is fine; only
      * the static initialiser is not. {@code AtomLibraryTest.theLibraryLoadsWithoutMinecraft} pins
      * it by reading this source.
      */
-    public static net.minecraft.resources.ResourceLocation spriteLocation() {
-        return net.minecraft.resources.ResourceLocation.parse(SPRITE);
+    public static net.minecraft.resources.Identifier spriteLocation() {
+        return net.minecraft.resources.Identifier.parse(SPRITE);
     }
 
     /**
@@ -170,7 +170,7 @@ public final class AtomLibrary {
      * a rig that is working, which is worse than the check it replaced. A caller that wants the
      * two counted apart asks {@link #patternSprites} as well.
      */
-    public static boolean isLibrarySprite(net.minecraft.resources.ResourceLocation sprite) {
+    public static boolean isLibrarySprite(net.minecraft.resources.Identifier sprite) {
         for (Entry e : all()) {
             if (spriteId(e).equals(sprite.toString())) {
                 return true;
@@ -180,7 +180,7 @@ public final class AtomLibrary {
     }
 
     /** Just the eight pattern cubes' sprites, so a control can count overlays separately. */
-    public static boolean patternSprites(net.minecraft.resources.ResourceLocation sprite) {
+    public static boolean patternSprites(net.minecraft.resources.Identifier sprite) {
         for (Entry e : all()) {
             if (e.patterned() && spriteId(e).equals(sprite.toString())) {
                 return true;

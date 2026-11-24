@@ -6,7 +6,7 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
@@ -163,7 +163,7 @@ public final class Reveal {
     private static List<TagKey<Block>> tagsOf(String ore) {
         List<TagKey<Block>> out = new ArrayList<>();
         for (String id : RevealRule.ORES.getOrDefault(ore, RevealRule.ORES.get("any"))) {
-            out.add(TagKey.create(Registries.BLOCK, ResourceLocation.parse(id)));
+            out.add(TagKey.create(Registries.BLOCK, Identifier.parse(id)));
         }
         return out;
     }

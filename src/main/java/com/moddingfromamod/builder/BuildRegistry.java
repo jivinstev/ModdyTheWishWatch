@@ -461,7 +461,7 @@ public final class BuildRegistry {
             try {
                 DIMENSIONS.put(id, net.minecraft.resources.ResourceKey.create(
                         net.minecraft.core.registries.Registries.DIMENSION,
-                        net.minecraft.resources.ResourceLocation.parse(p.dim())));
+                        net.minecraft.resources.Identifier.parse(p.dim())));
             } catch (RuntimeException e) {
                 // an unreadable dimension: ArtifactLevel falls back to the overworld
             }

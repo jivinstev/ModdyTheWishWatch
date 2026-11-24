@@ -672,11 +672,11 @@ public final class BuilderAbilityGameTest {
 
     /** a vanilla block or item by id. */
     static net.minecraft.world.level.block.Block block(String id) {
-        return net.minecraft.core.registries.BuiltInRegistries.BLOCK.getValue(net.minecraft.resources.ResourceLocation.parse(id));
+        return net.minecraft.core.registries.BuiltInRegistries.BLOCK.getValue(net.minecraft.resources.Identifier.parse(id));
     }
 
     static net.minecraft.world.item.Item item(String id) {
-        return net.minecraft.core.registries.BuiltInRegistries.ITEM.getValue(net.minecraft.resources.ResourceLocation.parse(id));
+        return net.minecraft.core.registries.BuiltInRegistries.ITEM.getValue(net.minecraft.resources.Identifier.parse(id));
     }
 
     /**
@@ -723,7 +723,7 @@ public final class BuilderAbilityGameTest {
         BuilderBlocks.opts(look.id(), when, d.id(), 2).forEach(opts::addProperty);
         spec.add("opts", opts);
         net.minecraft.world.level.block.Block body = net.minecraft.core.registries.BuiltInRegistries.BLOCK.getValue(
-                net.minecraft.resources.ResourceLocation.parse(look.block()));
+                net.minecraft.resources.Identifier.parse(look.block()));
         return new Case("block: " + name + " (" + when + ")", spec.toString(), name, c -> {
             var level = c.helper().getLevel();
             var p = c.p();
@@ -847,10 +847,10 @@ public final class BuilderAbilityGameTest {
             }
             String makes = food != null ? str(food, "name")
                     : new ItemStack(net.minecraft.core.registries.BuiltInRegistries.ITEM.getValue(
-                            net.minecraft.resources.ResourceLocation.parse(output))).getHoverName().getString();
+                            net.minecraft.resources.Identifier.parse(output))).getHoverName().getString();
             place(c.p(), c.item(), c.floor());
             var in = net.minecraft.core.registries.BuiltInRegistries.ITEM.getValue(
-                    net.minecraft.resources.ResourceLocation.parse(input));
+                    net.minecraft.resources.Identifier.parse(input));
             // Staged: the machine builds itself a tick later (LoadAndPourGameTest waits for its lever too).
             BlockPos[] lever = {null};
             int[] pulls = {0};

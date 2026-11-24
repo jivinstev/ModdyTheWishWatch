@@ -6,7 +6,7 @@ import com.moddingfromamod.agent.McpTool;
 import com.moddingfromamod.agent.Schemas;
 import com.moddingfromamod.agent.ToolResult;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -100,9 +100,9 @@ public final class GiveItemsTool implements McpTool {
         if (com.moddingfromamod.wish.ForbiddenBlocks.isForbiddenId(itemId)) {
             return ToolResult.error(com.moddingfromamod.wish.ForbiddenBlocks.refusal(itemId.trim()));   //
         }
-        ResourceLocation key;
+        Identifier key;
         try {
-            key = ResourceLocation.parse(itemId.trim().toLowerCase(java.util.Locale.ROOT));
+            key = Identifier.parse(itemId.trim().toLowerCase(java.util.Locale.ROOT));
         } catch (RuntimeException e) {
             return ToolResult.error("'" + itemId + "' is not a valid item id.");
         }

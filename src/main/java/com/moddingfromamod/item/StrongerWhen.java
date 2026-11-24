@@ -2,7 +2,7 @@ package com.moddingfromamod.item;
 
 import com.moddingfromamod.ModdingFromAModMod;
 import net.minecraft.core.Holder;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
@@ -31,8 +31,8 @@ public final class StrongerWhen {
     /** E1's labels: the night sword's row names {@code night_strength} (syn-4-031). */
     public static final Set<String> PARTS = Set.of("night_strength", "stronger_when");
 
-    static final ResourceLocation ID =
-            ResourceLocation.fromNamespaceAndPath(ModdingFromAModMod.MODID, "wish_stronger_when");
+    static final Identifier ID =
+            Identifier.fromNamespaceAndPath(ModdingFromAModMod.MODID, "wish_stronger_when");
 
     /** How often the check runs, in ticks: half a second is quicker than he can notice. */
     static final int PERIOD = 10;

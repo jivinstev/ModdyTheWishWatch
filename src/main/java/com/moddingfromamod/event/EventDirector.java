@@ -16,7 +16,7 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
@@ -127,7 +127,7 @@ public final class EventDirector {
 
     static StagedEvent read(CompoundTag t, HolderGetter<Block> blocks) {
         ResourceKey<Level> dim = ResourceKey.create(Registries.DIMENSION,
-                ResourceLocation.parse(t.getStringOr("dim", "")));
+                Identifier.parse(t.getStringOr("dim", "")));
         List<CompoundTag> palette = new ArrayList<>();
         ListTag p = t.getListOrEmpty("palette");
         for (int i = 0; i < p.size(); i++) {

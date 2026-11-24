@@ -653,7 +653,7 @@ public final class WatchMenu extends ChestMenu {
                             new net.minecraft.world.item.component.ItemAttributeModifiers.Entry(
                                     net.minecraft.world.entity.ai.attributes.Attributes.ARMOR,
                                     new net.minecraft.world.entity.ai.attributes.AttributeModifier(
-                                            net.minecraft.resources.ResourceLocation
+                                            net.minecraft.resources.Identifier
                                                     .fromNamespaceAndPath(
                                                             com.moddingfromamod.ModdingFromAModMod.MODID,
                                                             "panel_icon_inert"),
@@ -819,7 +819,7 @@ public final class WatchMenu extends ChestMenu {
      */
     private static net.minecraft.world.item.Item resolve(String id) {
         var item = net.minecraft.core.registries.BuiltInRegistries.ITEM
-                .getValue(net.minecraft.resources.ResourceLocation.parse(id));
+                .getValue(net.minecraft.resources.Identifier.parse(id));
         return item == net.minecraft.world.item.Items.AIR ? PRESET_ICON : item;
     }
 

@@ -30,7 +30,7 @@ public final class RigCarrier {
      * A resource-location-safe spelling of an agent-written name.
      *
      * <p>Sculpt part names are agent-written and routinely contain capitals ({@code armL},
-     * {@code eyeR}) — which a {@code ResourceLocation} rejects outright. A model id that fails to
+     * {@code eyeR}) — which a {@code Identifier} rejects outright. A model id that fails to
      * parse is not a crash, it is a missing model, which is the magenta cube.
      */
     public static String safe(String s) {

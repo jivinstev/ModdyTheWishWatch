@@ -172,7 +172,7 @@ public final class WishExecutor {
             if (cut >= 0) {
                 s = s.substring(0, cut);
             }
-            var key = net.minecraft.resources.ResourceLocation.tryParse(s.contains(":") ? s : "minecraft:" + s);
+            var key = net.minecraft.resources.Identifier.tryParse(s.contains(":") ? s : "minecraft:" + s);
             return key == null ? 64 : net.minecraft.core.registries.BuiltInRegistries.ITEM.getOptional(key)
                     .map(i -> i.getDefaultMaxStackSize()).orElse(64);
         } catch (RuntimeException e) {
@@ -211,7 +211,7 @@ public final class WishExecutor {
         com.moddingfromamod.world.Bases bases = com.moddingfromamod.world.WorldModuleHost.liveBases();
         if (bases != null && com.moddingfromamod.agent.AgentContext.workerId().isEmpty()) {
             com.moddingfromamod.world.WorldRules rules = com.moddingfromamod.world.WorldRulesService.loadedOrNull();
-            String dim = level.dimension().location().toString();
+            String dim = level.dimension().identifier().toString();
             // A standing rule can fire with nobody near (asPlayer null): it is then the rule of whoever's
             // base it fires on, and on a world that fences wishes to bases, nobody's base is refused.
             java.util.UUID caster = asPlayer != null ? asPlayer.getUUID() : bases.ownerAt(dim, pos.x, pos.z);

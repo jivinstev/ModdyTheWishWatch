@@ -63,8 +63,8 @@ public final class RemovePaintingTool implements McpTool {
                     return ToolResult.error("There is no picture called '" + id
                             + "'. Call look_around to see which pictures exist.");
                 }
-                net.minecraft.resources.ResourceLocation dim =
-                        net.minecraft.resources.ResourceLocation.tryParse(rec.dimension());
+                net.minecraft.resources.Identifier dim =
+                        net.minecraft.resources.Identifier.tryParse(rec.dimension());
                 ServerLevel level = com.moddingfromamod.agent.ArtifactLevel.resolve(server,
                         dim == null ? null : net.minecraft.resources.ResourceKey.create(
                                 net.minecraft.core.registries.Registries.DIMENSION, dim));

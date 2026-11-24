@@ -44,7 +44,7 @@ public final class StandalonePackService {
         }
         for (ServerPlayer p : server.getPlayerList().getPlayers()) {
             Base b = bases.baseOf(p.getUUID());
-            if (b != null && b.holds(p.level().dimension().location().toString(), p.getX(), p.getZ())) {
+            if (b != null && b.holds(p.level().dimension().identifier().toString(), p.getX(), p.getZ())) {
                 StandalonePacks.renew(p.getUUID(), l);
             }
         }

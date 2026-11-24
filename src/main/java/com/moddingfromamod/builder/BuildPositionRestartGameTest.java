@@ -92,7 +92,7 @@ public class BuildPositionRestartGameTest {
                         long at = before.get(id).getAsLong();
                         if (saved == null || saved.removed()
                                 || BlockPos.asLong(saved.x(), saved.y(), saved.z()) != at
-                                || !server.overworld().dimension().location().toString().equals(saved.dim())) {
+                                || !server.overworld().dimension().identifier().toString().equals(saved.dim())) {
                             throw new AssertionError("#1376: " + id + " was put up at "
                                     + BlockPos.of(at).toShortString() + " and the disk says " + saved);
                         }

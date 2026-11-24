@@ -15,7 +15,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import com.moddingfromamod.testing.gt.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.gametest.framework.GameTestSequence;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.Mob;
@@ -86,7 +86,7 @@ public final class CarrierFollowProbeGameTest {
         for (String id : ids) for (int trial = 0; trial < TRIALS; trial++) {
             seq.thenExecute(() -> {
                 var type = BuiltInRegistries.ENTITY_TYPE.getValue(
-                        ResourceLocation.withDefaultNamespace(id));
+                        Identifier.withDefaultNamespace(id));
                 Mob m = (Mob) type.create(helper.getLevel(), EntitySpawnReason.COMMAND);
                 var at = helper.absolutePos(new BlockPos(1, 2, 1));
                 m.snapTo(at.getX() + 0.5, at.getY(), at.getZ() + 0.5, 0f, 0f);

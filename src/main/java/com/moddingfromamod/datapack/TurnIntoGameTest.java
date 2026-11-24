@@ -17,7 +17,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundSystemChatPacket;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.Item;
@@ -111,7 +111,7 @@ public final class TurnIntoGameTest {
         BlockPos a = helper.absolutePos(at);
         var src = p.createCommandSourceStack().withPermission(2).withLevel(helper.getLevel())
                 .withPosition(net.minecraft.world.phys.Vec3.atCenterOf(a));
-        var fn = helper.getLevel().getServer().getFunctions().get(ResourceLocation.fromNamespaceAndPath(id, "effect"));
+        var fn = helper.getLevel().getServer().getFunctions().get(Identifier.fromNamespaceAndPath(id, "effect"));
         if (fn.isEmpty()) {
             throw GameTestCompat.assertion("no function " + id + ":effect to fire");
         }
@@ -152,7 +152,7 @@ public final class TurnIntoGameTest {
         // Not mid-reload: a function can be found while the reload that replaces it is still running.
         return !DatapackReloader.reloadInProgress() && !DatapackReloader.reloadDeferred()
                 && helper.getLevel().getServer().getFunctions()
-                .get(ResourceLocation.fromNamespaceAndPath(id, "effect")).isPresent();
+                .get(Identifier.fromNamespaceAndPath(id, "effect")).isPresent();
     }
 
     private static String heard(ServerPlayer p, StringBuilder into) {
@@ -540,7 +540,7 @@ public final class TurnIntoGameTest {
         TurnInto.Smelting t = TurnInto.Smelting.load();
         StringBuilder bad = new StringBuilder();
         for (Map.Entry<String, String> row : t.items().entrySet()) {
-            Item in = BuiltInRegistries.ITEM.getValue(ResourceLocation.parse(row.getKey()));
+            Item in = BuiltInRegistries.ITEM.getValue(Identifier.parse(row.getKey()));
             SingleRecipeInput input = new SingleRecipeInput(new ItemStack(in));
             var r = recipes.getRecipeFor(RecipeType.SMELTING, input, level);
             String got = r.map(h -> BuiltInRegistries.ITEM.getKey(
@@ -551,7 +551,7 @@ public final class TurnIntoGameTest {
         }
         for (Map.Entry<String, String> row : t.blocks().entrySet()) {
             if (!row.getValue().equals(t.items().get(row.getKey()))
-                    || BuiltInRegistries.BLOCK.getValue(ResourceLocation.parse(row.getValue())) == Blocks.AIR) {
+                    || BuiltInRegistries.BLOCK.getValue(Identifier.parse(row.getValue())) == Blocks.AIR) {
                 bad.append("\n  block ").append(row.getKey()).append(" -> ").append(row.getValue());
             }
         }

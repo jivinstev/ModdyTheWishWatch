@@ -205,7 +205,7 @@ public class PublicModEconomyGameTest {
         helper.assertFalse(WishCharge.get().refusesAtSubmit(p, false, text, false),
                 Component.literal("an empty bank in the rules refuses nothing at submit"));
         Wish wish = WishBook.get(helper.getLevel().getServer()).add(Wish.create(text, WishSource.COMMAND, System.currentTimeMillis(),
-                p.getUUID(), p.getGameProfile().name(), p.level().dimension().location().toString(),
+                p.getUUID(), p.getGameProfile().name(), p.level().dimension().identifier().toString(),
                 p.getX(), p.getY(), p.getZ()));
         Marshal.global().submit(wish.id(), p.getUUID(), text);
         WishProgress.startThinking(p, wish.id(), text);

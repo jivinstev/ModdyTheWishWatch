@@ -14,7 +14,7 @@ import com.moddingfromamod.marshal.GuidePanel;
 import net.minecraft.advancements.AdvancementHolder;
 import net.minecraft.advancements.AdvancementNode;
 import net.minecraft.advancements.DisplayInfo;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 
 /**
@@ -50,7 +50,7 @@ public final class GoalGuide {
         if (player == null || guide == null || !guide.hasGoals()) {
             return Answer.NO_TREE;
         }
-        ResourceLocation rootId = ResourceLocation.tryParse(guide.goals().root());
+        Identifier rootId = Identifier.tryParse(guide.goals().root());
         if (rootId == null) {
             return Answer.NO_TREE;
         }
@@ -112,7 +112,7 @@ public final class GoalGuide {
         if (player == null || guide == null || !guide.hasGoals()) {
             return out;
         }
-        ResourceLocation rootId = ResourceLocation.tryParse(guide.goals().root());
+        Identifier rootId = Identifier.tryParse(guide.goals().root());
         AdvancementNode root = rootId == null ? null : player.level().getServer().getAdvancements().tree().get(rootId);
         if (root == null) {
             return out;

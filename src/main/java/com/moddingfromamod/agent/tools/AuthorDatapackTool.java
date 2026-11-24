@@ -64,14 +64,14 @@ public final class AuthorDatapackTool implements McpTool {
      * Is this attribute id real on this build?
      *
      * <p>Defensive because the text is a whole CBScript program rather than one command, so the
-     * token after {@code attribute} can be anything at all — and {@code ResourceLocation.parse}
+     * token after {@code attribute} can be anything at all — and {@code Identifier.parse}
      * throws on a malformed one. An unparseable id is simply left alone: it was going to fail
      * either way, and guessing at a rewrite would be worse than leaving the author's own text.
      */
     private static boolean attributeExists(String id) {
         try {
             return net.minecraft.core.registries.BuiltInRegistries.ATTRIBUTE.containsKey(
-                    net.minecraft.resources.ResourceLocation.parse(id));
+                    net.minecraft.resources.Identifier.parse(id));
         } catch (RuntimeException e) {
             return false;
         }

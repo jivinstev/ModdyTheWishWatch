@@ -424,7 +424,7 @@ class AtomLibraryTest {
         int patterned = 0;
         for (AtomLibrary.Entry e : AtomLibrary.all()) {
             String named = shipped(e.modelName()).getAsJsonObject("textures").get("0").getAsString();
-            var rl = net.minecraft.resources.ResourceLocation.parse(named);
+            var rl = net.minecraft.resources.Identifier.parse(named);
             org.junit.jupiter.api.Assertions.assertTrue(AtomLibrary.isLibrarySprite(rl),
                     e.modelName() + " names the sprite " + named + " and isLibrarySprite rejects "
                             + "it, so the client-side control will report every one of these "
@@ -441,7 +441,7 @@ class AtomLibraryTest {
         assertEquals(AtomLibrary.PATTERNS.size(), patterned, "one pattern cube per name");
         // ...and it must still REFUSE a creature group's page, which is the whole point of it.
         org.junit.jupiter.api.Assertions.assertFalse(AtomLibrary.isLibrarySprite(
-                        net.minecraft.resources.ResourceLocation.parse(
+                        net.minecraft.resources.Identifier.parse(
                                 "moddingfromamod:item/vwalk_spikor-armb")),
                 "a creature group's atlas page must not be accepted, or the control cannot see "
                         + "the rig-pack shadowing it exists for");
@@ -459,7 +459,7 @@ class AtomLibraryTest {
      * library loads here perfectly whether or not the generator can load it.
      *
      * <p>Measured on the merge that first put Phase 2 and Phase 2d in one tree — a
-     * {@code ResourceLocation SPRITE} constant, correct on its own and fatal to the generator.
+     * {@code Identifier SPRITE} constant, correct on its own and fatal to the generator.
      * Read out of the SOURCE, because that is the only place the distinction is visible.
      */
     @Test

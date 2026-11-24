@@ -1295,7 +1295,7 @@ public final class SculptCreatureTool implements McpTool {
         // logged, so it is refused by name, like a voice.
         if (args.has("throws") && args.get("throws").isJsonPrimitive()) {
             String t = Species.throwsItem(args.get("throws").getAsString());
-            var rl = t.isEmpty() ? null : net.minecraft.resources.ResourceLocation.tryParse(t);
+            var rl = t.isEmpty() ? null : net.minecraft.resources.Identifier.tryParse(t);
             if (!t.isEmpty() && (rl == null || !net.minecraft.core.registries.BuiltInRegistries.ITEM.containsKey(rl))) {
                 return ToolResult.error("Nothing was sculpted: 'throws' names '" + args.get("throws").getAsString()
                         + "', which is not an item this game has — try 'minecraft:fire_charge' for fireballs.");
@@ -1664,7 +1664,7 @@ public final class SculptCreatureTool implements McpTool {
         boolean flies = Species.Power.parse("flies") != null && args.has("powers")
                 && args.get("powers").toString().toLowerCase(java.util.Locale.ROOT).contains("flies");
         var r = com.moddingfromamod.species.BehavesLike.resolve(args.get(arg).getAsString(), id -> {
-            var rl = net.minecraft.resources.ResourceLocation.tryParse(id);
+            var rl = net.minecraft.resources.Identifier.tryParse(id);
             if (rl == null || !net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE.containsKey(rl)) {
                 return null;
             }

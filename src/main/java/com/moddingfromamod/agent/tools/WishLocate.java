@@ -10,7 +10,7 @@ import java.util.Optional;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.TagKey;
@@ -43,7 +43,7 @@ final class WishLocate {
         LocateTargets.Kind kind = structure ? LocateTargets.Kind.STRUCTURE : LocateTargets.Kind.BIOME;
         String id = p[2].toLowerCase(Locale.ROOT);
         String bare = id.startsWith("#") ? id.substring(1) : id;
-        if (ResourceLocation.tryParse(bare) == null) {
+        if (Identifier.tryParse(bare) == null) {
             return ToolResult.error("'" + p[2] + "' is not a " + p[1] + " id — write it like minecraft:plains, "
                     + "or a tag like #minecraft:is_forest.");
         }
@@ -90,7 +90,7 @@ final class WishLocate {
                     w.level().getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, at.getX(), at.getZ()));
             int blocks = (int) Math.round(Math.sqrt(w.from().distSqr(new BlockPos(at.getX(), w.from().getY(), at.getZ()))));
             return ToolResult.ok("The nearest " + id + " is about " + blocks + " blocks away, at x=" + at.getX()
-                    + " z=" + at.getZ() + " (" + w.level().dimension().location() + "). The ground there is at y="
+                    + " z=" + at.getZ() + " (" + w.level().dimension().identifier() + "). The ground there is at y="
                     + ground + ", so `tp @s " + at.getX() + " " + (ground + 1) + " " + at.getZ()
                     + "` stands him on it." + (structure && at.getY() < ground - 4
                     ? " The structure itself starts lower, at y=" + at.getY() + "." : ""));
@@ -105,7 +105,7 @@ final class WishLocate {
     /** Is this id (or tag) a structure / biome this world knows? */
     private static boolean exists(ServerLevel level, boolean structure, String id) {
         boolean tag = id.startsWith("#");
-        ResourceLocation rl = ResourceLocation.tryParse(tag ? id.substring(1) : id);
+        Identifier rl = Identifier.tryParse(tag ? id.substring(1) : id);
         if (rl == null) {
             return false;
         }

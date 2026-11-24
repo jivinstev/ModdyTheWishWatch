@@ -444,7 +444,7 @@ public final class PaintSurfaceTool implements McpTool {
         PaintRecord hung = PaintRegistry.get(plan.targetId());
         ToolResult done;
         if (!plan.freshBoard() && hung != null && hung.hasVanillaCopy()
-                && hung.dimension().equals(level.dimension().location().toString())) {
+                && hung.dimension().equals(level.dimension().identifier().toString())) {
             done = paintOnServer(args, plan, Direction.byName(hung.facing()),
                     new BlockPos(hung.x(), hung.y(), hung.z()));
         } else if (!plan.freshBoard() && explicit) {
@@ -516,7 +516,7 @@ public final class PaintSurfaceTool implements McpTool {
         // ⚠ NOT ONTO SOMEBODY ELSE'S PICTURE BY POSITION. The id check in PictureEdit cannot see a
         // NEW id aimed at the exact spot where another child's picture hangs, and map art reuses
         // the frames at a spot — so that call would repaint her picture under a new name.
-        PaintRecord there = PaintRegistry.at(level.dimension().location().toString(),
+        PaintRecord there = PaintRegistry.at(level.dimension().identifier().toString(),
                 at.getX(), at.getY(), at.getZ());
         if (there != null && !there.id().equals(id)
                 && !com.moddingfromamod.marshal.ArtifactOwner.visibleTo(
@@ -620,7 +620,7 @@ public final class PaintSurfaceTool implements McpTool {
         // there is no panel left in the world to read them back off. An undo that could not find
         // them left the maps hanging over a wish it reported as reversed.
         PaintRegistry.put(level.getServer(), new PaintRecord(id,
-                level.dimension().location().toString(), at.getX(), at.getY(), at.getZ(),
+                level.dimension().identifier().toString(), at.getX(), at.getY(), at.getZ(),
                 id, rollback, previousKey, previousRecipe, previousWide, previousTall,
                 vanillaView ? facing.getName() : "", vanillaView ? wide : 0,
                 vanillaView ? tall : 0, vanillaView ? recipe : PaintRecipe.blank())

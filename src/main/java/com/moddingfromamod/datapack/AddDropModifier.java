@@ -11,7 +11,7 @@ import com.moddingfromamod.ModdingFromAModMod;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -61,7 +61,7 @@ public final class AddDropModifier extends LootModifier {
         public static void register(RegisterEvent event) {
             event.register(NeoForgeRegistries.Keys.GLOBAL_LOOT_MODIFIER_SERIALIZERS,
                     helper -> helper.register(
-                            ResourceLocation.fromNamespaceAndPath(ModdingFromAModMod.MODID, "add_drop"),
+                            Identifier.fromNamespaceAndPath(ModdingFromAModMod.MODID, "add_drop"),
                             CODEC));
         }
     }
@@ -93,7 +93,7 @@ public final class AddDropModifier extends LootModifier {
     /** An item id, or a random member of an item tag; null when neither exists on this build. */
     static Item pick(String id, LootContext context) {
         if (id.startsWith("#")) {
-            ResourceLocation tagId = ResourceLocation.tryParse(id.substring(1));
+            Identifier tagId = Identifier.tryParse(id.substring(1));
             if (tagId == null) {
                 return null;
             }
@@ -102,7 +102,7 @@ public final class AddDropModifier extends LootModifier {
                     .filter(i -> i.builtInRegistryHolder().is(tag)).toList();
             return members.isEmpty() ? null : members.get(context.getRandom().nextInt(members.size()));
         }
-        ResourceLocation rl = ResourceLocation.tryParse(id);
+        Identifier rl = Identifier.tryParse(id);
         return rl == null ? null : BuiltInRegistries.ITEM.getOptional(rl).orElse(null);
     }
 
@@ -111,8 +111,8 @@ public final class AddDropModifier extends LootModifier {
      * ores, logs are what children name), then as an entity type.
      */
     static boolean inTag(String tag, String thing) {
-        ResourceLocation tagId = ResourceLocation.tryParse(tag);
-        ResourceLocation id = ResourceLocation.tryParse(thing);
+        Identifier tagId = Identifier.tryParse(tag);
+        Identifier id = Identifier.tryParse(thing);
         if (tagId == null || id == null) {
             return false;
         }

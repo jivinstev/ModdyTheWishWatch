@@ -139,7 +139,7 @@ public class PhotoSubjectGameTest {
         BlockPos floor = helper.absolutePos(new BlockPos(6, 1, 6));
         BlockPos stood = helper.absolutePos(new BlockPos(1, 1, 1));
         level.setBlockAndUpdate(floor.below(), Blocks.GOLD_BLOCK.defaultBlockState());
-        String dim = level.dimension().location().toString();
+        String dim = level.dimension().identifier().toString();
         WishRun run = WishRun.detachedForTest(UUID.randomUUID(), UUID.randomUUID(), "a garage");
         run.aimedFrom(new WishRun.Aim(dim, stood.getX() + 0.5, stood.getY(), stood.getZ() + 0.5,
                 stood.getY() + 1.62, -45f, 20f));

@@ -11,7 +11,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.BlockTags;
@@ -300,7 +300,7 @@ public final class BuildGround {
 
     private static BlockState state(String id) {
         try {
-            var b = BuiltInRegistries.BLOCK.getOptional(ResourceLocation.parse(id));
+            var b = BuiltInRegistries.BLOCK.getOptional(Identifier.parse(id));
             if (b.isPresent()) {
                 return b.get().defaultBlockState();
             }

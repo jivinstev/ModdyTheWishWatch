@@ -257,7 +257,7 @@ public final class OnBlockShapeGameTest {
         String fn = WishItem.blockFunction(p.getUseItem());
         var server = helper.getLevel().getServer();
         String atStart = "fn " + fn + " loaded=" + server.getFunctions().get(
-                net.minecraft.resources.ResourceLocation.parse(fn)).isPresent()
+                net.minecraft.resources.Identifier.parse(fn)).isPresent()
                 + " reloading=" + com.moddingfromamod.datapack.DatapackReloader.reloadInProgress()
                 + " deferred=" + com.moddingfromamod.datapack.DatapackReloader.reloadDeferred();
         helper.getLevel().addFreshEntity(arrow);
@@ -294,7 +294,7 @@ public final class OnBlockShapeGameTest {
                 throw GameTestCompat.assertion("the blocked arrow did not go back: owner "
                         + arrow.getOwner() + ", moving " + arrow.getDeltaMovement() + ", removed "
                         + arrow.isRemoved() + "; " + atStart + "; fn loaded now="
-                        + server.getFunctions().get(net.minecraft.resources.ResourceLocation.parse(fn)).isPresent()
+                        + server.getFunctions().get(net.minecraft.resources.Identifier.parse(fn)).isPresent()
                         + trace);
             }
             archer.discard();

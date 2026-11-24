@@ -8,7 +8,7 @@ import java.util.List;
 import com.moddingfromamod.ModdingFromAModMod;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -802,7 +802,7 @@ public final class Builder {
      * Look up a block id, or null if no such block is installed.
      *
      * <p><b>A block may carry its state</b> — {@code minecraft:ladder[facing=south]}. This
-     * used to hand the whole string to {@code ResourceLocation.parse}, which refuses a '[', so every
+     * used to hand the whole string to {@code Identifier.parse}, which refuses a '[', so every
      * block the agent faced came out as STONE: the library's own Underwater Dome climbed a
      * 22-block column of stone it called a ladder, and the lesson that told the agent to face its
      * ladders would have built stone too. The game's own parser reads it, exactly as a
@@ -815,7 +815,7 @@ public final class Builder {
                         level.registryAccess().lookupOrThrow(net.minecraft.core.registries.Registries.BLOCK),
                         id.contains(":") ? id : "minecraft:" + id, false).blockState();
             }
-            ResourceLocation key = ResourceLocation.parse(
+            Identifier key = Identifier.parse(
                     id.contains(":") ? id : "minecraft:" + id);
             if (!BuiltInRegistries.BLOCK.containsKey(key)) {
                 return null;

@@ -216,7 +216,7 @@ public class TwoWorkersGameTest {
             McpProtocol protocol = protocolRecording(Marshal.global(), new HashMap<>());
             String one = openSession(protocol);
             String two = openSession(protocol);
-            String dim = helper.getLevel().dimension().location().toString();
+            String dim = helper.getLevel().dimension().identifier().toString();
 
             UUID a = UUID.randomUUID();
             UUID b = UUID.randomUUID();

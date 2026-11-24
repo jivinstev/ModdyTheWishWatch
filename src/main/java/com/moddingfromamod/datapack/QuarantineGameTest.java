@@ -21,7 +21,7 @@ import com.moddingfromamod.testing.gt.GameTestHolder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -79,7 +79,7 @@ public final class QuarantineGameTest {
     }
 
     static boolean ticks(MinecraftServer server, String ns) {
-        return server.getFunctions().getTag(ResourceLocation.withDefaultNamespace("tick")).stream()
+        return server.getFunctions().getTag(Identifier.withDefaultNamespace("tick")).stream()
                 .anyMatch(f -> ns.equals(f.id().getNamespace()));
     }
 

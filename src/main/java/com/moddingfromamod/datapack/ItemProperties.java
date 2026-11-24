@@ -786,7 +786,7 @@ public final class ItemProperties {
             // never breaks. `unbreakable=0` writes nothing rather than writing a falsey component,
             // since removing durability protection is just not asking for it.
             case "unbreakable" -> value == 0 ? "" : "minecraft:unbreakable={}";
-            // 1.21 replaced the UUID+name pair with a single ResourceLocation id (see the migrator's
+            // 1.21 replaced the UUID+name pair with a single Identifier id (see the migrator's
             // catalog), and the id must be OURS so a second modifier from anywhere else cannot
             // collide with it or silently replace it.
             // ⚠ `minecraft:generic.attack_damage`, NOT `minecraft:attack_damage`. 1.21.1 still

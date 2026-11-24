@@ -78,7 +78,7 @@ public class ConcurrentWishGameTest {
         BlockPos here = helper.absolutePos(new BlockPos(1, 1, 1));
         BlockPos dragonSpot = here.above(120);
         BlockPos castleSpot = here.above(160);
-        String dim = helper.getLevel().dimension().location().toString();
+        String dim = helper.getLevel().dimension().identifier().toString();
         dragon.lockAnchor(new Spot(dim, dragonSpot.getX(), dragonSpot.getY(), dragonSpot.getZ()));
         castle.lockAnchor(new Spot(dim, castleSpot.getX(), castleSpot.getY(), castleSpot.getZ()));
 

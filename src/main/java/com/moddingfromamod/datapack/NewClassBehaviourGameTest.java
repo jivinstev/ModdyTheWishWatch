@@ -298,7 +298,7 @@ public class NewClassBehaviourGameTest {
                 "sheep", "foxes")) {
             String id = com.moddingfromamod.agent.tools.ApplyEffectTool.resolveCreatureId(word);
             helper.assertTrue(net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE
-                            .containsKey(net.minecraft.resources.ResourceLocation.parse(id)),
+                            .containsKey(net.minecraft.resources.Identifier.parse(id)),
                     Component.literal("'" + word + "' resolved to '" + id + "', which is not a real entity type — "
                             + "the selector will fail to parse and the ability will silently do "
                             + "nothing"));

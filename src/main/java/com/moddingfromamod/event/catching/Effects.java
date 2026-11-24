@@ -8,7 +8,7 @@ import java.util.function.IntPredicate;
 import com.moddingfromamod.ModdingFromAModMod;
 import com.moddingfromamod.datapack.StatusEffect;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
@@ -138,7 +138,7 @@ public final class Effects {
         if (which == null) {
             return null;
         }
-        var holder = BuiltInRegistries.MOB_EFFECT.getOptional(ResourceLocation.withDefaultNamespace(which))
+        var holder = BuiltInRegistries.MOB_EFFECT.getOptional(Identifier.withDefaultNamespace(which))
                 .map(BuiltInRegistries.MOB_EFFECT::wrapAsHolder).orElse(null);
         if (holder == null) {
             return null;

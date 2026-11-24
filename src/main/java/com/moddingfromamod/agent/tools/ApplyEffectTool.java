@@ -711,7 +711,7 @@ public final class ApplyEffectTool implements McpTool {
             params.put("STEP_TICKS", "4");   // a mark every few steps, not one per tick
             String raw = params.getOrDefault("BLOCK", entry == null ? "minecraft:snow" : entry.defaults().get("BLOCK"));
             String id = raw.contains("[") ? raw.substring(0, raw.indexOf('[')) : raw;
-            var rl = net.minecraft.resources.ResourceLocation.tryParse(id.contains(":") ? id : "minecraft:" + id);
+            var rl = net.minecraft.resources.Identifier.tryParse(id.contains(":") ? id : "minecraft:" + id);
             var block = rl == null ? null : net.minecraft.core.registries.BuiltInRegistries.BLOCK.getOptional(rl).orElse(null);
             if (block == null || block == net.minecraft.world.level.block.Blocks.AIR) {
                 return "trail's BLOCK '" + raw + "' is not a block. Use a thin one it can walk over: "
@@ -729,7 +729,7 @@ public final class ApplyEffectTool implements McpTool {
         }
         bounded.apply("MOST", 32);
         String raw = params.getOrDefault("ITEM", entry == null ? "minecraft:honey_bottle" : entry.defaults().get("ITEM"));
-        var rl = net.minecraft.resources.ResourceLocation.tryParse(raw.contains(":") ? raw : "minecraft:" + raw);
+        var rl = net.minecraft.resources.Identifier.tryParse(raw.contains(":") ? raw : "minecraft:" + raw);
         var item = rl == null ? null : net.minecraft.core.registries.BuiltInRegistries.ITEM.getOptional(rl).orElse(null);
         if (item == null || item == net.minecraft.world.item.Items.AIR) {
             return "drops' ITEM '" + raw + "' is not an item id. e.g. minecraft:honey_bottle, minecraft:egg.";
@@ -1052,7 +1052,7 @@ public final class ApplyEffectTool implements McpTool {
     private static boolean registryAvailable() {
         try {
             return net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE
-                    .containsKey(net.minecraft.resources.ResourceLocation.parse("minecraft:pig"));
+                    .containsKey(net.minecraft.resources.Identifier.parse("minecraft:pig"));
         } catch (Throwable t) {
             return false;
         }
@@ -1061,8 +1061,8 @@ public final class ApplyEffectTool implements McpTool {
     /** Is this a real entity type in the running game? False when there is no registry to ask. */
     private static boolean entityExists(String id) {
         try {
-            net.minecraft.resources.ResourceLocation rl =
-                    net.minecraft.resources.ResourceLocation.tryParse(id);
+            net.minecraft.resources.Identifier rl =
+                    net.minecraft.resources.Identifier.tryParse(id);
             return rl != null
                     && net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE.containsKey(rl);
         } catch (Throwable t) {

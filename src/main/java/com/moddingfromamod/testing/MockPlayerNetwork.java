@@ -7,7 +7,7 @@ import java.util.Set;
 
 import net.minecraft.network.Connection;
 import net.minecraft.network.ConnectionProtocol;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.neoforge.network.registration.ChannelAttributes;
 import net.neoforged.neoforge.network.registration.NetworkChannel;
@@ -57,10 +57,10 @@ public final class MockPlayerNetwork {
     }
 
     /** A map that claims to contain everything, and holds nothing. */
-    private static final Map<ResourceLocation, NetworkChannel> EVERY_CHANNEL =
+    private static final Map<Identifier, NetworkChannel> EVERY_CHANNEL =
             new AbstractMap<>() {
                 @Override
-                public Set<Entry<ResourceLocation, NetworkChannel>> entrySet() {
+                public Set<Entry<Identifier, NetworkChannel>> entrySet() {
                     return Set.of();
                 }
 
@@ -70,15 +70,15 @@ public final class MockPlayerNetwork {
                 }
             };
 
-    private static final Map<ConnectionProtocol, Map<ResourceLocation, NetworkChannel>> EVERY_PROTOCOL =
+    private static final Map<ConnectionProtocol, Map<Identifier, NetworkChannel>> EVERY_PROTOCOL =
             new AbstractMap<>() {
                 @Override
-                public Set<Entry<ConnectionProtocol, Map<ResourceLocation, NetworkChannel>>> entrySet() {
+                public Set<Entry<ConnectionProtocol, Map<Identifier, NetworkChannel>>> entrySet() {
                     return Set.of();
                 }
 
                 @Override
-                public Map<ResourceLocation, NetworkChannel> get(Object key) {
+                public Map<Identifier, NetworkChannel> get(Object key) {
                     return EVERY_CHANNEL;   // getChannels() uses getOrDefault, so get() decides
                 }
 
@@ -698,7 +698,7 @@ public final class MockPlayerNetwork {
         return player != null && player.connection != null
                 && net.neoforged.neoforge.network.registration.NetworkRegistry.hasChannel(
                         player.connection,
-                        net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(
+                        net.minecraft.resources.Identifier.fromNamespaceAndPath(
                                 "moddingfromamod", "any_probe_id"));
     }
 

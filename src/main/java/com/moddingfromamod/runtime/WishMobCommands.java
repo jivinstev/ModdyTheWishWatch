@@ -126,7 +126,7 @@ public final class WishMobCommands {
                 // Op-only as a whole: `spawn` is the stored form of every creature button,
                 // replayed by the executor at permission 2; the rest are a grown-up's tools. A child's
                 // tab list is /wish and /moddy.
-                .requires(src -> src.hasPermission(2))
+                .requires(net.minecraft.commands.Commands.hasPermission(net.minecraft.commands.Commands.LEVEL_GAMEMASTERS))
                 .then(Commands.literal("list")
                         .executes(WishMobCommands::list))
                 // every key below is the REST OF THE LINE, split by ForkIdArgs, not a
@@ -134,19 +134,19 @@ public final class WishMobCommands {
                 // refuses `~`, so the button his wish taught (`wishmob spawn dragon~1a2b3c4d`)
                 // never parsed. did the same for `wishbuild`.
                 .then(Commands.literal("spawn")
-                        .requires(src -> src.hasPermission(2))
+                        .requires(net.minecraft.commands.Commands.hasPermission(net.minecraft.commands.Commands.LEVEL_GAMEMASTERS))
                         // `wishmob spawn <key> [count] [at <build>:<spot>]` (on a building's
                         // named spot, once the building is finished).
                         .then(Commands.argument("args", StringArgumentType.greedyString())
                                 .suggests(SPAWN_ARGS)
                                 .executes(WishMobCommands::spawn)))
                 .then(Commands.literal("reload")
-                        .requires(src -> src.hasPermission(2))
+                        .requires(net.minecraft.commands.Commands.hasPermission(net.minecraft.commands.Commands.LEVEL_GAMEMASTERS))
                         .then(Commands.argument("key", StringArgumentType.greedyString())
                                 .suggests(KEYS)
                                 .executes(WishMobCommands::reload)))
                 .then(Commands.literal("egg")
-                        .requires(src -> src.hasPermission(2))
+                        .requires(net.minecraft.commands.Commands.hasPermission(net.minecraft.commands.Commands.LEVEL_GAMEMASTERS))
                         .then(Commands.argument("key", StringArgumentType.greedyString())
                                 .suggests(SPECIES)
                                 .executes(WishMobCommands::egg)))
@@ -155,7 +155,7 @@ public final class WishMobCommands {
                                 .suggests(KEYS)
                                 .executes(WishMobCommands::parts)))
                 .then(Commands.literal("paint")
-                        .requires(src -> src.hasPermission(2))
+                        .requires(net.minecraft.commands.Commands.hasPermission(net.minecraft.commands.Commands.LEVEL_GAMEMASTERS))
                         // `<key> <part> <colour> [tint|fill]` — the trailing word is kept so a
                         // taught button that ends in one still runs: the rig paints a part flat
                         // either way.
@@ -166,7 +166,7 @@ public final class WishMobCommands {
                 // `talk <on|off> <targets>` sets the server-side talking flag (RigTalk) and says the
                 // game tick it switched on, for the timeline runner's log.
                 .then(Commands.literal("talk")
-                        .requires(src -> src.hasPermission(2))
+                        .requires(net.minecraft.commands.Commands.hasPermission(net.minecraft.commands.Commands.LEVEL_GAMEMASTERS))
                         .then(Commands.literal("on")
                                 .then(Commands.argument("targets", EntityArgument.entities())
                                         .executes(ctx -> talk(ctx, true))))
@@ -176,7 +176,7 @@ public final class WishMobCommands {
                 // `face <targets> <x y z | entity | free>` is rig.look_at (RigFacing): he turns to
                 // it and stands, an entity followed as it moves, until `free`.
                 .then(Commands.literal("face")
-                        .requires(src -> src.hasPermission(2))
+                        .requires(net.minecraft.commands.Commands.hasPermission(net.minecraft.commands.Commands.LEVEL_GAMEMASTERS))
                         .then(Commands.argument("targets", EntityArgument.entities())
                                 .then(Commands.literal("free")
                                         .executes(WishMobCommands::faceFree))
@@ -189,13 +189,13 @@ public final class WishMobCommands {
                 // `gesture <targets> <clip|off> [hold]` plays a named clip over his idle/talk
                 // (RigGesture): a hat tip on a word. Says the game tick it started, for the take's log.
                 .then(Commands.literal("gesture")
-                        .requires(src -> src.hasPermission(2))
+                        .requires(net.minecraft.commands.Commands.hasPermission(net.minecraft.commands.Commands.LEVEL_GAMEMASTERS))
                         .then(Commands.argument("targets", EntityArgument.entities())
                                 .then(Commands.argument("clip", StringArgumentType.word())
                                         .executes(ctx -> gesture(ctx, false))
                                         .then(Commands.literal("hold").executes(ctx -> gesture(ctx, true))))))
                 .then(Commands.literal("photo")
-                        .requires(src -> src.hasPermission(2))
+                        .requires(net.minecraft.commands.Commands.hasPermission(net.minecraft.commands.Commands.LEVEL_GAMEMASTERS))
                         .executes(ctx -> photo(ctx, "photo"))
                         .then(Commands.argument("label", StringArgumentType.greedyString())
                                 .suggests(KEYS)

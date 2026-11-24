@@ -12,7 +12,7 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
@@ -55,7 +55,7 @@ public class VictimTagInstallGameTest {
             waited[0] += 5;
             if (!started[0]) {
                 if (DatapackReloader.reloadInProgress() || DatapackReloader.reloadDeferred()
-                        || server.getFunctions().get(ResourceLocation.fromNamespaceAndPath(PACK, "effect")).isEmpty()) {
+                        || server.getFunctions().get(Identifier.fromNamespaceAndPath(PACK, "effect")).isEmpty()) {
                     if (waited[0] > 600) {
                         helper.fail(Component.literal("the cookie's pack never loaded"));
                         return;

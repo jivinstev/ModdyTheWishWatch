@@ -77,7 +77,7 @@ public final class RespawnGuard {
      */
     public static void afterRespawn(ServerPlayer p, Bases b) {
         Base base = b == null ? null : b.baseOf(p.getUUID());
-        if (base == null || !base.holds(p.level().dimension().location().toString(), p.getX(), p.getZ())) {
+        if (base == null || !base.holds(p.level().dimension().identifier().toString(), p.getX(), p.getZ())) {
             return;
         }
         grace(p);
@@ -106,7 +106,7 @@ public final class RespawnGuard {
     /** A death ON his base counts toward the loop. Public so a GameTest drives the event's path. */
     public static void died(ServerPlayer p, Bases b, long nowMs) {
         Base base = b == null ? null : b.baseOf(p.getUUID());
-        if (base == null || !base.holds(p.level().dimension().location().toString(), p.getX(), p.getZ())) {
+        if (base == null || !base.holds(p.level().dimension().identifier().toString(), p.getX(), p.getZ())) {
             return;
         }
         if (LOOP.died(p.getUUID(), nowMs)) {

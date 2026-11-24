@@ -11,7 +11,7 @@ import com.moddingfromamod.testing.gt.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.Mob;
@@ -51,7 +51,7 @@ public class RigFitGameTest {
     public static void theCarrierPoolTableMatchesTheLiveRegistry(GameTestHelper helper) {
         for (CarrierPool.Skeleton row : CarrierPool.ALL) {
             var t = BuiltInRegistries.ENTITY_TYPE.getValue(
-                    ResourceLocation.withDefaultNamespace(row.id()));
+                    Identifier.withDefaultNamespace(row.id()));
             helper.assertTrue(BuiltInRegistries.ENTITY_TYPE.getKey(t).getPath().equals(row.id()),
                     Component.literal(row.id() + " is not a registered entity type"));
             var d = t.getDimensions();

@@ -16,7 +16,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.protocol.common.ClientboundServerLinksPacket;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.ServerLinks;
 import net.minecraft.server.level.ServerLevel;
@@ -105,7 +105,7 @@ public final class CrafterService {
 
     private static boolean done(ServerPlayer p, String id) {
         try {
-            AdvancementHolder h = serverOf(p).getAdvancements().get(ResourceLocation.parse(id));
+            AdvancementHolder h = serverOf(p).getAdvancements().get(Identifier.parse(id));
             return h != null && p.getAdvancements().getOrStartProgress(h).isDone();
         } catch (RuntimeException e) {
             return false;

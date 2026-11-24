@@ -32,14 +32,14 @@ public final class BuildCommand {
         // run ANY command on a building's named spot — a real dragon summoned onto the
         // castle roof, a chest on the bar's counter — once the building is finished.
         event.getDispatcher().register(Commands.literal("wishspot")
-                .requires(src -> src.hasPermission(2))
+                .requires(net.minecraft.commands.Commands.hasPermission(net.minecraft.commands.Commands.LEVEL_GAMEMASTERS))
                 .then(Commands.argument("spot", StringArgumentType.greedyString())
                         .executes(ctx -> SpotCommand.run(ctx.getSource(),
                                 StringArgumentType.getString(ctx, "spot")))));
         event.getDispatcher().register(Commands.literal("wishbuild")
                 // A REPLAY command, not something a child types: the stored form of every
                 // saved button, run by the executor at permission 2. Hidden from a child's tab list.
-                .requires(src -> src.hasPermission(2))
+                .requires(net.minecraft.commands.Commands.hasPermission(net.minecraft.commands.Commands.LEVEL_GAMEMASTERS))
                 // greedyString, not word(): a child's FORK of a curated building is `<id>~<his short
                 // uuid>`, and brigadier's word() refuses `~` — so `wishbuild castle~1a2b3c4d`
                 // could never be taught, which the first real grant hit (CommandTrial refused it).

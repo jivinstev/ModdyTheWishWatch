@@ -234,7 +234,7 @@ public class ItemRefGameTest {
             // testing the OTHER route's blank, which nothing hands out, so it could never fail.
             if (ingredient.test(new net.minecraft.world.item.ItemStack(
                     net.minecraft.core.registries.BuiltInRegistries.ITEM.getValue(
-                            net.minecraft.resources.ResourceLocation.parse(ItemBase.id(null)))))) {
+                            net.minecraft.resources.Identifier.parse(ItemBase.id(null)))))) {
                 helper.fail(Component.literal("the ingredient matches a BLANK wish item, so the recipe would eat any "
                         + "wish item he is carrying — his wand included"));
                 return;
@@ -308,7 +308,7 @@ public class ItemRefGameTest {
             // beans" and "any nether wart" are the same request.
             var plain = new net.minecraft.world.item.ItemStack(
                     net.minecraft.core.registries.BuiltInRegistries.ITEM.getValue(
-                            net.minecraft.resources.ResourceLocation.parse("minecraft:nether_wart")));
+                            net.minecraft.resources.Identifier.parse("minecraft:nether_wart")));
             if (test.test(plain)) {
                 helper.fail(Component.literal("the predicate matches PLAIN nether wart, so the machine eats anything "
                         + "off the same base — his named item is not distinguished at all"));

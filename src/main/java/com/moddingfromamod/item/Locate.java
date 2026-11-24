@@ -11,7 +11,7 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.TagKey;
@@ -226,10 +226,10 @@ public final class Locate {
             List<Holder<Structure>> hs = new ArrayList<>();
             for (String id : t.ids()) {
                 if (id.startsWith("#")) {
-                    reg.get(TagKey.create(Registries.STRUCTURE, ResourceLocation.parse(id.substring(1))))
+                    reg.get(TagKey.create(Registries.STRUCTURE, Identifier.parse(id.substring(1))))
                             .ifPresent(set -> set.forEach(hs::add));
                 } else {
-                    reg.get(ResourceKey.create(Registries.STRUCTURE, ResourceLocation.parse(id))).ifPresent(hs::add);
+                    reg.get(ResourceKey.create(Registries.STRUCTURE, Identifier.parse(id))).ifPresent(hs::add);
                 }
             }
             if (hs.isEmpty()) {
@@ -241,8 +241,8 @@ public final class Locate {
         }
         Predicate<Holder<Biome>> is = h -> {
             for (String id : t.ids()) {
-                if (id.startsWith("#") ? h.is(TagKey.create(Registries.BIOME, ResourceLocation.parse(id.substring(1))))
-                        : h.is(ResourceLocation.parse(id))) {
+                if (id.startsWith("#") ? h.is(TagKey.create(Registries.BIOME, Identifier.parse(id.substring(1))))
+                        : h.is(Identifier.parse(id))) {
                     return true;
                 }
             }

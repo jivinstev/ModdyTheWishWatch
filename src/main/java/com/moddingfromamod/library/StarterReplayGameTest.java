@@ -169,7 +169,7 @@ public class StarterReplayGameTest {
                         || com.moddingfromamod.datapack.DatapackReloader.reloadDeferred())
                 ? List.copyOf(packs) : packs.stream()
                 .filter(id -> server.getFunctions().get(
-                        net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(id, "reset"))
+                        net.minecraft.resources.Identifier.fromNamespaceAndPath(id, "reset"))
                         .isEmpty())
                 .toList();
         long[] waited = {0};

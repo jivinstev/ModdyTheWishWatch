@@ -43,7 +43,7 @@ public final class ServedFanfareGameTest {
 
     private static Wish wish(GameTestHelper helper, ServerPlayer child, String text) {
         return Wish.create(text, WishSource.PRESET, System.currentTimeMillis(), child.getUUID(),
-                child.getGameProfile().name(), helper.getLevel().dimension().location().toString(),
+                child.getGameProfile().name(), helper.getLevel().dimension().identifier().toString(),
                 child.getX(), child.getY(), child.getZ());
     }
 

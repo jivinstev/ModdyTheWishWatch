@@ -7,7 +7,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import com.moddingfromamod.testing.gt.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.Blocks;
 import com.moddingfromamod.testing.gt.GameTestHolder;
@@ -44,8 +44,8 @@ public class ExampleGameTest {
      */
     @GameTest(template = "empty_test")
     public static void modLoadsAndRegistersContent(GameTestHelper helper) {
-        ResourceLocation gemId =
-                ResourceLocation.fromNamespaceAndPath(ModdingFromAModMod.MODID, "example_gem");
+        Identifier gemId =
+                Identifier.fromNamespaceAndPath(ModdingFromAModMod.MODID, "example_gem");
         helper.assertTrue(BuiltInRegistries.ITEM.containsKey(gemId),
                 Component.literal("example_gem should be registered in the ITEM registry"));
         helper.assertTrue(ModItems.EXAMPLE_GEM.get() == BuiltInRegistries.ITEM.getValue(gemId),
@@ -78,7 +78,7 @@ public class ExampleGameTest {
      */
     @GameTest(template = "empty_test")
     public static void skipsCleanlyWhenAnOptionalModIsMissing(GameTestHelper helper) {
-        ResourceLocation otherModMob = ResourceLocation.parse("some_other_mod:some_mob");
+        Identifier otherModMob = Identifier.parse("some_other_mod:some_mob");
         if (!BuiltInRegistries.ENTITY_TYPE.containsKey(otherModMob)) {
             // Not installed — nothing to test, and that's not a failure.
             helper.succeed();

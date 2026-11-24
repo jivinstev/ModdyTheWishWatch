@@ -14,7 +14,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.TagKey;
@@ -736,7 +736,7 @@ public final class PetBehaviours {
 
     static boolean matches(BlockState state, String what) {
         if (what.startsWith("#")) {
-            ResourceLocation tag = ResourceLocation.tryParse(what.substring(1));
+            Identifier tag = Identifier.tryParse(what.substring(1));
             return tag != null && state.is(TagKey.create(Registries.BLOCK, tag));
         }
         Block b = state.getBlock();
@@ -749,14 +749,14 @@ public final class PetBehaviours {
             return true;
         }
         if (what.startsWith("#")) {
-            ResourceLocation tag = ResourceLocation.tryParse(what.substring(1));
+            Identifier tag = Identifier.tryParse(what.substring(1));
             if (tag == null) {
                 return false;
             }
             TagKey<Block> key = TagKey.create(Registries.BLOCK, tag);
             return BuiltInRegistries.BLOCK.stream().anyMatch(b -> b.builtInRegistryHolder().is(key));
         }
-        ResourceLocation id = ResourceLocation.tryParse(what);
+        Identifier id = Identifier.tryParse(what);
         return id != null && BuiltInRegistries.BLOCK.getOptional(id).isPresent();
     }
 }

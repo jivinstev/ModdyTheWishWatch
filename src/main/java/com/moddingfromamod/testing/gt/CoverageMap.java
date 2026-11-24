@@ -34,8 +34,8 @@ public final class CoverageMap {
     static final String IDLE = "__idle__";
     static final String SHUTDOWN = "__shutdown__";
     static final int IDLE_TICKS = 400;
-    static final net.minecraft.resources.ResourceLocation IDLE_ID =
-            net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("moddingfromamod", "covmapidle.idle");
+    static final net.minecraft.resources.Identifier IDLE_ID =
+            net.minecraft.resources.Identifier.fromNamespaceAndPath("moddingfromamod", "covmapidle.idle");
 
     private static final Path DIR = dir();
     private static Object agent;

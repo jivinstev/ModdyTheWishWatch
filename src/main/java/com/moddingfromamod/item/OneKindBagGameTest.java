@@ -11,7 +11,7 @@ import net.minecraft.core.registries.Registries;
 import com.moddingfromamod.testing.gt.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.TagParser;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.inventory.ClickType;
@@ -101,7 +101,7 @@ public final class OneKindBagGameTest {
         List<String> bad = new ArrayList<>();
         ItemProperties.HOLDS_ONLY.forEach((word, tags) -> {
             for (String tag : tags.split(",")) {   // EACH one, or a dead half hides behind a live one
-                TagKey<Item> key = TagKey.create(Registries.ITEM, ResourceLocation.parse(tag));
+                TagKey<Item> key = TagKey.create(Registries.ITEM, Identifier.parse(tag));
                 boolean any = false;
                 for (Item i : BuiltInRegistries.ITEM) {
                     if (new ItemStack(i).is(key)) {

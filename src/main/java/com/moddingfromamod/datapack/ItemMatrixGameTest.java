@@ -322,7 +322,7 @@ public class ItemMatrixGameTest {
             var m = attr.matcher(src);
             while (m.find()) {
                 String id = m.group(1);
-                var rl = net.minecraft.resources.ResourceLocation.tryParse(id);
+                var rl = net.minecraft.resources.Identifier.tryParse(id);
                 if (rl == null || !net.minecraft.core.registries.BuiltInRegistries.ATTRIBUTE
                         .containsKey(rl)) {
                     // NAME THE ALTERNATIVES. A refusal that only says "no" sends the next person
@@ -331,7 +331,7 @@ public class ItemMatrixGameTest {
                     String want = id.contains(":") ? id.substring(id.indexOf(':') + 1) : id;
                     String near = net.minecraft.core.registries.BuiltInRegistries.ATTRIBUTE
                             .keySet().stream()
-                            .map(net.minecraft.resources.ResourceLocation::toString)
+                            .map(net.minecraft.resources.Identifier::toString)
                             .filter(k -> k.contains(want.replace("generic.", "")))
                             .reduce((a, b) -> a + ", " + b).orElse("(nothing similar)");
                     bad.add(e.id() + " names attribute '" + id + "', which does not exist in this "
@@ -345,7 +345,7 @@ public class ItemMatrixGameTest {
                 if (id.startsWith("${")) {
                     continue;   // supplied by the child, checked when it is chosen
                 }
-                var rl = net.minecraft.resources.ResourceLocation.tryParse(id);
+                var rl = net.minecraft.resources.Identifier.tryParse(id);
                 if (rl == null || !net.minecraft.core.registries.BuiltInRegistries.MOB_EFFECT
                         .containsKey(rl)) {
                     bad.add(e.id() + " names mob effect '" + id + "', which does not exist");

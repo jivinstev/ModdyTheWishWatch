@@ -39,7 +39,7 @@ public final class WishBagItem {
     /** A bag, minted as a carrier. */
     public static ItemStack stack() {
         ItemStack s = new ItemStack(net.minecraft.core.registries.BuiltInRegistries.ITEM
-                .getValue(net.minecraft.resources.ResourceLocation.parse(VanillaCarrier.ITEM_ID)));
+                .getValue(net.minecraft.resources.Identifier.parse(VanillaCarrier.ITEM_ID)));
         com.moddingfromamod.compat.ModelData.stamp(s, VanillaCarrier.WISH_BAG_MODEL_DATA);
         com.moddingfromamod.compat.ItemComponents.dyeHidden(s, 0xFFFFFF);
         s.set(DataComponents.CUSTOM_NAME, Component.literal(WishBagWords.NAME)

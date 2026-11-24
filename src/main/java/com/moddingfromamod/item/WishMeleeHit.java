@@ -2,7 +2,7 @@ package com.moddingfromamod.item;
 
 import com.moddingfromamod.ModdingFromAModMod;
 import net.minecraft.commands.CommandSourceStack;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
@@ -48,7 +48,7 @@ public final class WishMeleeHit {
         if (fn.isEmpty()) {
             return;
         }
-        ResourceLocation id = ResourceLocation.tryParse(fn);
+        Identifier id = Identifier.tryParse(fn);
         if (id == null) {
             return;
         }

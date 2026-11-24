@@ -21,7 +21,7 @@ public final class Wearables {
      */
     public static String slotOf(String itemId) {
         try {
-            var key = net.minecraft.resources.ResourceLocation.tryParse(itemId);
+            var key = net.minecraft.resources.Identifier.tryParse(itemId);
             if (key == null || !net.minecraft.core.registries.BuiltInRegistries.ITEM.containsKey(key)) {
                 return null;
             }

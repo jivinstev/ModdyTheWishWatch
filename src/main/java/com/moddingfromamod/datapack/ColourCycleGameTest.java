@@ -14,7 +14,7 @@ import com.moddingfromamod.testing.gt.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import com.moddingfromamod.testing.gt.GameTestHolder;
@@ -37,7 +37,7 @@ public class ColourCycleGameTest {
         for (String mob : ColourCycle.mobs()) {
             ColourCycle.Palette p = ColourCycle.palette(mob);
             EntityType<?> type = BuiltInRegistries.ENTITY_TYPE.getValue(
-                    ResourceLocation.withDefaultNamespace(mob));
+                    Identifier.withDefaultNamespace(mob));
             Entity e = helper.spawn(type, new BlockPos(1, 2, 1));
             e.addTag("mfam_colour_probe");
             for (String v : p.values()) {

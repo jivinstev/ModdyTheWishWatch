@@ -286,7 +286,7 @@ final class TurnIntoRecipe {
     private static boolean isCreature(String id) {
         try {
             return net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE
-                    .containsKey(net.minecraft.resources.ResourceLocation.parse(id));
+                    .containsKey(net.minecraft.resources.Identifier.parse(id));
         } catch (RuntimeException | LinkageError e) {
             return false;   // no registry here (a pure caller): nothing to say
         }

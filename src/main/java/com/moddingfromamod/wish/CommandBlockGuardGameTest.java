@@ -386,7 +386,7 @@ public final class CommandBlockGuardGameTest {
                 sb.removeObjective(o);
             }
             var bar = helper.getLevel().getServer().getCustomBossEvents()
-                    .get(net.minecraft.resources.ResourceLocation.fromNamespaceAndPath("moddingfromamod", obj));
+                    .get(net.minecraft.resources.Identifier.fromNamespaceAndPath("moddingfromamod", obj));
             if (bar != null) {
                 bar.removeAllPlayers();
                 helper.getLevel().getServer().getCustomBossEvents().remove(bar);

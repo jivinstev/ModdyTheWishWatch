@@ -2,7 +2,7 @@ package com.moddingfromamod.item;
 
 import com.moddingfromamod.ModdingFromAModMod;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
@@ -98,7 +98,7 @@ public final class PropertyRides {
 
     /** The replacement shot: the named projectile, where the arrow was, going where it was going. */
     static Projectile fire(ServerLevel level, LivingEntity shooter, String id, Vec3 at, Vec3 motion, String landFn) {
-        ResourceLocation rl = ResourceLocation.tryParse(id);
+        Identifier rl = Identifier.tryParse(id);
         var type = rl == null ? null : BuiltInRegistries.ENTITY_TYPE.getValue(rl);
         Entity e = type == null ? null : type.create(level, EntitySpawnReason.COMMAND);
         if (!(e instanceof Projectile p)) {

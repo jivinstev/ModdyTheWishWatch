@@ -60,7 +60,7 @@ public final class ArtifactIndex {
             return out;
         }
         ServerLevel level = player.level();
-        String dim = level.dimension().location().toString();
+        String dim = level.dimension().identifier().toString();
 
         // ── creatures: where the mobs actually ARE ──────────────────────────────────────────
         //

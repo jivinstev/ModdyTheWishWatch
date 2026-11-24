@@ -11,7 +11,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import com.moddingfromamod.testing.gt.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.ItemStack;
@@ -47,7 +47,7 @@ public final class VanillaNativeGameTest {
                 String fact = w.fact();
                 if (fact.startsWith("tag:")) {
                     for (String tag : fact.substring(4).split(",")) {
-                        helper.assertTrue(got.is(TagKey.create(Registries.ITEM, ResourceLocation.parse(tag))),
+                        helper.assertTrue(got.is(TagKey.create(Registries.ITEM, Identifier.parse(tag))),
                                 Component.literal(w.part() + ": " + w.baseItem() + " is not in #" + tag
                                         + " on this Minecraft, so it does not do what the table says"));
                     }

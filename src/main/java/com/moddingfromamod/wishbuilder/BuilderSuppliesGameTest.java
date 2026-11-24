@@ -24,7 +24,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.Item;
@@ -51,7 +51,7 @@ public final class BuilderSuppliesGameTest {
 
     /** How many of {@code itemId} he holds: every inventory slot and his Wish Bag. On the server thread. */
     public static int held(ServerPlayer p, String itemId) {
-        Item item = BuiltInRegistries.ITEM.getValue(ResourceLocation.parse(itemId));
+        Item item = BuiltInRegistries.ITEM.getValue(Identifier.parse(itemId));
         int n = 0;
         var inv = p.getInventory();
         for (int i = 0; i < inv.getContainerSize(); i++) {

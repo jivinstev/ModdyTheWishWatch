@@ -41,7 +41,7 @@ public final class EventCommand {
     @SubscribeEvent
     public static void onRegisterCommands(RegisterCommandsEvent event) {
         event.getDispatcher().register(Commands.literal("moddyevent")
-                .requires(src -> src.hasPermission(2))
+                .requires(net.minecraft.commands.Commands.hasPermission(net.minecraft.commands.Commands.LEVEL_GAMEMASTERS))
                 .then(Commands.literal("define")
                         .then(Commands.argument("json", StringArgumentType.greedyString())
                                 .executes(EventCommand::define)))

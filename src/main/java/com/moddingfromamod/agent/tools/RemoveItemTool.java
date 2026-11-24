@@ -104,7 +104,7 @@ public final class RemoveItemTool implements McpTool {
                 // pack rather than the shape.
                 int fillsGone = 0;
                 if (server != null && spec != null && spec.effects().contains("fill_blocks")) {
-                    var fn = net.minecraft.resources.ResourceLocation.tryParse(id + ":undo_fill");
+                    var fn = net.minecraft.resources.Identifier.tryParse(id + ":undo_fill");
                     if (fn != null && server.getFunctions().get(fn).isPresent()) {
                         server.getCommands().performPrefixedCommand(server.createCommandSourceStack()
                                 .withSuppressedOutput().withPermission(2), "function " + id + ":undo_fill");

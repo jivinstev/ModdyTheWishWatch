@@ -16,7 +16,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
 import com.moddingfromamod.testing.gt.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -286,7 +286,7 @@ public final class InventoryCountGameTest {
     private static Optional<CommandFunction<net.minecraft.commands.CommandSourceStack>> giveFn(
             GameTestHelper helper, String id) {
         return helper.getLevel().getServer().getFunctions()
-                .get(ResourceLocation.fromNamespaceAndPath(id, "give"));
+                .get(Identifier.fromNamespaceAndPath(id, "give"));
     }
 
     /**

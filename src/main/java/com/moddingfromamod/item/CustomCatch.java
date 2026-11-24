@@ -6,7 +6,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -89,7 +89,7 @@ public final class CustomCatch {
             ItemStack chest = new ItemStack(Items.CHEST);
             chest.set(DataComponents.CONTAINER_LOOT, new SeededContainerLoot(
                     ResourceKey.create(Registries.LOOT_TABLE,
-                            ResourceLocation.withDefaultNamespace("chests/buried_treasure")),
+                            Identifier.withDefaultNamespace("chests/buried_treasure")),
                     level.random.nextLong()));
             chest.set(DataComponents.CUSTOM_NAME, net.minecraft.network.chat.Component.literal("Treasure Chest"));
             return chest;
@@ -98,7 +98,7 @@ public final class CustomCatch {
             return EnchantmentHelper.enchantItem(level.random, new ItemStack(Items.BOOK), 30,
                     level.registryAccess(), Optional.empty());
         }
-        ResourceLocation id = ResourceLocation.tryParse(what);
+        Identifier id = Identifier.tryParse(what);
         Optional<Item> item = id == null ? Optional.empty() : BuiltInRegistries.ITEM.getOptional(id);
         return item.map(ItemStack::new).orElse(ItemStack.EMPTY);
     }

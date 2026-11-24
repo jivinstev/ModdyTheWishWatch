@@ -372,7 +372,7 @@ public final class WishService {
 
         Wish wish = WishBook.get(serverOf(player)).add(Wish.create(text, source, now,
                 player.getUUID(), player.getGameProfile().name(),
-                player.level().dimension().location().toString(),
+                player.level().dimension().identifier().toString(),
                 player.getX(), player.getY(), player.getZ()));
         // every line from here on is about THIS wish, not the one still running before it.
         WishFeedback.about(wish.shortId());

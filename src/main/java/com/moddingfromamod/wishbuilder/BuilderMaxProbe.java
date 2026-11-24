@@ -135,7 +135,7 @@ public final class BuilderMaxProbe {
         spec = s.toJson().toString();
         LOG.info("buildermax: {} spec {}", ARM, spec);
         var who = new BuilderMake.Who(UUID.nameUUIDFromBytes("buildermax".getBytes()), "BuilderMaxProbe",
-                level.dimension().location().toString(), SIDE / 2.0, y + 1, SIDE / 2.0);
+                level.dimension().identifier().toString(), SIDE / 2.0, y + 1, SIDE / 2.0);
         BuilderMake.run(server, who, s, null, BuilderMake.protocol(), false, false).whenComplete((r, e) -> {
             if (e != null || r == null || r.madeId() == null || r.madeId().isEmpty()) {
                 failed = e != null ? e.toString() : r == null ? "no result" : r.outcome() + " " + r.detail();

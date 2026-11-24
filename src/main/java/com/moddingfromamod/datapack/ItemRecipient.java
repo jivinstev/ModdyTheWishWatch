@@ -28,7 +28,7 @@ public final class ItemRecipient {
     private static final int RANGE = 24;
 
     /**
-     * A registry id and nothing else. Deliberately stricter than {@code ResourceLocation} —
+     * A registry id and nothing else. Deliberately stricter than {@code Identifier} —
      * no uppercase, no brackets, no commas, no spaces — because this string is spliced into a
      * selector rather than parsed by one.
      */

@@ -82,12 +82,12 @@ public class CheckedClaimsGameTest {
 
         Wish wish = WishBook.get(server).add(Wish.create("a pickleball court with 2 mobs playing",
                 WishSource.TYPED, System.currentTimeMillis(), child.getUUID(), "Steve",
-                helper.getLevel().dimension().location().toString(), court.getX(), court.getY(), court.getZ()));
+                helper.getLevel().dimension().identifier().toString(), court.getX(), court.getY(), court.getZ()));
         Marshal.global().submit(wish.id(), child.getUUID(), wish.text());
         Marshal.global().assign(worker, wish.id());
         BuildGate.startWish(wish.id());
         Marshal.global().runForWorker(worker).lockAnchor(new Spot(
-                helper.getLevel().dimension().location().toString(), court.getX(), court.getY(), court.getZ()));
+                helper.getLevel().dimension().identifier().toString(), court.getX(), court.getY(), court.getZ()));
         WishScope.as(wish.id().toString(), () -> WishClaims.state(List.of(CLAIM)));
 
         AtomicReference<ToolResult> result = new AtomicReference<>();

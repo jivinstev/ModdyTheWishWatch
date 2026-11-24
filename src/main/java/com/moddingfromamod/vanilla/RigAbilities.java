@@ -280,7 +280,7 @@ public final class RigAbilities {
         if (sp == null || sp.throwsItem().isEmpty()) {
             return null;
         }
-        var id = net.minecraft.resources.ResourceLocation.tryParse(sp.throwsItem());
+        var id = net.minecraft.resources.Identifier.tryParse(sp.throwsItem());
         return id == null ? null : net.minecraft.core.registries.BuiltInRegistries.ITEM.getOptional(id)
                 .filter(i -> i != net.minecraft.world.item.Items.AIR).orElse(null);
     }

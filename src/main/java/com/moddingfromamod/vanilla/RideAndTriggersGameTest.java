@@ -164,7 +164,7 @@ public final class RideAndTriggersGameTest {
                 helper.fail(Component.literal("the landing went off while he only rode it about, before any jump"));
             } else if (!husk.hasEffect(MobEffects.SLOWNESS)) {
                 var srv = helper.getLevel().getServer();
-                var tickTag = srv.getFunctions().getTag(net.minecraft.resources.ResourceLocation.withDefaultNamespace("tick"));
+                var tickTag = srv.getFunctions().getTag(net.minecraft.resources.Identifier.withDefaultNamespace("tick"));
                 helper.fail(Component.literal("he jumped it beside the husk and its landing did nothing; landings:"
                         + landings + " husk alive=" + husk.isAlive() + " effects=" + husk.getActiveEffects()
                         + " carrier=" + (SpeciesOnRigGameTest.carrier(helper, id) == null ? "gone"

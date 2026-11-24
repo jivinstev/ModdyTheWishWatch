@@ -118,7 +118,7 @@ public final class WishTryGameTest {
         RealTimeWait.until(helper, () -> {
             boolean loaded = !com.moddingfromamod.datapack.DatapackReloader.reloadInProgress()
                     && !com.moddingfromamod.datapack.DatapackReloader.reloadDeferred()
-                    && server.getFunctions().get(net.minecraft.resources.ResourceLocation
+                    && server.getFunctions().get(net.minecraft.resources.Identifier
                             .fromNamespaceAndPath(pack, "reset")).isPresent();
             helper.assertTrue(loaded, Component.literal("the item's pack is still loading"));
         }, () -> tryAndExpect(helper, p, made, made.id().toString(), () -> {
@@ -203,7 +203,7 @@ public final class WishTryGameTest {
         var book = WishBook.get(helper.getLevel().getServer());
         Wish w = book.add(Wish.create(text, WishSource.TYPED, System.currentTimeMillis(),
                 maker.getUUID(), maker.getGameProfile().name(),
-                maker.level().dimension().location().toString(),
+                maker.level().dimension().identifier().toString(),
                 maker.getX(), maker.getY(), maker.getZ()));
         book.complete(w.id(), WishStatus.DONE, "made it");
         ArtifactMemoryStore.append(artifactId, kind, new ArtifactMemory.Turn(w.id().toString(),

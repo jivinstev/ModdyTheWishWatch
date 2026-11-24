@@ -164,7 +164,7 @@ public final class RunCommandTool implements McpTool {
             if (cut >= 0) {
                 s = s.substring(0, cut);
             }
-            var key = net.minecraft.resources.ResourceLocation.tryParse(s.contains(":") ? s : "minecraft:" + s);
+            var key = net.minecraft.resources.Identifier.tryParse(s.contains(":") ? s : "minecraft:" + s);
             return key == null ? 64 : net.minecraft.core.registries.BuiltInRegistries.ITEM.getOptional(key)
                     .map(i -> i.getDefaultMaxStackSize()).orElse(64);
         } catch (RuntimeException e) {
@@ -445,7 +445,7 @@ public final class RunCommandTool implements McpTool {
                 net.minecraft.core.BlockPos aimed = spot == null ? null
                         : new net.minecraft.core.BlockPos(spot.x(), spot.y(), spot.z());
                 var dim = spot == null || spot.dimension().isEmpty() ? null
-                        : net.minecraft.resources.ResourceLocation.tryParse(spot.dimension());
+                        : net.minecraft.resources.Identifier.tryParse(spot.dimension());
                 var level = player != null ? player.level()
                         : com.moddingfromamod.agent.ArtifactLevel.resolve(server, dim == null
                                 ? null

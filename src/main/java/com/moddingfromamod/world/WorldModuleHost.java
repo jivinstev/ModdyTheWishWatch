@@ -365,7 +365,7 @@ public final class WorldModuleHost {
         if (base == null || !b.standsYet(p.getUUID())) {
             return;
         }
-        String dim = p.level().dimension().location().toString();
+        String dim = p.level().dimension().identifier().toString();
         if (base.holds(dim, p.getX(), p.getZ())) {
             return;
         }

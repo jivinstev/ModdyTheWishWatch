@@ -10,7 +10,7 @@ import java.util.UUID;
 
 import com.moddingfromamod.ModdingFromAModMod;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
@@ -378,7 +378,7 @@ public final class HitProxies {
 
     static Mob spawnOne(ServerLevel level, Mob carrier, HitProxyPlan.Proxy p, float bodyYaw) {
         EntityType<?> type = BuiltInRegistries.ENTITY_TYPE.getValue(
-                ResourceLocation.withDefaultNamespace(p.id()));
+                Identifier.withDefaultNamespace(p.id()));
         Entity raw = type.create(level, EntitySpawnReason.COMMAND);
         if (!(raw instanceof Mob mob)) {
             if (raw != null) {

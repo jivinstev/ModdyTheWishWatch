@@ -351,7 +351,7 @@ public class ClaimIdentityGameTest {
         int relY = helper.getBlockState(new BlockPos(4, 0, 4)).isAir() ? 2 : 1;
         BlockPos spot = helper.absolutePos(new BlockPos(4, relY, 4));
         child.teleportTo(spot.getX() + 2.5, spot.getY(), spot.getZ() + 2.5);
-        String dim = helper.getLevel().dimension().location().toString();
+        String dim = helper.getLevel().dimension().identifier().toString();
         Wish wish = WishBook.get(server).add(Wish.create("claim identity " + childName, WishSource.TYPED,
                 System.currentTimeMillis(), child.getUUID(), "Steve", dim, spot.getX(), spot.getY(), spot.getZ()));
         Marshal.global().submit(wish.id(), child.getUUID(), wish.text());

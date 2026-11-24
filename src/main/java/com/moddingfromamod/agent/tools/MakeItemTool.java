@@ -1493,7 +1493,7 @@ public final class MakeItemTool implements McpTool {
                 for (String id : caught[0].split(",")) {
                     if (!ItemProperties.CATCH_SPECIALS.contains(id)
                             && net.minecraft.core.registries.BuiltInRegistries.ITEM.getOptional(
-                                    net.minecraft.resources.ResourceLocation.tryParse(id)).isEmpty()) {
+                                    net.minecraft.resources.Identifier.tryParse(id)).isEmpty()) {
                         return ToolResult.error("catches names '" + id + "', which is not an item in this "
                                 + "Minecraft. Use a real item id, or treasure_chest / enchanted_book.");
                     }
@@ -1506,7 +1506,7 @@ public final class MakeItemTool implements McpTool {
                 && args.getAsJsonObject("properties").has(ItemProperties.EAT_SPEED_KEY)) {
             var eaten = baseItem == null || baseItem.isBlank() ? null
                     : net.minecraft.core.registries.BuiltInRegistries.ITEM.getOptional(
-                            net.minecraft.resources.ResourceLocation.tryParse(
+                            net.minecraft.resources.Identifier.tryParse(
                                     baseItem.contains(":") ? baseItem : "minecraft:" + baseItem));
             if (eaten == null || eaten.isEmpty() || !com.moddingfromamod.compat.Consumables.isConsumed(
                     new net.minecraft.world.item.ItemStack(eaten.get()))) {
@@ -2749,8 +2749,8 @@ public final class MakeItemTool implements McpTool {
     }
 
     private static String modifiersOf(String baseItem) {
-        net.minecraft.resources.ResourceLocation key =
-                net.minecraft.resources.ResourceLocation.tryParse(
+        net.minecraft.resources.Identifier key =
+                net.minecraft.resources.Identifier.tryParse(
                         baseItem.trim().toLowerCase(java.util.Locale.ROOT));
         if (key == null || !net.minecraft.core.registries.BuiltInRegistries.ITEM.containsKey(key)) {
             return "";
@@ -3053,20 +3053,20 @@ public final class MakeItemTool implements McpTool {
             new com.moddingfromamod.datapack.TurnInto.Kinds() {
                 @Override
                 public boolean isBlock(String id) {
-                    var key = net.minecraft.resources.ResourceLocation.tryParse(id);
+                    var key = net.minecraft.resources.Identifier.tryParse(id);
                     return key != null && net.minecraft.core.registries.BuiltInRegistries.BLOCK.containsKey(key);
                 }
 
                 @Override
                 public boolean isItem(String id) {
-                    var key = net.minecraft.resources.ResourceLocation.tryParse(id);
+                    var key = net.minecraft.resources.Identifier.tryParse(id);
                     return key != null && !id.endsWith(":air") && !id.endsWith("_air")
                             && net.minecraft.core.registries.BuiltInRegistries.ITEM.containsKey(key);
                 }
 
                 @Override
                 public boolean isBlockTag(String tag) {
-                    var key = net.minecraft.resources.ResourceLocation.tryParse(tag.substring(1));
+                    var key = net.minecraft.resources.Identifier.tryParse(tag.substring(1));
                     return key != null && net.minecraft.core.registries.BuiltInRegistries.BLOCK.get(
                             net.minecraft.tags.TagKey.create(net.minecraft.core.registries.Registries.BLOCK, key))
                             .isPresent();
@@ -3074,7 +3074,7 @@ public final class MakeItemTool implements McpTool {
 
                 @Override
                 public boolean isItemTag(String tag) {
-                    var key = net.minecraft.resources.ResourceLocation.tryParse(tag.substring(1));
+                    var key = net.minecraft.resources.Identifier.tryParse(tag.substring(1));
                     return key != null && net.minecraft.core.registries.BuiltInRegistries.ITEM.get(
                             net.minecraft.tags.TagKey.create(net.minecraft.core.registries.Registries.ITEM, key))
                             .isPresent();
@@ -3082,8 +3082,8 @@ public final class MakeItemTool implements McpTool {
             };
 
     public static final com.moddingfromamod.datapack.RegistryExists LIVE_REGISTRY = id -> {
-        net.minecraft.resources.ResourceLocation key =
-                net.minecraft.resources.ResourceLocation.tryParse(id);
+        net.minecraft.resources.Identifier key =
+                net.minecraft.resources.Identifier.tryParse(id);
         return key != null
                 && (net.minecraft.core.registries.BuiltInRegistries.ITEM.containsKey(key)
                     || net.minecraft.core.registries.BuiltInRegistries.BLOCK.containsKey(key));

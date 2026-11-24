@@ -14,7 +14,7 @@ import net.minecraft.commands.CommandSource;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.functions.CommandFunction;
 import net.minecraft.network.chat.CommonComponents;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.phys.Vec2;
 import net.minecraft.world.phys.Vec3;
@@ -107,7 +107,7 @@ public final class PackParseCheck {
                 server.getFunctionCompilationLevel(), "", CommonComponents.EMPTY, null, null);
         var dispatcher = server.getCommands().getDispatcher();
         for (var f : functions.entrySet()) {
-            ResourceLocation key = ResourceLocation.tryParse(f.getKey());
+            Identifier key = Identifier.tryParse(f.getKey());
             if (key == null) {
                 continue;   // an id the server cannot name it by; the after-load check reports it
             }

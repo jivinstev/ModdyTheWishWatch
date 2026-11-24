@@ -8,7 +8,7 @@ import com.moddingfromamod.agent.AgentBridge;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.Item;
@@ -35,9 +35,9 @@ public final class ForeignItemEdits {
         if (id == null || id.isBlank()) {
             return null;
         }
-        ResourceLocation rl;
+        Identifier rl;
         try {
-            rl = ResourceLocation.parse(id.trim().toLowerCase(Locale.ROOT));
+            rl = Identifier.parse(id.trim().toLowerCase(Locale.ROOT));
         } catch (RuntimeException e) {
             return null;
         }

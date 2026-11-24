@@ -96,7 +96,7 @@ public abstract class SelectorIndexMixin implements TaggedSelector {
             List<Entity> theirs = out.subList(before, out.size());
             List<Entity> ours = mine.subList(before, mine.size());
             if (!moddingfromamod$sameEntities(theirs, ours)) {
-                SelectorIndex.mismatch(moddingfromamod$text + " in " + level.dimension().location(),
+                SelectorIndex.mismatch(moddingfromamod$text + " in " + level.dimension().identifier(),
                         describe(theirs), describe(ours));
             }
             return;

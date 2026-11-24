@@ -216,7 +216,7 @@ public final class TakeMeToTool implements McpTool {
      */
     public static void register(com.mojang.brigadier.CommandDispatcher<net.minecraft.commands.CommandSourceStack> d) {
         d.register(net.minecraft.commands.Commands.literal(VISIT)
-                .requires(src -> src.hasPermission(2))
+                .requires(net.minecraft.commands.Commands.hasPermission(net.minecraft.commands.Commands.LEVEL_GAMEMASTERS))
                 // greedyString, not word(): a forked building is `<id>~<short uuid>` and
                 // brigadier's word() refuses `~`.
                 .then(net.minecraft.commands.Commands.argument("id",
@@ -282,7 +282,7 @@ public final class TakeMeToTool implements McpTool {
         try {
             return net.minecraft.resources.ResourceKey.create(
                     net.minecraft.core.registries.Registries.DIMENSION,
-                    net.minecraft.resources.ResourceLocation.parse(a.dimension()));
+                    net.minecraft.resources.Identifier.parse(a.dimension()));
         } catch (Exception e) {
             return null;                    // ArtifactLevel.resolve falls back to the overworld
         }

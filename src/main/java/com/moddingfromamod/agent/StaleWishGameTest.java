@@ -90,7 +90,7 @@ public class StaleWishGameTest {
                 + UUID.randomUUID().toString().substring(0, 8);
         Wish wish = WishBook.get(helper.getLevel().getServer()).add(Wish.create(text, WishSource.COMMAND,
                 System.currentTimeMillis(), p.getUUID(), p.getGameProfile().name(),
-                p.level().dimension().location().toString(), p.getX(), p.getY(), p.getZ()));
+                p.level().dimension().identifier().toString(), p.getX(), p.getY(), p.getZ()));
         Marshal.global().submit(wish.id(), p.getUUID(), text);
         WishProgress.startThinking(p, wish.id(), text);
 
@@ -208,7 +208,7 @@ public class StaleWishGameTest {
         Wish live = WishBook.get(helper.getLevel().getServer()).add(Wish.create(liveText, WishSource.COMMAND,
                 System.currentTimeMillis(), w.player().getUUID(),
                 w.player().getGameProfile().name(),
-                w.player().level().dimension().location().toString(),
+                w.player().level().dimension().identifier().toString(),
                 w.player().getX(), w.player().getY(), w.player().getZ()));
         helper.assertValueEqual(live.status(), WishStatus.PENDING, Component.literal("the second wish's status"));
 
@@ -345,7 +345,7 @@ public class StaleWishGameTest {
         Wish live = WishBook.get(helper.getLevel().getServer()).add(Wish.create(liveText, WishSource.COMMAND,
                 System.currentTimeMillis(), w.player().getUUID(),
                 w.player().getGameProfile().name(),
-                w.player().level().dimension().location().toString(),
+                w.player().level().dimension().identifier().toString(),
                 w.player().getX(), w.player().getY(), w.player().getZ()));
         WishQueue queue = new WishQueue();
         helper.assertTrue(queue.offer(w.wish()), Component.literal("the test queue refused the stale entry"));

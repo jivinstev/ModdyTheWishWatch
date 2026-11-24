@@ -45,7 +45,7 @@ public final class PictureCommand {
         event.getDispatcher().register(Commands.literal("wishpaint")
                 // A REPLAY command, not something a child types: the stored form of every
                 // saved button, run by the executor at permission 2. Hidden from a child's tab list.
-                .requires(src -> src.hasPermission(2))
+                .requires(net.minecraft.commands.Commands.hasPermission(net.minecraft.commands.Commands.LEVEL_GAMEMASTERS))
                 // greedyString, not word(): a child's fork of a picture is `<id>~<his short
                 // uuid>`, and brigadier's word() refuses `~` — as found for `wishbuild`.
                 .then(Commands.argument("id", StringArgumentType.greedyString())
@@ -167,7 +167,7 @@ public final class PictureCommand {
         }
         // In the painting ledger like any painted wish, so the same undo finds it.
         PaintRegistry.put(level.getServer(), new PaintRecord(id,
-                level.dimension().location().toString(), at.getX(), at.getY(), at.getZ(),
+                level.dimension().identifier().toString(), at.getX(), at.getY(), at.getZ(),
                 id, false, "", PaintRecipe.blank(), 1, 1,
                 facing.getName(), wide, tall, recipe).withOwner(owner).withBoard(changed));
         return null;

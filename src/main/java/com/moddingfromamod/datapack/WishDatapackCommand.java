@@ -9,7 +9,7 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.functions.CommandFunction;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.ServerFunctionManager;
 import net.minecraft.server.level.ServerPlayer;
@@ -46,7 +46,7 @@ public final class WishDatapackCommand {
         event.getDispatcher().register(Commands.literal("wishdatapack")
                 // A REPLAY command, not something a child types: the stored form of every
                 // saved button, run by the executor at permission 2. Hidden from a child's tab list.
-                .requires(src -> src.hasPermission(2))
+                .requires(net.minecraft.commands.Commands.hasPermission(net.minecraft.commands.Commands.LEVEL_GAMEMASTERS))
                 .then(Commands.argument("id", StringArgumentType.word())
                         .suggests((ctx, b) -> {
                             DatapackStore.listIds().forEach(b::suggest);
@@ -111,7 +111,7 @@ public final class WishDatapackCommand {
     /** Run {@code <id>:<entry>} as the datapack's own code for {@code player}; false if absent. */
     static boolean runEntry(MinecraftServer server, ServerPlayer player, String id, String entry) {
         ServerFunctionManager functions = server.getFunctions();
-        var fn = functions.get(ResourceLocation.fromNamespaceAndPath(id, entry));
+        var fn = functions.get(Identifier.fromNamespaceAndPath(id, entry));
         if (fn.isEmpty()) {
             return false;
         }

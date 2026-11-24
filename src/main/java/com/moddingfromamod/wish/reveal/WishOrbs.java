@@ -16,7 +16,7 @@ import com.moddingfromamod.wish.WishPlan;
 import com.moddingfromamod.wish.WishProgress;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
@@ -534,7 +534,7 @@ public final class WishOrbs {
         if (dimension == null || dimension.isEmpty()) {
             return server.overworld();
         }
-        ResourceLocation id = ResourceLocation.tryParse(dimension);
+        Identifier id = Identifier.tryParse(dimension);
         if (id == null) {
             return null;
         }

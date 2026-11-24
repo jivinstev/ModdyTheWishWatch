@@ -225,7 +225,7 @@ public class PickupRatchetGameTest {
         String text = "make a " + tag + " tower " + UUID.randomUUID().toString().substring(0, 8);
         Wish wish = WishBook.get(helper.getLevel().getServer()).add(Wish.create(text, WishSource.COMMAND,
                 System.currentTimeMillis(), p.getUUID(), p.getName().getString(),
-                p.level().dimension().location().toString(), p.getX(), p.getY(), p.getZ()));
+                p.level().dimension().identifier().toString(), p.getX(), p.getY(), p.getZ()));
         Marshal.global().submit(wish.id(), p.getUUID(), text);
         WishProgress.startThinking(p, wish.id(), text);
         WishQueue queue = new WishQueue();

@@ -10,7 +10,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import com.moddingfromamod.testing.gt.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -31,8 +31,8 @@ import com.moddingfromamod.testing.gt.GameTestHolder;
 @GameTestHolder(GateShards.DEFAULT)
 public class PaintPanelGameTest {
 
-    private static final ResourceLocation PANEL_ID =
-            ResourceLocation.fromNamespaceAndPath(ModdingFromAModMod.MODID, ModPaint.PANEL_ID);
+    private static final Identifier PANEL_ID =
+            Identifier.fromNamespaceAndPath(ModdingFromAModMod.MODID, ModPaint.PANEL_ID);
 
     /**
      * All three registrations landed.

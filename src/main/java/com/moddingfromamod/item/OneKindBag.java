@@ -2,7 +2,7 @@ package com.moddingfromamod.item;
 
 import com.moddingfromamod.ModdingFromAModMod;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -50,7 +50,7 @@ public final class OneKindBag {
             return false;
         }
         for (String one : tag.split(",")) {
-            if (thing.is(TagKey.create(Registries.ITEM, ResourceLocation.parse(one.trim())))) {
+            if (thing.is(TagKey.create(Registries.ITEM, Identifier.parse(one.trim())))) {
                 return false;
             }
         }

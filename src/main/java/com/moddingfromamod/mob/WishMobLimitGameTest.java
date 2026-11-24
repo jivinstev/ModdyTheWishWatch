@@ -12,7 +12,7 @@ import net.minecraft.commands.functions.CommandFunction;
 import net.minecraft.core.BlockPos;
 import com.moddingfromamod.testing.gt.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.phys.Vec3;
@@ -91,7 +91,7 @@ public final class WishMobLimitGameTest {
         }
         var source = server.createCommandSourceStack().withSuppressedOutput().withPermission(4);
         CommandFunction<net.minecraft.commands.CommandSourceStack> fn = CommandFunction.fromLines(
-                ResourceLocation.fromNamespaceAndPath(ModdingFromAModMod.MODID, "gametest_1265"),
+                Identifier.fromNamespaceAndPath(ModdingFromAModMod.MODID, "gametest_1265"),
                 server.getCommands().getDispatcher(), source, lines);
         server.getFunctions().execute(fn, source);
         int made = creepers(helper) - before;

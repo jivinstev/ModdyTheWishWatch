@@ -107,7 +107,7 @@ public class ChildSafetyEnforceGameTest {
         String text = uniqueWish(tag);
         Wish wish = WishBook.get(helper.getLevel().getServer()).add(Wish.create(text, WishSource.COMMAND,
                 System.currentTimeMillis(), p.getUUID(), p.getGameProfile().name(),
-                p.level().dimension().location().toString(), p.getX(), p.getY(), p.getZ()));
+                p.level().dimension().identifier().toString(), p.getX(), p.getY(), p.getZ()));
         Marshal.global().submit(wish.id(), p.getUUID(), text);
         WishProgress.startThinking(p, wish.id(), text);
 
@@ -489,7 +489,7 @@ public class ChildSafetyEnforceGameTest {
 
         Wish wish = WishBook.get(helper.getLevel().getServer()).add(Wish.create(text, WishSource.COMMAND,
                 System.currentTimeMillis(), p.getUUID(), p.getGameProfile().name(),
-                p.level().dimension().location().toString(), p.getX(), p.getY(), p.getZ()));
+                p.level().dimension().identifier().toString(), p.getX(), p.getY(), p.getZ()));
         Marshal.global().submit(wish.id(), p.getUUID(), text);
         WishProgress.startThinking(p, wish.id(), text);
         WishQueue queue = new WishQueue();

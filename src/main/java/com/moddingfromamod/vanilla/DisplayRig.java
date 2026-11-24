@@ -8,7 +8,7 @@ import com.moddingfromamod.runtime.CreatureSculpt;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Display;
 import net.minecraft.world.entity.Entity;
@@ -87,8 +87,8 @@ public final class DisplayRig {
     }
 
     /** Vanilla item-display entity type id — spelt once. */
-    public static final ResourceLocation ITEM_DISPLAY =
-            ResourceLocation.withDefaultNamespace("item_display");
+    public static final Identifier ITEM_DISPLAY =
+            Identifier.withDefaultNamespace("item_display");
 
     private final Mob base;
     private final List<Entity> displays;
@@ -734,7 +734,7 @@ public final class DisplayRig {
         List<RigBase.Candidate> out = new ArrayList<>();
         for (CarrierPool.Skeleton row : CarrierPool.ALL) {
             EntityType<?> t = BuiltInRegistries.ENTITY_TYPE.getValue(
-                    ResourceLocation.withDefaultNamespace(row.id()));
+                    Identifier.withDefaultNamespace(row.id()));
             var d = t.getDimensions();
             out.add(new RigBase.Candidate(row.id(), d.width(), d.height(),
                     level != null && peacefulSafe(level, t)));
@@ -845,7 +845,7 @@ public final class DisplayRig {
         RigBase.Choice pick = hits == null ? null : hits.core();
         EntityType<?> baseType = pick == null ? EntityType.ZOMBIE
                 : BuiltInRegistries.ENTITY_TYPE.getValue(
-                        ResourceLocation.withDefaultNamespace(pick.id()));
+                        Identifier.withDefaultNamespace(pick.id()));
         Entity raw = baseType.create(level, EntitySpawnReason.COMMAND);
         if (!(raw instanceof Mob mob)) {
             throw new IllegalStateException("base " + baseType + " is not a Mob");
@@ -1623,8 +1623,8 @@ public final class DisplayRig {
     }
 
     /** Vanilla text-display entity type id — spelt once, beside the item-display one. */
-    public static final ResourceLocation TEXT_DISPLAY =
-            ResourceLocation.withDefaultNamespace("text_display");
+    public static final Identifier TEXT_DISPLAY =
+            Identifier.withDefaultNamespace("text_display");
 
     /**
      * How far above the creature's head the plate floats, <b>derived from the two renderers rather

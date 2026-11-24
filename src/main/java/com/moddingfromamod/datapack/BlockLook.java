@@ -58,7 +58,7 @@ public final class BlockLook {
     /** Asks the running game. Unknown ids answer {@code exists=false}. */
     public static Facts live(String id) {
         try {
-            net.minecraft.resources.ResourceLocation key = net.minecraft.resources.ResourceLocation.tryParse(id);
+            net.minecraft.resources.Identifier key = net.minecraft.resources.Identifier.tryParse(id);
             if (key == null) {
                 return new Facts(false, false, false, false, false);
             }
@@ -79,7 +79,7 @@ public final class BlockLook {
     /** Whether an entity id names a real creature in the running game (true when it cannot ask). */
     public static boolean entityExists(String id) {
         try {
-            net.minecraft.resources.ResourceLocation key = net.minecraft.resources.ResourceLocation.tryParse(id);
+            net.minecraft.resources.Identifier key = net.minecraft.resources.Identifier.tryParse(id);
             return key != null && net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE.containsKey(key);
         } catch (RuntimeException | ExceptionInInitializerError notBootstrapped) {
             return true;

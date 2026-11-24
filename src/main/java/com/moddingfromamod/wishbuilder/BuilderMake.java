@@ -162,7 +162,7 @@ public final class BuilderMake {
     public record Who(UUID id, String name, String dimension, double x, double y, double z) {
         public static Who of(ServerPlayer p) {
             return new Who(p.getUUID(), p.getName().getString(),
-                    p.level().dimension().location().toString(), p.getX(), p.getY(), p.getZ());
+                    p.level().dimension().identifier().toString(), p.getX(), p.getY(), p.getZ());
         }
     }
 

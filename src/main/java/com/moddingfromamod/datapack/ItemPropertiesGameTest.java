@@ -122,7 +122,7 @@ public class ItemPropertiesGameTest {
      * The attribute modifier arrives, carries our own id, and is the only one on the item.
      *
      * <p>The id matters more than it looks: 1.21 replaced the old UUID-and-name pair with a single
-     * {@code ResourceLocation}, and two modifiers sharing an id is not an error — the second
+     * {@code Identifier}, and two modifiers sharing an id is not an error — the second
      * silently replaces the first. An unnamespaced one is a collision waiting for another mod.
      */
     @GameTest(template = "empty_test", timeoutTicks = 600)

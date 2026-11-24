@@ -2,7 +2,7 @@ package com.moddingfromamod.datapack;
 
 import com.moddingfromamod.ModdingFromAModMod;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -57,6 +57,6 @@ public final class PendingPressTicker {
 
     /** True when {@code id}'s load function is present — the loaded probe the command uses. */
     static boolean probe(MinecraftServer server, String id) {
-        return server.getFunctions().get(ResourceLocation.fromNamespaceAndPath(id, "reset")).isPresent();
+        return server.getFunctions().get(Identifier.fromNamespaceAndPath(id, "reset")).isPresent();
     }
 }

@@ -676,7 +676,7 @@ public final class BuilderMakeGameTest {
     /** Blocks of {@code id} within 48 blocks of {@code at}. On the server thread (the poll), where the world is read. */
     static int countBlocks(GameTestHelper helper, BlockPos at, String id) {
         var block = net.minecraft.core.registries.BuiltInRegistries.BLOCK.getValue(
-                net.minecraft.resources.ResourceLocation.parse(id));
+                net.minecraft.resources.Identifier.parse(id));
         int c = 0;
         var level = helper.getLevel();
         for (BlockPos p : BlockPos.betweenClosed(at.offset(-48, -8, -48), at.offset(48, 64, 48))) {

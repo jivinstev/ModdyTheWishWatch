@@ -422,7 +422,7 @@ public final class StarterShow {
             kid.swing(InteractionHand.MAIN_HAND, true);
             kid.attack(m);
             String fn = com.moddingfromamod.item.WishItem.onHit(kid.getMainHandItem());
-            var rl = net.minecraft.resources.ResourceLocation.tryParse(fn);
+            var rl = net.minecraft.resources.Identifier.tryParse(fn);
             LOGGER.info("{} hit {} holding '{}' on_hit '{}' function known: {}", TAG, m.getType().toShortString(),
                     kid.getMainHandItem().getHoverName().getString(), fn,
                     rl != null && level.getServer().getFunctions().get(rl).isPresent());

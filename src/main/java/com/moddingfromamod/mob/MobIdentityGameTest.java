@@ -669,7 +669,7 @@ public class MobIdentityGameTest {
                 // recipe said `minecraft:scale`, which is 1.21.2's name — this gate was green, the
                 // compile was green, and only a real client found it. The registry is the oracle.
                 helper.assertTrue(net.minecraft.core.registries.BuiltInRegistries.ATTRIBUTE
-                                .containsKey(net.minecraft.resources.ResourceLocation.parse(
+                                .containsKey(net.minecraft.resources.Identifier.parse(
                                         ModifyMobTool.CATEGORY_RULE_ATTRIBUTE)),
                         Component.literal("the recipe names an attribute this version does not have: "
                                 + ModifyMobTool.CATEGORY_RULE_ATTRIBUTE

@@ -15,7 +15,7 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.functions.CommandFunction;
 import com.moddingfromamod.testing.gt.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import com.moddingfromamod.testing.gt.GameTestHolder;
 
@@ -64,7 +64,7 @@ public class StarterDatapackDialectGameTest {
                         continue;
                     }
                     functions++;
-                    ResourceLocation fn = ResourceLocation.fromNamespaceAndPath(id, name
+                    Identifier fn = Identifier.fromNamespaceAndPath(id, name
                             .replaceFirst("^data/[^/]+/function/", "").replace(".mcfunction", ""));
                     try {
                         CommandFunction.fromLines(fn, server.getCommands().getDispatcher(), source,

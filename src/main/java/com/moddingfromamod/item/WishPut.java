@@ -50,7 +50,7 @@ public final class WishPut {
         dispatcher.register(Commands.literal("wishput")
                 // A REPLAY command, like wishdatapack: run by the agent and the executor at
                 // permission 2, never typed by a child.
-                .requires(src -> src.hasPermission(2))
+                .requires(net.minecraft.commands.Commands.hasPermission(net.minecraft.commands.Commands.LEVEL_GAMEMASTERS))
                 .then(Commands.argument("id", StringArgumentType.string())
                         .executes(ctx -> run(ctx.getSource(), StringArgumentType.getString(ctx, "id"), 1))
                         .then(Commands.argument("count", IntegerArgumentType.integer(1, MAX_COUNT))

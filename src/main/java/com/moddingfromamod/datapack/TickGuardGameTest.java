@@ -10,7 +10,7 @@ import com.moddingfromamod.agent.ToolResult;
 import com.moddingfromamod.agent.tools.AuthorDatapackTool;
 import com.moddingfromamod.testing.gt.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import com.moddingfromamod.testing.gt.GameTestHolder;
 
@@ -33,7 +33,7 @@ public class TickGuardGameTest {
     private static final String BAD_COMMAND = "damage @e[type=minecraft:allay,distance=..3] 12";
 
     private static boolean ticks(MinecraftServer server, String ns) {
-        return server.getFunctions().getTag(ResourceLocation.withDefaultNamespace("tick")).stream()
+        return server.getFunctions().getTag(Identifier.withDefaultNamespace("tick")).stream()
                 .anyMatch(f -> ns.equals(f.id().getNamespace()));
     }
 

@@ -26,7 +26,7 @@ public final class WishAimer {
 
     /** His feet, eye height, yaw and pitch right now — taken once, when he wishes. */
     public static WishRun.Aim snapshot(ServerPlayer p) {
-        return new WishRun.Aim(p.level().dimension().location().toString(), p.getX(), p.getY(), p.getZ(),
+        return new WishRun.Aim(p.level().dimension().identifier().toString(), p.getX(), p.getY(), p.getZ(),
                 p.getEyeY(), p.getYRot(), p.getXRot());
     }
 

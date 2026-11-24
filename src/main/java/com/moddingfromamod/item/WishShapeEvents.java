@@ -2,7 +2,7 @@ package com.moddingfromamod.item;
 
 import com.moddingfromamod.ModdingFromAModMod;
 import net.minecraft.core.BlockPos;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.projectile.AbstractArrow;
 import net.minecraft.world.item.ItemStack;
@@ -127,7 +127,7 @@ public final class WishShapeEvents {
             return;
         }
         String fn = WishItem.useDoneFunction(stack);
-        ResourceLocation id = fn.isEmpty() ? null : ResourceLocation.tryParse(fn);
+        Identifier id = fn.isEmpty() ? null : Identifier.tryParse(fn);
         if (id == null) {
             return;
         }
@@ -171,7 +171,7 @@ public final class WishShapeEvents {
 
     private static void shot(AbstractArrow arrow, ItemStack weapon) {
         String fn = WishItem.shotFunction(weapon);
-        ResourceLocation id = fn.isEmpty() ? null : ResourceLocation.tryParse(fn);
+        Identifier id = fn.isEmpty() ? null : Identifier.tryParse(fn);
         if (id == null || !(arrow.getOwner() instanceof net.minecraft.world.entity.LivingEntity shooter)
                 || !(arrow.level() instanceof ServerLevel level)) {
             return;
@@ -199,7 +199,7 @@ public final class WishShapeEvents {
             return;
         }
         String fn = WishItem.consumeFunction(event.getItem());
-        ResourceLocation id = fn.isEmpty() ? null : ResourceLocation.tryParse(fn);
+        Identifier id = fn.isEmpty() ? null : Identifier.tryParse(fn);
         if (id == null) {
             return;
         }
@@ -223,7 +223,7 @@ public final class WishShapeEvents {
             return;
         }
         String fn = WishItem.blockFunction(who.getUseItem());
-        ResourceLocation id = fn.isEmpty() ? null : ResourceLocation.tryParse(fn);
+        Identifier id = fn.isEmpty() ? null : Identifier.tryParse(fn);
         if (id == null) {
             return;
         }
@@ -243,7 +243,7 @@ public final class WishShapeEvents {
             return;
         }
         String fn = WishItem.onMine(event.getPlayer().getMainHandItem());
-        ResourceLocation id = fn.isEmpty() ? null : ResourceLocation.tryParse(fn);
+        Identifier id = fn.isEmpty() ? null : Identifier.tryParse(fn);
         if (id == null) {
             return;
         }

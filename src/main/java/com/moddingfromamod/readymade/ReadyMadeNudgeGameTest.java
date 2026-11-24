@@ -139,7 +139,7 @@ public class ReadyMadeNudgeGameTest {
                 + UUID.randomUUID().toString().substring(0, 6);
         Wish wish = WishBook.get(p.level().getServer()).add(Wish.create(text, WishSource.COMMAND,
                 System.currentTimeMillis(), p.getUUID(), p.getGameProfile().name(),
-                p.level().dimension().location().toString(), p.getX(), p.getY(), p.getZ()));
+                p.level().dimension().identifier().toString(), p.getX(), p.getY(), p.getZ()));
         Marshal.global().submit(wish.id(), p.getUUID(), text);
         WishProgress.startThinking(p, wish.id(), text);
         WishQueue queue = new WishQueue();

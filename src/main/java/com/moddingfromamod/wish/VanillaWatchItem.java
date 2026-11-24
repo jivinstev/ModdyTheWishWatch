@@ -114,7 +114,7 @@ public final class VanillaWatchItem {
     /** A watch, minted as a carrier. */
     public static ItemStack stack() {
         ItemStack s = new ItemStack(net.minecraft.core.registries.BuiltInRegistries.ITEM
-                .getValue(net.minecraft.resources.ResourceLocation.parse(VanillaCarrier.ITEM_ID)));
+                .getValue(net.minecraft.resources.Identifier.parse(VanillaCarrier.ITEM_ID)));
         // HIS OWN ARTWORK, not a nearest miss out of the wish library. This used to be the
         // library's `wand`, which is a picture of a magic wand — a perfectly good icon for a wish
         // and not a picture of Moddy. The number is reserved on the carrier and the model behind it
@@ -175,7 +175,7 @@ public final class VanillaWatchItem {
                 java.util.List.of(new ItemAttributeModifiers.Entry(
                         net.minecraft.world.entity.ai.attributes.Attributes.ARMOR,
                         new net.minecraft.world.entity.ai.attributes.AttributeModifier(
-                                net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(
+                                net.minecraft.resources.Identifier.fromNamespaceAndPath(
                                         com.moddingfromamod.ModdingFromAModMod.MODID, id),
                                 0.0D,
                                 net.minecraft.world.entity.ai.attributes.AttributeModifier

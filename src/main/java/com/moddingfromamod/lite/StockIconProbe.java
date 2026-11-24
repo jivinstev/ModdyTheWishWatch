@@ -14,7 +14,7 @@ import com.moddingfromamod.wish.WatchMenu;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.CustomModelData;
@@ -233,7 +233,7 @@ public final class StockIconProbe {
             fillPinned(player);
             return;
         }
-        var item = BuiltInRegistries.ITEM.getValue(ResourceLocation.parse(VanillaCarrier.itemId()));
+        var item = BuiltInRegistries.ITEM.getValue(Identifier.parse(VanillaCarrier.itemId()));
         List<String> shown = new ArrayList<>();
         player.getInventory().setItem(0, VanillaWatchItem.stack());
         shown.add("0=Moddy@" + VanillaCarrier.WATCH_MODEL_DATA);
@@ -454,7 +454,7 @@ public final class StockIconProbe {
      * the number draw different things; a pair that matches slot 8 means neither path arrived.
      */
     private static void fillPairs(ServerPlayer player) {
-        var item = BuiltInRegistries.ITEM.getValue(ResourceLocation.parse(VanillaCarrier.itemId()));
+        var item = BuiltInRegistries.ITEM.getValue(Identifier.parse(VanillaCarrier.itemId()));
         List<String> shown = new ArrayList<>();
         ItemStack moddy = VanillaWatchItem.stack();
         player.getInventory().setItem(0, moddy);

@@ -149,7 +149,7 @@ public final class SetRuleTool implements McpTool {
                     // a `who` that names no entity type is a rule that never fires.
                     String badWho = WorldRule.whoProblem(rule.who(),
                             id -> {
-                                var rl = net.minecraft.resources.ResourceLocation.tryParse(id);
+                                var rl = net.minecraft.resources.Identifier.tryParse(id);
                                 return rl != null && net.minecraft.core.registries.BuiltInRegistries
                                         .ENTITY_TYPE.containsKey(rl);
                             },

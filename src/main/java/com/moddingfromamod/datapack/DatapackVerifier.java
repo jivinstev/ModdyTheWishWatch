@@ -7,7 +7,7 @@ import java.util.Map;
 import java.util.Set;
 
 import net.minecraft.commands.CommandSourceStack;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 
 /**
@@ -133,7 +133,7 @@ public final class DatapackVerifier {
 
         var library = server.getFunctions();
         Set<String> ours = new LinkedHashSet<>();
-        for (ResourceLocation key : library.getFunctionNames()) {
+        for (Identifier key : library.getFunctionNames()) {
             if (ns.equals(key.getNamespace())) {
                 ours.add(key.getPath());
             }
@@ -159,7 +159,7 @@ public final class DatapackVerifier {
             CommandSourceStack src = server.createCommandSourceStack().withSuppressedOutput()
                     .withPermission(2);
             for (String fn : present) {
-                ResourceLocation key = ResourceLocation.fromNamespaceAndPath(ns, fn);
+                Identifier key = Identifier.fromNamespaceAndPath(ns, fn);
                 try {
                     var found = library.get(key);
                     if (found.isEmpty()) {
@@ -224,7 +224,7 @@ public final class DatapackVerifier {
         }
         try {
             net.minecraft.commands.functions.CommandFunction.fromLines(
-                    ResourceLocation.fromNamespaceAndPath(ns, path), server.getCommands().getDispatcher(),
+                    Identifier.fromNamespaceAndPath(ns, path), server.getCommands().getDispatcher(),
                     server.createCommandSourceStack().withPermission(2), lines);
             return "";
         } catch (RuntimeException e) {

@@ -14,7 +14,7 @@ import com.moddingfromamod.player.NeverDie;
 import com.moddingfromamod.player.PlayerPowers;
 
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.effect.MobEffect;
@@ -252,7 +252,7 @@ public final class ModifyPlayerTool implements McpTool {
         }
 
         for (PlayerPowers.Buff b : spec.buffs()) {
-            ResourceLocation id = ResourceLocation.tryParse(b.effectId());
+            Identifier id = Identifier.tryParse(b.effectId());
             var holder = id == null ? null
                     : BuiltInRegistries.MOB_EFFECT.getOptional(id)
                             .map(BuiltInRegistries.MOB_EFFECT::wrapAsHolder).orElse(null);

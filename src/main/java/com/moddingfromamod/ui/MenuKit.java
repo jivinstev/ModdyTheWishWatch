@@ -7,7 +7,7 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.RegistryOps;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.dialog.Dialog;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.SimpleContainer;
@@ -148,7 +148,7 @@ public final class MenuKit {
             com.moddingfromamod.compat.ItemComponents.hideLine(s, DataComponents.ATTRIBUTE_MODIFIERS);
             return s;
         }
-        var item = BuiltInRegistries.ITEM.getOptional(ResourceLocation.parse(id)).orElse(Items.PAPER);
+        var item = BuiltInRegistries.ITEM.getOptional(Identifier.parse(id)).orElse(Items.PAPER);
         ItemStack s = new ItemStack(item == Items.AIR ? Items.PAPER : item);
         s.set(DataComponents.CUSTOM_NAME, Component.literal(label).withStyle(st -> st.withItalic(false)));
         // A tile is a picture, not gear: without this a sword tile says "7 Attack Damage" and a dragon-head tile

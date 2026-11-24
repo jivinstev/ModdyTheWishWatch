@@ -897,7 +897,7 @@ public class VanillaWatchGameTest {
         }
         for (String id : ids) {
             var item = net.minecraft.core.registries.BuiltInRegistries.ITEM
-                    .getValue(net.minecraft.resources.ResourceLocation.parse(id));
+                    .getValue(net.minecraft.resources.Identifier.parse(id));
             if (item == net.minecraft.world.item.Items.AIR) {
                 missing.add(id);
             }

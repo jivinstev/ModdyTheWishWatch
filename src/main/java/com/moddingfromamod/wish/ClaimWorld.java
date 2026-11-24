@@ -18,7 +18,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -546,7 +546,7 @@ public final class ClaimWorld {
             ServerLevel level = null;
             try {
                 level = server.getLevel(ResourceKey.create(Registries.DIMENSION,
-                        ResourceLocation.parse(spot.dimension())));
+                        Identifier.parse(spot.dimension())));
             } catch (RuntimeException ignored) {
                 // an unreadable dimension falls through to the child
             }

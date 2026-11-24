@@ -69,7 +69,7 @@ public final class ModelData {
         String model = com.moddingfromamod.pack.NativeItemModels.forNumber(id);
         if (model != null) {
             stack.set(net.minecraft.core.component.DataComponents.ITEM_MODEL,
-                    net.minecraft.resources.ResourceLocation.parse(model));
+                    net.minecraft.resources.Identifier.parse(model));
         }
     }
 
@@ -199,7 +199,7 @@ public final class ModelData {
                 new CustomModelData(List.of((float) id), List.of(), List.of(overlay), List.of()));
         if (named == null) {
             stack.set(net.minecraft.core.component.DataComponents.ITEM_MODEL,
-                    net.minecraft.resources.ResourceLocation.parse(bound));
+                    net.minecraft.resources.Identifier.parse(bound));
         }
         return true;
     }

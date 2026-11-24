@@ -206,7 +206,7 @@ public class SafetyPlanGameTest {
                 + "neighbouring test cannot have taken it"));
         WishBook.get(player.level().getServer()).add(new Wish(wishId, label, WishSource.TYPED,
                 WishStatus.RUNNING, System.currentTimeMillis(), player.getUUID(),
-                player.getName().getString(), player.level().dimension().location().toString(),
+                player.getName().getString(), player.level().dimension().identifier().toString(),
                 player.getX(), player.getY(), player.getZ(), "", "", 0L));
         // The bar the child is already watching: startThinking parks a one-step placeholder, which
         // is what makes "the real plan never arrived" observable rather than merely absent.

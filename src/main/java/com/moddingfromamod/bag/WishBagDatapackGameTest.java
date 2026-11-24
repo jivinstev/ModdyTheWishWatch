@@ -13,7 +13,7 @@ import com.moddingfromamod.item.delivery.WishDelivery;
 import com.moddingfromamod.wish.WatchPinService;
 import com.moddingfromamod.testing.gt.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -59,7 +59,7 @@ public class WishBagDatapackGameTest {
                 .thenWaitUntil(() -> {
                     helper.assertFalse(DatapackReloader.reloadInProgress(), Component.literal("reload still in flight"));
                     helper.assertTrue(helper.getLevel().getServer().getFunctions()
-                            .get(ResourceLocation.fromNamespaceAndPath(id.get(), "give")).isPresent(),
+                            .get(Identifier.fromNamespaceAndPath(id.get(), "give")).isPresent(),
                             Component.literal("no " + id.get() + ":give yet"));
                 })
                 .thenExecute(() -> {

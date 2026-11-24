@@ -62,7 +62,7 @@ public final class CommandDialect {
     public static boolean attributeExists(String id) {
         try {
             return net.minecraft.core.registries.BuiltInRegistries.ATTRIBUTE.containsKey(
-                    net.minecraft.resources.ResourceLocation.parse(id));
+                    net.minecraft.resources.Identifier.parse(id));
         } catch (RuntimeException e) {
             return false;
         }

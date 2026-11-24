@@ -2,7 +2,7 @@ package com.moddingfromamod.content;
 
 import com.moddingfromamod.wishbuilder.Apprentice;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ai.attributes.DefaultAttributes;
 import net.minecraft.world.item.Item;
@@ -74,7 +74,7 @@ public final class ContentIndexes {
             out.add(new ContentIndex.Entry(id, ContentIndex.Kind.BLOCK, block.getName().getString()));
         }
         for (EntityType<?> type : BuiltInRegistries.ENTITY_TYPE) {
-            ResourceLocation key = BuiltInRegistries.ENTITY_TYPE.getKey(type);
+            Identifier key = BuiltInRegistries.ENTITY_TYPE.getKey(type);
             String id = key.toString();
             if (REFUSED.contains(id)) {
                 continue;
