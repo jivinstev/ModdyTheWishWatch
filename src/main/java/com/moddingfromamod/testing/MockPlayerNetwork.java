@@ -437,6 +437,13 @@ public final class MockPlayerNetwork {
         if (owner != null) {
             holdTheSpawn(level.getServer());
         }
+        // A player with no saved data starts at world spawn. 1.21.8's placeNewPlayer did that itself; 1.21.9 moved it
+        // into the configuration phase's PrepareSpawnTask, which a mock never passes through, so without this every
+        // mock logged in at (0, 0, 0). The same placement 1.21.8 made: the overworld's spawn, adjusted for his size.
+        net.minecraft.server.level.ServerLevel spawnLevel = level.getServer().overworld();
+        player.setServerLevel(spawnLevel);
+        player.snapTo(player.adjustSpawnLocation(spawnLevel, spawnLevel.getRespawnData().pos()).getBottomCenter(),
+                spawnLevel.getRespawnData().yaw(), 0.0F);
         entitiesLoadedWhereHeLands(level.getServer());
         level.getServer().getPlayerList().placeNewPlayer(connection, player, cookie);
         return player;
