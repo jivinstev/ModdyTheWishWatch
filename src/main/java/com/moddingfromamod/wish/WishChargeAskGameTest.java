@@ -38,7 +38,7 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.inventory.ClickType;
+import net.minecraft.world.inventory.ContainerInput;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
@@ -194,7 +194,7 @@ public final class WishChargeAskGameTest {
             helper.fail(Component.literal("'" + id + "' is not on the page: " + menu.page().slots().values()));
             return;
         }
-        menu.clicked(slot, 0, ClickType.PICKUP, p);
+        menu.clicked(slot, 0, ContainerInput.PICKUP, p);
     }
 
     /** The Builder's menus to a cat's tune dialog, then its Make command, as a client sends them. */
