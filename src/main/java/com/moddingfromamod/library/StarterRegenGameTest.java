@@ -31,7 +31,9 @@ import com.moddingfromamod.testing.gt.GameTestHolder;
  * creature's ability, {@code make_item} for an item), proves the tool still accepts them and still makes the pack the
  * recipe names, and says, per pack, whether the functions it compiled match the shipped ones. Run with
  * {@code -Ptestprops=regenStarters=<dir>} and it also writes each fresh zip there, which is how a version branch
- * brings every shipped pack up to date after bumping the compiler.
+ * brings every shipped pack up to date after bumping the compiler. Each recipe is replayed with the library creatures
+ * it names registered ({@link #withStarterSpecies}), and a fresh pack must reach as far as the shipped one does once
+ * installed in a world that has them ({@link #reachDiff}).
  */
 @GameTestHolder(ModdingFromAModMod.MODID)
 public class StarterRegenGameTest {
@@ -117,6 +119,110 @@ public class StarterRegenGameTest {
         return tool.lastMadeId();
     }
 
+    /** What a replay runs while the starter's creatures exist. */
+    @FunctionalInterface
+    interface Body {
+        void run() throws Exception;
+    }
+
+    /**
+     * The creatures a recipe names: the {@code tag} of each {@code apply_effect} call, which is the species id the
+     * ability is for ("the same id you gave sculpt_creature"), in call order, once each.
+     */
+    static List<String> speciesNamed(StarterRecipe.Recipe recipe) {
+        List<String> out = new ArrayList<>();
+        for (StarterRecipe.Call c : recipe.calls()) {
+            if ("apply_effect".equals(c.tool()) && c.args().has("tag")) {
+                String tag = c.args().get("tag").getAsString();
+                if (!out.contains(tag)) {
+                    out.add(tag);
+                }
+            }
+        }
+        return out;
+    }
+
+    /**
+     * Run {@code body} in a world that has every library creature {@code ids} names, registered the way a player's
+     * world gets one ({@link com.moddingfromamod.runtime.WishMobCommands#resolveSpecies}, the first spawn of a
+     * library creature), so a replay computes whatever depends on the creature (a step's or a landing's reach
+     * counted from its flank, {@code ApplyEffectTool.fillReach}) as it would there. Without it a GameTest world,
+     * which has none, made on_land_trex with the marker and its middle-of-the-body reach: a pack the install-time
+     * {@link com.moddingfromamod.datapack.ReachFromBodyFix} no longer widens, worse than the one it replaced.
+     *
+     * <p>Every id is put back as it was afterwards, and the world's species file saved again: the replay's own
+     * {@code apply_effect} binds its pack to the creature and saves, so an in-memory undo alone would leave the
+     * creature on disk. An id the library does not ship (rainbow_axolotl is a vanilla axolotl) is left alone and
+     * said, never guessed.
+     */
+    static void withStarterSpecies(net.minecraft.server.MinecraftServer server, String id, List<String> ids,
+                                   Body body) throws Exception {
+        java.util.Map<String, com.moddingfromamod.species.Species> before = new java.util.LinkedHashMap<>();
+        for (String s : ids) {
+            before.put(s, com.moddingfromamod.species.SpeciesRegistry.get(s));
+        }
+        try {
+            for (String s : ids) {
+                if (before.get(s) != null) {
+                    continue;
+                }
+                if (!WishLibrary.keys("species").contains(s)) {
+                    System.out.println("STARTER_REGEN: " + id + " names '" + s + "', which the library ships no "
+                            + "creature for; replayed without one");
+                    continue;
+                }
+                var sp = com.moddingfromamod.runtime.WishMobCommands.resolveSpecies(server, s);
+                if (sp == null) {
+                    throw new IllegalStateException("the library ships '" + s + "' but it could not be registered");
+                }
+                System.out.println("STARTER_REGEN: " + id + " replayed with the library's '" + s + "' (scale "
+                        + sp.scale() + ", half width " + com.moddingfromamod.vanilla.CreatureSpawn.halfWidth(s) + ")");
+            }
+            body.run();
+        } finally {
+            before.forEach((s, had) -> {
+                if (com.moddingfromamod.species.SpeciesRegistry.get(s) != had) {
+                    com.moddingfromamod.species.SpeciesRegistry.restoreForTest(server, s, had);
+                }
+            });
+        }
+    }
+
+    /** Every function and function tag in a pack, by entry name. */
+    private static java.util.Map<String, String> functionTexts(byte[] zip) throws Exception {
+        java.util.Map<String, String> out = new java.util.TreeMap<>();
+        try (var in = new java.util.zip.ZipInputStream(new java.io.ByteArrayInputStream(zip))) {
+            for (java.util.zip.ZipEntry e; (e = in.getNextEntry()) != null; ) {
+                if (!e.isDirectory() && e.getName().endsWith(".mcfunction")) {
+                    out.put(e.getName(), new String(in.readAllBytes(), StandardCharsets.UTF_8));
+                }
+            }
+        }
+        return out;
+    }
+
+    /**
+     * Where the fresh pack reaches less or more far than an install makes the shipped pack reach in a world with the
+     * same creatures ({@code DatapackDialect.correctFunction}, which runs {@code ReachFromBodyFix} with the live
+     * creature widths), one line per function; empty when every step and landing reaches the same. Run inside
+     * {@link #withStarterSpecies}, so "the shipped pack in a player's world" is the comparison, never the bare
+     * GameTest world's.
+     */
+    static List<String> reachDiff(byte[] shipped, byte[] fresh) throws Exception {
+        java.util.Map<String, String> a = functionTexts(shipped);
+        java.util.Map<String, String> b = functionTexts(fresh);
+        List<String> out = new ArrayList<>();
+        for (var e : a.entrySet()) {
+            List<String> want = com.moddingfromamod.datapack.ReachFromBodyFix.reaches(
+                    com.moddingfromamod.datapack.DatapackDialect.correctFunction(e.getValue(), new ArrayList<>()));
+            List<String> got = com.moddingfromamod.datapack.ReachFromBodyFix.reaches(b.getOrDefault(e.getKey(), ""));
+            if (!want.equals(got)) {
+                out.add(e.getKey() + ": the shipped pack installs reaching " + want + ", the fresh one reaches " + got);
+            }
+        }
+        return out;
+    }
+
     @GameTest(template = "empty_test", batch = "starter_item_regen", timeoutTicks = 1200)
     public static void everyStarterPackIsRebuiltFromItsRecipe(GameTestHelper helper) {
         if (!CbScriptCompiler.available()) {
@@ -149,29 +255,40 @@ public class StarterRegenGameTest {
                 // compile that wrote nothing would then "rebuild" it by copying it.
                 Path zip = DatapackStore.ownZipFor(id);
                 Files.deleteIfExists(zip);
-                String made = null;
-                for (StarterRecipe.Call call : recipe.calls()) {
-                    made = replay(id, call, bad);
-                    if (made == null) {
-                        break;
+                String[] made = new String[1];
+                byte[] shipped = bytes("datapacks/" + id + "/" + id + ".zip");
+                byte[][] fresh = new byte[1][];
+                withStarterSpecies(helper.getLevel().getServer(), id, speciesNamed(recipe), () -> {
+                    for (StarterRecipe.Call call : recipe.calls()) {
+                        made[0] = replay(id, call, bad);
+                        if (made[0] == null) {
+                            return;
+                        }
                     }
-                }
-                if (made == null) {
-                    continue;
-                }
-                if (!id.equals(made) || !Files.isRegularFile(zip)) {
-                    bad.add(id + ": made '" + made + "' with no zip at " + zip);
+                    if (!id.equals(made[0]) || !Files.isRegularFile(zip)) {
+                        bad.add(id + ": made '" + made[0] + "' with no zip at " + zip);
+                        made[0] = null;
+                        return;
+                    }
+                    fresh[0] = Files.readAllBytes(zip);
+                    // A fresh pack must reach as far as the shipped one does once installed in a world that
+                    // has its creature: never narrower because the replay's world lacked it.
+                    for (String r : reachDiff(shipped, fresh[0])) {
+                        bad.add(id + ": " + r);
+                    }
+                });
+                if (made[0] == null) {
                     continue;
                 }
                 rebuilt++;
-                byte[] fresh = Files.readAllBytes(zip);
-                List<String> diff = StarterRecipe.functionDiff(bytes("datapacks/" + id + "/" + id + ".zip"), fresh);
-                System.out.println("STARTER_REGEN: " + id + " rebuilt (" + fresh.length + " bytes); functions "
-                        + (diff.isEmpty() ? "match the shipped pack" : "differ from the shipped pack: " + diff));
+                List<String> diff = StarterRecipe.functionDiff(shipped, fresh[0]);
+                System.out.println("STARTER_REGEN: " + id + " rebuilt (" + fresh[0].length + " bytes); functions "
+                        + (diff.isEmpty() ? "match the shipped pack" : "differ from the shipped pack: " + diff)
+                        + "; reaches " + reachesOf(fresh[0]));
                 if (!out.isBlank()) {
                     Path dest = Path.of(out).resolve(id + ".zip");
                     Files.createDirectories(dest.getParent());
-                    Files.write(dest, fresh);
+                    Files.write(dest, fresh[0]);
                 }
             }
         } catch (Exception e) {
@@ -180,6 +297,14 @@ public class StarterRegenGameTest {
         System.out.println("STARTER_REGEN: " + rebuilt + " rebuilt, " + skipped + " skipped, " + bad.size() + " failed");
         helper.assertTrue(bad.isEmpty(), Component.literal("starter packs today's tools cannot rebuild: " + bad));
         helper.succeed();
+    }
+
+    private static List<String> reachesOf(byte[] zip) throws Exception {
+        List<String> out = new ArrayList<>();
+        for (String text : functionTexts(zip).values()) {
+            out.addAll(com.moddingfromamod.datapack.ReachFromBodyFix.reaches(text));
+        }
+        return out;
     }
 
     /**

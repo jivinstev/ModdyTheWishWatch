@@ -202,6 +202,33 @@
         "26.1.2": "open"
       },
       "title": "[upgrade-only, from 26.1.2] a world made before 26.1 loses its world rules, events, event designs and build-ground journal"
+    },
+    {
+      "files": [
+        "src/main/resources/data/moddingfromamod/tags/block/changeable.json"
+      ],
+      "id": "KI-10",
+      "lowest": "26.1.2",
+      "notes": "Tag: version semantics, logged on 26.2 (the split arrived in 26.1). What changes: from 26.1 #minecraft:dirt holds only dirt, coarse_dirt and rooted_dirt; grass_block, podzol and mycelium moved to #minecraft:grass_blocks, mud and muddy_mangrove_roots to #minecraft:mud, the moss blocks to #minecraft:moss_blocks, and #minecraft:substrate_overworld joins them back into exactly 1.21.11's #dirt set. The mod's own checks and #moddingfromamod:changeable were moved to #substrate_overworld on 26.1.2 (34e7d8e), so shipped content is unaffected. A datapack a player or the Magician writes that names #minecraft:dirt (or BlockTags.DIRT-like intent in an older pack) now matches fewer blocks: a power meant for 'any dirt' no longer fires on grass. Not rewritten: rewriting a vanilla tag to its old meaning could be wrong for a writer who means the new one. Later decision for the owner: a lesson line for the agent or a dialect rewrite. Workaround: name #minecraft:substrate_overworld.",
+      "override": {
+        "by": "ladder coordinator session_01Cvm3m4MrRrC4cq9cpVXj8b",
+        "reason": "no compiler rewrite tonight; logged as S3 on 26.2, rung 26.1+, for a later owner decision",
+        "severity": "S3"
+      },
+      "player": "A power written to work on 'dirt' does nothing on grass in 26.1 and later, unless it names the new ground tag.",
+      "rubric": {
+        "failure": "functional",
+        "reach": "feature",
+        "visibility": "rare",
+        "workaround": true
+      },
+      "severity": "S3",
+      "source": "review",
+      "status": {
+        "26.1.2": "open",
+        "26.2": "open"
+      },
+      "title": "[from 26.1] #minecraft:dirt no longer includes grass, podzol, mycelium, mud or moss in a player's or the Magician's own pack"
     }
   ],
   "schema": 1
