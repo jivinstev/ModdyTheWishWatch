@@ -126,7 +126,11 @@ class WishHotbarPlanTest {
         java.util.UUID him = java.util.UUID.randomUUID();
         WishAsk ask = WishAsk.replay(him, "fire_sword");
         assertEquals(new WishAsk(him, WishSource.PRESET, "fire_sword", WishAsk.Magic.REPLAY), ask);
-        assertEquals("", WishAsk.of(him, WishSource.TYPED).recipe(), "no recipe is the empty id, never null");
-        assertEquals("", WishAsk.of(him, WishSource.TYPED).withRecipe(null).recipe());
+        WishAsk typed = WishAsk.of(him, WishSource.TYPED, WishAsk.Magic.APPRENTICE);
+        assertEquals(WishAsk.Magic.APPRENTICE, typed.magic(), "the magic is the one named, never a default");
+        assertEquals("", typed.recipe(), "no recipe is the empty id, never null");
+        assertEquals("", typed.withRecipe(null).recipe());
+        org.junit.jupiter.api.Assertions.assertThrows(NullPointerException.class,
+                () -> WishAsk.of(him, WishSource.TYPED, null), "the kind of magic is required");
     }
 }

@@ -35,14 +35,17 @@ public record WishAsk(UUID player, WishSource source, String recipe, Magic magic
         recipe = recipe == null ? "" : recipe;
     }
 
-    /** A wish of {@code player}'s from {@code source}: no recipe, granted by the Magician until said otherwise. */
-    public static WishAsk of(UUID player, WishSource source) {
-        return new WishAsk(player, source, "", Magic.MAGICIAN);
+    /**
+     * A wish of {@code player}'s from {@code source}, granted by {@code magic}, with no recipe. The kind of magic is
+     * always named by the caller: there is no default to assume.
+     */
+    public static WishAsk of(UUID player, WishSource source, Magic magic) {
+        return new WishAsk(player, source, "", magic);
     }
 
     /** A kept thing made again from {@code recipe}: what a hotbar proxy asks about. */
     public static WishAsk replay(UUID player, String recipe) {
-        return of(player, WishSource.PRESET).withRecipe(recipe).withMagic(Magic.REPLAY);
+        return of(player, WishSource.PRESET, Magic.REPLAY).withRecipe(recipe);
     }
 
     public WishAsk withRecipe(String recipe) {

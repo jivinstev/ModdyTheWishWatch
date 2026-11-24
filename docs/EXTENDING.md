@@ -93,7 +93,8 @@ afford it, charging and refunding, and the words a menu, the guide book and `/mo
 - **`WishAsk`** (`com.moddingfromamod.wish.WishAsk`) is the value a hook that takes one is asked about, the same shape
   at every such hook: `player()` (UUID), `source()` (`WishSource`), `recipe()` (the id `/moddy again` takes, `""` when
   none) and `magic()` (`BUILDER`, `APPRENTICE`, `MAGICIAN`, `REPLAY`). It is immutable and gains fields over time, so
-  build one with `WishAsk.of(player, source)` or `WishAsk.replay(player, recipe)` and the `with…` methods, never its
+  build one with `WishAsk.of(player, source, magic)` (the kind of magic is always named, there is no default) or
+  `WishAsk.replay(player, recipe)` and the `with…` methods, never its
   constructor.
 - A charge that cannot be paid returns `new Paid(true, () -> "the words to say")` (or `AgainPaid(true, token)`);
   the core then starts nothing and says the line.
