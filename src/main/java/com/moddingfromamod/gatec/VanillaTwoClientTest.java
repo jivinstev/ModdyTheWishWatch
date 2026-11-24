@@ -76,7 +76,7 @@ public final class VanillaTwoClientTest {
 
     /** Two REAL creatures, deliberately different shapes — see {@code differ} below. */
     private static final String CASE_A = System.getProperty(P + "caseA", "thornshell");
-    private static final String CASE_B = System.getProperty(P + "caseB", "tralalelo-armB");
+    private static final String CASE_B = System.getProperty(P + "caseB", "legfish-b");
 
     private enum Phase { WAIT_TITLE, WAIT_INGAME, EMPTY, PREPARE_A, RELOAD_A, SPAWN_A, SETTLE_A,
                          SHOOT_A, PREPARE_B, SPAWN_B, SETTLE_B, SHOOT_B, DONE }
