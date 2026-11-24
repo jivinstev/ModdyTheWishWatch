@@ -804,8 +804,9 @@ def SHIP_EXCLUDES = ['corpus/**', 'com/moddingfromamod/test/**', 'com/moddingfro
 def NEVER_SHIP = ~/(^|.*\/)[^\/]+\.gametest\.mixins\.json$|^corpus\/.*|(^|.*\/)(real-wishes|safety-wishes|real-tool-calls)[^\/]*\.jsonl$|^com\/moddingfromamod\/(house\/)?(test|testing)\/.*|.*\/[^\/]+GameTest(\$[^\/]*)?\.class$/
 // a shipped class may name only mod classes the jar carries. A reference to one left out (the harness, a
 // GameTest, or, in the public cut, a private class) is a NoClassDefFoundError waiting for the line that runs it.
-// The one deliberate exception is a dev-only driver reached only behind seam/TestHarness.present(); list it here.
-def HARNESS_GUARDED = ['com/moddingfromamod/isle/IsleWalkthrough']
+// A deliberate exception would be a dev-only driver reached only behind seam/TestHarness.present(), listed here. There
+// is none: the Isle's walkthrough driver became real-client playtests in moddy-worlds.
+def HARNESS_GUARDED = []
 
 jar {
     archiveClassifier = 'slim'
