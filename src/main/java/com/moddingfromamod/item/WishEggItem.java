@@ -28,10 +28,13 @@ import net.minecraft.world.level.Level;
  * it hatches is <em>data</em> on the stack, which is why a creature invented thirty seconds ago can
  * have a working egg in the hotbar with no restart and no resource reload.
  *
- * <p>Everything that makes an egg look like <i>its</i> creature is derived per stack: the name comes
- * from the species, and the two tint layers from {@link com.moddingfromamod.runtime.EggColours}
- * (bound client-side), so the shared vanilla spawn-egg template renders a differently-coloured egg
- * for every creature.
+ * <p>The name comes from the species, per stack. The picture is the mod's own spawn egg
+ * ({@code models/item/wish_egg.json}: the egg body, its spots and its outline on
+ * {@code minecraft:item/generated}), tinted Moddy's purple and gold by two constant tints in
+ * {@code items/wish_egg.json}. Vanilla's shared {@code item/template_spawn_egg} that it used to inherit
+ * was removed in 1.21.5. {@link com.moddingfromamod.runtime.EggColours} works out a per-creature
+ * pair for those two tint layers, but no client tint source reads it on 1.21.8, so every wish egg
+ * draws the same.
  */
 public class WishEggItem extends Item {
 
