@@ -1,9 +1,6 @@
 package com.moddingfromamod.agent.tools;
 
-import java.awt.Color;
-import java.awt.Font;
-import java.awt.Graphics2D;
-import java.awt.RenderingHints;
+import com.moddingfromamod.runtime.Pixels;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -82,22 +79,15 @@ public final class ContactSheet {
         int w = cols * tileW + GAP * (cols + 1);
         int h = rows * (tileH + LABEL_H) + GAP * (rows + 1);
         BufferedImage sheet = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
-        Graphics2D g = sheet.createGraphics();
-        g.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
-                RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        g.setColor(new Color(0x14, 0x16, 0x18));
-        g.fillRect(0, 0, w, h);
-        g.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 11));
+        // no Java2D (and so no AWT font): it froze the game window on macOS (runtime/Pixels)
+        Pixels.fill(sheet, 0, 0, w, h, 0x141618);
 
         for (int i = 0; i < imgs.size(); i++) {
             int cx = GAP + (i % cols) * (tileW + GAP);
             int cy = GAP + (i / cols) * (tileH + LABEL_H + GAP);
-            g.drawImage(imgs.get(i), cx, cy, tileW, tileH, null);
-            g.setColor(new Color(0x9a, 0xa4, 0xa8));
-            g.drawString(bearings.get(i) + "°", cx + 2, cy + tileH + LABEL_H - 4);
+            Pixels.draw(sheet, imgs.get(i), cx, cy, tileW, tileH);
+            Pixels.label(sheet, bearings.get(i) + "°", cx + 2, cy + tileH + LABEL_H - 4, 0x9aa4a8);
         }
-        g.dispose();
 
         try {
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
