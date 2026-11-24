@@ -189,10 +189,17 @@ def definition(cases, look, ns):
     return {"model": {"type": "minecraft:composite", "models": models}}
 
 
+def target_mc():
+    """The Minecraft this build targets, as compat/Target.java says (the test reads the same jar)."""
+    import re
+    src = (ROOT / 'src/main/java/com/moddingfromamod/compat/Target.java').read_text(encoding='utf-8')
+    return re.search(r'MINECRAFT = "([^"]+)"', src).group(1)
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--look', choices=sorted(LOOKS), default='corner')
-    ap.add_argument('--client-jar', default=str(ROOT / '.gradle/caches/minecraft/versions/1.21.8/client.jar'))
+    ap.add_argument('--client-jar', default=str(ROOT / '.gradle/caches/minecraft/versions' / target_mc() / 'client.jar'))
     ap.add_argument('--preview', help='write the look\'s layers here instead of into the mod')
     a = ap.parse_args()
 
