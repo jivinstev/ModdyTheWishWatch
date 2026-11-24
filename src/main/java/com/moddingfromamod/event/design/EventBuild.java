@@ -335,7 +335,7 @@ public final class EventBuild {
                         riders = null;
                     }
                 }
-                String who = viewer != null ? viewer.getGameProfile().getName() : owner;
+                String who = viewer != null ? viewer.getGameProfile().name() : owner;
                 java.util.function.Supplier<ServerPlayer> him = () -> who == null ? null
                         : level.getServer().getPlayerList().getPlayerByName(who);
                 java.util.Set<String> cams = new java.util.HashSet<>(com.moddingfromamod.wish.CameraPool.names(

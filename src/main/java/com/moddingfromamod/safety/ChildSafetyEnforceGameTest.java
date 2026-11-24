@@ -105,8 +105,8 @@ public class ChildSafetyEnforceGameTest {
         p.setPos(at.getX() + 0.5, at.getY(), at.getZ() + 0.5);
 
         String text = uniqueWish(tag);
-        Wish wish = WishBook.get(p.getServer()).add(Wish.create(text, WishSource.COMMAND,
-                System.currentTimeMillis(), p.getUUID(), p.getGameProfile().getName(),
+        Wish wish = WishBook.get(helper.getLevel().getServer()).add(Wish.create(text, WishSource.COMMAND,
+                System.currentTimeMillis(), p.getUUID(), p.getGameProfile().name(),
                 p.level().dimension().location().toString(), p.getX(), p.getY(), p.getZ()));
         Marshal.global().submit(wish.id(), p.getUUID(), text);
         WishProgress.startThinking(p, wish.id(), text);
@@ -487,8 +487,8 @@ public class ChildSafetyEnforceGameTest {
                 Component.literal("the shipped lexicon no longer flags this as WELLBEING, so the precedence rule "
                         + "below is being asserted against nothing: " + text));
 
-        Wish wish = WishBook.get(p.getServer()).add(Wish.create(text, WishSource.COMMAND,
-                System.currentTimeMillis(), p.getUUID(), p.getGameProfile().getName(),
+        Wish wish = WishBook.get(helper.getLevel().getServer()).add(Wish.create(text, WishSource.COMMAND,
+                System.currentTimeMillis(), p.getUUID(), p.getGameProfile().name(),
                 p.level().dimension().location().toString(), p.getX(), p.getY(), p.getZ()));
         Marshal.global().submit(wish.id(), p.getUUID(), text);
         WishProgress.startThinking(p, wish.id(), text);

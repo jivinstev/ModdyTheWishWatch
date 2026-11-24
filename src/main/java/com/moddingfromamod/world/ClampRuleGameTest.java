@@ -115,7 +115,7 @@ public final class ClampRuleGameTest {
     private static int bagCount(ServerPlayer p, Item item) {
         try {
             int n = 0;
-            for (var s : com.moddingfromamod.bag.WishBagService.contents(p.getServer(), p.getUUID())) {
+            for (var s : com.moddingfromamod.bag.WishBagService.contents(p.level().getServer(), p.getUUID())) {
                 if (s.is(item)) {
                     n += s.getCount();
                 }
@@ -280,7 +280,7 @@ public final class ClampRuleGameTest {
             if (reborn.get() == null) {
                 helper.assertTrue(him.getAttributeValue(Attributes.SCALE) > 1.0, Component.literal("he was never made giant"));
                 him.die(him.damageSources().generic());
-                reborn.set(him.getServer().getPlayerList().respawn(him, false, Entity.RemovalReason.KILLED));
+                reborn.set(him.level().getServer().getPlayerList().respawn(him, false, Entity.RemovalReason.KILLED));
                 helper.assertTrue(reborn.get() != him, Component.literal("respawn returned the same body"));
                 helper.assertTrue(reborn.get().getAttributeValue(Attributes.SCALE) > 1.0,
                         Component.literal("inside the cap he should still be giant after respawning"));

@@ -222,7 +222,7 @@ public final class EventToolGameTest {
         // staged by its child.
         java.util.Set<String> eventsBefore = new java.util.HashSet<>();
         EventDirector.all(server).forEach(e -> eventsBefore.add(e.id()));
-        String actor = child.getGameProfile().getName();
+        String actor = child.getGameProfile().name();
         net.minecraft.world.entity.Entity[] ownHorse = {null};
         MockPlayerNetwork.afterTest(helper, () -> {
             for (var e : EventDirector.all(server)) {

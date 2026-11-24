@@ -4,6 +4,8 @@ import com.moddingfromamod.marshal.WorldCatalogue;
 import java.util.Optional;
 
 import com.moddingfromamod.ModdingFromAModMod;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -146,7 +148,7 @@ public final class WishService {
         // id (a stand-in may be configured by either), and held for every record this submit
         // writes — the EMPTY/DRAINING/BLOCKED/THROTTLED ones included, which carry no wish id.
         try (WishOrigin.Scope ignored = WishOrigin.scope(WishOrigin.of(
-                player.getStringUUID(), player.getGameProfile().getName()))) {
+                player.getStringUUID(), player.getGameProfile().name()))) {
             return submitOrigined(player, rawText, source, namedTemplateId, replay, hint);
         }
     }
@@ -286,7 +288,7 @@ public final class WishService {
                     namedTemplateId);
             if (!again.ok()) {
                 LOGGER.info("not making '{}' again for {}: {}", namedTemplateId,
-                        player.getGameProfile().getName(), again.refusal());
+                        player.getGameProfile().name(), again.refusal());
                 player.sendSystemMessage(net.minecraft.network.chat.Component.literal(
                         com.moddingfromamod.wishbuilder.BuilderAgain.GONE));
                 com.moddingfromamod.agent.ActionLog.wish(text, "EMPTY", source.name(), "",
@@ -368,8 +370,8 @@ public final class WishService {
             com.moddingfromamod.reference.ReferenceHint.prefetchFrom(text);
         }
 
-        Wish wish = WishBook.get(player.getServer()).add(Wish.create(text, source, now,
-                player.getUUID(), player.getGameProfile().getName(),
+        Wish wish = WishBook.get(serverOf(player)).add(Wish.create(text, source, now,
+                player.getUUID(), player.getGameProfile().name(),
                 player.level().dimension().location().toString(),
                 player.getX(), player.getY(), player.getZ()));
         // every line from here on is about THIS wish, not the one still running before it.
@@ -468,7 +470,7 @@ public final class WishService {
             // Remember WHICH template granted it, so "that's not right" can un-teach that exact one.
             // A replay (a try) names none, and its wish is left untagged.
             Wish tagged = replay != null ? wish
-                    : WishBook.get(player.getServer()).tagTemplate(wish.id(), templateId)
+                    : WishBook.get(serverOf(player)).tagTemplate(wish.id(), templateId)
                             .orElse(wish.withTemplate(templateId));
             WishFeedback.accepted(player, text);
             // A recipe's grant is a wish too, and it has no pickup — so it is charged here,
@@ -480,7 +482,7 @@ public final class WishService {
             // served with no model, so HALF a wish (WishBank.Params.priceHalves).
             var paid = WishCharge.get().charge(player.getUUID(), tagged.id(), false);
             if (paid.refused()) {
-                WishBook.get(player.getServer()).complete(wish.id(), WishStatus.REJECTED,
+                WishBook.get(serverOf(player)).complete(wish.id(), WishStatus.REJECTED,
                         "the wish bank emptied before this wish could be paid for");
                 WishFeedback.bank(player, paid.line());
                 com.moddingfromamod.agent.ActionLog.wish(text, "BANK_EMPTY", source.name(), wish.shortId(),
@@ -511,7 +513,7 @@ public final class WishService {
         // the warm line above has just told him "I'm still making your wish!" — refusing now would
         // make that sentence a lie. It goes on to the agent like any other day.
         if (tired.isPresent() && !lexicon.map(v -> v.wellbeing()).orElse(false)) {
-            WishBook.get(player.getServer()).complete(wish.id(), WishStatus.REJECTED,
+            WishBook.get(serverOf(player)).complete(wish.id(), WishStatus.REJECTED,
                     "Moddy was tired (" + tired.get().cause().wire() + ") — this new wish was "
                             + "not started. " + tired.get().detail());
             WishFeedback.tired(player, tired.get());
@@ -561,7 +563,7 @@ public final class WishService {
         if (!note.isEmpty()) {
             // Tell the agent WHY the cache was skipped, so it reaches for handles rather than
             // wondering why an obvious-looking wish arrived unmatched.
-            WishBook.get(player.getServer()).complete(wish.id(), WishStatus.PENDING, note);
+            WishBook.get(serverOf(player)).complete(wish.id(), WishStatus.PENDING, note);
         }
         if (question) {
             WishFeedback.thinkingAboutQuestion(player);
@@ -624,7 +626,7 @@ public final class WishService {
         // Wake the agent NOW. An agent parked on await_wish gets this in well under a millisecond,
         // where the old file-polling watcher took 20-90 seconds to notice.
         com.moddingfromamod.agent.WishQueue.global().offer(
-                WishBook.get(player.getServer()).byId(wish.id()).orElse(wish));
+                WishBook.get(serverOf(player)).byId(wish.id()).orElse(wish));
         return Outcome.PENDING_ESCALATION;
     }
 
@@ -638,6 +640,11 @@ public final class WishService {
      * <p>Best-effort: if anything here fails, the wish routes exactly as it did before rather than
      * failing. This decides which lane a wish takes, and no lane is worth a crash.
      */
+    /** The server the player is on (the level is always a ServerLevel for a ServerPlayer). */
+    private static MinecraftServer serverOf(ServerPlayer player) {
+        return ((ServerLevel) player.level()).getServer();
+    }
+
     private static boolean namesSomethingHeOwns(ServerPlayer player, String text) {
         try {
             // "make THE black hole pull harder" — anything in the whole catalogue, named
@@ -815,7 +822,7 @@ public final class WishService {
      * @param complaint what the child said was wrong; may be blank
      */
     public static Outcome reject(ServerPlayer player, String complaint) {
-        WishBook book = WishBook.get(player.getServer());
+        WishBook book = WishBook.get(serverOf(player));
         Optional<Wish> target = WishRejection.pick(
                 book.recent(40), player.getUUID(), System.currentTimeMillis());
         if (target.isEmpty()) {
@@ -833,7 +840,7 @@ public final class WishService {
         // because it used to re-queue the wish to an agent; it is a local undo + refund
         // that needs no agent, and refusing it would leave him stuck with the thing he rejected.
         // Only LEARNED templates can be forgotten; a library one is the server's, changed by a push.
-        boolean forgot = LearnedTemplates.forget(player.getServer(), wish.templateId());
+        boolean forgot = LearnedTemplates.forget(serverOf(player), wish.templateId());
 
         // ── TAKE IT AWAY. A run still going is stopped first (its slot and leases released, the
         // worker refused on its next tool call), or it would keep building into the hole the undo
@@ -845,7 +852,7 @@ public final class WishService {
         }
         // A served wish whose pillar is still rising has no run; its climax must not land later.
         ServedFanfare.cancelBeforeClimax(wish.id());
-        WishUndo.Result undone = WishUndo.undo(player.getServer(), wish.id(), run);
+        WishUndo.Result undone = WishUndo.undo(serverOf(player), wish.id(), run);
         WishCancel.clearHud(player.getUUID(), wish.id(), marshal);
         // If that wish's effect came from a datapack, turn the pack OFF (kept on disk, so it's
         // reversible) — un-teaching the template alone leaves a live, wrong datapack running.
@@ -882,7 +889,7 @@ public final class WishService {
      */
     private static boolean maybeDisableCulpritDatapack(ServerPlayer player, Wish wish) {
         try {
-            var server = player.getServer();
+            var server = serverOf(player);
             var newest = com.moddingfromamod.datapack.DatapackReloader.newestInstalledPack(server);
             if (newest.isEmpty()) {
                 return false;

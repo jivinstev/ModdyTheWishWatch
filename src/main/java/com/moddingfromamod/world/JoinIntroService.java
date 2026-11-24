@@ -108,7 +108,7 @@ public final class JoinIntroService {
             return false;
         }
         Pending p = PENDING.computeIfAbsent(player.getUUID(),
-                id -> new Pending(player.getServer().getTickCount() + DELAY_TICKS, live, WorldFacts.current()));
+                id -> new Pending(player.level().getServer().getTickCount() + DELAY_TICKS, live, WorldFacts.current()));
         p.bankLine = line;
         return true;
     }
@@ -152,7 +152,7 @@ public final class JoinIntroService {
     /** Queue {@code player}'s intro against {@code store} (the GameTest hands its own). */
     public static void schedule(ServerPlayer player, IntroSeenStore store, WorldFacts world) {
         PENDING.computeIfAbsent(player.getUUID(),
-                id -> new Pending(player.getServer().getTickCount() + DELAY_TICKS, store, world));
+                id -> new Pending(player.level().getServer().getTickCount() + DELAY_TICKS, store, world));
     }
 
     /** {@link #schedule}, with the line the wish bank would hand over (the GameTest's path to it). */

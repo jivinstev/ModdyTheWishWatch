@@ -451,7 +451,7 @@ public final class AwaitWishTool implements McpTool {
                 var player = com.moddingfromamod.agent.ActingChild.of(server);
                 var level = player != null ? player.level() : server.overworld();
                 var origin = player != null ? player.position()
-                        : net.minecraft.world.phys.Vec3.atBottomCenterOf(level.getSharedSpawnPos());
+                        : net.minecraft.world.phys.Vec3.atBottomCenterOf(level.getRespawnData().pos());
                 return com.moddingfromamod.agent.Surroundings.describe(level, origin,
                         run == null ? null : run.sawWhenWished());   // §3: in view when he wished
             }));

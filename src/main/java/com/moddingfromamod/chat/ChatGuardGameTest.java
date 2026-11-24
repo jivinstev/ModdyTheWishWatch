@@ -83,11 +83,11 @@ public class ChatGuardGameTest {
                     Component.literal("the record: " + last));
             helper.assertTrue(!last.toString().contains("porn"), Component.literal("the record carries the words: " + last));
 
-            ParseResults<CommandSourceStack> parse = p.getServer().getCommands().getDispatcher()
+            ParseResults<CommandSourceStack> parse = helper.getLevel().getServer().getCommands().getDispatcher()
                     .parse("me shares some porn", p.createCommandSourceStack());
             CommandEvent cmd = NeoForge.EVENT_BUS.post(new CommandEvent(parse));
             helper.assertTrue(cmd.isCanceled(), Component.literal("/me with a CLEARLY line was not cancelled"));
-            ParseResults<CommandSourceStack> fine = p.getServer().getCommands().getDispatcher()
+            ParseResults<CommandSourceStack> fine = helper.getLevel().getServer().getCommands().getDispatcher()
                     .parse("me waves hello", p.createCommandSourceStack());
             helper.assertTrue(!NeoForge.EVENT_BUS.post(new CommandEvent(fine)).isCanceled(), Component.literal("a friendly /me was cancelled"));
             helper.succeed();

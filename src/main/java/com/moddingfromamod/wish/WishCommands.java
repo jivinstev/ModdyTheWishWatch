@@ -190,7 +190,7 @@ public final class WishCommands {
                                 StringArgumentType.getString(ctx, "why")))));
         moddy.then(Commands.literal(ChildCommands.STATUS).executes(ctx -> {
             ServerPlayer player = ctx.getSource().getPlayerOrException();
-            WishBook book = WishBook.get(player.getServer());
+            WishBook book = WishBook.get(ctx.getSource().getServer());
             int pending = book.pending().size();
             ctx.getSource().sendSuccess(() -> Component.literal(
                     "✨ Wishes made: " + book.size()

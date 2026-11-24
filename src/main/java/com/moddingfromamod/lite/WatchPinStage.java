@@ -14,6 +14,7 @@ import net.minecraft.network.protocol.game.ClientboundSetHeldSlotPacket;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.players.NameAndId;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -402,7 +403,7 @@ public final class WatchPinStage {
         p.getInventory().setItem(4, new ItemStack(Items.TORCH, 16));
         p.getInventory().setSelectedSlot(0);
         p.connection.send(new ClientboundSetHeldSlotPacket(0));
-        server.getPlayerList().op(p.getGameProfile());
+        server.getPlayerList().op(new NameAndId(p.getUUID(), p.getScoreboardName()));
         level.getGameRules().getRule(GameRules.RULE_KEEPINVENTORY).set(false, server);
         MatrixCell cell = MATRIX.get(r.name());
         if (cell != null) {

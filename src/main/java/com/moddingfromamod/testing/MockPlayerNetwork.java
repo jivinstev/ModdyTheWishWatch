@@ -144,7 +144,7 @@ public final class MockPlayerNetwork {
      * — sweeping a live mock would fail a test that was working, which is strictly worse than the
      * leak.
      */
-    // REGISTERED ON DEMAND, from inLevel, rather than by an @EventBusSubscriber annotation. This
+    // REGISTERED ON DEMAND, from inLevel, rather than by a subscriber annotation on the class. This
     // class ships in the jar, and a real game has no mock players — so an annotation would add a
     // per-tick listener to every player's world to watch for something that can only exist inside a
     // GameTest. Registering the first time a mock is actually created keeps the shipped mod exactly
@@ -469,7 +469,7 @@ public final class MockPlayerNetwork {
             return;
         }
         net.minecraft.server.level.ServerLevel overworld = server.overworld();
-        net.minecraft.world.level.ChunkPos c = new net.minecraft.world.level.ChunkPos(overworld.getSharedSpawnPos());
+        net.minecraft.world.level.ChunkPos c = new net.minecraft.world.level.ChunkPos(overworld.getRespawnData().pos());
         java.util.List<net.minecraft.world.level.ChunkPos> want = new java.util.ArrayList<>();
         for (int dx = -2; dx <= 2; dx++) {
             for (int dz = -2; dz <= 2; dz++) {
@@ -542,7 +542,7 @@ public final class MockPlayerNetwork {
             return;
         }
         net.minecraft.server.level.ServerLevel overworld = server.overworld();
-        net.minecraft.world.level.ChunkPos c = new net.minecraft.world.level.ChunkPos(overworld.getSharedSpawnPos());
+        net.minecraft.world.level.ChunkPos c = new net.minecraft.world.level.ChunkPos(overworld.getRespawnData().pos());
         for (int dx = -2; dx <= 2; dx++) {
             for (int dz = -2; dz <= 2; dz++) {
                 overworld.setChunkForced(c.x + dx, c.z + dz, true);
@@ -581,10 +581,10 @@ public final class MockPlayerNetwork {
         net.minecraft.server.level.ServerLevel overworld =
                 helper.getLevel().getServer().overworld();
         net.minecraft.world.phys.Vec3 spawn = net.minecraft.world.phys.Vec3
-                .atBottomCenterOf(overworld.getSharedSpawnPos());
+                .atBottomCenterOf(overworld.getRespawnData().pos());
         for (ServerPlayer p : helper.getLevel().getServer().getPlayerList().getPlayers()) {
             helper.fail(Component.literal("a player is online, so 'the child' is not world spawn and this test "
-                    + "cannot run: '" + p.getGameProfile().getName() + "' at "
+                    + "cannot run: '" + p.getGameProfile().name() + "' at "
                     + p.blockPosition() + ", " + (int) p.position().distanceTo(spawn)
                     + " blocks from world spawn. If that name is '" + MOCK_NAME + "' it is another "
                     + "test's mock that outlived it — see MockPlayerNetwork, not the tool."));
@@ -723,7 +723,7 @@ public final class MockPlayerNetwork {
                 // Never put back a stand-in whose own test has ended: tests in one batch run at once, so "before"
                 // may be a mock already retired, which would then read as a child in every later batch.
                 com.moddingfromamod.agent.ActingChild.standIn(before != null && !before.isRemoved()
-                        && before.getServer() != null && before.getServer().getPlayerList().getPlayer(before.getUUID()) == before
+                        && before.level().getServer() != null && before.level().getServer().getPlayerList().getPlayer(before.getUUID()) == before
                         ? before : null);
             }
             remove(child);
@@ -790,7 +790,7 @@ public final class MockPlayerNetwork {
         // throws UnsupportedOperationException. Which then failed the test in its own finally block,
         // left the player in the world anyway, and so caused exactly the pollution this exists to
         // prevent — while the thrown exception named nothing to do with players.
-        net.minecraft.server.MinecraftServer server = player.getServer();
+        net.minecraft.server.MinecraftServer server = player.level().getServer();
         try {
             if (server != null) {
                 server.getPlayerList().remove(player);

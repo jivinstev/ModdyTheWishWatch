@@ -87,7 +87,8 @@ public final class MagicianSetup {
     private static volatile com.moddingfromamod.datapack.PythonCheck.Verdict python;
     private static volatile Function<String, String> env = System::getenv;
     private static volatile java.util.function.BiFunction<ServerPlayer, MagicianPicks, MagicianCheck.Steps> steps =
-            (p, picks) -> new LiveCheckSteps(p.getServer(), () -> p.getServer().getPlayerList().getPlayer(p.getUUID()),
+            (p, picks) -> new LiveCheckSteps(p.level().getServer(),
+                    () -> p.level().getServer().getPlayerList().getPlayer(p.getUUID()),
                     picks);
 
     private MagicianSetup() {
@@ -100,8 +101,8 @@ public final class MagicianSetup {
                                java.util.function.BiFunction<ServerPlayer, MagicianPicks, MagicianCheck.Steps> s) {
         probe = p == null ? new CliHarnessProbe() : p;
         env = e == null ? System::getenv : e;
-        steps = s == null ? (pl, picks) -> new LiveCheckSteps(pl.getServer(),
-                () -> pl.getServer().getPlayerList().getPlayer(pl.getUUID()), picks) : s;
+        steps = s == null ? (pl, picks) -> new LiveCheckSteps(pl.level().getServer(),
+                () -> pl.level().getServer().getPlayerList().getPlayer(pl.getUUID()), picks) : s;
         probed.clear();
         python = null;
         probing = false;
@@ -634,7 +635,7 @@ public final class MagicianSetup {
                               java.util.function.BiConsumer<ServerPlayer, Map<SupportedModels.Harness,
                                       HarnessProbe.Result>> then) {
         probing = true;
-        var server = p.getServer();
+        var server = p.level().getServer();
         java.util.UUID who = p.getUUID();
         List<SupportedModels.Harness> list = List.copyOf(which);
         HarnessProbe pr = probe;
@@ -703,7 +704,7 @@ public final class MagicianSetup {
             }
         }
         org.slf4j.LoggerFactory.getLogger(com.moddingfromamod.ModdingFromAModMod.MODID)
-                .info("magician: {} pressed '{}' ({})", p.getGameProfile().getName(), preset.label(), want.fingerprint());
+                .info("magician: {} pressed '{}' ({})", p.getName().getString(), preset.label(), want.fingerprint());
         if (Magician.enabled() && MagicianCheckRecord.shared().passedFor(want)) {
             p.closeContainer();
             say(p, MagicianPresets.turnedOn(preset), true);
@@ -753,7 +754,7 @@ public final class MagicianSetup {
     /** Look for Python again and say what was found: the Python line, or that powers work now. */
     static void recheckPython(ServerPlayer p) {
         probing = true;
-        var server = p.getServer();
+        var server = p.level().getServer();
         java.util.UUID who = p.getUUID();
         HarnessProbe pr = probe;
         Thread t = new Thread(() -> {
@@ -816,7 +817,7 @@ public final class MagicianSetup {
         }
         checking = true;
         p.closeContainer();
-        var server = p.getServer();
+        var server = p.level().getServer();
         java.util.UUID who = p.getUUID();
         progress(p, 2, "the Magician check (about 3 minutes)…");
         Magician.beginCheck();   // held until the result is applied on the server thread (no gap with the pool up)

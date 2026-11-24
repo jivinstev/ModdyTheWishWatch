@@ -128,7 +128,7 @@ public final class PoolProbe {
         // ── stage: two creatures SEPARATION apart, their chunks forced, two bound wishes ────
         onServer(server, () -> {
             ServerLevel level = server.overworld();
-            BlockPos spawn = level.getSharedSpawnPos();
+            BlockPos spawn = level.getRespawnData().pos();
             for (int i = 0; i < rows.size(); i++) {
                 double x = spawn.getX() + 0.5 + (i == 0 ? -SEPARATION / 2 : SEPARATION / 2);
                 double z = spawn.getZ() + 0.5;
@@ -211,7 +211,7 @@ public final class PoolProbe {
                     if (holder == null) {
                         continue;
                     }
-                    String name = cam.getGameProfile().getName();
+                    String name = cam.getGameProfile().name();
                     String prev = heldBy.putIfAbsent(holder, name);
                     if (prev != null && !prev.equals(name)) {
                         clash.add(holder + " held " + prev + " then " + name);

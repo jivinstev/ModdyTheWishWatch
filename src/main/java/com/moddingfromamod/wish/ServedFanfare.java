@@ -442,7 +442,7 @@ public final class ServedFanfare {
                 com.moddingfromamod.item.delivery.WishDelivery.release(f.wishId().toString());
                 WishOrbs.drop(f.wishId());
                 Reveals.cut(f.wishId());
-                WishBook.get(player.getServer()).complete(f.wishId(), WishStatus.STOPPED, "stopped");
+                WishBook.get(((ServerLevel) player.level()).getServer()).complete(f.wishId(), WishStatus.STOPPED, "stopped");
                 LOGGER.info("[reveal] served wish {} stopped before its climax", f.job.wish.shortId());
                 return f.job.wish;
             }

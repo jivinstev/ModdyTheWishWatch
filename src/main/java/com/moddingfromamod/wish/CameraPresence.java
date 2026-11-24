@@ -295,11 +295,14 @@ public final class CameraPresence {
         if (kids.size() == server.getPlayerList().getPlayerCount()) {
             return built;          // no camera online: vanilla's own answer, untouched
         }
-        List<com.mojang.authlib.GameProfile> sample = new ArrayList<>();
+        List<net.minecraft.server.players.NameAndId> sample = new ArrayList<>();
         if (!built.sample().isEmpty() || !server.hidesOnlinePlayers()) {
             for (int i = 0; i < Math.min(12, kids.size()); i++) {
                 ServerPlayer p = kids.get(i);
-                sample.add(p.allowsListing() ? p.getGameProfile() : MinecraftServer.ANONYMOUS_PLAYER_PROFILE);
+                net.minecraft.server.players.NameAndId entry = p.allowsListing()
+                        ? new net.minecraft.server.players.NameAndId(p.getGameProfile())
+                        : MinecraftServer.ANONYMOUS_PLAYER_PROFILE;
+                sample.add(entry);
             }
         }
         if (server.hidesOnlinePlayers()) {
@@ -335,7 +338,8 @@ public final class CameraPresence {
         }
         java.util.Set<java.util.UUID> service = PlayerKind.serviceClients();
         List<ServerPlayer> keep = new ArrayList<>();
-        var list = recipient.getServer() == null ? null : recipient.getServer().getPlayerList();
+        MinecraftServer server = recipient.level().getServer();
+        var list = server == null ? null : server.getPlayerList();
         for (var e : info.entries()) {
             if (!service.contains(e.profileId()) && list != null) {
                 ServerPlayer p = list.getPlayer(e.profileId());

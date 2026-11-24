@@ -209,7 +209,7 @@ public final class NextWish {
             com.moddingfromamod.wishbuilder.BuilderMake.modify(player, settings.allow(), idea.changeOf(), idea.change())
                     .thenAccept(r -> {
                         if (r.outcome() == com.moddingfromamod.wishbuilder.BuilderMake.Outcome.REFUSED) {
-                            player.getServer().execute(() -> WishService.submit(player, words, WishSource.TYPED));
+                            player.level().getServer().execute(() -> WishService.submit(player, words, WishSource.TYPED));
                         }
                     });
             return true;

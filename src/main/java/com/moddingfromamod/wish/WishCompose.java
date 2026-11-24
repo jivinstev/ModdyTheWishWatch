@@ -156,7 +156,7 @@ public final class WishCompose {
         // start the pool now if it was stopped, so its boot overlaps the typing.
         com.moddingfromamod.agent.AgentSession.intent(player.getUUID(), "wishbox");
         player.closeContainer();
-        LOGGER.info("wish box opened for {}", player.getGameProfile().getName());
+        LOGGER.info("wish box opened for {}", player.getGameProfile().name());
         OPENED.merge(player.getUUID(), 1, Integer::sum);
         boolean priced = WishCharge.get().priced(player.getUUID());
         TuneDialog d;
@@ -337,11 +337,11 @@ public final class WishCompose {
             // A blank send IS a cancel: a Java notice dialog runs its one button on Escape, and on a
             // phone a closed form (or the keyboard's Enter) sends the box's empty default. Reopening the box
             // here, as this used to, meant Cancel could never cancel; so a blank box just closes, quietly.
-            LOGGER.info("wish box closed empty by {}", player.getGameProfile().getName());
+            LOGGER.info("wish box closed empty by {}", player.getGameProfile().name());
             return 0;
         }
         // A Crafter's words are never written down (docs/OPEN_DOOR_PLAN.md §7.3): only that he wished.
-        LOGGER.info("wish box submitted by {}: {}", player.getGameProfile().getName(),
+        LOGGER.info("wish box submitted by {}: {}", player.getGameProfile().name(),
                 CrafterService.isCrafter(player) ? "(a Crafter's words are not kept)" : typed);
         // TYPED, exactly as the anvil and the mod screen's free-text box recorded it: the affordance
         // changed, what the wish IS did not.

@@ -103,7 +103,7 @@ public final class ChatGuard {
         }
         if (v.wellbeing()) {
             String world = WorldFacts.current().name();
-            ActionLog.grownUpNote("", p.getGameProfile().getName() + " wrote on a " + what
+            ActionLog.grownUpNote("", p.getScoreboardName() + " wrote on a " + what
                     + (world.isEmpty() ? "" : " on " + world) + ": " + text.strip());
         }
         if (!v.refused()) {
@@ -153,14 +153,14 @@ public final class ChatGuard {
         }
         if (d.note()) {
             String world = WorldFacts.current().name();
-            ActionLog.grownUpNote("", p.getGameProfile().getName() + " said in "
+            ActionLog.grownUpNote("", p.getScoreboardName() + " said in "
                     + surface.label() + (world.isEmpty() ? "" : " on " + world) + ": " + text);
         }
         if (!d.tell().isEmpty()) {
             p.sendSystemMessage(Component.literal(d.tell()).withStyle(
                     d.act() == SafetyChatSweep.Act.WELLBEING ? ChatFormatting.LIGHT_PURPLE : ChatFormatting.AQUA));
         }
-        String name = p.getGameProfile().getName();
+        String name = p.getScoreboardName();
         HISTORY.said(name, surface.label(), d.deliver() ? text : HELD_MARK, to, now);
         return d.deliver();
     }

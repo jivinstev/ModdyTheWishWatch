@@ -299,7 +299,7 @@ public final class EventDesigns {
     private static ServerPlayer pick(MinecraftServer server, String owner) {
         List<ServerPlayer> on = server.getPlayerList().getPlayers();
         for (ServerPlayer p : on) {
-            if (p.getGameProfile().getName().equalsIgnoreCase(owner)) {
+            if (p.getGameProfile().name().equalsIgnoreCase(owner)) {
                 return p;
             }
         }

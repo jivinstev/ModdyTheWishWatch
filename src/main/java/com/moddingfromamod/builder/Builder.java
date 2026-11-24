@@ -708,7 +708,7 @@ public final class Builder {
      * @param id the thing being built, so the same thing always returns to the same spot
      */
     public static BlockPos fallbackAnchor(ServerLevel level, String id, int forward, int offsetY) {
-        BlockPos spawn = level.getSharedSpawnPos().offset(forward, offsetY, 0);
+        BlockPos spawn = level.getRespawnData().pos().offset(forward, offsetY, 0);
         if (id == null || id.isBlank()) {
             return spawn;
         }

@@ -241,7 +241,7 @@ public final class CameraSupervisor {
         String bodyOne = RuntimeConfig.cameraName();
         boolean bodyOneOnline = false;
         for (var p : server.getPlayerList().getPlayers()) {
-            if (!PlayerKind.isChild(p.getUUID()) && p.getGameProfile().getName().equalsIgnoreCase(bodyOne)) {
+            if (!PlayerKind.isChild(p.getUUID()) && p.getGameProfile().name().equalsIgnoreCase(bodyOne)) {
                 bodyOneOnline = true;
             }
         }
@@ -341,7 +341,7 @@ public final class CameraSupervisor {
         java.util.Set<String> online = new java.util.HashSet<>();
         for (var p : server.getPlayerList().getPlayers()) {
             if (!PlayerKind.isChild(p.getUUID())) {
-                online.add(p.getGameProfile().getName().toLowerCase(java.util.Locale.ROOT));
+                online.add(p.getGameProfile().name().toLowerCase(java.util.Locale.ROOT));
             }
         }
         boolean extraStarting = false;

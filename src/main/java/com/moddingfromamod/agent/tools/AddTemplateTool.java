@@ -153,7 +153,7 @@ public final class AddTemplateTool implements McpTool {
                 var server = AgentBridge.serverOrNull();
                 var level = server.overworld();
                 return com.moddingfromamod.wish.CommandTrial.problems(server, level,
-                        net.minecraft.world.phys.Vec3.atBottomCenterOf(level.getSharedSpawnPos()),
+                        net.minecraft.world.phys.Vec3.atBottomCenterOf(level.getRespawnData().pos()),
                         toTry);
             });
             if (!problems.isEmpty()) {

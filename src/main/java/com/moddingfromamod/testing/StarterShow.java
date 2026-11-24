@@ -125,7 +125,7 @@ public final class StarterShow {
 
     private static void setUp(MinecraftServer server, ServerPlayer eye) {
         level = server.overworld();
-        BlockPos spawn = level.getSharedSpawnPos();
+        BlockPos spawn = level.getRespawnData().pos();
         BlockPos ground = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, spawn);
         BehaviourExercise.arena(level, ground);
         BehaviourExercise.meadow(level, ground);
@@ -383,8 +383,12 @@ public final class StarterShow {
      * never seen holding.
      */
     private static void shown(EquipmentSlot slot, ItemStack stack) {
-        level.getChunkSource().broadcast(kid, new net.minecraft.network.protocol.game.ClientboundSetEquipmentPacket(
-                kid.getId(), List.of(com.mojang.datafixers.util.Pair.of(slot, stack.copy()))));
+        for (ServerPlayer p : level.players()) {
+            if (p != kid && kid.broadcastToPlayer(p)) {
+                p.connection.send(new net.minecraft.network.protocol.game.ClientboundSetEquipmentPacket(
+                        kid.getId(), List.of(com.mojang.datafixers.util.Pair.of(slot, stack.copy()))));
+            }
+        }
     }
 
     private static Mob monster(double dx, double dz) {

@@ -10,7 +10,9 @@ import com.moddingfromamod.datapack.VanillaCarrier;
 import com.moddingfromamod.pack.WishPackWriter;
 import net.minecraft.network.protocol.common.ClientboundResourcePackPushPacket;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.players.NameAndId;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.server.ServerStartedEvent;
@@ -315,7 +317,7 @@ public final class ItemPackService {
         PUSHES.incrementAndGet();
         PackHost.notePush("item stock " + sha1.substring(0, Math.min(8, sha1.length())));
         LOG.info("item pack {} offered to '{}' (no mod)", sha1.substring(0, 8),
-                player.getGameProfile().getName());
+                player.getName().getString());
         return true;
     }
 
@@ -336,9 +338,12 @@ public final class ItemPackService {
         if (hostForTest != null && hostForTest.equals(player.getUUID())) {
             return true;
         }
-        var server = player.getServer();
+        if (!(player.level() instanceof ServerLevel level)) {
+            return false;
+        }
+        var server = level.getServer();
         return server != null && !server.isDedicatedServer()
-                && server.isSingleplayerOwner(player.getGameProfile());
+                && server.isSingleplayerOwner(new NameAndId(player.getGameProfile()));
     }
 
     /**

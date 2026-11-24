@@ -325,7 +325,7 @@ public final class HeadlessWishProbe {
                 // a stand-in child IN the world (a stock mock in the player list), so the
                 // creature is spawned at him and he can later ride it and be hit by it.
                 realChild = com.moddingfromamod.seam.ProbeExercise.get().standInChild(level, PROBE_ID, PROBE_NAME);
-                BlockPos at = level.getSharedSpawnPos();
+                BlockPos at = level.getRespawnData().pos();
                 realChild.teleportTo(at.getX() + 0.5, at.getY(), at.getZ() + 0.5);
                 realChild.setYRot(0f);
                 as = PROBE_NAME;
@@ -339,7 +339,7 @@ public final class HeadlessWishProbe {
             // Stand it at world spawn. A wish anchors where it was AIMED (see the FOCUS rule in
             // CLAUDE.md), so a fake player left at 0,0,0 in a world whose spawn is elsewhere would
             // have its build placed somewhere nobody would ever look.
-            BlockPos spawn = level.getSharedSpawnPos();
+            BlockPos spawn = level.getRespawnData().pos();
             child.setPos(spawn.getX() + 0.5, spawn.getY(), spawn.getZ() + 0.5);
             child.setServerLevel(level);
             // Let the tools that ACT for a child act for this one. Without it conjure_at

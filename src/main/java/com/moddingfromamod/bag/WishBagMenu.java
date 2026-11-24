@@ -8,6 +8,8 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
@@ -125,9 +127,14 @@ public final class WishBagMenu extends ChestMenu {
         return page;
     }
 
+    /** The server this player is on. */
+    private static MinecraftServer serverOf(ServerPlayer player) {
+        return ((ServerLevel) player.level()).getServer();
+    }
+
     /** Lay the current page into the chest. */
     private void lay() {
-        var server = owner.getServer();
+        var server = serverOf(owner);
         List<ItemStack> all = WishBagService.contents(server, owner.getUUID());
         page = WishBagPages.clampPage(page, all.size());
         List<ItemStack> cells = WishBagPages.page(all, page);
@@ -242,10 +249,10 @@ public final class WishBagMenu extends ChestMenu {
         if (!changed) {
             return;
         }
-        List<ItemStack> all = WishBagService.contents(owner.getServer(), owner.getUUID());
+        List<ItemStack> all = WishBagService.contents(serverOf(owner), owner.getUUID());
         List<ItemStack> next = WishBagPages.reconcile(all, page, nullEmpty(before), nullEmpty(now),
                 ItemStack::isSameItemSameComponents, ItemStack::getCount);
-        WishBagService.replace(owner.getServer(), owner.getUUID(), next);
+        WishBagService.replace(serverOf(owner), owner.getUUID(), next);
         lay();
         broadcastChanges();
     }
@@ -260,7 +267,7 @@ public final class WishBagMenu extends ChestMenu {
 
     private void press(int slotId) {
         refuse();
-        int size = WishBagService.size(owner.getServer(), owner.getUUID());
+        int size = WishBagService.size(serverOf(owner), owner.getUUID());
         int to = WishBagPages.turn(slotId, page, size);
         if (to != page) {
             showPage(to);
@@ -302,7 +309,7 @@ public final class WishBagMenu extends ChestMenu {
             return ItemStack.EMPTY;
         }
         ItemStack moving = stack.copy();
-        int in = WishBagService.add(owner.getServer(), owner.getUUID(), moving);
+        int in = WishBagService.add(serverOf(owner), owner.getUUID(), moving);
         if (in > 0) {
             stack.shrink(in);
             slot.setChanged();

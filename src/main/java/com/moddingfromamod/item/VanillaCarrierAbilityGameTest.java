@@ -786,8 +786,8 @@ public class VanillaCarrierAbilityGameTest {
         helper.runAfterDelay(onTheSecond + 60L, () -> {
             try {
                 String seen = " [gameTime=" + level.getGameTime()
-                        + " inList=" + (p.getServer() != null
-                                && p.getServer().getPlayerList().getPlayer(p.getUUID()) != null)
+                        + " inList=" + (level.getServer() != null
+                                && level.getServer().getPlayerList().getPlayer(p.getUUID()) != null)
                         + " heldB=" + p.getInventory().contains(st -> WishItemCatalogue
                                 .keyOf(st).equals(WishItemCatalogue.keyOf(carrierWish)))
                         + " keyA=" + WishItemCatalogue.keyOf(modWish)

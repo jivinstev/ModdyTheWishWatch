@@ -466,7 +466,7 @@ public final class WorldRules {
     private static void timed(WorldRule r, MinecraftServer server, List<ServerPlayer> players) {
         if (WorldRule.WORLD.equals(r.who())) {
             ServerLevel over = server.overworld();
-            Vec3 at = players.isEmpty() ? Vec3.atCenterOf(over.getSharedSpawnPos())
+            Vec3 at = players.isEmpty() ? Vec3.atCenterOf(over.getLevelData().getRespawnData().pos())
                     : players.get(0).position();
             fire(r, over, null, at, null);
             return;

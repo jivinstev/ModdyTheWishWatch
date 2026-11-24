@@ -43,7 +43,7 @@ public final class WishTry {
 
     /** Run {@code /moddy try <arg>} for {@code player}. Server thread. */
     public static Result tryIt(ServerPlayer player, String arg) {
-        MinecraftServer server = player.getServer();
+        MinecraftServer server = player.level().getServer();
         Optional<TryPlan.Id> id = TryPlan.parse(arg);
         if (id.isEmpty()) {
             say(player, "🤔 \"" + clip(arg) + "\" isn't a wish id. It looks like "
@@ -66,7 +66,7 @@ public final class WishTry {
         WishService.Outcome outcome = WishService.submitReplay(player, wish.text(),
                 CommandPlan.of(commands, ""));
         LOGGER.info("moddy try: {} tried wish {} ({}) -> {}: {}",
-                player.getGameProfile().getName(), wish.shortId(), wish.playerName(), outcome, commands);
+                player.getScoreboardName(), wish.shortId(), wish.playerName(), outcome, commands);
         return outcome == WishService.Outcome.FULFILLING ? Result.GRANTED : Result.NOT_GRANTED;
     }
 

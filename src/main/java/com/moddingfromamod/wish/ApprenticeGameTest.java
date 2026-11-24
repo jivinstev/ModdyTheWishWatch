@@ -48,7 +48,7 @@ public final class ApprenticeGameTest {
     }
 
     private static void run(ServerPlayer p, String command) {
-        p.getServer().getCommands().performPrefixedCommand(p.createCommandSourceStack(), command);
+        p.level().getServer().getCommands().performPrefixedCommand(p.createCommandSourceStack(), command);
     }
 
     /**
@@ -168,7 +168,7 @@ public final class ApprenticeGameTest {
             helper.assertValueEqual(ApprenticeService.pendingOffers(p.getUUID()), -1, Component.literal("and no page"));
 
             // ── A MAGICIAN ───────────────────────────────────────────────────────────────────────
-            list.getWhiteList().add(new UserWhiteListEntry(p.getGameProfile()));
+            list.getWhiteList().add(new UserWhiteListEntry(p.nameAndId()));
             CrafterService.check(p);
             ApprenticeService.forget(p.getUUID());
             helper.assertFalse(CrafterService.isCrafter(p), Component.literal("seated: a Magician"));
@@ -181,7 +181,7 @@ public final class ApprenticeGameTest {
             String w1 = "a magician's own dragon " + tag;
             run(p, "moddy wishbox " + w1);
             helper.assertValueEqual(ApprenticeService.pendingOffers(p.getUUID()), -1, Component.literal("the wish box: no Apprentice page for a Magician"));
-            helper.assertTrue(WishBook.get(p.getServer()).recent(40).stream().anyMatch(w -> w.text().contains(tag)),
+            helper.assertTrue(WishBook.get(p.level().getServer()).recent(40).stream().anyMatch(w -> w.text().contains(tag)),
                     Component.literal("his wish is in the book, on its way to the agent"));
             WishService.forget(p);
             String w2 = "a second dragon from chat " + tag;
@@ -202,7 +202,7 @@ public final class ApprenticeGameTest {
             // ✪: those words, to the agent.
             WishService.forget(p);
             ApprenticeService.pressForTest(p, ApprenticeWords.NONE);
-            helper.assertTrue(WishBook.get(p.getServer()).recent(40).stream().anyMatch(w -> w.text().equals("a lion")),
+            helper.assertTrue(WishBook.get(p.level().getServer()).recent(40).stream().anyMatch(w -> w.text().equals("a lion")),
                     Component.literal("✪ sent the words on to the agent as the wish they were"));
             helper.assertValueEqual(ApprenticeService.pendingOffers(p.getUUID()), -1, Component.literal("and the page is gone"));
             // Not sure (some words left unread), and nothing at all: no page, straight to the Magician.
@@ -210,14 +210,14 @@ public final class ApprenticeGameTest {
             int before = since(p, mark).size();
             run(p, "moddy apprentice a robot dog " + tag);
             helper.assertValueEqual(ApprenticeService.pendingOffers(p.getUUID()), -1, Component.literal("close: no page for a Magician"));
-            helper.assertTrue(WishBook.get(p.getServer()).recent(40).stream().anyMatch(w -> w.text().equals("a robot dog " + tag)),
+            helper.assertTrue(WishBook.get(p.level().getServer()).recent(40).stream().anyMatch(w -> w.text().equals("a robot dog " + tag)),
                     Component.literal("close: the words went straight to the Magician"));
             helper.assertTrue(since(p, mark).stream().skip(before).anyMatch(l -> l.contains(ApprenticeWords.TO_THE_MAGICIAN)),
                     Component.literal("and he is told, in one line"));
             WishService.forget(p);
             run(p, "moddy apprentice do my homework " + tag);
             helper.assertValueEqual(ApprenticeService.pendingOffers(p.getUUID()), -1, Component.literal("nothing: no page"));
-            helper.assertTrue(WishBook.get(p.getServer()).recent(40).stream().anyMatch(w -> w.text().contains("homework")),
+            helper.assertTrue(WishBook.get(p.level().getServer()).recent(40).stream().anyMatch(w -> w.text().contains("homework")),
                     Component.literal("nothing in Moddy's Parts: straight to the Magician"));
             WishService.forget(p);
 
@@ -240,11 +240,11 @@ public final class ApprenticeGameTest {
             ApprenticeService.toggle(p);   // back to Magician, so the shelf row a later run reads is the default
             helper.succeed();
         } finally {
-            list.getWhiteList().remove(p.getGameProfile());
+            list.getWhiteList().remove(p.nameAndId());
             System.clearProperty(WorldCrafters.OPEN_PROPERTY);
             System.clearProperty(BuilderSettings.ENABLED_PROPERTY);
             SafetyGrader.transportForTest(null);
-            for (Wish w : WishBook.get(p.getServer()).recent(40)) {
+            for (Wish w : WishBook.get(p.level().getServer()).recent(40)) {
                 if (w.text().contains(tag) || w.playerId() != null && w.playerId().equals(p.getUUID())) {
                     try {
                         Marshal.global().cancel(w.id(), CancelMode.STOP, "", "");
@@ -338,12 +338,12 @@ public final class ApprenticeGameTest {
             run(p, "moddy wishbox magic magician |a green dino i can ride");
             helper.assertTrue(p.containerMenu instanceof MenuKit.PickMenu && ApprenticeService.pendingOffers(p.getUUID()) >= 1,
                     Component.literal("a Crafter asking for Magician magic by hand still gets the Apprentice"));
-            helper.assertTrue(WishBook.get(p.getServer()).recent(40).stream().noneMatch(w -> w.text().contains("green dino")),
+            helper.assertTrue(WishBook.get(p.level().getServer()).recent(40).stream().noneMatch(w -> w.text().contains("green dino")),
                     Component.literal("and no wish went to the agent"));
             p.closeContainer();
 
             // ── A MAGICIAN ───────────────────────────────────────────────────────────────────────
-            list.getWhiteList().add(new UserWhiteListEntry(p.getGameProfile()));
+            list.getWhiteList().add(new UserWhiteListEntry(p.nameAndId()));
             CrafterService.check(p);
             ApprenticeService.forget(p.getUUID());
             if (ApprenticeService.prefersApprentice(p)) {
@@ -366,7 +366,7 @@ public final class ApprenticeGameTest {
             WishService.forget(p);
             run(p, "moddy wishbox magic magician |a magician's dragon " + tag);
             helper.assertValueEqual(ApprenticeService.pendingOffers(p.getUUID()), -1, Component.literal("Magician chosen: no Apprentice page"));
-            helper.assertTrue(WishBook.get(p.getServer()).recent(40).stream().anyMatch(w -> w.text().equals("a magician's dragon " + tag)),
+            helper.assertTrue(WishBook.get(p.level().getServer()).recent(40).stream().anyMatch(w -> w.text().equals("a magician's dragon " + tag)),
                     Component.literal("the wish is in the book, without the box's mark or the choice in its words"));
 
             // A BLANK box with Apprentice chosen is a cancel: it must not change what he had.
@@ -399,7 +399,7 @@ public final class ApprenticeGameTest {
             WishService.forget(p);
             ApprenticeService.choose(p, false);
             run(p, "moddy wishbox magic carpet " + tag);
-            helper.assertTrue(WishBook.get(p.getServer()).recent(40).stream().anyMatch(w -> w.text().equals("magic carpet " + tag)),
+            helper.assertTrue(WishBook.get(p.level().getServer()).recent(40).stream().anyMatch(w -> w.text().equals("magic carpet " + tag)),
                     Component.literal("'magic carpet …' typed by hand is a wish for a magic carpet"));
 
             // A world with no Builder has no Apprentice to choose: the plain box.
@@ -413,11 +413,11 @@ public final class ApprenticeGameTest {
             } catch (RuntimeException ignored) {
                 // nothing to put back
             }
-            list.getWhiteList().remove(p.getGameProfile());
+            list.getWhiteList().remove(p.nameAndId());
             System.clearProperty(WorldCrafters.OPEN_PROPERTY);
             System.clearProperty(BuilderSettings.ENABLED_PROPERTY);
             SafetyGrader.transportForTest(null);
-            for (Wish w : WishBook.get(p.getServer()).recent(40)) {
+            for (Wish w : WishBook.get(p.level().getServer()).recent(40)) {
                 if (w.text().contains(tag) || w.playerId() != null && w.playerId().equals(p.getUUID())) {
                     try {
                         Marshal.global().cancel(w.id(), CancelMode.STOP, "", "");

@@ -146,7 +146,7 @@ public final class RespawnGuard {
 
     public static int rescue(ServerPlayer p, Bases b) {
         Base base = b == null ? null : b.baseOf(p.getUUID());
-        var server = p.getServer();
+        var server = p.level().getServer();
         if (base == null || server == null) {
             p.sendSystemMessage(Component.literal(NOTHING_TO_RESCUE).withStyle(ChatFormatting.AQUA));
             return 0;

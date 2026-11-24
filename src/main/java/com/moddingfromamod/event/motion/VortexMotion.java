@@ -640,7 +640,7 @@ public final class VortexMotion implements EventMotion {
                 || com.moddingfromamod.mob.Creatures.isRigInternal(e)) {
             return false;
         }
-        if (e instanceof Player p && (p.isSpectator() || cameras.contains(p.getGameProfile().getName()))) {
+        if (e instanceof Player p && (p.isSpectator() || cameras.contains(p.getGameProfile().name()))) {
             return false;
         }
         return !com.moddingfromamod.film.FilmCamera.isCamera(e);

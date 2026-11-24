@@ -64,7 +64,7 @@ final class WishLocate {
                 var server = AgentBridge.serverOrNull();
                 ServerPlayer him = com.moddingfromamod.agent.ActingChild.of(server);
                 ServerLevel level = him != null ? him.level() : server.overworld();
-                BlockPos from = him != null ? him.blockPosition() : level.getSharedSpawnPos();
+                BlockPos from = him != null ? him.blockPosition() : level.getRespawnData().pos();
                 return new Where(level, from, exists(level, structure, id));
             });
             if (!w.known()) {

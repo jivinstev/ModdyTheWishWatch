@@ -165,7 +165,7 @@ public final class WatchHome {
             break;
         }
         String undo = null;
-        Optional<Wish> last = WishRejection.pick(WishBook.get(p.getServer()).recent(40), p.getUUID(),
+        Optional<Wish> last = WishRejection.pick(WishBook.get(p.level().getServer()).recent(40), p.getUUID(),
                 System.currentTimeMillis());
         if (last.isPresent() && !WishRejection.alreadyRejected(last.get())
                 && (making == null || !last.get().shortId().equals(making))) {
@@ -245,7 +245,7 @@ public final class WatchHome {
         for (Act a : acts) {
             if (a.id().equals(id)) {
                 p.closeContainer();
-                p.getServer().getCommands().performPrefixedCommand(p.createCommandSourceStack(), a.command());
+                p.level().getServer().getCommands().performPrefixedCommand(p.createCommandSourceStack(), a.command());
                 return;
             }
         }

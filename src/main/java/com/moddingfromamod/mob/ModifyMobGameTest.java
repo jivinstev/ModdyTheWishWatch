@@ -214,7 +214,7 @@ public class ModifyMobGameTest {
     private static LivingEntity spawnAtWorldSpawn(GameTestHelper helper, EntityType<?> type) {
         com.moddingfromamod.testing.MockPlayerNetwork.requireNobodyIsOnline(helper);
         ServerLevel overworld = helper.getLevel().getServer().overworld();
-        Vec3 at = Vec3.atBottomCenterOf(overworld.getSharedSpawnPos());
+        Vec3 at = Vec3.atBottomCenterOf(overworld.getRespawnData().pos());
         // Arrive clean, the same discipline MobIdentityGameTest keeps: world spawn is
         // outside every test plot and is therefore never reset, so a failed earlier test leaves its
         // animal standing here — and, worse, leaves a TARGETED handle for this species that

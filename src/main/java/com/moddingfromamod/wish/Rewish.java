@@ -159,7 +159,7 @@ public final class Rewish {
                 if (cmd == null) {
                     return "passed";
                 }
-                p.getServer().getCommands().performPrefixedCommand(p.createCommandSourceStack(), cmd.substring(1));
+                p.level().getServer().getCommands().performPrefixedCommand(p.createCommandSourceStack(), cmd.substring(1));
                 return "command:" + a.verb();
             }
             case COPY -> {
@@ -176,7 +176,7 @@ public final class Rewish {
                 if (thing == null || thing.recipeId().isBlank()) {
                     return "passed";
                 }
-                p.getServer().getCommands().performPrefixedCommand(p.createCommandSourceStack(),
+                p.level().getServer().getCommands().performPrefixedCommand(p.createCommandSourceStack(),
                         ChildCommands.again(thing.recipeId()).substring(1));
                 return "copy:his";
             }
@@ -193,10 +193,10 @@ public final class Rewish {
                     }
                     BuilderMake.modify(p, settings.allow(), builderId, a.ops()).thenAccept(r -> {
                         if (r.outcome() == BuilderMake.Outcome.BUSY || r.outcome() == BuilderMake.Outcome.BANK_EMPTY) {
-                            p.getServer().execute(() -> p.sendSystemMessage(Component.literal(why(r))));
+                            p.level().getServer().execute(() -> p.sendSystemMessage(Component.literal(why(r))));
                         } else if (r.outcome() == BuilderMake.Outcome.REFUSED) {
                             // the editor refused it after all (a step past the Builder's end): his words go on as typed
-                            p.getServer().execute(() -> WishService.submit(p, text, WishSource.TYPED, WishRoute.Hint.MAGICIAN));
+                            p.level().getServer().execute(() -> WishService.submit(p, text, WishSource.TYPED, WishRoute.Hint.MAGICIAN));
                         }
                     });
                     p.sendSystemMessage(Component.literal(changing(thing.name(), a.ops(), pre.spec().name()))
@@ -379,7 +379,7 @@ public final class Rewish {
         f.thenAccept(r -> {
             if (r.outcome() == BuilderMake.Outcome.BUSY || r.outcome() == BuilderMake.Outcome.BANK_EMPTY
                     || r.outcome() == BuilderMake.Outcome.REFUSED) {
-                p.getServer().execute(() -> p.sendSystemMessage(Component.literal(why(r))));
+                p.level().getServer().execute(() -> p.sendSystemMessage(Component.literal(why(r))));
             }
         });
     }

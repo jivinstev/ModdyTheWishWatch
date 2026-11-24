@@ -204,7 +204,7 @@ public class SafetyPlanGameTest {
         WishRun run = Marshal.global().assign(session, wishId);
         helper.assertTrue(run != null, Component.literal("the wish must be assignable — assign names it, so a "
                 + "neighbouring test cannot have taken it"));
-        WishBook.get(player.getServer()).add(new Wish(wishId, label, WishSource.TYPED,
+        WishBook.get(player.level().getServer()).add(new Wish(wishId, label, WishSource.TYPED,
                 WishStatus.RUNNING, System.currentTimeMillis(), player.getUUID(),
                 player.getName().getString(), player.level().dimension().location().toString(),
                 player.getX(), player.getY(), player.getZ(), "", "", 0L));
@@ -381,7 +381,7 @@ public class SafetyPlanGameTest {
                             + "for something nobody is making"));
             helper.assertTrue(Marshal.global().windingDown(w.session()) != null,
                     Component.literal("the worker must be wound down, or CancelGate lets it carry on building"));
-            helper.assertTrue(WishBook.get(w.player().getServer()).byId(w.wishId())
+            helper.assertTrue(WishBook.get(w.player().level().getServer()).byId(w.wishId())
                             .map(x -> x.status() == WishStatus.REJECTED).orElse(false),
                     Component.literal("the book must record REJECTED — 'refused before doing anything … unsafe' is "
                             + "what its own documentation has always said it meant"));

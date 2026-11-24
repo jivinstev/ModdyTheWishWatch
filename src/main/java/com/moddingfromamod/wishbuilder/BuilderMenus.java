@@ -87,7 +87,7 @@ public final class BuilderMenus {
                             ServerPlayer p = EntityArgument.getPlayer(ctx, "player");
                             boolean opened = open(p);
                             ctx.getSource().sendSuccess(() -> Component.literal(
-                                    "builder " + (opened ? "opened" : "is off") + " for " + p.getGameProfile().getName()), false);
+                                    "builder " + (opened ? "opened" : "is off") + " for " + p.getGameProfile().name()), false);
                             return opened ? 1 : 0;
                         })));
     }
@@ -142,12 +142,12 @@ public final class BuilderMenus {
         if (kept.magicianTouched()) {
             // a wish changed it since; reopening the old picks would undo that change without a word.
             p.sendSystemMessage(Component.literal(MAGICIAN_TOUCHED));
-            LOGGER.info("builder edit {} refused for {}: a wish changed it since", id, p.getGameProfile().getName());
+            LOGGER.info("builder edit {} refused for {}: a wish changed it since", id, p.getGameProfile().name());
             return false;
         }
         BuilderFlow flow = BuilderFlow.editing(settings.allow(), LibraryPresets.SHIPPED, id, spec);
         FLOWS.put(p.getUUID(), flow);
-        LOGGER.info("builder edit {} {}", id, p.getGameProfile().getName());
+        LOGGER.info("builder edit {} {}", id, p.getGameProfile().name());
         show(p, flow);
         return true;
     }
@@ -273,14 +273,14 @@ public final class BuilderMenus {
             }
             BuilderFlow flow = BuilderFlow.editingMagicianBuilding(settings.allow(), LibraryPresets.SHIPPED, building);
             FLOWS.put(p.getUUID(), flow);
-            LOGGER.info("builder magician building edit {} {}", id, p.getGameProfile().getName());
+            LOGGER.info("builder magician building edit {} {}", id, p.getGameProfile().name());
             p.sendSystemMessage(Component.literal(MagicianCreature.SAID).withStyle(net.minecraft.ChatFormatting.LIGHT_PURPLE));
             show(p, flow);
             return true;
         }
         BuilderFlow flow = BuilderFlow.editingMagician(settings.allow(), LibraryPresets.SHIPPED, thing);
         FLOWS.put(p.getUUID(), flow);
-        LOGGER.info("builder magician edit {} {}", id, p.getGameProfile().getName());
+        LOGGER.info("builder magician edit {} {}", id, p.getGameProfile().name());
         p.sendSystemMessage(Component.literal(MagicianCreature.SAID).withStyle(net.minecraft.ChatFormatting.LIGHT_PURPLE));
         show(p, flow);
         return true;
@@ -326,7 +326,7 @@ public final class BuilderMenus {
         if (name != null && !name.isBlank() && nameIsSafe(name)) {
             spec = spec.withName(name);
         }
-        LOGGER.info("apprentice make {} {}{}", Apprentice.key(pick), p.getGameProfile().getName(),
+        LOGGER.info("apprentice make {} {}{}", Apprentice.key(pick), p.getGameProfile().name(),
                 spec.name().equals(name) ? " (his name)" : "");
         UUID who = p.getUUID();
         java.util.function.Consumer<BuilderSpec> seam = APPRENTICE_MADE_FOR_TEST.remove(who);
@@ -335,8 +335,8 @@ public final class BuilderMenus {
             return true;
         }
         p.sendSystemMessage(Component.literal(BuilderWords.making(spec, false)));
-        BuilderMake.make(p, spec, settings.allow(), null, true).thenAccept(r -> p.getServer().execute(() -> {
-            ServerPlayer now = p.getServer().getPlayerList().getPlayer(who);
+        BuilderMake.make(p, spec, settings.allow(), null, true).thenAccept(r -> p.level().getServer().execute(() -> {
+            ServerPlayer now = p.level().getServer().getPlayerList().getPlayer(who);
             if (now == null) {
                 return;
             }
@@ -383,13 +383,13 @@ public final class BuilderMenus {
     static void show(ServerPlayer p, BuilderFlow flow) {
         if (flow.asking()) {
             p.closeContainer();
-            LOGGER.info("builder find box {}", p.getGameProfile().getName());
+            LOGGER.info("builder find box {}", p.getGameProfile().name());
             MenuKit.tune(p, flow.findBox());
             return;
         }
         if (flow.step() == BuilderFlow.Step.TUNE) {
             p.closeContainer();
-            LOGGER.info("builder tune {} {}", flow.kind().id(), p.getGameProfile().getName());
+            LOGGER.info("builder tune {} {}", flow.kind().id(), p.getGameProfile().name());
             MenuKit.tune(p, flow.tune());
             return;
         }
@@ -399,7 +399,7 @@ public final class BuilderMenus {
         if (flow.wantsRecent()) {
             flow.recentTo(recentTo(p.getUUID().toString()));
         }
-        LOGGER.info("builder page {} {}", flow.step().name().toLowerCase(java.util.Locale.ROOT), p.getGameProfile().getName());
+        LOGGER.info("builder page {} {}", flow.step().name().toLowerCase(java.util.Locale.ROOT), p.getGameProfile().name());
         MenuKit.pick(p, "builder", flow.page(), (sp, id) -> press(sp, id));
     }
 
@@ -410,7 +410,7 @@ public final class BuilderMenus {
             p.closeContainer();
             return;
         }
-        LOGGER.info("builder press {} {}", id, p.getGameProfile().getName());
+        LOGGER.info("builder press {} {}", id, p.getGameProfile().name());
         BuilderFlow.Outcome o = flow.press(id);
         if (o.close()) {
             FLOWS.remove(p.getUUID());
@@ -434,7 +434,7 @@ public final class BuilderMenus {
         }
         BuilderFlow flow = FLOWS.get(p.getUUID());
         if (flow == null || !flow.token.equals(token) || !flow.asking()) {
-            LOGGER.info("builder find refused for {}: no open Find box with token {}", p.getGameProfile().getName(), token);
+            LOGGER.info("builder find refused for {}: no open Find box with token {}", p.getGameProfile().name(), token);
             return 0;
         }
         String typed = com.moddingfromamod.wish.WishText.fromDialog(
@@ -459,7 +459,7 @@ public final class BuilderMenus {
         }
         flow.find(typed);
         LOGGER.info("builder find {} results for {}", flow.found() == null ? 0 : flow.found().size(),
-                p.getGameProfile().getName());
+                p.getGameProfile().name());
         show(p, flow);
         return 1;
     }
@@ -471,7 +471,7 @@ public final class BuilderMenus {
         BuilderFlow flow = FLOWS.get(p.getUUID());
         if (flow == null || !flow.token.equals(token) || flow.step() != BuilderFlow.Step.TUNE) {
             // An old dialog, or a Make nobody opened: nothing is made, and nothing is charged.
-            LOGGER.info("builder make refused for {}: no flow at the tune step with token {}", p.getGameProfile().getName(), token);
+            LOGGER.info("builder make refused for {}: no flow at the tune step with token {}", p.getGameProfile().name(), token);
             return 0;
         }
         FLOWS.remove(p.getUUID());
@@ -486,7 +486,7 @@ public final class BuilderMenus {
             spec = flow.shelf(shelfNames(p.getUUID().toString(), flow.editOf())).spec(flow.values(values));
         } catch (RuntimeException e) {
             p.sendSystemMessage(Component.literal("That didn't work. Open the Builder and try again."));
-            LOGGER.warn("builder make for {}: bad values '{}': {}", p.getGameProfile().getName(), values, e.toString());
+            LOGGER.warn("builder make for {}: bad values '{}': {}", p.getGameProfile().name(), values, e.toString());
             return 0;
         }
         p.sendSystemMessage(Component.literal(BuilderWords.making(spec, flow.editOf() != null)));   //
@@ -498,7 +498,7 @@ public final class BuilderMenus {
                 default -> "";
             };
             if (!say.isEmpty()) {
-                p.getServer().execute(() -> p.sendSystemMessage(Component.literal(say)));
+                p.level().getServer().execute(() -> p.sendSystemMessage(Component.literal(say)));
             }
         });
         return 1;
@@ -511,7 +511,7 @@ public final class BuilderMenus {
             calls = flow.magicianBuildingCalls(flow.values(values));
         } catch (RuntimeException e) {
             p.sendSystemMessage(Component.literal("That didn't work. Open the Builder and try again."));
-            LOGGER.warn("builder magician building change for {}: bad values '{}': {}", p.getGameProfile().getName(), values, e.toString());
+            LOGGER.warn("builder magician building change for {}: bad values '{}': {}", p.getGameProfile().name(), values, e.toString());
             return 0;
         }
         String name = flow.magicianBuilding().name().isEmpty() ? "building" : flow.magicianBuilding().name();
@@ -528,7 +528,7 @@ public final class BuilderMenus {
                 default -> "";
             };
             if (!say.isEmpty()) {
-                p.getServer().execute(() -> p.sendSystemMessage(Component.literal(say)));
+                p.level().getServer().execute(() -> p.sendSystemMessage(Component.literal(say)));
             }
         });
         return 1;
@@ -541,7 +541,7 @@ public final class BuilderMenus {
             calls = flow.magicianCalls(flow.values(values));
         } catch (RuntimeException e) {
             p.sendSystemMessage(Component.literal("That didn't work. Open the Builder and try again."));
-            LOGGER.warn("builder magician change for {}: bad values '{}': {}", p.getGameProfile().getName(), values, e.toString());
+            LOGGER.warn("builder magician change for {}: bad values '{}': {}", p.getGameProfile().name(), values, e.toString());
             return 0;
         }
         String name = flow.magician().name().isEmpty() ? "creature" : flow.magician().name();
@@ -558,7 +558,7 @@ public final class BuilderMenus {
                 default -> "";
             };
             if (!say.isEmpty()) {
-                p.getServer().execute(() -> p.sendSystemMessage(Component.literal(say)));
+                p.level().getServer().execute(() -> p.sendSystemMessage(Component.literal(say)));
             }
         });
         return 1;

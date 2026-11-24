@@ -253,7 +253,7 @@ public final class WishHotbarGameTest {
             check(helper, dirtDropped == !keepInventory, "keepInventory=" + keepInventory
                     + " but the dirt " + (dirtDropped ? "dropped" : "did not drop") + ", so the rule was not in force");
 
-            reborn = p.getServer().getPlayerList().respawn(p, false, Entity.RemovalReason.KILLED);
+            reborn = level.getServer().getPlayerList().respawn(p, false, Entity.RemovalReason.KILLED);
             check(helper, reborn != p, "respawn returned the same body, so nothing was tested");
             var after = reborn.getInventory();
             check(helper, a.equals(WishHotbar.recipeOf(after.getItem(2))) && b.equals(WishHotbar.recipeOf(after.getItem(6))),

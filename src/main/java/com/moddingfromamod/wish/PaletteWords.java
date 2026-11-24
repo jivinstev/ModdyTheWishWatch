@@ -15,7 +15,7 @@ import java.util.Map;
  * <p><b>It lives in {@code wish}, not in {@code client.test}, where it was first written.</b> The
  * ladder harness needs it and so does {@link com.moddingfromamod.agent.Surroundings}, which runs on
  * the server and tells every worker what the train currently looks like. A production path reaching
- * into a package whose other occupant is {@code @EventBusSubscriber(Dist.CLIENT)} is a dedicated
+ * into a package whose other occupant is a client-only event subscriber is a dedicated
  * server crash waiting for the first headless run.
  *
  * <h2>1. The shape</h2>

@@ -95,10 +95,10 @@ public final class SoundLedger {
         double sy = at == null ? Double.NaN : at[1];
         double sz = at == null ? Double.NaN : at[2];
         if (packet instanceof ClientboundSoundPacket p) {
-            s = new Sent(tick, player.getGameProfile().getName(), id(p.getSound()), p.getSource().getName(),
+            s = new Sent(tick, player.getGameProfile().name(), id(p.getSound()), p.getSource().getName(),
                     p.getX(), p.getY(), p.getZ(), -1, p.getVolume(), p.getPitch(), sx, sy, sz);
         } else if (packet instanceof ClientboundSoundEntityPacket p) {
-            s = new Sent(tick, player.getGameProfile().getName(), id(p.getSound()), p.getSource().getName(),
+            s = new Sent(tick, player.getGameProfile().name(), id(p.getSound()), p.getSource().getName(),
                     Double.NaN, Double.NaN, Double.NaN, p.getId(), p.getVolume(), p.getPitch(), sx, sy, sz);
         }
         if (s != null) {

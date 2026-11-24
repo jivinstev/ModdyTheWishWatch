@@ -104,13 +104,13 @@ public final class EventCommand {
         Entity who = src.getEntity();
         EventBuild.Result r;
         if (at == null && who instanceof ServerPlayer p) {
-            r = EventBuild.nearPlayer(p, d, p.getGameProfile().getName());
+            r = EventBuild.nearPlayer(p, d, p.getGameProfile().name());
         } else {
             BlockPos spot = at != null ? at : BlockPos.containing(src.getPosition());
             ServerPlayer viewer = nearestPlayer(level, spot);
             float yaw = who != null ? who.getYRot() : viewer != null ? viewer.getYRot() : 0f;
             r = EventBuild.stage(level, d, EventBuild.ground(level, spot.getX(), spot.getZ()), yaw, viewer,
-                    viewer != null ? viewer.getGameProfile().getName() : "", 0);
+                    viewer != null ? viewer.getGameProfile().name() : "", 0);
         }
         if (!r.ok()) {
             src.sendFailure(Component.literal("It did not happen: " + r.error()));
@@ -124,7 +124,7 @@ public final class EventCommand {
     private static int every(CommandContext<CommandSourceStack> ctx) {
         CommandSourceStack src = ctx.getSource();
         int days = IntegerArgumentType.getInteger(ctx, "days");
-        String owner = src.getEntity() instanceof ServerPlayer p ? p.getGameProfile().getName() : "";
+        String owner = src.getEntity() instanceof ServerPlayer p ? p.getGameProfile().name() : "";
         String why = EventDesigns.every(src.getServer(), StringArgumentType.getString(ctx, "design"), days, owner);
         if (why != null) {
             src.sendFailure(Component.literal(why));

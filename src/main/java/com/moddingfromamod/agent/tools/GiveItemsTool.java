@@ -155,7 +155,7 @@ public final class GiveItemsTool implements McpTool {
                             + com.moddingfromamod.world.WishClamp.giftWords()).withStyle(net.minecraft.ChatFormatting.AQUA));
                 }
                 return ToolResult.ok((count < asked ? clampNote(asked, count) + "\n" : "") + "Gave " + given + "× " + itemId + " to "
-                        + player.getGameProfile().getName()
+                        + player.getName().getString()
                         + (why.isBlank() ? "" : " and told them: " + why) + "\n"
                         + com.moddingfromamod.item.delivery.DeliveryWords.forAgent(landed));
             }, 15_000L);
@@ -264,7 +264,7 @@ public final class GiveItemsTool implements McpTool {
                 for (var l : landed) {
                     arrived += l.count();
                 }
-                String who = player.getGameProfile().getName();
+                String who = player.getName().getString();
                 if (arrived <= 0) {
                     return ToolResult.error("Asked for " + count + "x " + name + " and NONE of it "
                             + "could be built, so the item's own definition is the suspect: " + arg);

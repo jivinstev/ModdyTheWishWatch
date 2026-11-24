@@ -393,7 +393,7 @@ public class ItemEditGameTest {
         helper.assertTrue(!made.isError(), Component.literal("could not make the item at all: " + made.text()));
         var spec = com.moddingfromamod.item.ItemSpecStore.find(id);
         helper.assertTrue(spec != null, Component.literal("the design was not stored"));
-        player.getServer().getCommands().performPrefixedCommand(
+        helper.getLevel().getServer().getCommands().performPrefixedCommand(
                 com.moddingfromamod.compat.EntityCommands.source(player).withPermission(4),
                 "wishdatapack " + spec.id() + " give");
         java.util.UUID wish = java.util.UUID.randomUUID();

@@ -214,7 +214,7 @@ public class CreatureResolverGameTest {
               {"kind":"box","width":1,"height":1,"depth":1,"block":"minecraft:stone"}]}
             """.formatted(leftover)).getAsJsonObject()));
         BuildRegistry.rememberAnchor(leftover,
-                BlockPos.containing(Vec3.atBottomCenterOf(level.getSharedSpawnPos()).add(2, 0, 0)).asLong(),
+                BlockPos.containing(Vec3.atBottomCenterOf(level.getLevelData().getRespawnData().pos()).add(2, 0, 0)).asLong(),
                 level.dimension());
         Scene s = stage(helper);
         // A building in view, three times as far away as the creature.
@@ -313,7 +313,7 @@ public class CreatureResolverGameTest {
         // No conversation left over from an earlier test: a named batch runs alone.
         EntityHandles.global().clear();
         tidy(helper);
-        Vec3 spawn = Vec3.atBottomCenterOf(level.getSharedSpawnPos());
+        Vec3 spawn = Vec3.atBottomCenterOf(level.getLevelData().getRespawnData().pos());
         clearOtherCreatures(level, spawn);
         clearOtherBuildings(spawn);
         return spawn;

@@ -61,8 +61,8 @@ public final class WishSpotGameTest {
         String worker = "gt-worker-" + wishId;
         m.assign(worker, wishId);
         Wish wish = new Wish(wishId, text, WishSource.TYPED, WishStatus.RUNNING, System.currentTimeMillis(),
-                child.getUUID(), child.getGameProfile().getName(), "minecraft:overworld", 0, 64, 0, "", "", 0L);
-        WishBook.get(child.getServer()).add(wish);
+                child.getUUID(), child.getGameProfile().name(), "minecraft:overworld", 0, 64, 0, "", "", 0L);
+        WishBook.get(((ServerLevel) child.level()).getServer()).add(wish);
         WishProgress.started(child, wish);
         return worker;
     }

@@ -6,6 +6,7 @@ import java.util.UUID;
 
 import com.moddingfromamod.marshal.PlayerKind;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 
 /**
@@ -163,7 +164,8 @@ public final class ActingChild {
         if (chosen == null) {
             return null;
         }
-        if (fake != null && chosen.equals(fake.getUUID()) && fake.getServer() == server) {
+        if (fake != null && chosen.equals(fake.getUUID())
+                && fake.level() instanceof ServerLevel level && level.getServer() == server) {
             return fake;
         }
         for (ServerPlayer p : online) {
@@ -188,7 +190,8 @@ public final class ActingChild {
         if (chosen == null) {
             return null;
         }
-        if (fake != null && chosen.equals(fake.getUUID()) && fake.getServer() == server) {
+        if (fake != null && chosen.equals(fake.getUUID())
+                && fake.level() instanceof ServerLevel level && level.getServer() == server) {
             return fake;
         }
         for (ServerPlayer p : online) {

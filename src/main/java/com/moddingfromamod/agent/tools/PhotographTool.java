@@ -1694,7 +1694,7 @@ public final class PhotographTool implements McpTool {
     /** The name this wish's events are staged under (StagedEvent.owner): its child's. Server thread. */
     private static String ownerName(net.minecraft.server.MinecraftServer server) {
         ServerPlayer child = com.moddingfromamod.agent.ActingChild.person(server);
-        return child == null ? null : child.getGameProfile().getName();
+        return child == null ? null : child.getGameProfile().name();
     }
 
     /** An event filmed after it started: its ground is waited for briefly, the event already moving. */
@@ -3192,7 +3192,7 @@ public final class PhotographTool implements McpTool {
         com.moddingfromamod.wish.WishSpotShot.Pose pose;
         if (spot.went()) {
             ServerPlayer him = spot.child() == null ? null
-                    : player.getServer().getPlayerList().getPlayer(spot.child());
+                    : ((net.minecraft.server.level.ServerLevel) level).getServer().getPlayerList().getPlayer(spot.child());
             if (him == null || him == player) {
                 return "(Nothing was made to frame: this is what he sees where the wish took him.)";
             }

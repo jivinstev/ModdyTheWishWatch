@@ -96,6 +96,11 @@ public class VanillaWatchGameTest {
      * runs on a failure and on an assertion throw, which is precisely when a leak matters most.
      * The harness sweep stays as the backstop for anything that forgets.
      */
+    /** The running server, for a test that has a player but not the server beside it. */
+    private static net.minecraft.server.MinecraftServer serverOf() {
+        return net.neoforged.neoforge.server.ServerLifecycleHooks.getCurrentServer();
+    }
+
     private static void removeOurMocks() {
         var server = net.neoforged.neoforge.server.ServerLifecycleHooks.getCurrentServer();
         if (server == null) {
@@ -103,7 +108,7 @@ public class VanillaWatchGameTest {
         }
         for (ServerPlayer p : List.copyOf(server.getPlayerList().getPlayers())) {
             if (com.moddingfromamod.testing.MockPlayerNetwork.MOCK_NAME
-                    .equals(p.getGameProfile().getName())) {
+                    .equals(p.getGameProfile().name())) {
                 com.moddingfromamod.testing.MockPlayerNetwork.remove(p);
             }
         }
@@ -324,7 +329,7 @@ public class VanillaWatchGameTest {
         withRoute(() -> {
             ServerPlayer p = player(helper);
             com.moddingfromamod.testing.MockPlayerNetwork.withoutChannels(p, () -> {
-                Object before = newestId(p.getServer());
+                Object before = newestId(serverOf());
                 helper.assertTrue(WatchMenu.open(p), Component.literal("the panel refused to open"));
                 WatchPanel.Cell preset = turnToFirstPreset(p);
                 helper.assertTrue(preset != null, Component.literal("no preset to press — a child who cannot type "
@@ -333,7 +338,7 @@ public class VanillaWatchGameTest {
                 drain(helper, p);
                 // The REAL path: a container click, as the network handler delivers one.
                 p.containerMenu.clicked(preset.slot(), 0, ClickType.PICKUP, p);
-                helper.assertTrue(!java.util.Objects.equals(newestId(p.getServer()), before),
+                helper.assertTrue(!java.util.Objects.equals(newestId(serverOf()), before),
                         Component.literal("pressing a preset recorded no wish"));
                 assertNothingNamesTheMod(helper, drain(helper, p));
                 // STOP IT AGAIN. A preset is a real template plan and this is a shared world, so
@@ -391,7 +396,7 @@ public class VanillaWatchGameTest {
     public void pressingAPresetReallyPassesItsSourceAndItsRecipe(GameTestHelper helper) {
         withRoute(() -> {
             ServerPlayer p = player(helper);
-            var server = p.getServer();
+            var server = serverOf();
             List<String> saved = LearnedTemplates.savedJsonForTest();
             try {
                 com.google.gson.JsonObject tpl = new com.google.gson.JsonObject();
@@ -459,7 +464,7 @@ public class VanillaWatchGameTest {
     public void aTaughtWishAndItsCreationAreOneTile(GameTestHelper helper) {
         withRoute(() -> {
             ServerPlayer p = player(helper);
-            var server = p.getServer();
+            var server = serverOf();
             List<String> saved = LearnedTemplates.savedJsonForTest();
             // AN ITEM he made, keyed by its feature id exactly as make_item's are, because items
             // are the NEWEST creations on the panel: a creature fixture sat behind 64 older
@@ -526,7 +531,7 @@ public class VanillaWatchGameTest {
     public void pressingAThingOpensItsPageAndItsRemakeReplaysTheRecipe(GameTestHelper helper) {
         withRoute(() -> {
             ServerPlayer p = player(helper);
-            var server = p.getServer();
+            var server = serverOf();
             List<String> saved = LearnedTemplates.savedJsonForTest();
             String name = "Twoclick Probe Wand";
             ItemStack made = new ItemStack(Items.STICK);
@@ -698,14 +703,14 @@ public class VanillaWatchGameTest {
             com.moddingfromamod.testing.MockPlayerNetwork.withoutChannels(p, () -> {
                 drain(helper, p);
                 var stack = p.createCommandSourceStack();
-                var dispatcher = p.getServer().getCommands().getDispatcher();
+                var dispatcher = serverOf().getCommands().getDispatcher();
                 // Nothing is being made, so the honest outcome is "nothing to stop" — what matters
                 // is that the command EXISTS at permission 0 and executes without a mod channel.
                 helper.assertTrue(dispatcher.getRoot().getChild(ChildCommands.MODDY) != null,
                         Component.literal("/moddy is not in the command tree Brigadier syncs to a vanilla client"));
-                p.getServer().getCommands().performPrefixedCommand(stack, "moddy stop");
-                p.getServer().getCommands().performPrefixedCommand(stack, "moddy undo");
-                p.getServer().getCommands().performPrefixedCommand(stack, "moddy status");
+                serverOf().getCommands().performPrefixedCommand(stack, "moddy stop");
+                serverOf().getCommands().performPrefixedCommand(stack, "moddy undo");
+                serverOf().getCommands().performPrefixedCommand(stack, "moddy status");
                 assertNothingNamesTheMod(helper, drain(helper, p));
             });
             helper.succeed();
@@ -739,7 +744,7 @@ public class VanillaWatchGameTest {
                 helper.assertTrue(preset != null, Component.literal("no preset to press, so there is nothing to "
                         + "reject and this test would pass having measured nothing"));
                 p.containerMenu.clicked(preset.slot(), 0, ClickType.PICKUP, p);
-                var made = WishBook.get(p.getServer()).recent(40).stream()
+                var made = WishBook.get(serverOf()).recent(40).stream()
                         .filter(w -> p.getUUID().equals(w.playerId()))
                         .reduce((a, b) -> b).orElse(null);
                 helper.assertTrue(made != null, Component.literal("pressing a preset recorded no wish"));
@@ -757,7 +762,7 @@ public class VanillaWatchGameTest {
                 drain(helper, p);
                 p.containerMenu.clicked(reject.slot(), 0, ClickType.PICKUP, p);
 
-                var after = WishBook.get(p.getServer()).byId(made.id()).orElse(null);
+                var after = WishBook.get(serverOf()).byId(made.id()).orElse(null);
                 helper.assertTrue(after != null, Component.literal("the wish vanished from the book entirely"));
                 helper.assertTrue(WishRejection.alreadyRejected(after),
                         Component.literal("pressing 👎 did not mark the wish refused, so a child with no mod has no "
@@ -925,7 +930,7 @@ public class VanillaWatchGameTest {
             }
             helper.assertTrue(slot >= 0, Component.literal("the panel offers no way to wish for something new"));
 
-            Object before = newestId(p.getServer());
+            Object before = newestId(serverOf());
             drain(helper, p);
             p.containerMenu.clicked(slot, 0, ClickType.PICKUP, p);
             helper.assertTrue(p.containerMenu == p.inventoryMenu,
@@ -953,7 +958,7 @@ public class VanillaWatchGameTest {
                     ChildCommands.MODDY + " " + ChildCommands.WISHBOX}) {
                 int ran;
                 try {
-                    ran = p.getServer().getCommands().getDispatcher().execute(blank, src);
+                    ran = serverOf().getCommands().getDispatcher().execute(blank, src);
                 } catch (com.mojang.brigadier.exceptions.CommandSyntaxException e) {
                     throw new AssertionError("'" + blank + "' does not even parse — the child sees '"
                             + e.getMessage() + "' (#1999)", e);
@@ -965,15 +970,15 @@ public class VanillaWatchGameTest {
                                 o -> o instanceof net.minecraft.network.protocol.common.ClientboundShowDialogPacket),
                         Component.literal("'" + blank + "' reopened the box: Cancel must cancel"));
             }
-            helper.assertTrue(java.util.Objects.equals(newestId(p.getServer()), before),
+            helper.assertTrue(java.util.Objects.equals(newestId(serverOf()), before),
                     Component.literal("an EMPTY wish was submitted"));
 
             // Then the real thing, exactly as the client sends it: the dialog ESCAPES the box's value
             // (StringTag.escapeWithoutQuotes), so "dinosaur's" arrives as "dinosaur\'s".
-            p.getServer().getCommands().performPrefixedCommand(src, "moddy wishbox " + com.moddingfromamod.ui.TuneDialog.Words.MARK + "a robot dinosaur\\'s song\\nthat sings");
+            serverOf().getCommands().performPrefixedCommand(src, "moddy wishbox " + com.moddingfromamod.ui.TuneDialog.Words.MARK + "a robot dinosaur\\'s song\\nthat sings");
 
-            WishBook book = WishBook.get(p.getServer());
-            helper.assertTrue(!java.util.Objects.equals(newestId(p.getServer()), before),
+            WishBook book = WishBook.get(serverOf());
+            helper.assertTrue(!java.util.Objects.equals(newestId(serverOf()), before),
                     Component.literal("no wish was recorded (the book's newest is still " + before + ")"));
             var newest = book.recent(1).get(0);
             helper.assertValueEqual(newest.source(), WishSource.TYPED, Component.literal("source"));

@@ -47,7 +47,7 @@ public class WishDeliveryGameTest {
         for (int i = 2; i < filledThrough; i++) {
             p.getInventory().setItem(i, new ItemStack(Items.COBBLESTONE, 64));
         }
-        WishBagService.clearForTest(p.getServer(), p.getUUID());
+        WishBagService.clearForTest(p.level().getServer(), p.getUUID());
         return p;
     }
 
@@ -58,7 +58,7 @@ public class WishDeliveryGameTest {
 
     static int inBag(ServerPlayer p, net.minecraft.world.item.Item item) {
         int n = 0;
-        for (ItemStack s : WishBagService.contents(p.getServer(), p.getUUID())) {
+        for (ItemStack s : WishBagService.contents(p.level().getServer(), p.getUUID())) {
             if (s.is(item)) {
                 n += s.getCount();
             }
@@ -84,7 +84,7 @@ public class WishDeliveryGameTest {
     }
 
     static WishExecutor.Result run(ServerPlayer p, String command) {
-        return WishExecutor.runOne(p.getServer(), p.level(), p.position(), p, command);
+        return WishExecutor.runOne(p.level().getServer(), p.level(), p.position(), p, command);
     }
 
     // ── a full hotbar → the Wish Bag ─────────────────────────────────────────────────────────
@@ -128,7 +128,7 @@ public class WishDeliveryGameTest {
             WishExecutor.Job job = new WishExecutor.Job(p.getUUID(), p.level(), p.position(), wish,
                     CommandPlan.of(List.of("give @s minecraft:diamond 12", "give @s minecraft:emerald 8"),
                             "Here you go!"), null, false);
-            job.runAll(p.getServer());
+            job.runAll(p.level().getServer());
             helper.assertValueEqual(inBag(p, Items.DIAMOND), 12, Component.literal("diamonds in his Wish Bag"));
             helper.assertValueEqual(inBag(p, Items.EMERALD), 8, Component.literal("emeralds in his Wish Bag"));
             helper.assertValueEqual(inMain(p, Items.DIAMOND) + inMain(p, Items.EMERALD), 0,
@@ -136,7 +136,7 @@ public class WishDeliveryGameTest {
             helper.assertTrue(WishDelivery.handedOver(wish.id().toString()),
                     Component.literal("the replay's hand-over was not recorded against its wish"));
             // A replay he asked Moddy for is a HAND-OVER: Moddy says where it landed.
-            WishDelivery.flush(p.getServer());
+            WishDelivery.flush(p.level().getServer());
             helper.assertTrue(MockPlayerNetwork.chat(p).stream().anyMatch(l -> l.contains("Diamonds")
                             && l.contains("Wish Bag")),
                     Component.literal("Moddy did not say where the replay's diamonds landed: " + MockPlayerNetwork.chat(p)));
@@ -179,7 +179,7 @@ public class WishDeliveryGameTest {
                 Component.literal("slot 8 holds " + p.getInventory().getItem(7)));
         helper.assertTrue(p.getInventory().getItem(8).getHoverName().getString().equals("Mango Splash"),
                 Component.literal("slot 9 holds " + p.getInventory().getItem(8)));
-        WishDelivery.flush(p.getServer());
+        WishDelivery.flush(p.level().getServer());
         helper.succeedWhen(() -> {
             List<String> chat = MockPlayerNetwork.chat(p);
             helper.assertTrue(chat.contains(expected), Component.literal("Moddy said " + chat + ", not: " + expected));
@@ -209,7 +209,7 @@ public class WishDeliveryGameTest {
     public static void aGrownUpsOwnGiveIsUntouched(GameTestHelper helper) {
         ServerPlayer p = child(helper, "mfam-dlv-op", 9, false);
         try {
-            p.getServer().getCommands().performPrefixedCommand(
+            p.level().getServer().getCommands().performPrefixedCommand(
                     p.createCommandSourceStack().withSuppressedOutput().withPermission(2),
                     "give @s minecraft:melon_slice 5");
             helper.assertValueEqual(inMain(p, Items.MELON_SLICE), 5, Component.literal("vanilla /give, main inventory"));
@@ -242,7 +242,7 @@ public class WishDeliveryGameTest {
             p.getInventory().setItem(8, ItemStack.EMPTY);
             p.getInventory().setItem(30, new ItemStack(Items.DIAMOND, 3));     // his OWN diamonds
 
-            WishUndo.Result r = WishUndo.undo(p.getServer(), run);
+            WishUndo.Result r = WishUndo.undo(p.level().getServer(), run);
             helper.assertTrue(r.anything(), Component.literal("undo reversed nothing: " + r.did()));
             helper.assertValueEqual(p.getInventory().countItem(Items.DIAMOND_SWORD), 0,
                     Component.literal("swords left after undo"));

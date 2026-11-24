@@ -2,6 +2,7 @@ package com.moddingfromamod.perf;
 
 import com.moddingfromamod.ModdingFromAModMod;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -43,7 +44,8 @@ public final class ChunkPaceLog {
     @SubscribeEvent
     public static void onLogin(PlayerEvent.PlayerLoggedInEvent event) {
         if (event.getEntity() instanceof ServerPlayer p) {
-            PACE.joined(p.getStringUUID(), p.getServer() == null ? 0 : p.getServer().getTickCount());
+            PACE.joined(p.getStringUUID(),
+                    p.level() instanceof ServerLevel sl ? sl.getServer().getTickCount() : 0);
         }
     }
 
@@ -57,7 +59,7 @@ public final class ChunkPaceLog {
         for (String id : PACE.firstDue(server.getTickCount())) {
             ServerPlayer p = server.getPlayerList().getPlayer(java.util.UUID.fromString(id));
             if (p != null && metered(p)) {
-                LOG.info("[chunks] {}", PACE.line(id, p.getGameProfile().getName(), "first 15 s",
+                LOG.info("[chunks] {}", PACE.line(id, p.getGameProfile().name(), "first 15 s",
                         ChunkPace.FIRST_LINE_TICKS / 20.0, pending(p)));
             }
         }
@@ -69,7 +71,7 @@ public final class ChunkPaceLog {
             if (!metered(p)) {
                 continue;
             }
-            LOG.info("[chunks] {}", PACE.line(p.getStringUUID(), p.getGameProfile().getName(), "last minute",
+            LOG.info("[chunks] {}", PACE.line(p.getStringUUID(), p.getGameProfile().name(), "last minute",
                     seconds, pending(p)));
         }
     }

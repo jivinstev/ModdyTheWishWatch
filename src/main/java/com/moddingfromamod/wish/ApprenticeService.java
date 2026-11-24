@@ -157,12 +157,12 @@ public final class ApprenticeService {
             if (!WishSettingsStore.set(com.moddingfromamod.runtime.RuntimeConfig.playersDir(), p.getStringUUID(), MODE,
                     now ? APPRENTICE : MAGICIAN)) {
                 LOGGER.warn("apprentice: {}'s wish mode was not kept on his shelf (the file is not ours to write)",
-                        p.getGameProfile().getName());
+                        p.getGameProfile().name());
             }
         } catch (IOException e) {
-            LOGGER.warn("apprentice: {}'s wish mode was not kept on his shelf: {}", p.getGameProfile().getName(), e.toString());
+            LOGGER.warn("apprentice: {}'s wish mode was not kept on his shelf: {}", p.getGameProfile().name(), e.toString());
         }
-        LOGGER.info("apprentice: {} set typed wishes to {}", p.getGameProfile().getName(), now ? APPRENTICE : MAGICIAN);
+        LOGGER.info("apprentice: {} set typed wishes to {}", p.getGameProfile().name(), now ? APPRENTICE : MAGICIAN);
     }
 
     /** The route for this player's typed words, by the one rule ({@link WishRoute}). */
@@ -225,7 +225,7 @@ public final class ApprenticeService {
         // A clause the keywords could not read: the layer reads it on its own worker and the page opens on the
         // server thread when it has. Past LAYER_WAIT_MS the keyword answer is shown instead (the future completes
         // once, so a late read is dropped). The words live in these tasks and nowhere else.
-        net.minecraft.server.MinecraftServer server = p.getServer();
+        net.minecraft.server.MinecraftServer server = ((net.minecraft.server.level.ServerLevel) p.level()).getServer();
         long t0 = System.nanoTime();
         LayerHost.match(matcher, read).completeOnTimeout(null, layerWaitMs, java.util.concurrent.TimeUnit.MILLISECONDS)
                 .thenAccept(answer -> server.execute(() -> {
@@ -253,7 +253,7 @@ public final class ApprenticeService {
         for (List<String> by : answer.layer()) {
             guessed += by.isEmpty() ? 0 : 1;
         }
-        LOGGER.info("apprentice: {} ({}) -> {} tile(s), reach {}{}", p.getGameProfile().getName(),
+        LOGGER.info("apprentice: {} ({}) -> {} tile(s), reach {}{}", p.getGameProfile().name(),
                 crafter ? "crafter" : "magician", answer.offers().size(), answer.reach().id(),
                 read ? ", layer on " + guessed + " tile(s)" : "");
         boolean priced = WishCharge.get().priced(p.getUUID());
@@ -356,7 +356,7 @@ public final class ApprenticeService {
             p.closeContainer();
             return;
         }
-        LOGGER.info("apprentice: {} picked tile {} ({})", p.getGameProfile().getName(), n, Apprentice.key(pending.offers().get(n)));
+        LOGGER.info("apprentice: {} picked tile {} ({})", p.getGameProfile().name(), n, Apprentice.key(pending.offers().get(n)));
         // A tile MAKES its thing: no tune dialog in between, as a wish has none. A guess not
         // quite right is changed after, free once (FreeEdit), from the thing's page on his watch.
         BuilderMenus.makeApprentice(p, pending.settings(), tree(pending.settings().allow()), pending.offers().get(n),

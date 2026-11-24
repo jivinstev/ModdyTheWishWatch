@@ -3,7 +3,7 @@ package com.moddingfromamod.item;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.nbt.CompoundTag;
+
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
@@ -16,7 +16,7 @@ import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Snowball;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.component.CustomData;
+
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
@@ -132,13 +132,11 @@ public final class WishItemActions {
         if (anchor == null) {
             return null;
         }
-        CompoundTag shape = new CompoundTag();
-        shape.putBoolean("Marker", true);
-        shape.putBoolean("Invisible", true);
-        shape.putBoolean("NoGravity", true);
-        shape.putBoolean("Invulnerable", true);
-        shape.putBoolean("Silent", true);
-        CustomData.of(shape).loadInto(anchor);
+        anchor.setInvisible(true);
+        anchor.setNoGravity(true);
+        anchor.setInvulnerable(true);
+        anchor.setSilent(true);
+        setMarker(anchor);
         if (tag != null && !tag.isEmpty()) {
             anchor.addTag(tag);
         }
@@ -148,6 +146,17 @@ public final class WishItemActions {
         serverLevel.playSound(null, at.x(), at.y(), at.z(),
                 SoundEvents.ARMOR_STAND_PLACE, SoundSource.BLOCKS, 0.75F, 0.8F);
         return anchor;
+    }
+
+    /** ArmorStand.setMarker is private on this Minecraft version; reach it reflectively. */
+    private static void setMarker(ArmorStand stand) {
+        try {
+            java.lang.reflect.Method m = ArmorStand.class.getDeclaredMethod("setMarker", boolean.class);
+            m.setAccessible(true);
+            m.invoke(stand, true);
+        } catch (ReflectiveOperationException e) {
+            throw new IllegalStateException("Cannot mark the anchor armor stand", e);
+        }
     }
 
     /**

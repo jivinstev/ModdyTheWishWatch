@@ -239,7 +239,7 @@ public class ModifyMobReachesTheRigGameTest {
         // refusal by design. This test is about a creature it plants itself, so it starts from no
         // conversation. Safe here because a named batch runs alone: nothing else is mid-wish.
         com.moddingfromamod.mob.EntityHandles.global().clear();
-        Vec3 at = Vec3.atBottomCenterOf(overworld.getSharedSpawnPos());
+        Vec3 at = Vec3.atBottomCenterOf(overworld.getRespawnData().pos());
         for (LivingEntity stale : overworld.getEntitiesOfClass(LivingEntity.class,
                 new AABB(at, at).inflate(64),
                 e -> e.getTags().contains(DisplayRig.RIG_TAG) || e instanceof WishMobEntity)) {

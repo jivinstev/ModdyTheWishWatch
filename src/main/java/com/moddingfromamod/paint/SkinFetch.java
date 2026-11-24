@@ -12,7 +12,6 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 
-import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.ProfileLookupCallback;
 import com.mojang.authlib.minecraft.MinecraftProfileTexture;
 import com.mojang.authlib.minecraft.MinecraftSessionService;
@@ -152,13 +151,15 @@ public final class SkinFetch {
 
     private static Result live(String name) {
         YggdrasilAuthenticationService svc = auth();
-        GameProfile[] found = new GameProfile[1];
+        UUID[] foundId = new UUID[1];
+        String[] foundName = new String[1];
         Exception[] failed = new Exception[1];
         svc.createProfileRepository().findProfilesByNames(new String[]{name},
                 new ProfileLookupCallback() {
                     @Override
-                    public void onProfileLookupSucceeded(GameProfile profile) {
-                        found[0] = profile;
+                    public void onProfileLookupSucceeded(String n, UUID id) {
+                        foundName[0] = n;
+                        foundId[0] = id;
                     }
 
                     @Override
@@ -166,7 +167,7 @@ public final class SkinFetch {
                         failed[0] = e;
                     }
                 });
-        if (found[0] == null) {
+        if (foundId[0] == null) {
             if (failed[0] == null || failed[0] instanceof ProfileNotFoundException) {
                 return new NoSuchPlayer(name);
             }
@@ -174,13 +175,13 @@ public final class SkinFetch {
             return new Failed("the Minecraft profile service did not answer");
         }
         MinecraftSessionService session = svc.createMinecraftSessionService();
-        var result = session.fetchProfile(found[0].getId(), false);
+        var result = session.fetchProfile(foundId[0], false);
         if (result == null) {
             return new Failed("the Minecraft profile service did not answer");
         }
         MinecraftProfileTexture tex = session.getTextures(result.profile()).skin();
         if (tex == null) {
-            return new Failed(found[0].getName() + " has never changed the default skin, so there "
+            return new Failed(foundName[0] + " has never changed the default skin, so there "
                     + "is no skin of their own to paint");
         }
         URI uri = textureUri(tex.getUrl());
@@ -189,7 +190,7 @@ public final class SkinFetch {
             return new Failed("the skin is not on Minecraft's own texture server");
         }
         String hash = tex.getHash();
-        String key = found[0].getId() + ":" + hash;
+        String key = foundId[0] + ":" + hash;
         byte[] png = CACHE.get(key);
         if (png == null) {
             png = download(uri);
@@ -200,10 +201,10 @@ public final class SkinFetch {
         }
         // ⚠ THE FIRST LIVE FETCH ON A SERVER IS ITS EGRESS CHECK: this
         // line in its log is what proves sessionserver and textures.minecraft.net are reachable.
-        LOGGER.info("skin: fetched {} ({}) from {} — {} bytes, model {}", found[0].getName(),
-                found[0].getId(), uri, png.length,
+        LOGGER.info("skin: fetched {} ({}) from {} — {} bytes, model {}", foundName[0],
+                foundId[0], uri, png.length,
                 "slim".equals(tex.getMetadata("model")) ? "slim" : "classic");
-        return new Found(new Skin(found[0].getName(), found[0].getId(), uri.toString(), hash,
+        return new Found(new Skin(foundName[0], foundId[0], uri.toString(), hash,
                 "slim".equals(tex.getMetadata("model")), png));
     }
 

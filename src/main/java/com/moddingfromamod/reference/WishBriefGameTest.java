@@ -102,8 +102,8 @@ public class WishBriefGameTest {
             }
         });
 
-        Wish wish = WishBook.get(p.getServer()).add(Wish.create(text, WishSource.COMMAND,
-                System.currentTimeMillis(), p.getUUID(), p.getGameProfile().getName(),
+        Wish wish = WishBook.get(p.level().getServer()).add(Wish.create(text, WishSource.COMMAND,
+                System.currentTimeMillis(), p.getUUID(), p.getGameProfile().name(),
                 p.level().dimension().location().toString(), p.getX(), p.getY(), p.getZ()));
         Marshal.global().submit(wish.id(), p.getUUID(), text);
         WishProgress.startThinking(p, wish.id(), text);
@@ -562,8 +562,8 @@ public class WishBriefGameTest {
                 return SafetyVerdict.fine(SafetyVerdict.Provenance.HAIKU);
             }
         });
-        Wish wish = WishBook.get(p.getServer()).add(Wish.create(text, WishSource.COMMAND,
-                System.currentTimeMillis(), p.getUUID(), p.getGameProfile().getName(),
+        Wish wish = WishBook.get(p.level().getServer()).add(Wish.create(text, WishSource.COMMAND,
+                System.currentTimeMillis(), p.getUUID(), p.getGameProfile().name(),
                 p.level().dimension().location().toString(), p.getX(), p.getY(), p.getZ()));
         Marshal.global().submit(wish.id(), p.getUUID(), text);
         WishProgress.startThinking(p, wish.id(), text);

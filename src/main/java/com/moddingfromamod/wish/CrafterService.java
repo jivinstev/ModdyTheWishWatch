@@ -17,7 +17,9 @@ import net.minecraft.network.chat.HoverEvent;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.protocol.common.ClientboundServerLinksPacket;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.ServerLinks;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -60,8 +62,13 @@ public final class CrafterService {
 
     // ── who is who ───────────────────────────────────────────────────────────────────────────────
 
+    /** The server a player is on, or null (a player with no server-side level). */
+    private static MinecraftServer serverOf(ServerPlayer p) {
+        return p != null && p.level() instanceof ServerLevel level ? level.getServer() : null;
+    }
+
     public static Crafters.Role role(ServerPlayer p) {
-        if (p == null || p.getServer() == null) {
+        if (p == null || serverOf(p) == null) {
             return Crafters.Role.MAGICIAN;
         }
         if (com.moddingfromamod.seam.PlayerSeams.isCrafter(p.getUUID())) {
@@ -73,7 +80,7 @@ public final class CrafterService {
             // wish was made and every canary said NOT SUBMITTED. No player can hold this id.
             return Crafters.Role.MAGICIAN;
         }
-        var list = p.getServer().getPlayerList();
+        var list = serverOf(p).getPlayerList();
         boolean open = WorldCrafters.current().open();
         if (!open) {
             return Crafters.Role.MAGICIAN;
@@ -81,8 +88,10 @@ public final class CrafterService {
         // A client test's player is the singleplayer OWNER, which vanilla counts as an operator — and
         // an operator is always a Magician. IGNORE_OP_PROPERTY is the A/B seam that photographs the
         // Crafter's view on a real client (CrafterShotsClientTest); nothing ships setting it.
-        boolean op = list.isOp(p.getGameProfile()) && !"true".equals(System.getProperty(IGNORE_OP_PROPERTY));
-        return Crafters.role(true, list.getWhiteList().isWhiteListed(p.getGameProfile()), op);
+        net.minecraft.server.players.NameAndId who =
+                new net.minecraft.server.players.NameAndId(p.getUUID(), p.getScoreboardName());
+        boolean op = list.isOp(who) && !"true".equals(System.getProperty(IGNORE_OP_PROPERTY));
+        return Crafters.role(true, list.getWhiteList().isWhiteListed(who), op);
     }
 
     public static boolean isCrafter(ServerPlayer p) {
@@ -96,7 +105,7 @@ public final class CrafterService {
 
     private static boolean done(ServerPlayer p, String id) {
         try {
-            AdvancementHolder h = p.getServer().getAdvancements().get(ResourceLocation.parse(id));
+            AdvancementHolder h = serverOf(p).getAdvancements().get(ResourceLocation.parse(id));
             return h != null && p.getAdvancements().getOrStartProgress(h).isDone();
         } catch (RuntimeException e) {
             return false;

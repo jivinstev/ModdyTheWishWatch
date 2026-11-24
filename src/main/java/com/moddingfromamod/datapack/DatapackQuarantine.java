@@ -443,10 +443,11 @@ public final class DatapackQuarantine {
         o.addProperty("playerId", e.owner());
         if (server != null && !e.owner().isBlank()) {
             try {
-                var prof = server.getProfileCache() == null ? null
-                        : server.getProfileCache().get(UUID.fromString(e.owner())).orElse(null);
+                var cache = server.services().nameToIdCache();
+                var prof = cache == null ? null
+                        : cache.get(UUID.fromString(e.owner())).orElse(null);
                 if (prof != null) {
-                    o.addProperty("ownerName", prof.getName());
+                    o.addProperty("ownerName", prof.name());
                 }
             } catch (RuntimeException ignored) {
                 // a name is a nicety

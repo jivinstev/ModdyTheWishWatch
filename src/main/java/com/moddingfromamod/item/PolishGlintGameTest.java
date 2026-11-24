@@ -71,7 +71,7 @@ public final class PolishGlintGameTest {
         helper.assertTrue(!made.isError(), Component.literal("could not make the wand: " + made.text()));
         var spec = ItemSpecStore.all().stream().filter(s -> name.equals(s.name())).findFirst().orElse(null);
         helper.assertTrue(spec != null, Component.literal("the wand's design was not stored"));
-        p.getServer().getCommands().performPrefixedCommand(
+        helper.getLevel().getServer().getCommands().performPrefixedCommand(
                 com.moddingfromamod.compat.EntityCommands.source(p).withPermission(4),
                 "wishdatapack " + spec.id() + " give");
         helper.assertTrue(!held(p, spec.id()).isEmpty(), Component.literal("he was never handed the wand"));

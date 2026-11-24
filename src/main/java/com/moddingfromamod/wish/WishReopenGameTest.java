@@ -87,8 +87,8 @@ public class WishReopenGameTest {
         p.setPos(at.getX() + 0.5, at.getY(), at.getZ() + 0.5);
 
         String text = "make it bigger " + tag + " " + UUID.randomUUID().toString().substring(0, 8);
-        Wish wish = WishBook.get(p.getServer()).add(Wish.create(text, WishSource.COMMAND,
-                System.currentTimeMillis(), p.getUUID(), p.getGameProfile().getName(),
+        Wish wish = WishBook.get(helper.getLevel().getServer()).add(Wish.create(text, WishSource.COMMAND,
+                System.currentTimeMillis(), p.getUUID(), p.getGameProfile().name(),
                 p.level().dimension().location().toString(), p.getX(), p.getY(), p.getZ()));
         Marshal.global().submit(wish.id(), p.getUUID(), text);
         Marshal.global().assign(worker, wish.id());

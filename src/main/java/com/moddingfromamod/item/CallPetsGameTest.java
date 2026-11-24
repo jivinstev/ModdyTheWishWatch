@@ -83,7 +83,7 @@ public final class CallPetsGameTest {
         mine.setInSittingPose(true);
         Wolf stranger = helper.spawn(EntityType.WOLF, new BlockPos(6, 2, 1));
         stranger.setTame(true, false);
-        stranger.setOwnerReference(new net.minecraft.world.entity.EntityReference<>(java.util.UUID.randomUUID()));
+        stranger.setOwnerReference(net.minecraft.world.entity.EntityReference.<net.minecraft.world.entity.LivingEntity>of(java.util.UUID.randomUUID()));
         stranger.setOrderedToSit(true);
         Cat cat = helper.spawn(EntityType.CAT, new BlockPos(1, 2, 6));
         cat.tame(owner);

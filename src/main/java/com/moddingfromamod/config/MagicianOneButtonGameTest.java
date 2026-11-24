@@ -144,10 +144,10 @@ public final class MagicianOneButtonGameTest {
             helper.assertTrue(probe.looked.get() == 0 && probe.ran.get() == 0 && probe.pythonAsked.get() == 0,
                     Component.literal("the watch looked for a program before anything was pressed"));
             // The tile runs /moddy magician: a guest is told only the host sets it up.
-            guest.getServer().getCommands().performPrefixedCommand(guest.createCommandSourceStack(), "moddy magician");
+            helper.getLevel().getServer().getCommands().performPrefixedCommand(guest.createCommandSourceStack(), "moddy magician");
             helper.assertTrue(MockPlayerNetwork.chat(guest).contains(MagicianSetup.HOST_ONLY),
                     Component.literal("the guest was not told why: " + MockPlayerNetwork.chat(guest)));
-            host.getServer().getCommands().performPrefixedCommand(host.createCommandSourceStack(), "moddy magician");
+            helper.getLevel().getServer().getCommands().performPrefixedCommand(host.createCommandSourceStack(), "moddy magician");
             helper.assertTrue(tileIds(host).containsAll(java.util.List.of(MagicianPresets.CLAUDE, MagicianPresets.MUSE,
                             MagicianSetup.MANUAL)) && !tileIds(host).contains(MagicianPresets.API),
                     Component.literal("the first page's buttons (no key set): " + tileIds(host)));

@@ -60,7 +60,7 @@ public final class BuilderSuppliesGameTest {
                 n += s.getCount();
             }
         }
-        for (ItemStack s : WishBagService.contents(p.getServer(), p.getUUID())) {
+        for (ItemStack s : WishBagService.contents(((net.minecraft.server.level.ServerLevel) p.level()).getServer(), p.getUUID())) {
             if (!s.isEmpty() && s.is(item)) {
                 n += s.getCount();
             }

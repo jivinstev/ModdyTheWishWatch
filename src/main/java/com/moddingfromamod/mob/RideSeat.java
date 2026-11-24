@@ -143,9 +143,9 @@ public final class RideSeat {
         Mob seat = Double.isFinite(lift) && lift >= MIN_LIFT && mob.level() instanceof ServerLevel level
                 ? seat(level, mob, player, lift) : null;
         if (seat == null) {
-            on = player.startRiding(mob, true);
+            on = player.startRiding(mob, true, true);
         } else {
-            on = player.startRiding(seat, true);
+            on = player.startRiding(seat, true, true);
             if (on) {
                 SEATS.add(seat);
             } else {
@@ -174,7 +174,7 @@ public final class RideSeat {
             mob.positionRider(player);
         }
         LOG.info(String.format(java.util.Locale.ROOT, "ride seat %s: on %s x%.3f, seat %s, his feet %.3f over its feet",
-                player.getGameProfile().getName(), net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE.getKey(mob.getType()),
+                player.getGameProfile().name(), net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE.getKey(mob.getType()),
                 mob.getScale(), seat == null ? "none" : String.format(java.util.Locale.ROOT, "x%.3f", seat.getScale()),
                 player.getY() - mob.getY()));
     }
@@ -240,7 +240,7 @@ public final class RideSeat {
         seat.addTag(CreatureMatch.PROXY_TAG);
         seat.addTag(com.moddingfromamod.vanilla.HitProxies.PROXY_OWNER_PREFIX + carrier.getUUID());
         level.addFreshEntity(seat);
-        if (!seat.startRiding(carrier, true)) {
+        if (!seat.startRiding(carrier, true, true)) {
             seat.discard();
             return null;
         }

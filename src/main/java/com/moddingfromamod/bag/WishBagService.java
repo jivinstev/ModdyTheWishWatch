@@ -241,9 +241,10 @@ public final class WishBagService {
     @SubscribeEvent
     public static void onLoggedOut(PlayerEvent.PlayerLoggedOutEvent event) {
         if (event.getEntity() instanceof ServerPlayer p) {
-            Bag b = BAGS.remove(slot(p.getServer(), p.getUUID()));
+            MinecraftServer server = p.level().getServer();
+            Bag b = BAGS.remove(slot(server, p.getUUID()));
             if (b != null && b.dirty) {
-                save(p.getServer(), b);
+                save(server, b);
             }
         }
     }

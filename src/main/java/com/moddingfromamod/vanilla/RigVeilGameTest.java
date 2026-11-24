@@ -918,7 +918,7 @@ public final class RigVeilGameTest {
         com.moddingfromamod.wish.WishExecutor.submit(child,
                 com.moddingfromamod.wish.Wish.create("a pet dragon that follows me",
                         com.moddingfromamod.wish.WishSource.PRESET, System.currentTimeMillis(),
-                        child.getUUID(), child.getGameProfile().getName(),
+                        child.getUUID(), child.getGameProfile().name(),
                         helper.getLevel().dimension().location().toString(), at.x, at.y, at.z),
                 new com.moddingfromamod.wish.CommandPlan(List.of("say served"), "Here it is!", 1));
         helper.succeedWhen(() -> {

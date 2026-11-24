@@ -10,9 +10,11 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.particles.ColorParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -570,7 +572,7 @@ public final class WishProgress {
      * invisible.
      */
     private static ServerPlayer ownerOf(ServerPlayer caller, UUID wishId) {
-        var server = caller.getServer();
+        var server = ((ServerLevel) caller.level()).getServer();
         if (server == null) {
             return null;
         }
@@ -588,7 +590,7 @@ public final class WishProgress {
      * test, with the real behaviour already right. Both go through here.
      */
     private static UUID ownerIdFor(ServerPlayer caller, UUID wishId) {
-        var server = caller.getServer();
+        var server = ((ServerLevel) caller.level()).getServer();
         if (server != null) {
             Wish wish = WishBook.get(server).byId(wishId).orElse(null);
             if (wish != null && wish.playerId() != null) {
@@ -949,7 +951,7 @@ public final class WishProgress {
         }
         FOCUS.remove(player.getUUID());
         var level = player.level();
-        level.sendParticles(ParticleTypes.FLASH,
+        level.sendParticles(ColorParticleOption.create(ParticleTypes.FLASH, 0xFFFFFFFF),
                 where.getX() + 0.5, where.getY() + 1.0, where.getZ() + 0.5, 4, 1.5, 1.5, 1.5, 0.0);
         level.sendParticles(ParticleTypes.TOTEM_OF_UNDYING,
                 where.getX() + 0.5, where.getY() + 2.0, where.getZ() + 0.5, 80, 2.5, 2.5, 2.5, 0.35);

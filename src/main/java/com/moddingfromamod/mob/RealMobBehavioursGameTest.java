@@ -105,7 +105,7 @@ public final class RealMobBehavioursGameTest {
                 + "\"drop\":\"minecraft:enderman\",\"count\":12,\"pattern\":\"cluster\",\"traits\":{"
                 + "\"friendly\":true,\"follow\":true,\"base\":\"guardian\",\"name\":\"Enderman Soldier\"}}").design();
         helper.assertTrue(design != null, Component.literal("the army design did not parse"));
-        EventBuild.Result r = EventBuild.nearPlayer(child, design, child.getGameProfile().getName());
+        EventBuild.Result r = EventBuild.nearPlayer(child, design, child.getGameProfile().name());
         helper.assertTrue(r.ok(), Component.literal("the army was not staged: " + r.error()));
         String tag = EventDirector.entityTag(r.id());
         ServerLevel level = helper.getLevel();

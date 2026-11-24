@@ -64,7 +64,7 @@ public class CrafterGameTest {
             int magicianLinks = CrafterService.links(linked, false).size();
 
             // A SEAT, given while he plays: the line the account service's whitelist.add writes
-            list.getWhiteList().add(new UserWhiteListEntry(p.getGameProfile()));
+            list.getWhiteList().add(new UserWhiteListEntry(p.nameAndId()));
             CrafterService.check(p);
             Crafters.Role seated = CrafterService.role(p);
             WatchPanel.Cell composeAfter = WatchMenu.planFor(p).cells().stream()
@@ -101,10 +101,10 @@ public class CrafterGameTest {
             helper.assertTrue(magicianOut != WishService.Outcome.APPRENTICE, Component.literal("a Magician's typed wish goes to the agent: " + magicianOut));
             helper.succeed();
         } finally {
-            list.getWhiteList().remove(p.getGameProfile());
+            list.getWhiteList().remove(p.nameAndId());
             System.clearProperty(WorldCrafters.OPEN_PROPERTY);
             SafetyGrader.transportForTest(null);
-            for (Wish w : WishBook.get(p.getServer()).recent(40)) {
+            for (Wish w : WishBook.get(helper.getLevel().getServer()).recent(40)) {
                 if (w.text().contains(run) || w.playerId() != null && w.playerId().equals(p.getUUID())) {
                     try {
                         Marshal.global().cancel(w.id(), CancelMode.STOP, "", "");

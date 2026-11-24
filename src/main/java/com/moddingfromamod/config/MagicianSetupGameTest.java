@@ -145,9 +145,9 @@ public final class MagicianSetupGameTest {
         MenuKit.decode(host, dialog);   // vanilla's own codec reads it
         helper.assertTrue(dialog.keys().equals(List.of("main_mode", "cheap_mode")),
                 Component.literal("the pay dialog's inputs: " + dialog.keys()));
-        host.getServer().getCommands().performPrefixedCommand(host.createCommandSourceStack(),
+        helper.getLevel().getServer().getCommands().performPrefixedCommand(host.createCommandSourceStack(),
                 "moddy magician pay api subscription");
-        guest.getServer().getCommands().performPrefixedCommand(guest.createCommandSourceStack(),
+        helper.getLevel().getServer().getCommands().performPrefixedCommand(guest.createCommandSourceStack(),
                 "moddy magician pay subscription api");
         MagicianPicks picks = MagicianPicks.current();
         helper.assertTrue(picks.equals(new MagicianPicks(SupportedModels.OPUS, "api", SupportedModels.EMBER,
@@ -171,12 +171,12 @@ public final class MagicianSetupGameTest {
         MagicianSetup.pressFallback(host, SupportedModels.Role.MAIN, SupportedModels.WONDER + ":subscription");
         helper.assertTrue("muse-spark-1.2-contributor:api".equals(ModdySettings.get(SettingsCatalog.MAIN_FALLBACK)
                 .orElse("")), Component.literal("pressing a chosen fallback did not take it out"));
-        guest.getServer().getCommands().performPrefixedCommand(guest.createCommandSourceStack(),
+        helper.getLevel().getServer().getCommands().performPrefixedCommand(guest.createCommandSourceStack(),
                 "moddy setting magician.fallback none");
         helper.assertTrue(!"none".equals(ModdySettings.get(SettingsCatalog.MAIN_FALLBACK).orElse("")),
                 Component.literal("a guest changed the host's fallback"));
         // Typed straight at the action, Magician still refuses to turn on: it has not been checked.
-        host.getServer().getCommands().performPrefixedCommand(host.createCommandSourceStack(),
+        helper.getLevel().getServer().getCommands().performPrefixedCommand(host.createCommandSourceStack(),
                 "moddy setting magician.enabled on");
         helper.assertTrue(!Magician.enabled(), Component.literal("Magician turned on without its check"));
         helper.assertTrue(MagicianSetup.problems(picks).isEmpty(),

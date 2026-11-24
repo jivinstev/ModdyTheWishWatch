@@ -54,7 +54,7 @@ public final class GoalGuide {
         if (rootId == null) {
             return Answer.NO_TREE;
         }
-        AdvancementNode root = player.getServer().getAdvancements().tree().get(rootId);
+        AdvancementNode root = player.level().getServer().getAdvancements().tree().get(rootId);
         if (root == null) {
             return Answer.NO_TREE;
         }
@@ -113,7 +113,7 @@ public final class GoalGuide {
             return out;
         }
         ResourceLocation rootId = ResourceLocation.tryParse(guide.goals().root());
-        AdvancementNode root = rootId == null ? null : player.getServer().getAdvancements().tree().get(rootId);
+        AdvancementNode root = rootId == null ? null : player.level().getServer().getAdvancements().tree().get(rootId);
         if (root == null) {
             return out;
         }

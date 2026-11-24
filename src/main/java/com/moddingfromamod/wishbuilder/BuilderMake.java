@@ -161,7 +161,7 @@ public final class BuilderMake {
     /** Who a make is for: enough to file the wish, with no player object (a GameTest has none). */
     public record Who(UUID id, String name, String dimension, double x, double y, double z) {
         public static Who of(ServerPlayer p) {
-            return new Who(p.getUUID(), p.getGameProfile().getName(),
+            return new Who(p.getUUID(), p.getName().getString(),
                     p.level().dimension().location().toString(), p.getX(), p.getY(), p.getZ());
         }
     }
@@ -191,7 +191,7 @@ public final class BuilderMake {
         if (!free && com.moddingfromamod.wish.WishCharge.get().refusesAtSubmit(player, false, text, true)) {
             return done(Outcome.BANK_EMPTY, null, "", "the wish bank is empty");
         }
-        return runCapped(player.getServer(), Who.of(player), allow == null ? spec : allow.capped(spec), allow, protocol(),
+        return runCapped(player.level().getServer(), Who.of(player), allow == null ? spec : allow.capped(spec), allow, protocol(),
                 true, takeCard, editOf, apprentice);
     }
 
@@ -262,7 +262,7 @@ public final class BuilderMake {
         if (com.moddingfromamod.wish.WishCharge.get().refusesAtSubmit(player, false, magicianText(thing), true)) {
             return done(Outcome.BANK_EMPTY, null, "", "the wish bank is empty");
         }
-        return magicianRun(player.getServer(), Who.of(player), thing, calls, protocol(), true, takeCard);
+        return magicianRun(player.level().getServer(), Who.of(player), thing, calls, protocol(), true, takeCard);
     }
 
     /** {@link #magician} with the GameTest's seams (a server, a person, a dispatch, no bank). */
@@ -295,7 +295,7 @@ public final class BuilderMake {
         if (com.moddingfromamod.wish.WishCharge.get().refusesAtSubmit(player, false, text, true)) {
             return done(Outcome.BANK_EMPTY, null, "", "the wish bank is empty");
         }
-        return magicianBuildingRun(player.getServer(), Who.of(player), thing, calls, protocol(), true, takeCard);
+        return magicianBuildingRun(player.level().getServer(), Who.of(player), thing, calls, protocol(), true, takeCard);
     }
 
     /** a sure typed change on an ITEM the Magician made ({@link MagicianItem}), charged as a Builder change is. */
@@ -308,7 +308,7 @@ public final class BuilderMake {
         if (com.moddingfromamod.wish.WishCharge.get().refusesAtSubmit(player, false, text, true)) {
             return done(Outcome.BANK_EMPTY, null, "", "the wish bank is empty");
         }
-        return magicianItemRun(player.getServer(), Who.of(player), thing, calls, protocol(), true, takeCard);
+        return magicianItemRun(player.level().getServer(), Who.of(player), thing, calls, protocol(), true, takeCard);
     }
 
     /** {@link #magicianItem} with the GameTest's seams (a server, a person, a dispatch, no bank). */

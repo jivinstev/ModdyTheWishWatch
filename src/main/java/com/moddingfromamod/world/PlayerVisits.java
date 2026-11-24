@@ -89,7 +89,7 @@ public final class PlayerVisits {
         if (!(e.getEntity() instanceof ServerPlayer mover) || !PlayerKind.isChild(mover.getUUID())) {
             return;
         }
-        ServerPlayer host = hostAt(mover.getServer(), mover, e.getTarget());
+        ServerPlayer host = hostAt(mover.level().getServer(), mover, e.getTarget());
         if (host == null) {
             return;
         }
@@ -103,7 +103,7 @@ public final class PlayerVisits {
      * anything that moves a child to another in Java (a test drives it directly).
      */
     public static boolean decide(ServerPlayer mover, ServerPlayer host) {
-        int others = Math.max(0, com.moddingfromamod.wish.CameraPresence.childrenOnline(mover.getServer()) - 1);
+        int others = Math.max(0, com.moddingfromamod.wish.CameraPresence.childrenOnline(mover.level().getServer()) - 1);
         if (mode() != PlayerReach.Mode.OPEN) {
             say(mover, offLine());
             com.moddingfromamod.agent.ActionLog.reach("visit", "refused", PlayerReach.WHY_REACH_OFF,

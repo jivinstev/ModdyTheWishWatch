@@ -17,6 +17,7 @@ import com.moddingfromamod.wish.WatchPinService;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Inventory;
@@ -199,7 +200,7 @@ public final class WishDelivery {
         place(inv, stack, plan.hotbar(), Where.HOTBAR, name, out);
         // 2. THE WISH BAG — everything else.
         if (!stack.isEmpty()) {
-            int in = WishBagService.add(player.getServer(), player.getUUID(), stack);
+            int in = WishBagService.add(((ServerLevel) player.level()).getServer(), player.getUUID(), stack);
             if (in > 0) {
                 out.add(new Landed(name, in, Where.BAG, 0));
             }
@@ -376,8 +377,9 @@ public final class WishDelivery {
                 || com.moddingfromamod.item.WishItemCatalogue.knows(like)) {
             return;
         }
-        if (com.moddingfromamod.item.WishItemCatalogue.remember(player.getServer(), like)) {
-            com.moddingfromamod.net.ModdedClient.broadcastWishItems(player.getServer());
+        MinecraftServer server = ((ServerLevel) player.level()).getServer();
+        if (com.moddingfromamod.item.WishItemCatalogue.remember(server, like)) {
+            com.moddingfromamod.net.ModdedClient.broadcastWishItems(server);
         }
     }
 

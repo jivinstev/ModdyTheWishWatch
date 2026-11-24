@@ -16,6 +16,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.server.players.NameAndId;
 import net.minecraft.server.players.UserWhiteListEntry;
 
 /**
@@ -30,7 +31,7 @@ public final class ApprenticeNameGameTest {
     }
 
     private static void run(ServerPlayer p, String command) {
-        p.getServer().getCommands().performPrefixedCommand(p.createCommandSourceStack(), command);
+        p.createCommandSourceStack().getServer().getCommands().performPrefixedCommand(p.createCommandSourceStack(), command);
     }
 
     @GameTest(template = "empty_test", batch = "apprenticeName", timeoutTicks = 400)
@@ -65,7 +66,7 @@ public final class ApprenticeNameGameTest {
 
             // A MAGICIAN on Apprentice magic: the make is called Sir Fluffy
             p.closeContainer();
-            list.getWhiteList().add(new UserWhiteListEntry(p.getGameProfile()));
+            list.getWhiteList().add(new UserWhiteListEntry(new NameAndId(p.getUUID(), p.getGameProfile().name())));
             CrafterService.check(p);
             ApprenticeService.forget(p.getUUID());
             WishService.forget(p);
@@ -86,7 +87,7 @@ public final class ApprenticeNameGameTest {
             } catch (RuntimeException ignored) {
                 // nothing to put back
             }
-            list.getWhiteList().remove(p.getGameProfile());
+            list.getWhiteList().remove(new NameAndId(p.getUUID(), p.getGameProfile().name()));
             System.clearProperty(WorldCrafters.OPEN_PROPERTY);
             System.clearProperty(BuilderSettings.ENABLED_PROPERTY);
             SafetyGrader.transportForTest(null);

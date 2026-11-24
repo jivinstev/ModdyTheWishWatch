@@ -30,11 +30,11 @@ public final class SettingsCommand {
 
     /** Who {@code p} is, to the rules. */
     public static ModdySettings.Who who(ServerPlayer p) {
-        var server = p.getServer();
+        var server = p.level().getServer();
         boolean dedicated = server != null && server.isDedicatedServer();
-        boolean host = server != null && (server.isSingleplayerOwner(p.getGameProfile())
+        boolean host = server != null && (server.isSingleplayerOwner(p.nameAndId())
                 || p.getUUID().equals(hostForTest));
-        return new ModdySettings.Who(p.getGameProfile().getName(), host, dedicated);
+        return new ModdySettings.Who(p.getGameProfile().name(), host, dedicated);
     }
 
     /** Change a setting for {@code p}, and tell them what happened. The path the branch and a menu run. */
@@ -44,7 +44,7 @@ public final class SettingsCommand {
                 .withStyle(c.done() ? ChatFormatting.AQUA : ChatFormatting.YELLOW));
         if (c.done()) {
             org.slf4j.LoggerFactory.getLogger(com.moddingfromamod.ModdingFromAModMod.MODID)
-                    .info("settings: {} set {} to {}", p.getGameProfile().getName(), key, value);
+                    .info("settings: {} set {} to {}", p.getGameProfile().name(), key, value);
         }
         return c.done();
     }

@@ -43,7 +43,7 @@ public class WishBagGameTest {
         p.getInventory().clearContent();
         p.getInventory().setItem(WatchPin.HOME, VanillaWatchItem.stack());
         p.getInventory().setItem(WatchPin.BAG_HOME, WishBagItem.stack());
-        WishBagService.clearForTest(p.getServer(), p.getUUID());
+        WishBagService.clearForTest(serverOf(p), p.getUUID());
         return p;
     }
 
@@ -66,8 +66,13 @@ public class WishBagGameTest {
         return s;
     }
 
+    /** The server a player's shelf lives on: the level he is in belongs to it. */
+    static net.minecraft.server.MinecraftServer serverOf(ServerPlayer p) {
+        return ((ServerLevel) p.level()).getServer();
+    }
+
     static List<ItemStack> bag(ServerPlayer p) {
-        return WishBagService.contents(p.getServer(), p.getUUID());
+        return WishBagService.contents(serverOf(p), p.getUUID());
     }
 
     // ── what goes in ────────────────────────────────────────────────────────────────────────
@@ -128,8 +133,8 @@ public class WishBagGameTest {
         ServerPlayer p = child(helper, survival ? "mfam-bag-out-s" : "mfam-bag-out-c", survival);
         try {
             // A PLAIN gift (32 melon slices) and a wished thing, both handed over into the bag.
-            WishBagService.add(p.getServer(), p.getUUID(), new ItemStack(Items.MELON_SLICE, 32));
-            WishBagService.add(p.getServer(), p.getUUID(), wished("Tracker"));
+            WishBagService.add(serverOf(p), p.getUUID(), new ItemStack(Items.MELON_SLICE, 32));
+            WishBagService.add(serverOf(p), p.getUUID(), wished("Tracker"));
             helper.assertTrue(bag(p).get(0).getHoverName().getString().equals("Tracker"),
                     Component.literal("newest first: the bag's first cell is " + bag(p).get(0)));
             WishBagMenu.open(p);
@@ -265,12 +270,12 @@ public class WishBagGameTest {
     public static void theBagSurvivesDeath(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
         ServerPlayer p = child(helper, "mfam-bag-death", true);
-        WishBagService.add(p.getServer(), p.getUUID(), wished("Lucky Charm"));
+        WishBagService.add(serverOf(p), p.getUUID(), wished("Lucky Charm"));
         var where = p.blockPosition();
         p.die(p.damageSources().generic());
         int looseBags = level.getEntitiesOfClass(ItemEntity.class, new AABB(where).inflate(8),
                 e -> WishBagItem.isBag(e.getItem())).size();
-        ServerPlayer reborn = p.getServer().getPlayerList().respawn(p, false, Entity.RemovalReason.KILLED);
+        ServerPlayer reborn = serverOf(p).getPlayerList().respawn(p, false, Entity.RemovalReason.KILLED);
         helper.succeedWhen(() -> {
             helper.assertValueEqual(looseBags, 0, Component.literal("Wish Bags dropped at death"));
             helper.assertTrue(WishBagItem.isBag(reborn.getInventory().getItem(WatchPin.BAG_HOME)),
@@ -291,7 +296,7 @@ public class WishBagGameTest {
     @GameTest(template = "empty_test", batch = "wishbag_worlds")
     public static void eachWorldHasItsOwnBag(GameTestHelper helper) {
         ServerPlayer p = child(helper, "mfam-bag-worlds", false);
-        var server = p.getServer();
+        var server = serverOf(p);
         try {
             WishBagService.forceWorldForTest(server, "world-a-gt");
             WishBagService.clearForTest(server, p.getUUID());
@@ -329,9 +334,9 @@ public class WishBagGameTest {
     public static void theBagComesBackFromItsFile(GameTestHelper helper) {
         ServerPlayer p = child(helper, "mfam-bag-file", false);
         try {
-            WishBagService.add(p.getServer(), p.getUUID(), new ItemStack(Items.MELON_SLICE, 32));
-            WishBagService.add(p.getServer(), p.getUUID(), wished("Mango Splash"));
-            WishBagService.reloadForTest(p.getServer());
+            WishBagService.add(serverOf(p), p.getUUID(), new ItemStack(Items.MELON_SLICE, 32));
+            WishBagService.add(serverOf(p), p.getUUID(), wished("Mango Splash"));
+            WishBagService.reloadForTest(serverOf(p));
             List<ItemStack> back = bag(p);
             helper.assertValueEqual(back.size(), 2, Component.literal("entries read back"));
             helper.assertTrue(back.get(0).getHoverName().getString().equals("Mango Splash")

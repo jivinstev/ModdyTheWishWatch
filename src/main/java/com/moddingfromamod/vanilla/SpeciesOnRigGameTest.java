@@ -170,13 +170,13 @@ public final class SpeciesOnRigGameTest {
         var path = c.getNavigation().getPath();
         StringBuilder players = new StringBuilder();
         for (ServerPlayer p : level.players()) {
-            players.append(String.format("%s@%.1f ", p.getGameProfile().getName(), p.distanceTo(c)));
+            players.append(String.format("%s@%.1f ", p.getGameProfile().name(), p.distanceTo(c)));
         }
         return String.format("[carrier=%s at %s, child at %s; nearest player=%s (%.1f); players: %s"
                         + "path=%s (done=%s, end=%s); follow=%s]",
                 net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE.getKey(c.getType()).getPath(),
                 c.blockPosition().toShortString(), child.blockPosition().toShortString(),
-                nearest == null ? "none" : nearest.getGameProfile().getName(),
+                nearest == null ? "none" : nearest.getGameProfile().name(),
                 nearest == null ? -1.0 : nearest.distanceTo(c), players,
                 path == null ? "none" : (path.canReach() ? "reaches" : "partial"),
                 c.getNavigation().isDone(), path == null ? "-" : path.getTarget().toShortString(),

@@ -126,7 +126,7 @@ public final class PetBehavioursGameTest {
             helper.fail(Component.literal("an empty hand on a rideable cow did not climb on: canceled=" + ev.isCanceled()
                     + " pet=" + PetBehaviours.stored(cow) + " hand=" + child.getMainHandItem()
                     + " shift=" + child.isShiftKeyDown() + " vehicle=" + child.getVehicle()
-                    + " cowIsVehicle=" + cow.isVehicle() + " directMount=" + child.startRiding(cow, true)));
+                    + " cowIsVehicle=" + cow.isVehicle() + " directMount=" + child.startRiding(cow)));
         }
 
         child.setYRot(0f);          // facing south: +z

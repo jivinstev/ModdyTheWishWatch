@@ -186,7 +186,7 @@ public class PublicModEconomyGameTest {
         WishGiveAgain.Result r = WishGiveAgain.give(p, s.thing());
         helper.assertTrue(r == WishGiveAgain.Result.GAVE, Component.literal("give me one, free: " + r));
         helper.assertTrue(held(s, s.thing()) == 1, Component.literal("handed over: " + held(s, s.thing())));
-        p.getServer().getCommands().performPrefixedCommand(p.createCommandSourceStack(), "moddy wishes");
+        helper.getLevel().getServer().getCommands().performPrefixedCommand(p.createCommandSourceStack(), "moddy wishes");
         helper.succeedWhen(() -> {
             String said = chat(s);
             helper.assertTrue(said.contains("Here's your " + s.thing()), Component.literal("he was given it: " + said));
@@ -204,8 +204,8 @@ public class PublicModEconomyGameTest {
         String text = "make me a crystal tower " + UUID.randomUUID().toString().substring(0, 8);
         helper.assertFalse(WishCharge.get().refusesAtSubmit(p, false, text, false),
                 Component.literal("an empty bank in the rules refuses nothing at submit"));
-        Wish wish = WishBook.get(p.getServer()).add(Wish.create(text, WishSource.COMMAND, System.currentTimeMillis(),
-                p.getUUID(), p.getGameProfile().getName(), p.level().dimension().location().toString(),
+        Wish wish = WishBook.get(helper.getLevel().getServer()).add(Wish.create(text, WishSource.COMMAND, System.currentTimeMillis(),
+                p.getUUID(), p.getGameProfile().name(), p.level().dimension().location().toString(),
                 p.getX(), p.getY(), p.getZ()));
         Marshal.global().submit(wish.id(), p.getUUID(), text);
         WishProgress.startThinking(p, wish.id(), text);

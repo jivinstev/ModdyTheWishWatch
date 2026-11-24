@@ -166,7 +166,7 @@ public final class SoakProbe {
         try {
             ServerLevel level = server.overworld();
             FakePlayer child = FakePlayerFactory.get(level, new GameProfile(PROBE_ID, "SoakWisher"));
-            BlockPos spawn = level.getSharedSpawnPos();
+            BlockPos spawn = level.getRespawnData().pos();
             child.setPos(spawn.getX() + 0.5, spawn.getY(), spawn.getZ() + 0.5);
             child.setServerLevel(level);
             WishBook book = WishBook.get(server);

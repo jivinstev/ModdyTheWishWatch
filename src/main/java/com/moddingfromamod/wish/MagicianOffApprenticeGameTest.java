@@ -64,7 +64,7 @@ public final class MagicianOffApprenticeGameTest {
                             com.moddingfromamod.wishbuilder.ApprenticeWords.TO_THE_MAGICIAN)),
                     Component.literal("he is not told his words went to a Magician who is not there: "
                             + MockPlayerNetwork.chat(p)));
-            helper.assertTrue(WishBook.get(p.getServer()).recent(40).stream().noneMatch(w -> w.text().contains(tag)),
+            helper.assertTrue(WishBook.get(helper.getLevel().getServer()).recent(40).stream().noneMatch(w -> w.text().contains(tag)),
                     Component.literal("no wish was recorded for an agent"));
         } finally {
             Plugins.shared().hideForTest(SettingsOverride.class, false);

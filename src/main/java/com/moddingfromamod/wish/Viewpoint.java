@@ -219,6 +219,6 @@ public final class Viewpoint {
 
     @Override
     public String toString() {
-        return kind + "(" + (player == null ? "nobody" : player.getGameProfile().getName()) + ")";
+        return kind + "(" + (player == null ? "nobody" : player.getName().getString()) + ")";
     }
 }

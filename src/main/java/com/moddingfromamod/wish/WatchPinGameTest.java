@@ -305,7 +305,7 @@ public class WatchPinGameTest {
             if (released.get() < 0) {
                 for (int i = 0; i < VanillaWatchItem.TOP_UP_TICKS; i++) {
                     VanillaWatchItem.onServerTick(new net.neoforged.neoforge.event.tick
-                            .ServerTickEvent.Post(() -> true, p.getServer()));
+                            .ServerTickEvent.Post(() -> true, p.level().getServer()));
                 }
                 helper.assertTrue(watches(p) == 1, Component.literal("a watch on the cursor is his watch — a second "
                         + "was minted while he held it: " + state(p)));
@@ -353,7 +353,7 @@ public class WatchPinGameTest {
                 // on where its timer falls: it minted a duplicate here until it asked holdsOne.
                 for (int i = 0; i < VanillaWatchItem.TOP_UP_TICKS; i++) {
                     VanillaWatchItem.onServerTick(new net.neoforged.neoforge.event.tick
-                            .ServerTickEvent.Post(() -> true, p.getServer()));
+                            .ServerTickEvent.Post(() -> true, p.level().getServer()));
                 }
                 helper.assertTrue(watches(p) == 0 && VanillaWatchItem.isWatch(chest.getItem(0)),
                         Component.literal("while the chest is open the watch stays where he put it, and no second one "
@@ -388,7 +388,7 @@ public class WatchPinGameTest {
     // ── commands ────────────────────────────────────────────────────────────────────────────
 
     private static void run(ServerPlayer p, String command) {
-        p.getServer().getCommands().performPrefixedCommand(
+        p.level().getServer().getCommands().performPrefixedCommand(
                 p.createCommandSourceStack().withPermission(4).withSuppressedOutput(), command);
     }
 
@@ -551,7 +551,7 @@ public class WatchPinGameTest {
                 e -> VanillaWatchItem.isWatch(e.getItem())).size();
         boolean dirtDropped = !level.getEntitiesOfClass(ItemEntity.class,
                 new AABB(where).inflate(8), e -> e.getItem().is(Items.DIRT)).isEmpty();
-        ServerPlayer reborn = p.getServer().getPlayerList().respawn(p, false,
+        ServerPlayer reborn = p.level().getServer().getPlayerList().respawn(p, false,
                 Entity.RemovalReason.KILLED);
         long start = level.getGameTime();
         within(helper, start, () -> looseAtDeath == 0 && home(reborn)

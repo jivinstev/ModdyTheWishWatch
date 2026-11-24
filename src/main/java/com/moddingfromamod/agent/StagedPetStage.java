@@ -84,7 +84,7 @@ public final class StagedPetStage {
         String named = System.getProperty(PROPERTY + "child", "").trim();
         ServerPlayer child = server.getPlayerList().getPlayers().stream()
                 .filter(p -> PlayerKind.isChild(p.getUUID(), service))
-                .filter(p -> named.isEmpty() || named.equalsIgnoreCase(p.getGameProfile().getName()))
+                .filter(p -> named.isEmpty() || named.equalsIgnoreCase(p.getGameProfile().name()))
                 .findFirst().orElse(null);
         if (child == null) {
             return;

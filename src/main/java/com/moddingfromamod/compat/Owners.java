@@ -18,6 +18,6 @@ public final class Owners {
 
     /** What setOwnerUUID(id) did on a tamable animal: point its owner at {@code id} (null clears it). */
     public static void set(net.minecraft.world.entity.TamableAnimal animal, UUID id) {
-        animal.setOwnerReference(id == null ? null : new net.minecraft.world.entity.EntityReference<>(id));
+        animal.setOwnerReference(id == null ? null : net.minecraft.world.entity.EntityReference.<net.minecraft.world.entity.LivingEntity>of(id));
     }
 }

@@ -43,7 +43,7 @@ public final class ServedFanfareGameTest {
 
     private static Wish wish(GameTestHelper helper, ServerPlayer child, String text) {
         return Wish.create(text, WishSource.PRESET, System.currentTimeMillis(), child.getUUID(),
-                child.getGameProfile().getName(), helper.getLevel().dimension().location().toString(),
+                child.getGameProfile().name(), helper.getLevel().dimension().location().toString(),
                 child.getX(), child.getY(), child.getZ());
     }
 
@@ -96,7 +96,7 @@ public final class ServedFanfareGameTest {
         ServerPlayer child = childInItsOwnPlot(helper);
         ServedFanfare.forgetForTest();
         child.getInventory().clearContent();
-        String name = child.getGameProfile().getName();
+        String name = child.getGameProfile().name();
         Wish w = wish(helper, child, "three diamonds");
         WishExecutor.submit(child, w, new CommandPlan(List.of("give @p minecraft:diamond 3"),
                 "Shiny!", 1));
@@ -134,7 +134,7 @@ public final class ServedFanfareGameTest {
         for (ServerPlayer p : server.getPlayerList().getPlayers()) {
             int n = p.getInventory().countItem(Items.DIAMOND);
             if (p != child && n > 0) {
-                out.append("; ").append(p.getGameProfile().getName()).append(" at ")
+                out.append("; ").append(p.getGameProfile().name()).append(" at ")
                         .append(p.blockPosition()).append(" holds ").append(n);
             }
         }
@@ -156,7 +156,7 @@ public final class ServedFanfareGameTest {
         ServerPlayer child = childInItsOwnPlot(helper);
         ServedFanfare.forgetForTest();
         child.getInventory().clearContent();
-        String name = child.getGameProfile().getName();
+        String name = child.getGameProfile().name();
         // Read as an item reveal (a datapack's give) but gives nothing itself.
         Wish w = wish(helper, child, "a late emerald");
         WishExecutor.submit(child, w, new CommandPlan(List.of("wishdatapack no_such_pack give"),

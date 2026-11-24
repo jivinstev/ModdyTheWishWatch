@@ -181,7 +181,7 @@ public final class GoHomeGameTest {
             com.moddingfromamod.compat.Respawn.set(p, helper.getLevel().dimension(), null, 0.0F, false, false);
             GoHome.Home h = GoHome.homeOf(p);
             helper.assertTrue(!h.isHisOwn(), Component.literal("no bed, yet home was 'his own': " + h));
-            BlockPos spawn = h.level().getSharedSpawnPos();
+            BlockPos spawn = h.level().getRespawnData().pos();
             helper.assertTrue(Math.abs(h.at().x - (spawn.getX() + 0.5)) < 0.01
                     && Math.abs(h.at().z - (spawn.getZ() + 0.5)) < 0.01, Component.literal("home " + h.at() + " is not the world spawn " + spawn));
             helper.succeed();

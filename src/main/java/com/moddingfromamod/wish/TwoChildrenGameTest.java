@@ -67,12 +67,12 @@ public class TwoChildrenGameTest {
         m.assign(worker, wishId);
         Wish wish = new Wish(wishId, text, WishSource.TYPED,
                 WishStatus.RUNNING, System.currentTimeMillis(), child.getUUID(),
-                child.getGameProfile().getName(), "minecraft:overworld", 0, 64, 0, "", "", 0L);
+                child.getGameProfile().name(), "minecraft:overworld", 0, 64, 0, "", "", 0L);
         // The WISH BOOK, not just the progress map. A wish the book does not know is a wish the
         // ticker treats as finished, and it is also the only place anything can look up WHOSE it
         // is — which is what the bar's ownership now depends on. A fixture that skips it measures
         // a wish the mod does not believe in.
-        WishBook.get(child.getServer()).add(wish);
+        WishBook.get(child.level().getServer()).add(wish);
         WishProgress.started(child, wish);
         return worker;
     }

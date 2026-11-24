@@ -302,7 +302,7 @@ public final class StageEventTool implements McpTool {
                 StringBuilder out = new StringBuilder("Kept '" + d.name() + "': " + d.describe() + ".");
                 if (every != null) {
                     String w = EventDesigns.every(server, d.name(), every,
-                            player == null ? "" : player.getGameProfile().getName());
+                            player == null ? "" : player.getGameProfile().name());
                     if (w != null) {
                         return ToolResult.error(w);
                     }
@@ -446,7 +446,7 @@ public final class StageEventTool implements McpTool {
         int[] b = com.moddingfromamod.place.PlaceFinder.buildingBox(p.buildId());
         double[] box = b == null ? null
                 : new double[]{b[0], b[1], b[2], b[3] + 1, b[4] + 1, b[5] + 1};
-        String owner = player == null ? "" : player.getGameProfile().getName();
+        String owner = player == null ? "" : player.getGameProfile().name();
         BlockPos centre = new BlockPos(aim.x(), aim.y(), aim.z());
         return EventBuild.aimedAt(box, () -> EventBuild.stage(level, d, centre, aim.yaw(), player, owner, 0));
     }
@@ -454,7 +454,7 @@ public final class StageEventTool implements McpTool {
     /** At the spot the wish was aimed at, locked when he wished; ahead of him if nothing was locked. */
     static EventBuild.Result stageAtAim(ServerPlayer player, EventDesign d) {
         BlockPos aim = WishProgress.manifestAnchor(player);
-        String owner = player.getGameProfile().getName();
+        String owner = player.getGameProfile().name();
         if (aim == null) {
             return EventBuild.nearPlayer(player, d, owner);
         }

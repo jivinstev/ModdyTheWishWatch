@@ -66,7 +66,7 @@ public final class GoHome {
     }
 
     public static Home homeOf(ServerPlayer p) {
-        var server = p.getServer();
+        var server = ((ServerLevel) p.level()).getServer();
         BlockPos respawn = com.moddingfromamod.compat.Respawn.pos(p);
         ResourceKey<Level> dim = com.moddingfromamod.compat.Respawn.dimension(p);
         ServerLevel level = respawn == null || server == null ? null : server.getLevel(dim);
@@ -83,7 +83,7 @@ public final class GoHome {
         }
         ServerLevel overworld = server == null ? (ServerLevel) p.level() : server.overworld();
         BlockPos spawn = overworld.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,
-                overworld.getSharedSpawnPos());
+                overworld.getRespawnData().pos());
         return new Home(overworld, Vec3.atBottomCenterOf(spawn), false);
     }
 

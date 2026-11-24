@@ -150,7 +150,7 @@ public final class Locate {
         }
         ServerPlayer host = null;
         double best = Double.MAX_VALUE;
-        for (ServerPlayer o : p.getServer().getPlayerList().getPlayers()) {
+        for (ServerPlayer o : p.level().getServer().getPlayerList().getPlayers()) {
             if (o == p || !com.moddingfromamod.marshal.PlayerKind.isChild(o.getUUID())
                     || o.level() != p.level()) {
                 continue;

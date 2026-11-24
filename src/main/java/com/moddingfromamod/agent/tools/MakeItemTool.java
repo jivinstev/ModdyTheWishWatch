@@ -1963,7 +1963,7 @@ public final class MakeItemTool implements McpTool {
             var player = com.moddingfromamod.agent.ActingChild.of(srv);
             var level = player != null ? player.level() : srv.overworld();
             var where = player != null ? player.position()
-                    : net.minecraft.world.phys.Vec3.atBottomCenterOf(level.getSharedSpawnPos());
+                    : net.minecraft.world.phys.Vec3.atBottomCenterOf(level.getLevelData().getRespawnData().pos());
             var r = com.moddingfromamod.wish.WishExecutor.runOne(srv, level, where, player, cmd);
             return (r.success() ? "PUT THERE: " : "⚠ NOT PUT THERE (it is made, nobody has it yet): ")
                     + (r.output().isEmpty() ? cmd : r.joined());

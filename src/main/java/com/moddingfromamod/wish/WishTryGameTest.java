@@ -202,7 +202,7 @@ public final class WishTryGameTest {
                                    String artifactId, String kind) {
         var book = WishBook.get(helper.getLevel().getServer());
         Wish w = book.add(Wish.create(text, WishSource.TYPED, System.currentTimeMillis(),
-                maker.getUUID(), maker.getGameProfile().getName(),
+                maker.getUUID(), maker.getGameProfile().name(),
                 maker.level().dimension().location().toString(),
                 maker.getX(), maker.getY(), maker.getZ()));
         book.complete(w.id(), WishStatus.DONE, "made it");

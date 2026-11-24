@@ -413,7 +413,7 @@ public final class WishMobCommands {
             src.sendFailure(Component.literal("No model named '" + key + "'. Try /wishmob list."));
             return 0;
         }
-        MinecraftServer server = player.getServer();
+        MinecraftServer server = player.level().getServer();
         Species species = resolveSpecies(server, key);
         if (species == null) {
             src.sendFailure(Component.literal("Couldn't prepare '" + key + "' (too many creatures?)."));
@@ -530,7 +530,7 @@ public final class WishMobCommands {
             Species species = SpeciesRegistry.get(key);
             if (species == null && ModelRepository.has(key)) {
                 // A sculpted-but-never-spawned creature: register it so the egg means something.
-                species = resolveSpecies(player.getServer(), key);
+                species = resolveSpecies(player.level().getServer(), key);
                 com.moddingfromamod.net.ModdedClient.broadcastSpecies();
             }
             if (species == null) {

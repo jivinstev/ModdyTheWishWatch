@@ -66,7 +66,7 @@ public class WishBagDatapackGameTest {
                     // EXACTLY what the agent's run_command does: through WishExecutor, as the
                     // wish, at the executor's permission.
                     var r = com.moddingfromamod.mob.SpawnScope.during(wishKey, com.moddingfromamod.item.delivery.DeliveryPlan.Kind.HANDOVER,
-                            () -> com.moddingfromamod.wish.WishExecutor.runOne(child.getServer(),
+                            () -> com.moddingfromamod.wish.WishExecutor.runOne(helper.getLevel().getServer(),
                                     child.level(), child.position(), child,
                                     "wishdatapack " + id.get() + " give"));
                     agentSaw.set(r.joined());
@@ -74,7 +74,7 @@ public class WishBagDatapackGameTest {
                 })
                 .thenExecute(() -> {
                     int bagged = 0;
-                    for (ItemStack s : WishBagService.contents(child.getServer(), child.getUUID())) {
+                    for (ItemStack s : WishBagService.contents(helper.getLevel().getServer(), child.getUUID())) {
                         if (id.get().equals(WishItem.wishFeature(s))) {
                             bagged += s.getCount();
                         }

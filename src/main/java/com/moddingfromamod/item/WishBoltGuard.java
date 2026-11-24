@@ -5,6 +5,7 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.moddingfromamod.ModdingFromAModMod;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -42,15 +43,22 @@ public final class WishBoltGuard {
 
     /** He is about to use a wish item: spare him from its lightning for a second. */
     public static void mark(Player p) {
-        if (p.getServer() != null) {
-            UNTIL.put(p.getUUID(), p.getServer().getTickCount() + (long) SPARE_TICKS);
+        MinecraftServer server = serverOf(p);
+        if (server != null) {
+            UNTIL.put(p.getUUID(), server.getTickCount() + (long) SPARE_TICKS);
         }
     }
 
     static boolean spared(Player p) {
         Long until = UNTIL.get(p.getUUID());
-        return p.getTags().contains(TAG) || until != null && p.getServer() != null
-                && p.getServer().getTickCount() <= until;
+        MinecraftServer server = serverOf(p);
+        return p.getTags().contains(TAG) || until != null && server != null
+                && server.getTickCount() <= until;
+    }
+
+    /** The server a player is on; only a ServerPlayer has one on the Player type in 1.21.10. */
+    private static MinecraftServer serverOf(Player p) {
+        return p instanceof ServerPlayer sp ? sp.level().getServer() : null;
     }
 
     @SubscribeEvent

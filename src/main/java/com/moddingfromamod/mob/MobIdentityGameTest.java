@@ -1076,7 +1076,7 @@ public class MobIdentityGameTest {
     }
 
     private static Vec3 worldSpawn(ServerLevel level) {
-        return Vec3.atBottomCenterOf(level.getSharedSpawnPos());
+        return Vec3.atBottomCenterOf(level.getLevelData().getRespawnData().pos());
     }
 
     /**

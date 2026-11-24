@@ -291,7 +291,7 @@ public final class WorldModuleHost {
         if (com.moddingfromamod.compat.Respawn.pos(p) != null && !ourRespawn(p, base)) {
             return null;                    // his own bed or anchor
         }
-        MinecraftServer server = p.getServer();
+        MinecraftServer server = p.level() instanceof net.minecraft.server.level.ServerLevel sl ? sl.getServer() : null;
         if (server == null) {
             return null;
         }
@@ -369,7 +369,7 @@ public final class WorldModuleHost {
         if (base.holds(dim, p.getX(), p.getZ())) {
             return;
         }
-        MinecraftServer server = p.getServer();
+        MinecraftServer server = p.level() instanceof net.minecraft.server.level.ServerLevel sl ? sl.getServer() : null;
         if (server == null) {
             return;
         }

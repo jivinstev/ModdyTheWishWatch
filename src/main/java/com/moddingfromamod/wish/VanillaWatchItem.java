@@ -386,7 +386,7 @@ public final class VanillaWatchItem {
         // MOD for an item that is demonstrably a carrier. The mark says what the world CONTAINS,
         // and what it contains at this line is a carrier. (There is no mod-path counterpart to
         // stamp: `ModItems.WISH_WATCH` is only ever taken out of the creative menu by hand.)
-        com.moddingfromamod.lite.MintStore.stamp(player.getServer(), "watch", true);
+        com.moddingfromamod.lite.MintStore.stamp(player.level().getServer(), "watch", true);
         return true;
     }
 }

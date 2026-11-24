@@ -141,7 +141,7 @@ public final class EventWhenGameTest {
         String n = name("quake");
         // Effects only, no blocks: staged beside a mock in a shared plot, it must touch nothing.
         keep(server, "{\"name\":\"" + n + "\",\"motion\":\"none\",\"size\":\"little\",\"seconds\":5}");
-        helper.assertTrue(EventDesigns.every(server, n, 1, child.getGameProfile().getName()) == null,
+        helper.assertTrue(EventDesigns.every(server, n, 1, child.getGameProfile().name()) == null,
                 Component.literal("scheduled every day"));
         EventDesigns.Store store = EventDesigns.store(server);
         try {

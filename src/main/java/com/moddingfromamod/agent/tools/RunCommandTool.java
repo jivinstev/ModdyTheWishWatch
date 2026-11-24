@@ -453,7 +453,7 @@ public final class RunCommandTool implements McpTool {
                                         net.minecraft.core.registries.Registries.DIMENSION, dim));
                 var where = player != null ? player.position()
                         : net.minecraft.world.phys.Vec3.atBottomCenterOf(
-                                aimed != null ? aimed : level.getSharedSpawnPos());
+                                aimed != null ? aimed : level.getLevelData().getRespawnData().pos());
                 if (!notes.isEmpty()) {
                     lines.add("(Only " + player.getScoreboardName() + ", who made this wish: "
                             + String.join("; ", notes) + ". Another child is in the world, and a"

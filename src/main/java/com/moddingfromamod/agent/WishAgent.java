@@ -417,7 +417,7 @@ public final class WishAgent {
         if (event.getEntity() instanceof net.minecraft.server.level.ServerPlayer player) {
             // HIS SHELF FIRST: if he made things on the other server since this one last looked at
             // his shelf, reload them before the three snapshots below tell him what he has.
-            com.moddingfromamod.store.PlayerShelves.refreshFor(player.getServer(),
+            com.moddingfromamod.store.PlayerShelves.refreshFor(player.level().getServer(),
                     player.getUUID().toString());
             com.moddingfromamod.net.ModdedClient.sendSpecies(player);
             // Moddy's buttons lead with what he most recently made, so they have to arrive too —
@@ -455,7 +455,7 @@ public final class WishAgent {
     private static void resumeInterruptedWishes(net.minecraft.server.level.ServerPlayer player) {
         try {
             com.moddingfromamod.wish.WishBook book =
-                    com.moddingfromamod.wish.WishBook.get(player.getServer());
+                    com.moddingfromamod.wish.WishBook.get(player.level().getServer());
             java.util.List<com.moddingfromamod.wish.Wish> resumable = book.pending().stream()
                     .filter(w -> player.getUUID().equals(w.playerId()))
                     .filter(w -> INTERRUPTED_NOTE.equals(w.result()))

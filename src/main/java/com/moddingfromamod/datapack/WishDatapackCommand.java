@@ -61,7 +61,7 @@ public final class WishDatapackCommand {
             throws CommandSyntaxException {
         ServerPlayer player = ctx.getSource().getPlayerOrException();
         String id = StringArgumentType.getString(ctx, "id");
-        MinecraftServer server = player.getServer();
+        MinecraftServer server = ctx.getSource().getServer();
 
         if (!DatapackStore.exists(id)) {
             ctx.getSource().sendFailure(Component.literal("No datapack called '" + id

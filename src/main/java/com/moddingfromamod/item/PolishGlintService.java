@@ -134,7 +134,7 @@ public final class PolishGlintService {
     @SubscribeEvent
     public static void onOpen(PlayerContainerEvent.Open event) {
         if (event.getEntity() instanceof ServerPlayer p) {
-            sweep(event.getContainer(), now(p.getServer()));
+            sweep(event.getContainer(), now(p.level().getServer()));
         }
     }
 

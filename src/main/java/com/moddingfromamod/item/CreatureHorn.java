@@ -91,7 +91,7 @@ public final class CreatureHorn {
         if (kind.equals(callsOf(player.getOffhandItem()))) {
             return true;
         }
-        for (ItemStack s : com.moddingfromamod.bag.WishBagService.contents(player.getServer(), player.getUUID())) {
+        for (ItemStack s : com.moddingfromamod.bag.WishBagService.contents(player.level().getServer(), player.getUUID())) {
             if (kind.equals(callsOf(s))) {
                 return true;
             }

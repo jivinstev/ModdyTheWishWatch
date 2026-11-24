@@ -126,7 +126,7 @@ public final class WishCancel {
         if (actual == CancelMode.UNDO) {
             boolean handedOver = com.moddingfromamod.item.delivery.WishDelivery.handedOver(
                     run.wishId().toString());
-            WishUndo.Result reversal = WishUndo.undo(player.getServer(), run);
+            WishUndo.Result reversal = WishUndo.undo(player.level().getServer(), run);
             undone = reversal.reversed();
             couldNot = reversal.couldNot().size();
             if (undone == 0 && (!run.made().isEmpty() || handedOver)) {
@@ -138,7 +138,7 @@ public final class WishCancel {
         }
         clearHud(player.getUUID(), run.wishId(), marshal);
 
-        WishBook book = WishBook.get(player.getServer());
+        WishBook book = WishBook.get(player.level().getServer());
         // ⚠ THE REDIRECT IS NOT QUOTED HERE. `reaim` below overwrites this result a few lines
         // later on the happy path — but it RETURNS EARLY when the safety floor refuses the
         // re-aim, and this line would then be the surviving record of the wish, holding the exact
@@ -211,7 +211,7 @@ public final class WishCancel {
                 return;
             }
         }
-        WishBook book = WishBook.get(player.getServer());
+        WishBook book = WishBook.get(player.level().getServer());
         Wish before = book.byId(run.wishId()).orElse(null);
         if (before == null) {
             return;

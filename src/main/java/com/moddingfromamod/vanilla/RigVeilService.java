@@ -435,7 +435,7 @@ public final class RigVeilService {
         for (ServerPlayer p : server.getPlayerList().getPlayers()) {
             boolean camera = !com.moddingfromamod.marshal.PlayerKind.isChild(p.getUUID());
             who.append(who.isEmpty() ? "" : ", ")
-                    .append(p.getGameProfile().getName())
+                    .append(p.getGameProfile().name())
                     .append(camera ? " (camera)" : " (child)")
                     .append(" ")
                     .append(String.format(java.util.Locale.ROOT, "%.1f", p.distanceTo(any)))

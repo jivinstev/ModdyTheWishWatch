@@ -55,7 +55,7 @@ public final class SurviveDeathGameTest {
                     Component.literal("'fast' was never granted, so its absence after death would prove nothing"));
 
             child.die(child.damageSources().generic());
-            reborn = child.getServer().getPlayerList().respawn(child, false, Entity.RemovalReason.KILLED);
+            reborn = helper.getLevel().getServer().getPlayerList().respawn(child, false, Entity.RemovalReason.KILLED);
 
             helper.assertTrue(reborn != child, Component.literal("respawn returned the same body, so nothing was tested"));
             // The trap this class is built around: respawn removes the old body with KILLED, which
@@ -126,7 +126,7 @@ public final class SurviveDeathGameTest {
                     Component.literal("no_fall_damage did not set the fall-damage multiplier"));
 
             child.die(child.damageSources().generic());
-            reborn = child.getServer().getPlayerList().respawn(child, false, Entity.RemovalReason.KILLED);
+            reborn = helper.getLevel().getServer().getPlayerList().respawn(child, false, Entity.RemovalReason.KILLED);
             helper.assertTrue(reborn != child, Component.literal("respawn returned the same body, so nothing was tested"));
 
             helper.assertTrue(reborn.getAttributeValue(Attributes.FALL_DAMAGE_MULTIPLIER) == 0.0,

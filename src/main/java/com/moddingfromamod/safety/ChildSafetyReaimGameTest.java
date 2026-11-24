@@ -99,8 +99,8 @@ public class ChildSafetyReaimGameTest {
         // A UNIQUE ORIGINAL, so the memo key assertions below cannot be satisfied by another
         // test's grade and so nothing in the corpus can be what is being measured.
         String text = ORIGINAL + " " + tag + " " + UUID.randomUUID().toString().substring(0, 8);
-        Wish wish = WishBook.get(p.getServer()).add(Wish.create(text, WishSource.COMMAND,
-                System.currentTimeMillis(), p.getUUID(), p.getGameProfile().getName(),
+        Wish wish = WishBook.get(helper.getLevel().getServer()).add(Wish.create(text, WishSource.COMMAND,
+                System.currentTimeMillis(), p.getUUID(), p.getGameProfile().name(),
                 p.level().dimension().location().toString(), p.getX(), p.getY(), p.getZ()));
         Marshal.global().submit(wish.id(), p.getUUID(), text);
         WishProgress.startThinking(p, wish.id(), text);

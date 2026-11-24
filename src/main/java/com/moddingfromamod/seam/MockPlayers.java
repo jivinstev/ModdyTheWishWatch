@@ -36,6 +36,6 @@ public final class MockPlayers {
 
     /** True for a mock the harness made, whatever it is called. */
     public static boolean is(ServerPlayer p) {
-        return p != null && (MOCK_NAME.equals(p.getGameProfile().getName()) || MARKED.contains(p.getUUID()));
+        return p != null && (MOCK_NAME.equals(p.getGameProfile().name()) || MARKED.contains(p.getUUID()));
     }
 }

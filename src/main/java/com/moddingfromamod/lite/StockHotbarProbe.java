@@ -57,7 +57,7 @@ final class StockHotbarProbe {
 
     /** Seed the three things and his inventory. */
     static void setup(ServerPlayer sp, BiConsumer<String, String> mark) {
-        var server = sp.getServer();
+        var server = ((net.minecraft.server.level.ServerLevel) sp.level()).getServer();
         com.moddingfromamod.safety.SafetyGrader.forTest(t -> com.moddingfromamod.safety.SafetyVerdict.fine(
                 com.moddingfromamod.safety.SafetyVerdict.Provenance.HAIKU));
         List<String> learned = new ArrayList<>(com.moddingfromamod.wish.LearnedTemplates.savedJsonForTest());

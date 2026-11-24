@@ -116,7 +116,7 @@ public final class StockIconProbe {
         ticks = 0;
         stage = 0;
         LOG.info("staging the icon shoot for '{}' (carrier route {})",
-                player.getGameProfile().getName(), VanillaCarrier.enabled() ? "on" : "OFF");
+                player.getGameProfile().name(), VanillaCarrier.enabled() ? "on" : "OFF");
     }
 
     @SubscribeEvent
@@ -275,7 +275,7 @@ public final class StockIconProbe {
         if (from >= icons.size()) {
             return false;
         }
-        var server = player.getServer();
+        var server = ((net.minecraft.server.level.ServerLevel) player.level()).getServer();
         List<String> shown = new ArrayList<>();
         for (int slot = 0; slot < 36; slot++) {
             int i = from + slot;
@@ -325,7 +325,7 @@ public final class StockIconProbe {
      * overlay never arrived; a magenta one means the composite named a model the pack lacks.
      */
     private static void fillOverlays(ServerPlayer player) {
-        var server = player.getServer();
+        var server = ((net.minecraft.server.level.ServerLevel) player.level()).getServer();
         String[][] hotbar = {
                 {"wand", null, "Plain Wand (control)"}, {"wand", "lightning", "Lightning Wand"},
                 {"sword", "ignite", "Fire Sword"}, {"orb", "freeze", "Ice Orb"},
@@ -401,7 +401,7 @@ public final class StockIconProbe {
         if (from > names.size()) {
             return false;
         }
-        var server = player.getServer();
+        var server = ((net.minecraft.server.level.ServerLevel) player.level()).getServer();
         List<String> shown = new ArrayList<>();
         for (int slot = 0; slot < 9; slot++) {
             int i = from + slot;
@@ -530,7 +530,7 @@ public final class StockIconProbe {
                         new com.moddingfromamod.builder.BuildShape(
                                 com.moddingfromamod.builder.BuildShape.Kind.BOX, 0, 0, 0, 6, 6, 6,
                                 "minecraft:oak_planks", true))));
-        var server = player.getServer();
+        var server = ((net.minecraft.server.level.ServerLevel) player.level()).getServer();
         String arg = com.moddingfromamod.agent.tools.MakeItemTool.itemArg(
                 new com.moddingfromamod.agent.tools.MakeItemTool.Variant("Lightning Wand", 0x9966FF),
                 com.moddingfromamod.item.IconSprites.numberFor("wand"), "Zap!", null, null,
@@ -564,9 +564,9 @@ public final class StockIconProbe {
      * one frame shows what they look like in the hand.
      */
     private static void dress(ServerPlayer player) {
-        var server = player.getServer();
+        var server = ((net.minecraft.server.level.ServerLevel) player.level()).getServer();
         var source = server.createCommandSourceStack().withPermission(2).withSuppressedOutput();
-        String who = player.getGameProfile().getName();
+        String who = player.getGameProfile().name();
         String[][] pieces = {
                 {"worn_feet", "Red Jump Boots", "E23B3B", null, "armor.feet", "0"},
                 {"worn_head", "Cyan Helmet", "3BE2E2", null, "armor.head", "1"},

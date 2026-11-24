@@ -223,12 +223,17 @@ public final class VanillaCarrierAbilities {
      * click's offhand half — or more than a tick after it — starts a new click; an OFF half is
      * refused when this click's main half was handled.
      */
+    private static net.minecraft.server.MinecraftServer serverOf(net.minecraft.world.entity.player.Player player) {
+        return player.level() instanceof net.minecraft.server.level.ServerLevel sl ? sl.getServer() : null;
+    }
+
     static boolean refuseOffhand(net.minecraft.world.entity.player.Player player,
             net.minecraft.world.InteractionHand hand) {
-        if (player.level().isClientSide() || player.getServer() == null) {
+        net.minecraft.server.MinecraftServer server = serverOf(player);
+        if (player.level().isClientSide() || server == null) {
             return false;
         }
-        int now = player.getServer().getTickCount();
+        int now = server.getTickCount();
         java.util.UUID id = player.getUUID();
         Click c = CLICKS.get(id);
         if (hand == net.minecraft.world.InteractionHand.MAIN_HAND) {
@@ -251,8 +256,9 @@ public final class VanillaCarrierAbilities {
     /** The server handled this main-hand carrier use: the offhand half of the same click is refused. */
     static void markHandled(net.minecraft.world.entity.player.Player player,
             net.minecraft.world.InteractionHand hand) {
-        if (hand == net.minecraft.world.InteractionHand.MAIN_HAND && player.getServer() != null) {
-            int now = player.getServer().getTickCount();
+        net.minecraft.server.MinecraftServer server = serverOf(player);
+        if (hand == net.minecraft.world.InteractionHand.MAIN_HAND && server != null) {
+            int now = server.getTickCount();
             Click c = CLICKS.get(player.getUUID());
             CLICKS.put(player.getUUID(), new Click(c == null ? now : c.tick(), true, false));
         }

@@ -195,8 +195,8 @@ public final class MountLeashAndHornGameTest {
             RideFitProbeGameTest.plant(helper, id, "starter:pet_dragon", "flies");
             kid.getInventory().clearContent();
             var src = kid.createCommandSourceStack().withPermission(4);
-            kid.getServer().getCommands().performPrefixedCommand(src, "wishmob spawn " + id);
-            kid.getServer().getCommands().performPrefixedCommand(src, "wishmob spawn " + id);
+            helper.getLevel().getServer().getCommands().performPrefixedCommand(src, "wishmob spawn " + id);
+            helper.getLevel().getServer().getCommands().performPrefixedCommand(src, "wishmob spawn " + id);
         });
         seq.thenWaitUntil(() -> {
             Species sp = SpeciesRegistry.get(id);
@@ -205,7 +205,7 @@ public final class MountLeashAndHornGameTest {
             for (ItemStack s : kid.getInventory().getNonEquipmentItems()) {
                 horns += kind.equals(CreatureHorn.callsOf(s)) ? s.getCount() : 0;
             }
-            for (ItemStack s : com.moddingfromamod.bag.WishBagService.contents(kid.getServer(), kid.getUUID())) {
+            for (ItemStack s : com.moddingfromamod.bag.WishBagService.contents(helper.getLevel().getServer(), kid.getUUID())) {
                 horns += kind.equals(CreatureHorn.callsOf(s)) ? s.getCount() : 0;
             }
             helper.assertTrue(horns == 1, Component.literal("two spawns of a rideable creature: expected ONE horn, he has " + horns));

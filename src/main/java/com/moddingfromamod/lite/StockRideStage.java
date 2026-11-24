@@ -195,7 +195,7 @@ public final class StockRideStage {
         if (r.isError()) {
             throw new IllegalStateException("make_item refused " + f + ": " + r.text());
         }
-        p.getServer().getCommands().performPrefixedCommand(
+        level.getServer().getCommands().performPrefixedCommand(
                 p.createCommandSourceStack().withPermission(2).withSuppressedOutput(),
                 "wishdatapack " + tool.lastMadeId() + " give");
         ItemStack held = ItemStack.EMPTY;

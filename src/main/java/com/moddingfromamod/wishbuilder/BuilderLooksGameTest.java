@@ -66,7 +66,7 @@ public final class BuilderLooksGameTest {
         for (int i = 0; i < inv.getContainerSize(); i++) {
             all.add(inv.getItem(i));
         }
-        all.addAll(WishBagService.contents(p.getServer(), p.getUUID()));
+        all.addAll(WishBagService.contents(p.level().getServer(), p.getUUID()));
         for (ItemStack s : all) {
             var cmd = s.get(DataComponents.CUSTOM_MODEL_DATA);
             if (!s.isEmpty() && (item == null || s.is(item)) && cmd != null && com.moddingfromamod.compat.ModelData.id(cmd) == icon) {
@@ -194,7 +194,7 @@ public final class BuilderLooksGameTest {
         for (int i = 0; i < inv.getContainerSize(); i++) {
             all.add(inv.getItem(i));
         }
-        all.addAll(WishBagService.contents(p.getServer(), p.getUUID()));
+        all.addAll(WishBagService.contents(p.level().getServer(), p.getUUID()));
         for (ItemStack s : all) {
             if (!s.isEmpty()) {
                 out.add(net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(s.getItem()) + " cmd="

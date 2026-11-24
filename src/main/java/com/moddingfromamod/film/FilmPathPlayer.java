@@ -155,7 +155,7 @@ public final class FilmPathPlayer {
             this.name = name;
             this.path = path;
             this.player = p.getUUID();
-            this.playerName = p.getGameProfile().getName();
+            this.playerName = p.getName().getString();
             this.startTick = startTick;
             this.trace = trace;
             this.selectors = selectors;

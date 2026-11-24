@@ -80,7 +80,7 @@ public class WishGiveKindGameTest {
         for (int i = 2; i < filledThrough; i++) {
             p.getInventory().setItem(i, new ItemStack(Items.COBBLESTONE, 64));
         }
-        WishBagService.clearForTest(p.getServer(), p.getUUID());
+        WishBagService.clearForTest(p.level().getServer(), p.getUUID());
         sweep(p);
         return p;
     }
@@ -110,7 +110,7 @@ public class WishGiveKindGameTest {
 
     public static int inBag(ServerPlayer p, Item item) {
         int n = 0;
-        for (ItemStack s : WishBagService.contents(p.getServer(), p.getUUID())) {
+        for (ItemStack s : WishBagService.contents(p.level().getServer(), p.getUUID())) {
             if (s.is(item)) {
                 n += s.getCount();
             }
@@ -148,7 +148,7 @@ public class WishGiveKindGameTest {
 
     /** Every line Moddy has said to him that names {@code what}, after the end-of-tick flush. */
     public static List<String> moddySaid(ServerPlayer p, String what) {
-        WishDelivery.flush(p.getServer());
+        WishDelivery.flush(p.level().getServer());
         return MockPlayerNetwork.chat(p).stream().filter(l -> l.contains(what)).toList();
     }
 
@@ -159,7 +159,7 @@ public class WishGiveKindGameTest {
 
     /** Run {@code lines} as a datapack function, as the player, the way an item's use runs one. */
     static void runAsFunction(ServerPlayer p, String... lines) {
-        var functions = p.getServer().getFunctions();
+        var functions = p.level().getServer().getFunctions();
         CommandSourceStack source = useSource(p);
         CommandFunction<CommandSourceStack> fn = CommandFunction.fromLines(
                 ResourceLocation.fromNamespaceAndPath(ModdingFromAModMod.MODID, "gt_give_kind"),
@@ -192,7 +192,7 @@ public class WishGiveKindGameTest {
     public static void theAgentsGiveFillsTheHotbarThenTheBagAndIsSaid(GameTestHelper helper) {
         ServerPlayer p = child(helper, "mfam-kind-cmd", 8, false);       // slot 9 free
         try {
-            var r = WishExecutor.runOne(p.getServer(), p.level(), p.position(), p, "give @s minecraft:cookie 80");
+            var r = WishExecutor.runOne(p.level().getServer(), p.level(), p.position(), p, "give @s minecraft:cookie 80");
             helper.assertTrue(r.success(), Component.literal("the give failed: " + r.joined()));
             helper.assertValueEqual(p.getInventory().getItem(8).getCount(), 64, Component.literal("cookies in slot 9"));
             helper.assertValueEqual(inBag(p, Items.COOKIE), 16, Component.literal("cookies in his Wish Bag"));
@@ -219,7 +219,7 @@ public class WishGiveKindGameTest {
             WishGiveAgain.Result r = WishGiveAgain.give(p, name);
             helper.assertTrue(r == WishGiveAgain.Result.GAVE, Component.literal("Give me one gave nothing: " + r));
             int bagged = 0;
-            for (ItemStack s : WishBagService.contents(p.getServer(), p.getUUID())) {
+            for (ItemStack s : WishBagService.contents(p.level().getServer(), p.getUUID())) {
                 if (s.getHoverName().getString().equals(name)) {
                     bagged += s.getCount();
                 }
@@ -390,7 +390,7 @@ public class WishGiveKindGameTest {
                 })
                 .thenExecute(() -> {
                     // Exactly what a right-click runs: the made item's own use function, as him.
-                    var functions = p.getServer().getFunctions();
+                    var functions = p.level().getServer().getFunctions();
                     var act = functions.get(ResourceLocation.fromNamespaceAndPath(id.get(), "act")).orElseThrow();
                     functions.execute(act, useSource(p));
                 })

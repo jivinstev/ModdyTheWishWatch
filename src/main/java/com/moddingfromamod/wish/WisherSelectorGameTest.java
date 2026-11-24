@@ -57,7 +57,7 @@ public class WisherSelectorGameTest {
             ServerPlayer acting = ActingChild.of(helper.getLevel().getServer(), ay.getUUID());
             helper.assertTrue(acting == ay,
                     Component.literal("ActingChild must answer the wish's OWNER; it answered "
-                            + (acting == null ? "nobody" : acting.getGameProfile().getName())
+                            + (acting == null ? "nobody" : acting.getScoreboardName())
                             + ", which with two children is join order wearing a better name"));
 
             // 2. ...and a command run for him resolves @p to him, with B standing nearer to

@@ -41,7 +41,7 @@ public final class PlayerReports {
     /** Run {@code /moddy report <name> [note]} for {@code reporter}. True when a report was saved. */
     public static boolean report(ServerPlayer reporter, String name, String note) {
         long now = System.currentTimeMillis();
-        String me = reporter.getGameProfile().getName();
+        String me = reporter.getGameProfile().name();
         PlayerReport.Verdict v = LIMITS.check(reporter.getUUID(), me, name, now);
         switch (v) {
             case BAD_NAME, SELF -> {
@@ -54,17 +54,17 @@ public final class PlayerReports {
             }
             default -> { }
         }
-        ServerPlayer target = reporter.getServer().getPlayerList().getPlayerByName(name);
+        ServerPlayer target = reporter.level().getServer().getPlayerList().getPlayerByName(name);
         List<ChatHistory.Line> lines = ChatGuard.HISTORY.linesFor(name, me, now);
         JsonObject rec = PlayerReport.record(UUID.randomUUID().toString(), now, WorldFacts.manifestId(),
-                reporter.getUUID(), me, target != null ? target.getGameProfile().getName() : name,
+                reporter.getUUID(), me, target != null ? target.getGameProfile().name() : name,
                 target != null ? target.getUUID() : null, target != null, note, lines, ChatGuard.flagged(lines),
                 com.moddingfromamod.RunContext.isTestRun());
         if (!append(file(), rec)) {
             tell(reporter, ChatWords.REPORT_FAILED, ChatFormatting.GRAY);
             return false;
         }
-        tell(reporter, ChatWords.sayReportThanks(target != null ? target.getGameProfile().getName() : name),
+        tell(reporter, ChatWords.sayReportThanks(target != null ? target.getGameProfile().name() : name),
                 ChatFormatting.LIGHT_PURPLE);
         return true;
     }

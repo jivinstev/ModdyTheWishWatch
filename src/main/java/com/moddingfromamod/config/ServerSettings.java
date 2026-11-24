@@ -92,7 +92,7 @@ public final class ServerSettings {
         var level = server.overworld();
         var p = net.neoforged.neoforge.common.util.FakePlayerFactory.get(level,
                 new com.mojang.authlib.GameProfile(CHECKER, "MagicianCheck"));
-        var spawn = level.getSharedSpawnPos();
+        var spawn = level.getRespawnData().pos();
         p.setPos(spawn.getX() + 0.5, spawn.getY(), spawn.getZ() + 0.5);
         p.setServerLevel(level);
         com.moddingfromamod.agent.ActingChild.standIn(p);

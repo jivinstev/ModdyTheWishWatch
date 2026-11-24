@@ -400,7 +400,7 @@ public final class WatchMenu extends ChestMenu {
 
     /** The child's own [🙈 Hide from my watch]: {@link #hide}, and what Moddy says back. */
     public static Hid hideFor(ServerPlayer player, String tileId) {
-        Hid r = hide(player.getServer(), player.getStringUUID(), tileId);
+        Hid r = hide(player.level().getServer(), player.getStringUUID(), tileId);
         String said = switch (r) {
             case HIDDEN, FORGOT -> "🙈 Gone from your watch! Wish for it again any time and it comes back.";
             case ABSENT -> "🤔 I can't find that on your watch.";

@@ -14,6 +14,7 @@ import com.moddingfromamod.marshal.Marshal;
 import com.moddingfromamod.marshal.WishRun;
 import com.moddingfromamod.wish.WishCapture;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.particles.ColorParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -787,7 +788,7 @@ public final class Reveals {
                 level.sendParticles(ParticleTypes.END_ROD, x, y + 0.3, z, 6, r * 0.4, 0.1, r * 0.4, 0.02);
             }
             if (age == TICKS) {
-                level.sendParticles(ParticleTypes.FLASH, x, y + 1, z, 2, 0.5, 0.5, 0.5, 0);
+                level.sendParticles(ColorParticleOption.create(ParticleTypes.FLASH, 0xFFFFFFFF), x, y + 1, z, 2, 0.5, 0.5, 0.5, 0);
                 level.sendParticles(ParticleTypes.TOTEM_OF_UNDYING, x, y + 1, z, 60, 1.5, 1.5, 1.5, 0.3);
             }
             return age >= TICKS;
@@ -815,7 +816,7 @@ public final class Reveals {
             // The moment it is wished into existence: a flash of light AT the point where the
             // pillar ends and the item begins, so he sees exactly where it came from. A white
             // flash, a burst of sparks out of that point, and a chime.
-            level.sendParticles(ParticleTypes.FLASH, from[0], from[1], from[2], 2, 0, 0, 0, 0);
+            level.sendParticles(ColorParticleOption.create(ParticleTypes.FLASH, 0xFFFFFFFF), from[0], from[1], from[2], 2, 0, 0, 0, 0);
             level.sendParticles(ParticleTypes.END_ROD, from[0], from[1], from[2], 36, 0.1, 0.1, 0.1, 0.25);
             level.sendParticles(ParticleTypes.ELECTRIC_SPARK, from[0], from[1], from[2], 24, 0.3, 0.3, 0.3, 0.4);
             level.playSound(null, from[0], from[1], from[2], SoundEvents.AMETHYST_BLOCK_CHIME,
@@ -912,7 +913,7 @@ public final class Reveals {
             if (age == TICKS - 6) {
                 int[] r = f.right();
                 double sx = Math.abs(r[0]) * f.halfW() * 0.6 + 0.2, sz = Math.abs(r[1]) * f.halfW() * 0.6 + 0.2;
-                level.sendParticles(ParticleTypes.FLASH, c[0], c[1], c[2], 2, sx, 1, sz, 0);
+                level.sendParticles(ColorParticleOption.create(ParticleTypes.FLASH, 0xFFFFFFFF), c[0], c[1], c[2], 2, sx, 1, sz, 0);
                 level.sendParticles(ParticleTypes.END_ROD, c[0], c[1], c[2], 40, sx, f.halfH() * 0.6, sz, 0.05);
             }
             return age >= TICKS;
@@ -931,7 +932,7 @@ public final class Reveals {
             for (int i = 0; i < BEADS; i++) {
                 block(i % 2 == 0 ? WishOrbs.BEAD_LIT : WishOrbs.SHELL, c[0], c[1], c[2]);
             }
-            level.sendParticles(ParticleTypes.FLASH, c[0], c[1], c[2], 1, 0, 0, 0, 0);
+            level.sendParticles(ColorParticleOption.create(ParticleTypes.FLASH, 0xFFFFFFFF), c[0], c[1], c[2], 1, 0, 0, 0, 0);
         }
 
         @Override

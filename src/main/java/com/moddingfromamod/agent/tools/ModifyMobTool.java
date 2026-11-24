@@ -289,7 +289,7 @@ public final class ModifyMobTool implements McpTool {
                 ServerLevel level = player != null ? player.level() : server.overworld();
                 Vec3 origin = player != null
                         ? player.position()
-                        : Vec3.atBottomCenterOf(level.getSharedSpawnPos());
+                        : Vec3.atBottomCenterOf(level.getRespawnData().pos());
 
                 // an EVENT's handle names every creature it brought, wherever each has gone
                 // — a staged crowd of teleporters scatters, and "everything within 32 blocks" found
@@ -1014,7 +1014,7 @@ public final class ModifyMobTool implements McpTool {
         // saves its numbers to its species below and returns early, but "follow me" is about THIS
         // animal, not every one of its kind.
         if (!tweak.pet().isEmpty()) {
-            var server = e.getServer();
+            var server = e.level() instanceof ServerLevel sl ? sl.getServer() : null;
             ServerPlayer owner = ownerOverride != null || server == null ? null
                     : com.moddingfromamod.agent.ActingChild.person(server);
             notes.addAll(com.moddingfromamod.mob.PetBehaviours.apply(e, tweak.pet(),

@@ -18,6 +18,7 @@ import com.moddingfromamod.net.Send;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
@@ -275,8 +276,8 @@ public final class LiteProbe {
         final ServerPlayer subjectChild = child;
         buildSomethingToLookAt(server);
         record("paths.arm", wantCamera ? "2-server-camera-vanilla-child" : "1-one-machine");
-        record("paths.child", child.getGameProfile().getName());
-        record("paths.camera", camera == null ? "(none)" : camera.getGameProfile().getName());
+        record("paths.child", nameOf(child));
+        record("paths.camera", camera == null ? "(none)" : nameOf(camera));
         record("paths.viewpoint", String.valueOf(
                 com.moddingfromamod.wish.Viewpoint.acquire(server)));
         int borrowedBefore =
@@ -372,12 +373,12 @@ public final class LiteProbe {
                 return;   // the cast is not assembled; a baseline taken now would measure nothing
             }
             wishChildId = child.getUUID();
-            wishChildName = child.getGameProfile().getName();
+            wishChildName = nameOf(child);
             wishBorrowedBefore =
                     com.moddingfromamod.wish.WishCapture.timesBorrowed(wishChildId);
             wishBorrowedSeen = wishBorrowedBefore;
             record("wish.child", wishChildName);
-            record("wish.camera", camera == null ? "(none)" : camera.getGameProfile().getName());
+            record("wish.camera", camera == null ? "(none)" : nameOf(camera));
             record("wish.viewpoint", String.valueOf(
                     com.moddingfromamod.wish.Viewpoint.acquire(server)));
             record("wish.child_borrowed_before", String.valueOf(wishBorrowedBefore));
@@ -413,7 +414,7 @@ public final class LiteProbe {
      */
     private static void buildSomethingToLookAt(MinecraftServer server) {
         var level = server.overworld();
-        var spawn = level.getSharedSpawnPos();
+        var spawn = level.getRespawnData().pos();
         for (int dy = 0; dy < 12; dy++) {
             for (int dx = -1; dx <= 1; dx++) {
                 for (int dz = -1; dz <= 1; dz++) {
@@ -432,8 +433,8 @@ public final class LiteProbe {
         }
         var a = players.get(0);
         var b = players.get(1);
-        record("twochildren.a", a.getGameProfile().getName());
-        record("twochildren.b", b.getGameProfile().getName());
+        record("twochildren.a", nameOf(a));
+        record("twochildren.b", nameOf(b));
         // 🔴 PUT THEM MID-WISH, not merely "narrated at". WishProgress.setStatus writes to a MAP;
         // the action bar is drawn by WishProgress's own ticker, which only visits players who have
         // a WAITING entry — i.e. players for whom started() was called. A probe that narrates
@@ -442,20 +443,20 @@ public final class LiteProbe {
         // which reads as a broken transport and is a rig that never turned the surface on. Same
         // shape as the repo's standing rule that a guard tested where it is DEFINED is not tested
         // where it RUNS.
-        String workerA = beginWishFor(a, "Building " + a.getGameProfile().getName() + "'s purple castle");
-        String workerB = beginWishFor(b, "Building " + b.getGameProfile().getName() + "'s rocket ship");
+        String workerA = beginWishFor(a, "Building " + nameOf(a) + "'s purple castle");
+        String workerB = beginWishFor(b, "Building " + nameOf(b) + "'s rocket ship");
         Thread t = new Thread(() -> {
             try {
                 // Repeated on purpose: the second child's client is still loading terrain at the
                 // moment he joins, so a single narration is a race between the client's first tick
                 // and nothing at all. A real agent narrates through a wish anyway.
                 for (int i = 0; i < 15; i++) {
-                    sayAs(workerA, "Building " + a.getGameProfile().getName() + "'s purple castle");
-                    sayAs(workerB, "Building " + b.getGameProfile().getName() + "'s rocket ship");
+                    sayAs(workerA, "Building " + nameOf(a) + "'s purple castle");
+                    sayAs(workerB, "Building " + nameOf(b) + "'s rocket ship");
                     if (i == 0) {
                         Thread.sleep(1500L);
                         for (var p : List.of(a, b)) {
-                            record(p.getGameProfile().getName() + ".status_slot",
+                            record(nameOf(p) + ".status_slot",
                                     com.moddingfromamod.wish.WishProgress.currentStatus(p.getUUID()));
                         }
                         record("twochildren", "NARRATED");
@@ -484,7 +485,7 @@ public final class LiteProbe {
                 com.moddingfromamod.wish.WishSource.TYPED,
                 com.moddingfromamod.wish.WishStatus.RUNNING,
                 System.currentTimeMillis(), child.getUUID(),
-                child.getGameProfile().getName(), "minecraft:overworld",
+                nameOf(child), "minecraft:overworld",
                 0, 64, 0, "", "", 0L);
 
         // ⚠ THE WISH BOOK IS NOT OPTIONAL, and leaving it out fails in the reassuring direction.
@@ -493,11 +494,11 @@ public final class LiteProbe {
         // entry AND the narration with it. Measured: with started() alone, both children's status
         // slots read back EMPTY a second and a half after the agent had written them, which reads
         // as a broken set_status and is a probe that never put anyone in a wish the mod believes in.
-        com.moddingfromamod.wish.WishBook.get(child.getServer()).add(wish);
+        com.moddingfromamod.wish.WishBook.get(serverOf(child)).add(wish);
 
         var marshal = com.moddingfromamod.marshal.Marshal.global();
         marshal.submit(wishId, child.getUUID(), doing);
-        String worker = "lite-" + child.getGameProfile().getName();
+        String worker = "lite-" + nameOf(child);
         marshal.assign(worker, wishId);
         com.moddingfromamod.wish.WishProgress.started(child, wish);
         return worker;
@@ -513,6 +514,16 @@ public final class LiteProbe {
         } finally {
             com.moddingfromamod.agent.AgentContext.unbind();
         }
+    }
+
+    /** The player's name as the game shows it in the player list. */
+    private static String nameOf(ServerPlayer p) {
+        return p.getName().getString();
+    }
+
+    /** The server a player is on, reached through the level he is in. */
+    private static MinecraftServer serverOf(ServerPlayer p) {
+        return ((ServerLevel) p.level()).getServer();
     }
 
     @SubscribeEvent
@@ -535,7 +546,7 @@ public final class LiteProbe {
         // Keyed by PLAYER as well as globally, so a MIXED session records both rather than
         // whichever happened to join last -- which is the only shape in which the mixed
         // question can be answered at all.
-        String who = player.getGameProfile().getName();
+        String who = nameOf(player);
         record("player", who);
         record(who + ".connection_type", type == null ? "UNKNOWN" : type.name());
         record(who + ".is_other", type == ConnectionType.OTHER);
@@ -563,7 +574,7 @@ public final class LiteProbe {
         // ── The commands. The Tier-2 reading says VanillaConnectionNetworkFilter.filterCommandList
         // strips only commands using MODDED argument types, and that this mod registers none — so
         // ours should survive. Asked of the live dispatcher rather than of the source.
-        MinecraftServer server = player.getServer();
+        MinecraftServer server = serverOf(player);
         if (server != null) {
             for (String name : List.of("wish", "moddy")) {
                 record("command." + name,
@@ -603,11 +614,11 @@ public final class LiteProbe {
         // onJoin it ran ONCE, so the run recorded a viewpoint and a borrowed-before count and
         // never the answer -- and an empty `interrupted` column reads as "the rig could not tell",
         // which is exactly the shape of evidence this arm exists to refuse.
-        if (wishArm() && subject.getServer() != null) {
-            watchWishPathArm(subject.getServer());
+        if (wishArm() && serverOf(subject) != null) {
+            watchWishPathArm(serverOf(subject));
         }
         long elapsed = (System.currentTimeMillis() - joinedAtMs) / 1000L;
-        MinecraftServer server = subject.getServer();
+        MinecraftServer server = serverOf(subject);
         if (server == null) {
             return;
         }

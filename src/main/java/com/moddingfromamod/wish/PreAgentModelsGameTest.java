@@ -57,7 +57,7 @@ public class PreAgentModelsGameTest {
 
         // Leave nothing behind for a later batch: the typed wish waits for an agent that never
         // comes, and a live run left to age tires Moddy for whoever runs next (ModdyTiredGameTest).
-        for (Wish w : WishBook.get(p.getServer()).recent(40)) {
+        for (Wish w : WishBook.get(helper.getLevel().getServer()).recent(40)) {
             if (w.text().equals(typed) || w.text().equals(pressed)) {
                 try {
                     Marshal.global().cancel(w.id(), CancelMode.STOP, "", "");

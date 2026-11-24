@@ -152,7 +152,7 @@ public final class ThingPage {
                 return;
             }
             sp.closeContainer();
-            sp.getServer().getCommands().performPrefixedCommand(sp.createCommandSourceStack(), v.command());
+            sp.level().getServer().getCommands().performPrefixedCommand(sp.createCommandSourceStack(), v.command());
             return;
         }
     }

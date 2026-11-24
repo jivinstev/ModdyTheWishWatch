@@ -354,7 +354,7 @@ public final class WatchPinService {
             ItemStack back = tossed.copy();
             event.setCanceled(true);
             BAG_UNDONE.incrementAndGet();
-            var server = p.getServer();
+            var server = ((net.minecraft.server.level.ServerLevel) p.level()).getServer();
             server.schedule(new net.minecraft.server.TickTask(server.getTickCount(),
                     () -> pinBag(p, back)));
             return;
@@ -378,7 +378,7 @@ public final class WatchPinService {
         // schedule(TickTask), not execute() or submit(): on the server thread — where this event
         // fires — both of those run the task immediately, which is exactly the "inside" above.
         ServerPlayer who = p;
-        var server = p.getServer();
+        var server = ((net.minecraft.server.level.ServerLevel) p.level()).getServer();
         server.schedule(new net.minecraft.server.TickTask(server.getTickCount(),
                 () -> pin(who, back)));
     }

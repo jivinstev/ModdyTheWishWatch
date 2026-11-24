@@ -79,7 +79,7 @@ public final class OverlayBackfill {
         } catch (RuntimeException e) {
             // A stack left plain is a blemish; a join that throws is a child who cannot play.
             com.mojang.logging.LogUtils.getLogger().warn("overlay backfill skipped for {}: {}",
-                    player.getGameProfile().getName(), e.toString());
+                    player.getGameProfile().name(), e.toString());
         }
     }
 }

@@ -88,8 +88,8 @@ public class StaleWishGameTest {
 
         String text = "make a huge glass tower " + tag + " "
                 + UUID.randomUUID().toString().substring(0, 8);
-        Wish wish = WishBook.get(p.getServer()).add(Wish.create(text, WishSource.COMMAND,
-                System.currentTimeMillis(), p.getUUID(), p.getGameProfile().getName(),
+        Wish wish = WishBook.get(helper.getLevel().getServer()).add(Wish.create(text, WishSource.COMMAND,
+                System.currentTimeMillis(), p.getUUID(), p.getGameProfile().name(),
                 p.level().dimension().location().toString(), p.getX(), p.getY(), p.getZ()));
         Marshal.global().submit(wish.id(), p.getUUID(), text);
         WishProgress.startThinking(p, wish.id(), text);
@@ -198,16 +198,16 @@ public class StaleWishGameTest {
         helper.assertTrue(WishCancel.stop(w.player(), w.wish().shortId(), CancelMode.STOP, "")
                         .stopped(),
                 Component.literal("the stop never ran, so nothing below is being asserted"));
-        Wish stopped = WishBook.get(w.player().getServer()).byId(w.wish().id()).orElse(null);
+        Wish stopped = WishBook.get(helper.getLevel().getServer()).byId(w.wish().id()).orElse(null);
         helper.assertTrue(stopped != null && stopped.status() == WishStatus.STOPPED,
                 Component.literal("the book does not say STOPPED, so the dequeue has nothing to read: "
                         + (stopped == null ? "gone" : stopped.status().name())));
 
         // A SECOND, LIVE WISH BEHIND IT — the same child, still waiting, nobody's yet.
         String liveText = "make a friendly golem " + UUID.randomUUID().toString().substring(0, 8);
-        Wish live = WishBook.get(w.player().getServer()).add(Wish.create(liveText, WishSource.COMMAND,
+        Wish live = WishBook.get(helper.getLevel().getServer()).add(Wish.create(liveText, WishSource.COMMAND,
                 System.currentTimeMillis(), w.player().getUUID(),
-                w.player().getGameProfile().getName(),
+                w.player().getGameProfile().name(),
                 w.player().level().dimension().location().toString(),
                 w.player().getX(), w.player().getY(), w.player().getZ()));
         helper.assertValueEqual(live.status(), WishStatus.PENDING, Component.literal("the second wish's status"));
@@ -329,11 +329,11 @@ public class StaleWishGameTest {
 
         // The agent granted it: the run is DONE and the book says so.
         helper.assertTrue(Marshal.global().finish(id), Component.literal("the fixture's run was never finished"));
-        WishBook.get(w.player().getServer()).complete(id, WishStatus.DONE, "");
+        WishBook.get(helper.getLevel().getServer()).complete(id, WishStatus.DONE, "");
 
         helper.assertValueEqual(WishService.reject(w.player(), "that's not right"),
                 WishService.Outcome.UNDONE, Component.literal("reject outcome"));
-        Wish undone = WishBook.get(w.player().getServer()).byId(id).orElse(null);
+        Wish undone = WishBook.get(helper.getLevel().getServer()).byId(id).orElse(null);
         helper.assertTrue(undone != null && undone.status() == WishStatus.STOPPED,
                 Component.literal("a refused wish must settle STOPPED, not go back on the list: "
                         + (undone == null ? "gone" : undone.status().name())));
@@ -342,9 +342,9 @@ public class StaleWishGameTest {
                 Component.literal("a refused wish was given a new live run, so it would be granted again"));
 
         String liveText = "make a friendly golem " + UUID.randomUUID().toString().substring(0, 8);
-        Wish live = WishBook.get(w.player().getServer()).add(Wish.create(liveText, WishSource.COMMAND,
+        Wish live = WishBook.get(helper.getLevel().getServer()).add(Wish.create(liveText, WishSource.COMMAND,
                 System.currentTimeMillis(), w.player().getUUID(),
-                w.player().getGameProfile().getName(),
+                w.player().getGameProfile().name(),
                 w.player().level().dimension().location().toString(),
                 w.player().getX(), w.player().getY(), w.player().getZ()));
         WishQueue queue = new WishQueue();
@@ -382,7 +382,7 @@ public class StaleWishGameTest {
         helper.assertTrue(WishCancel.stop(w.player(), w.wish().shortId(), CancelMode.REDIRECT, aim)
                         .stopped(),
                 Component.literal("the re-aim never ran"));
-        Wish reopened = WishBook.get(w.player().getServer()).byId(w.wish().id()).orElse(null);
+        Wish reopened = WishBook.get(helper.getLevel().getServer()).byId(w.wish().id()).orElse(null);
         helper.assertTrue(reopened != null && reopened.status() == WishStatus.PENDING,
                 Component.literal("the re-aimed wish is not PENDING, so the dequeue will read it as finished: "
                         + (reopened == null ? "gone" : reopened.status().name())));

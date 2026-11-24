@@ -266,7 +266,7 @@ public final class BuilderAgainGameTest {
         long refusedBefore = com.moddingfromamod.marshal.LocalOnly.refusedSoFar();
 
         // THE REAL APPRENTICE: typed words, its page, the first tile pressed.
-        p.getServer().getCommands().performPrefixedCommand(p.createCommandSourceStack(), "moddy wishbox a green dino i can ride");
+        p.level().getServer().getCommands().performPrefixedCommand(p.createCommandSourceStack(), "moddy wishbox a green dino i can ride");
         helper.assertTrue(p.containerMenu instanceof MenuKit.PickMenu, Component.literal("the Apprentice's page opened: " + p.containerMenu));
         ApprenticeService.pressForTest(p, ApprenticeWords.OFFER + 0);
 

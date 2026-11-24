@@ -113,7 +113,7 @@ public final class WishGo {
         if (player == null || thingId == null || thingId.isBlank()) {
             return Result.NOTHING_TO_SEE;
         }
-        var place = com.moddingfromamod.place.PlaceFinder.find(player.getServer(), player, thingId + ":front", "front");
+        var place = com.moddingfromamod.place.PlaceFinder.find(player.level().getServer(), player, thingId + ":front", "front");
         if (!place.ok()) {
             return Result.NO_SUCH_WISH;
         }
@@ -148,7 +148,7 @@ public final class WishGo {
         tell(player, "✨ Here it is! " + (subject.isEmpty() ? "" : "(" + subject + ") "),
                 ChatFormatting.LIGHT_PURPLE);
         offerWayHome(player);
-        LOGGER.info("took {} to {} at {}", player.getGameProfile().getName(), what, feet.toShortString());
+        LOGGER.info("took {} to {} at {}", player.getName().getString(), what, feet.toShortString());
     }
 
     /**
@@ -363,7 +363,7 @@ public final class WishGo {
         if (id == null) {
             return player.level();
         }
-        return player.getServer().getLevel(net.minecraft.resources.ResourceKey.create(
+        return player.level().getServer().getLevel(net.minecraft.resources.ResourceKey.create(
                 net.minecraft.core.registries.Registries.DIMENSION, id));
     }
 
