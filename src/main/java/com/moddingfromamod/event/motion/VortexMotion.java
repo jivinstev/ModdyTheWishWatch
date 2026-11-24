@@ -679,7 +679,7 @@ public final class VortexMotion implements EventMotion {
                 || s.is(net.neoforged.neoforge.common.Tags.Blocks.GLASS_PANES)) {
             return Vortex.Loose.LOOSE;
         }
-        if (s.is(BlockTags.LOGS) || s.is(BlockTags.DIRT) || s.is(BlockTags.FENCES) || s.is(BlockTags.FENCE_GATES)
+        if (s.is(BlockTags.LOGS) || s.is(BlockTags.SUBSTRATE_OVERWORLD) || s.is(BlockTags.FENCES) || s.is(BlockTags.FENCE_GATES)
                 || s.is(BlockTags.WOOL_CARPETS) || s.is(BlockTags.FLOWER_POTS) || s.is(Blocks.TORCH)
                 || s.is(Blocks.WALL_TORCH) || s.is(Blocks.LANTERN) || s.is(Blocks.CLAY)) {
             return Vortex.Loose.GROUND;
@@ -696,7 +696,7 @@ public final class VortexMotion implements EventMotion {
 
     /** The ground the world is made of (soil, stone, sand, snow): only ever its top block is torn. */
     static boolean natural(BlockState s) {
-        return s.is(BlockTags.DIRT) || s.is(BlockTags.BASE_STONE_OVERWORLD) || s.is(BlockTags.BASE_STONE_NETHER)
+        return s.is(BlockTags.SUBSTRATE_OVERWORLD) || s.is(BlockTags.BASE_STONE_OVERWORLD) || s.is(BlockTags.BASE_STONE_NETHER)
                 || s.is(BlockTags.SAND) || s.is(BlockTags.SNOW) || s.is(BlockTags.ICE) || s.is(Blocks.GRAVEL)
                 || s.is(Blocks.CLAY) || s.is(Blocks.SANDSTONE) || s.is(BlockTags.TERRACOTTA);
     }

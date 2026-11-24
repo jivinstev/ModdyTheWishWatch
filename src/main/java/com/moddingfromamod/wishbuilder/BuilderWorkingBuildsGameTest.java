@@ -258,7 +258,7 @@ public final class BuilderWorkingBuildsGameTest {
             if (!level.getBlockState(q).is(net.minecraft.tags.BlockItemTags.SAPLINGS.block())) {
                 return "no sapling at " + q.toShortString() + " (" + level.getBlockState(q).getBlock() + ")";
             }
-            if (!level.getBlockState(q.below()).is(BlockTags.DIRT)) {
+            if (!level.getBlockState(q.below()).is(BlockTags.SUBSTRATE_OVERWORLD)) {
                 return "the sapling at " + q.toShortString() + " stands on " + level.getBlockState(q.below()).getBlock();
             }
             int light = level.getRawBrightness(q, 0);   // by day: a sapling grows at 9 and more
