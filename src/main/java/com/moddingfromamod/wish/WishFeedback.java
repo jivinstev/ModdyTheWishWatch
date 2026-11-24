@@ -195,6 +195,37 @@ public final class WishFeedback {
     }
 
     /**
+     * A wish with no agent (a Builder or Apprentice make, a replayed wish) that one of this world's rules refused: he
+     * reads that rule and its why ({@code WorldRulesWords.madeRefused}), once, in place of "(some bits didn't work)",
+     * so he can tell an aim he can fix from a failure he cannot. The rule's words come from the world's rules file, so
+     * the line passes the text sweep his chat lines pass first; one that does not is not said, and he gets
+     * {@link #partial} with {@code otherwise} instead.
+     */
+    public static void refusedByWorld(ServerPlayer player, String line, String otherwise, String wishId) {
+        if (!sweeps(line, wishId)) {
+            partial(player, otherwise);
+            return;
+        }
+        tell(player, Component.literal("✨ " + line).setStyle(Style.EMPTY.withColor(ChatFormatting.GOLD)));
+        player.playNotifySound(SoundEvents.NOTE_BLOCK_BELL.value(), SoundSource.PLAYERS, 0.5f, 0.8f);
+    }
+
+    /** Does a line he is about to read pass the text sweep (safety L0) every child-visible argument passes? */
+    static boolean sweeps(String line, String wishId) {
+        if (line == null || line.isBlank()) {
+            return false;
+        }
+        com.google.gson.JsonObject a = new com.google.gson.JsonObject();
+        a.addProperty("message", line);
+        try {
+            return !com.moddingfromamod.safety.SafetyTextSweep.sweep("notify_player", a,
+                    wishId == null ? "" : wishId).refuses();
+        } catch (RuntimeException e) {
+            return false;                  // a line that could not be swept is not said
+        }
+    }
+
+    /**
      * The watch can't do this one on its own, so it has gone to the agent.
      *
      * <p>This used to say "I don't know how to do that one yet", which was true when escalation
