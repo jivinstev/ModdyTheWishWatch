@@ -440,13 +440,23 @@ public final class WishFeedback {
                 Component.literal(message).setStyle(Style.EMPTY.withColor(ChatFormatting.GOLD)));
     }
 
+    /**
+     * What a world's rules did to his wish, on the Magician path: a refusal, a split or a clamp
+     * ({@code WorldRulesWords}), carrying the rules file's own words and the grader's suggestion. Swept as his chat
+     * lines are ({@link #sweeps}): the file was checked against the lexicon when it loaded, but the lexicon can change
+     * after (an operator's override), and a line that no longer passes is replaced by {@link #WORLD_RULE_FALLBACK}.
+     */
     public static void worldRule(ServerPlayer player, String message) {
         if (message == null || message.isBlank()) {
             return;
         }
+        String said = sweeps(message, "") ? message : WORLD_RULE_FALLBACK;
         tell(player,
-                Component.literal(message).setStyle(Style.EMPTY.withColor(ChatFormatting.AQUA)));
+                Component.literal(said).setStyle(Style.EMPTY.withColor(ChatFormatting.AQUA)));
     }
+
+    /** Said in place of a world-rules line that did not pass the sweep: fixed words, nothing from a file. */
+    public static final String WORLD_RULE_FALLBACK = "✨ That wish can't work on this world. Try a different wish!";
 
     /**
      * What will be made instead, said <b>before</b> the agent starts.
