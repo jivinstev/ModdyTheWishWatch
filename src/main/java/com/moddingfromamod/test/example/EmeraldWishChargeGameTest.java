@@ -111,4 +111,51 @@ public class EmeraldWishChargeGameTest {
                     Component.literal("/moddy wishes answers with the plug-in's line: " + s));
         });
     }
+
+    /**
+     * A fire the rate limiter refuses costs nothing (#13): the charge's bookkeeping runs after the limiter. Two emeralds;
+     * the recipe is fired through {@code /moddy again}, the path a hotbar proxy's fire and "Make another one" take, then
+     * fired again at once: the limiter refuses the second as a double press, and the second emerald is still there.
+     */
+    @GameTest(template = "empty_test", batch = "extending_emerald_limited", timeoutTicks = 400)
+    public static void aFireTheRateLimiterRefusesCostsNothing(GameTestHelper helper) {
+        MockPlayerNetwork.clearStaleMocks(helper);
+        ServerPlayer p = MockPlayerNetwork.inLevel(helper);
+        BlockPos at = helper.absolutePos(new BlockPos(1, 2, 1));
+        p.setPos(at.getX() + 0.5, at.getY(), at.getZ() + 0.5);
+        var server = helper.getLevel().getServer();
+        WishService.forget(p);
+
+        Plugins mine = new Plugins();
+        new EmeraldPlugin().register(mine);
+        Plugins.shared().replaceForTest(WishCharge.class, mine.first(WishCharge.class).orElseThrow());
+        SafetyGrader.forTest(t -> SafetyVerdict.fine(SafetyVerdict.Provenance.HAIKU));
+
+        String tag = UUID.randomUUID().toString().substring(0, 6);
+        String wish = "gt13_emerald_limited_" + tag;
+        List<String> had = LearnedTemplates.savedJsonForTest();
+        List<String> with = new ArrayList<>(had);
+        with.add("{\"id\":\"" + wish + "\",\"all\":[\"gt13limited" + tag + "\"],\"ownerId\":\""
+                + p.getStringUUID() + "\",\"commands\":[\"say a limited emerald wish\"]}");
+        LearnedTemplates.restoreForTest(with, server);
+        MockPlayerNetwork.afterTest(helper, () -> {
+            Plugins.shared().replaceForTest(WishCharge.class, null);
+            SafetyGrader.forTest(null);
+            LearnedTemplates.restoreForTest(had, server);
+        });
+
+        p.getInventory().setItem(0, new ItemStack(Items.EMERALD, 2));
+        String fire = com.moddingfromamod.wish.ChildCommands.again(wish).substring(1);
+        server.getCommands().performPrefixedCommand(p.createCommandSourceStack(), fire);
+        helper.assertTrue(p.getInventory().countItem(Items.EMERALD) == 1,
+                Component.literal("the first fire costs one emerald: " + p.getInventory().countItem(Items.EMERALD)));
+        server.getCommands().performPrefixedCommand(p.createCommandSourceStack(), fire);
+        helper.assertTrue(p.getInventory().countItem(Items.EMERALD) == 1,
+                Component.literal("a fire the rate limiter refused cost an emerald: "
+                        + p.getInventory().countItem(Items.EMERALD)));
+        long served = com.moddingfromamod.wish.WishBook.get(server).recent(50).stream()
+                .filter(w -> p.getUUID().equals(w.playerId()) && wish.equals(w.templateId())).count();
+        helper.assertTrue(served == 1, Component.literal("one wish was made, not two: " + served));
+        helper.succeed();
+    }
 }

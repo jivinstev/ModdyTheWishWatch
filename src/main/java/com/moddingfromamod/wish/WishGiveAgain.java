@@ -153,15 +153,17 @@ public final class WishGiveAgain {
                     + " but can't rebuild it any more.", ChatFormatting.GRAY));
             return Result.BROKEN;
         }
-        return handOver(player, stack, "🎁 Here's your " + entry.name() + "! ");
+        return handOver(player, stack, "🎁 Here's your " + entry.name() + "! ", entry.key(), entry.name());
     }
 
     /**
      * Pay (on a world with a wish bank), then hand over through the ONE delivery path: hotbar, then
      * his Wish Bag — and he is told which, then what is left in his bank.
      */
-    private static Result handOver(ServerPlayer player, ItemStack stack, String said) {
-        var paid = WishCharge.get().chargeAgain(player, WishCharge.Again.GIVE_ONE);
+    private static Result handOver(ServerPlayer player, ItemStack stack, String said, String key, String name) {
+        // the charge is told which thing: a replay of the key /moddy give takes (an item's, or a creature's for its egg)
+        var paid = WishCharge.get().chargeAgain(player, WishCharge.Again.GIVE_ONE,
+                WishAsk.replay(player.getUUID(), key).withText(name));
         if (paid.refused()) {
             return Result.BANK_EMPTY;
         }
@@ -212,7 +214,7 @@ public final class WishGiveAgain {
                     + " but can't make you an egg for it any more.", ChatFormatting.GRAY));
             return Result.BROKEN;
         }
-        return handOver(player, egg, "🥚 Here's your " + species.name() + " egg! ");
+        return handOver(player, egg, "🥚 Here's your " + species.name() + " egg! ", species.id(), species.name());
     }
 
     /** A candidate's tile picture: the thing's own item. */

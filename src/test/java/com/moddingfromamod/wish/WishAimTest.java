@@ -259,4 +259,100 @@ class WishAimTest {
         assertEquals(64, s.y());
         assertTrue(s.how().contains("over lava"), s.how());
     }
+
+    // ── a sky island: a settle never drops farther than the spot is out from him ──────────────────────────────
+
+    /** A 7x7 island (stand at 64) around him, and below it either a far floor (stand at -60) or nothing at all. */
+    static Fake island(boolean floorFarBelow) {
+        Fake w = new Fake();
+        w.groundTop = floorFarBelow ? -61 : -1000;
+        return w.box(-3, 60, -3, 3, 63, 3, WishAim.Cell.SOLID);
+    }
+
+    @Test
+    void aBuildingSlidOffASkyIslandStaysLevelWithHimNotOnAFloorFarBelow() {
+        // The measured case: a farm wished at the island's edge slid 12 out and went up 126 blocks below, out of sight.
+        WishAim.Spot s = WishAim.slide(at(64, 0f), 0, 64, 2, WishAim.Kind.BUILDING, island(true));
+        assertNotNull(s);
+        assertEquals(64, s.y(), s.how());
+        assertEquals(12, s.z());
+        assertTrue(s.how().contains("level with where he aimed over a drop of 124"), s.how());
+    }
+
+    @Test
+    void theSameSlideOverTheVoidLandsInTheSameSpot() {
+        WishAim.Spot overFloor = WishAim.slide(at(64, 0f), 0, 64, 2, WishAim.Kind.BUILDING, island(true));
+        WishAim.Spot overVoid = WishAim.slide(at(64, 0f), 0, 64, 2, WishAim.Kind.BUILDING, island(false));
+        assertNotNull(overVoid);
+        assertEquals(java.util.List.of(overFloor.x(), overFloor.y(), overFloor.z()),
+                java.util.List.of(overVoid.x(), overVoid.y(), overVoid.z()));
+        assertTrue(overVoid.how().contains("over the void"), overVoid.how());
+    }
+
+    @Test
+    void aMissFromTheIslandsEdgeStaysLevelWithHimToo() {
+        WishAim.Spot s = WishAim.aim(at(64, 0f), null, island(true));
+        assertEquals(64, s.y(), s.how());
+        assertEquals(12, s.z(), s.how());
+        assertTrue(s.how().contains("level with the ground under him over a drop"), s.how());
+    }
+
+    @Test
+    void aFlierWhoAimedAtTheGroundStillGetsHisBuildingOnTheGround() {
+        // 50 up, aimed at the ground 3 out from under him: the slide to 12 out settles onto that ground
+        WishAim.Spot s = WishAim.slide(at(114, 60f), 0, 64, 3, WishAim.Kind.BUILDING, new Fake());
+        assertNotNull(s);
+        assertEquals(64, s.y(), s.how());
+    }
+
+    @Test
+    void aSlideDownAShortSlopeStillSettles() {
+        // the ground 5 lower 12 out: within the slide's distance, so it settles onto it
+        Fake w = new Fake().box(-20, 59, 8, 20, 63, 40, WishAim.Cell.AIR);
+        WishAim.Spot s = WishAim.slide(at(64, 0f), 0, 64, 2, WishAim.Kind.BUILDING, w);
+        assertNotNull(s);
+        assertEquals(59, s.y(), s.how());
+    }
+
+    @Test
+    void aFliersMissOverTheVoidLandsWhereItWouldOverAFarFloor() {
+        // 20 above his island, gazing out over its edge: the same spot over the void as over a floor far below
+        WishAim.Spot overFloor = WishAim.aim(at(84, 0f), null, island(true));
+        WishAim.Spot overVoid = WishAim.aim(at(84, 0f), null, island(false));
+        assertEquals(64, overFloor.y(), overFloor.how());
+        assertEquals(java.util.List.of(overFloor.x(), overFloor.y(), overFloor.z()),
+                java.util.List.of(overVoid.x(), overVoid.y(), overVoid.z()), overVoid.how());
+    }
+
+    @Test
+    void aSlideIntoDeepRockIsNotTheVoid() {
+        // he is deep in a cave and the slide's spot is inside rock with more than CLIMB blocks above: it stays where it was
+        Fake w = new Fake();
+        w.groundTop = 200;
+        w.box(-2, 100, -2, 2, 102, 3, WishAim.Cell.AIR);
+        assertNull(WishAim.slide(at(100, 0f), 0, 100, 2, WishAim.Kind.BUILDING, w));
+    }
+
+    @Test
+    void aSlideOverAColumnNotLoadedBelowStaysWhereItWas() {
+        Fake w = island(false);
+        w.put(0, -20, 12, WishAim.Cell.UNLOADED);
+        assertNull(WishAim.slide(at(64, 0f), 0, 64, 2, WishAim.Kind.BUILDING, w));
+    }
+
+    @Test
+    void aCreatureSlidOffAShortLedgeStillLandsOnTheSlopeBelow() {
+        // a small kind may settle at least MIN_MISS down, so a creature 4 out from a 6-block ledge stands on the slope
+        Fake w = new Fake().box(-10, 58, 3, 10, 63, 20, WishAim.Cell.AIR);
+        WishAim.Spot s = WishAim.slide(at(64, 0f), 0, 64, 1, WishAim.Kind.CREATURE, w);
+        assertNotNull(s);
+        assertEquals(58, s.y(), s.how());
+    }
+
+    @Test
+    void lookingUpFromTheIslandsEdgeStaysBesideIt() {
+        WishAim.Spot s = WishAim.aim(at(64, -30f), null, island(true));
+        assertEquals(64, s.y(), s.how());
+        assertEquals(12, s.z(), s.how());
+    }
 }
