@@ -244,10 +244,9 @@ public final class WishAgent {
      */
     private static void quietenAdminCommandSpam(net.minecraft.server.MinecraftServer server) {
         try {
-            var rules = server.getGameRules();
-            if (rules.getBoolean(net.minecraft.world.level.gamerules.GameRules.RULE_LOGADMINCOMMANDS)) {
-                rules.getRule(net.minecraft.world.level.gamerules.GameRules.RULE_LOGADMINCOMMANDS)
-                        .set(false, server);
+            var rules = server.overworld().getGameRules();
+            if (rules.get(net.minecraft.world.level.gamerules.GameRules.LOG_ADMIN_COMMANDS)) {
+                rules.set(net.minecraft.world.level.gamerules.GameRules.LOG_ADMIN_COMMANDS, false, server);
                 org.slf4j.LoggerFactory.getLogger(ModdingFromAModMod.MODID)
                         .info("turned logAdminCommands off — a child should not be reading command "
                         + "output while he plays");

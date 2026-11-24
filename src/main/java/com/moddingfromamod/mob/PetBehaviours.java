@@ -551,7 +551,7 @@ public final class PetBehaviours {
             double vy = mob.getAttributeValue(Attributes.JUMP_STRENGTH) + mob.getJumpBoostPower();
             var m = mob.getDeltaMovement();
             mob.setDeltaMovement(m.x, vy, m.z);
-            mob.hasImpulse = true;
+            mob.needsSync = true;
         }
     }
 

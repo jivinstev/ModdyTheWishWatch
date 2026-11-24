@@ -167,7 +167,7 @@ public final class StrongerWhenGameTest {
                 com.moddingfromamod.datapack.ItemRecipient.ME, null, "minecraft:diamond_sword");
         p.getInventory().clearContent();
         level.getServer().getCommands().performPrefixedCommand(
-                p.createCommandSourceStack().withPermission(2).withSuppressedOutput(), line.strip().substring(1));
+                p.createCommandSourceStack().withPermission(net.minecraft.server.permissions.LevelBasedPermissionSet.GAMEMASTER).withSuppressedOutput(), line.strip().substring(1));
         ItemStack got = ItemStack.EMPTY;
         for (ItemStack s : p.getInventory().getNonEquipmentItems()) {
             if (!s.isEmpty() && s.getHoverName().getString().equals(name)) {

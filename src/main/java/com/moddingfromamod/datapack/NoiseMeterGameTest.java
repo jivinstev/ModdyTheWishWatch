@@ -23,7 +23,7 @@ public final class NoiseMeterGameTest {
 
     private static void run(GameTestHelper helper, String pack, String command) {
         CommandSourceStack src = helper.getLevel().getServer().createCommandSourceStack()
-                .withSuppressedOutput().withPermission(4);
+                .withSuppressedOutput().withPermission(net.minecraft.server.permissions.LevelBasedPermissionSet.OWNER);
         NoiseMeter.enter(pack);
         try {
             helper.getLevel().getServer().getCommands().performPrefixedCommand(src, command);

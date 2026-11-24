@@ -119,7 +119,7 @@ public final class SculptAbilitiesOnRigGameTest {
                 helper.fail(Component.literal("a creature sculpted with abilities:[slam], targeting a husk "
                         + String.format("%.1f", c.distanceTo(husk)) + " blocks away for 200 ticks, "
                         + "never hurt it (husk " + husk.getHealth() + "/" + full + "; carrier "
-                        + c.getType().builtInRegistryHolder().key().location() + ")"));
+                        + c.getType().builtInRegistryHolder().key().identifier() + ")"));
             }
         });
     }

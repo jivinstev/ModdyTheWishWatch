@@ -237,7 +237,7 @@ public final class VanillaRigAnimator {
                         net.minecraft.world.entity.ai.attributes.Attributes.MOVEMENT_SPEED);
                 double h = Math.max(0.12, Math.min(0.35, speed * 1.4));
                 base.setDeltaMovement(-Math.sin(yaw) * h, HOP_VY, Math.cos(yaw) * h);
-                base.hasImpulse = true;
+                base.needsSync = true;
             }
             default -> {
             }

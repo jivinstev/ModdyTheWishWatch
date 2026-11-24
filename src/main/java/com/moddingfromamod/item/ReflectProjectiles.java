@@ -46,6 +46,6 @@ public final class ReflectProjectiles {
         p.setOwner(blocker);
         p.setPos(blocker.getX() + look.x, blocker.getEyeY() - 0.1 + look.y, blocker.getZ() + look.z);
         p.setDeltaMovement(look.scale(SPEED));
-        p.hasImpulse = true;
+        p.needsSync = true;
     }
 }

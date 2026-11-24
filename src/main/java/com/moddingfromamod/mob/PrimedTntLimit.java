@@ -49,7 +49,7 @@ public final class PrimedTntLimit {
         if (TntBudget.worthSaying(now, lastSaid)) {
             lastSaid = now;
             LOG.warn("TNT-LIMIT {} lit TNT already in {} — {} more dropped so far so the server keeps up (#1037)",
-                    live, key.location(), dropped);
+                    live, key.identifier(), dropped);
         }
     }
 

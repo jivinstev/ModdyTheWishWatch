@@ -118,7 +118,7 @@ public final class WishDatapackCommand {
         // Elevated + output-suppressed, like running the datapack's own code, not the player's.
         CommandFunction<CommandSourceStack> function = fn.get();
         functions.execute(function, com.moddingfromamod.compat.EntityCommands.source(player)
-                .withPermission(2).withSuppressedOutput());
+                .withPermission(net.minecraft.server.permissions.LevelBasedPermissionSet.GAMEMASTER).withSuppressedOutput());
         return true;
     }
 }

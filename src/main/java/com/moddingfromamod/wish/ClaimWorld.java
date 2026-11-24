@@ -216,7 +216,7 @@ public final class ClaimWorld {
                     return "the child is not in the world";
                 }
                 for (MobEffectInstance fx : child.getActiveEffects()) {
-                    String id = fx.getEffect().unwrapKey().map(k -> k.location().toString()).orElse("");
+                    String id = fx.getEffect().unwrapKey().map(k -> k.identifier().toString()).orElse("");
                     if (idMatches(id, c.what())) {
                         return 1;
                     }

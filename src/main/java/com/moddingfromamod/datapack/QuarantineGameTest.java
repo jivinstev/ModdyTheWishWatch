@@ -517,14 +517,14 @@ public final class QuarantineGameTest {
     public static void aRecursiveFunctionIsStoppedInsideItsTickAndPaused(GameTestHelper helper) {
         MinecraftServer server = helper.getLevel().getServer();
         String ns = "gt_recurse_" + helper.getLevel().getGameTime();
-        var rule = server.getGameRules().getRule(GameRules.RULE_MAX_COMMAND_CHAIN_LENGTH);
-        int before = rule.get();
-        rule.set(1_000_000_000, server);
+        var rules = server.overworld().getGameRules();
+        int before = rules.get(GameRules.MAX_COMMAND_SEQUENCE_LENGTH);
+        rules.set(GameRules.MAX_COMMAND_SEQUENCE_LENGTH, 1_000_000_000, server);
         try {
             install(server, ns, Map.of("tick", "function " + ns + ":loop\n",
                     "loop", "scoreboard players add #n gt_recurse 1\nfunction " + ns + ":loop\n"), true);
         } catch (IOException e) {
-            rule.set(before, server);
+            rules.set(GameRules.MAX_COMMAND_SEQUENCE_LENGTH, before, server);
             helper.fail(Component.literal("install: " + e));
             return;
         }
@@ -534,7 +534,7 @@ public final class QuarantineGameTest {
         long deadline = System.currentTimeMillis() + WALL;
         helper.succeedWhen(() -> {
             if (System.currentTimeMillis() > deadline) {
-                rule.set(before, server);
+                rules.set(GameRules.MAX_COMMAND_SEQUENCE_LENGTH, before, server);
                 cleanUp(server, ns);
                 helper.fail(Component.literal("the recursion was not paused"));
             }
@@ -543,7 +543,7 @@ public final class QuarantineGameTest {
                     Component.literal("the recursion was paused, but not by the hard stop: " + DatapackQuarantine.paused()));
             helper.assertTrue(PackCostMeter.maxTickMsForTest() < QuarantineRule.HARD_STOP_MS + 5_000,
                     Component.literal("a tick ran " + (int) PackCostMeter.maxTickMsForTest() + " ms: the hard stop did not cut it"));
-            rule.set(before, server);
+            rules.set(GameRules.MAX_COMMAND_SEQUENCE_LENGTH, before, server);
             cleanUp(server, ns);
             var objective = server.getScoreboard().getObjective("gt_recurse");
             if (objective != null) {

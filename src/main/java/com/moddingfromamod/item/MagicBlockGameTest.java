@@ -78,7 +78,7 @@ public final class MagicBlockGameTest {
         String name = call.get("name").getAsString();
         p.getInventory().clearContent();
         helper.getLevel().getServer().getCommands().performPrefixedCommand(
-                p.createCommandSourceStack().withPermission(2).withSuppressedOutput(),
+                p.createCommandSourceStack().withPermission(net.minecraft.server.permissions.LevelBasedPermissionSet.GAMEMASTER).withSuppressedOutput(),
                 "wishdatapack " + tool.lastMadeId() + " give");
         ItemStack it = ItemStack.EMPTY;
         for (ItemStack s : p.getInventory().getNonEquipmentItems()) {

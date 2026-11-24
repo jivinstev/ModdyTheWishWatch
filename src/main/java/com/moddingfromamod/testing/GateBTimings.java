@@ -196,7 +196,7 @@ public final class GateBTimings implements TestReporter {
         String batch;
         try {
             batch = info.getTestHolder().value().batch().unwrapKey()      //: the adapter names each batch's
-                    .map(k -> k.location().getPath().replaceFirst("^batch/", "")).orElse("?");   // environment batch/<name>
+                    .map(k -> k.identifier().getPath().replaceFirst("^batch/", "")).orElse("?");   // environment batch/<name>
         } catch (RuntimeException e) {
             batch = "?";  // never fail a run over the instrument
         }

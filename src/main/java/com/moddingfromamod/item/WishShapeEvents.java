@@ -134,7 +134,7 @@ public final class WishShapeEvents {
         var server = level.getServer();
         PENDING.add(() -> server.getFunctions().get(id).ifPresent(f -> server.getFunctions().execute(f,
                 com.moddingfromamod.compat.EntityCommands.source(who)
-                        .withPermission(2).withSuppressedOutput())));
+                        .withPermission(net.minecraft.server.permissions.LevelBasedPermissionSet.GAMEMASTER).withSuppressedOutput())));
     }
 
     @SubscribeEvent
@@ -184,7 +184,7 @@ public final class WishShapeEvents {
         var server = level.getServer();
         PENDING.add(() -> server.getFunctions().get(id).ifPresent(f -> server.getFunctions().execute(f,
                 com.moddingfromamod.compat.EntityCommands.source(shooter)
-                        .withPermission(2).withSuppressedOutput())));
+                        .withPermission(net.minecraft.server.permissions.LevelBasedPermissionSet.GAMEMASTER).withSuppressedOutput())));
     }
 
     /**
@@ -207,7 +207,7 @@ public final class WishShapeEvents {
         var server = level.getServer();
         PENDING.add(() -> server.getFunctions().get(id).ifPresent(f -> server.getFunctions().execute(f,
                 com.moddingfromamod.compat.EntityCommands.source(who)
-                        .withPermission(2).withSuppressedOutput())));
+                        .withPermission(net.minecraft.server.permissions.LevelBasedPermissionSet.GAMEMASTER).withSuppressedOutput())));
     }
 
     /**
@@ -232,7 +232,7 @@ public final class WishShapeEvents {
         PENDING.add(() -> {
             server.getFunctions().get(id).ifPresent(f -> server.getFunctions().execute(f,
                     com.moddingfromamod.compat.EntityCommands.source(who)
-                            .withPermission(2).withSuppressedOutput()));
+                            .withPermission(net.minecraft.server.permissions.LevelBasedPermissionSet.GAMEMASTER).withSuppressedOutput()));
             ReflectProjectiles.afterBlock(who, projectile);
         });
     }
@@ -258,6 +258,6 @@ public final class WishShapeEvents {
         PENDING.add(() -> server.getFunctions().get(id).ifPresent(f -> server.getFunctions().execute(f,
                 com.moddingfromamod.compat.EntityCommands.source(player)
                         .withPosition(Vec3.atCenterOf(pos)).withLevel(level)
-                        .withPermission(2).withSuppressedOutput())));
+                        .withPermission(net.minecraft.server.permissions.LevelBasedPermissionSet.GAMEMASTER).withSuppressedOutput())));
     }
 }

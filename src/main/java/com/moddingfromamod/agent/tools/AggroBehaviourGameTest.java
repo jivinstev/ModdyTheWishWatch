@@ -66,7 +66,7 @@ public class AggroBehaviourGameTest {
     private static void run(GameTestHelper helper, List<String> commands, BlockPos at) {
         ServerLevel level = helper.getLevel();
         CommandSourceStack source = level.getServer().createCommandSourceStack()
-                .withLevel(level).withSuppressedOutput().withPermission(4)
+                .withLevel(level).withSuppressedOutput().withPermission(net.minecraft.server.permissions.LevelBasedPermissionSet.OWNER)
                 .withPosition(Vec3.atCenterOf(helper.absolutePos(at)));
         for (String c : commands) {
             level.getServer().getCommands().performPrefixedCommand(source, c);

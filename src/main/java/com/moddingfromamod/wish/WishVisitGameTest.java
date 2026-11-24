@@ -42,7 +42,7 @@ public class WishVisitGameTest {
         BuildRegistry.rememberAnchor(id, start.offset(40, 0, 0).asLong(), helper.getLevel().dimension());
         helper.assertTrue(CommandGuard.isAllowed("wishvisit " + id), Component.literal("a template may hold wishvisit"));
 
-        var src = child.createCommandSourceStack().withPermission(2).withSuppressedOutput();
+        var src = child.createCommandSourceStack().withPermission(net.minecraft.server.permissions.LevelBasedPermissionSet.GAMEMASTER).withSuppressedOutput();
         server.getCommands().performPrefixedCommand(src, "wishvisit " + id);
         double dx = child.getX() - (start.getX() + 40.5);
         double dz = child.getZ() - (start.getZ() + 0.5);

@@ -145,7 +145,7 @@ public class PerChildForkGameTest {
             // THE DISPATCHER, not performPrefixedCommand, because that one returns void and
             // swallows a syntax error into a chat message nobody reads in a headless run.
             return server.getCommands().getDispatcher().execute(command,
-                    server.createCommandSourceStack().withSuppressedOutput().withPermission(4));
+                    server.createCommandSourceStack().withSuppressedOutput().withPermission(net.minecraft.server.permissions.LevelBasedPermissionSet.OWNER));
         } catch (com.mojang.brigadier.exceptions.CommandSyntaxException e) {
             return -1;
         }

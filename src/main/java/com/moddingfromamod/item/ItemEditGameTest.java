@@ -394,7 +394,7 @@ public class ItemEditGameTest {
         var spec = com.moddingfromamod.item.ItemSpecStore.find(id);
         helper.assertTrue(spec != null, Component.literal("the design was not stored"));
         helper.getLevel().getServer().getCommands().performPrefixedCommand(
-                com.moddingfromamod.compat.EntityCommands.source(player).withPermission(4),
+                com.moddingfromamod.compat.EntityCommands.source(player).withPermission(net.minecraft.server.permissions.LevelBasedPermissionSet.OWNER),
                 "wishdatapack " + spec.id() + " give");
         java.util.UUID wish = java.util.UUID.randomUUID();
         String worker = "gt-itemicon-" + wish;

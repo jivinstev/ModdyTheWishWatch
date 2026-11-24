@@ -66,7 +66,7 @@ public final class CommandTrial {
                                         String raw) {
         String command = WishExecutor.repairAttributeIds(raw == null ? "" : raw.strip()).command();
         CommandSourceStack stack = new CommandSourceStack(CommandSource.NULL, pos, Vec2.ZERO, level,
-                2, "wish-trial", Component.literal("wish-trial"), server, null);
+                net.minecraft.server.permissions.LevelBasedPermissionSet.GAMEMASTER, "wish-trial", Component.literal("wish-trial"), server, null);
         ParseResults<CommandSourceStack> parsed =
                 server.getCommands().getDispatcher().parse(command, stack);
         if (!parsed.getExceptions().isEmpty()) {
@@ -109,7 +109,7 @@ public final class CommandTrial {
             return List.of();   // a bare summon: nothing in it that could be silently dropped
         }
         CompoundTag tag = nbt.copy();
-        tag.putString("id", type.key().location().toString());
+        tag.putString("id", type.key().identifier().toString());
         List<String> out = new ArrayList<>();
         WarnCapture.Captured<Entity> tried;
         try {

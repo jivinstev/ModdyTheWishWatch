@@ -84,7 +84,7 @@ public final class WishSummonCommand {
             throws CommandSyntaxException {
         CommandSourceStack src = ctx.getSource();
         Holder.Reference<EntityType<?>> type = ResourceArgument.getSummonableEntityType(ctx, "entity");
-        if (type.key().location().getPath().equals("wish_mob")) {
+        if (type.key().identifier().getPath().equals("wish_mob")) {
             throw SCULPTED.create();
         }
         MobTweak tweak = parseSpec(specJson);
@@ -93,7 +93,7 @@ public final class WishSummonCommand {
                     "The spec must be modify_mob's JSON, e.g. {\"scale\":4,\"health\":300}")).create();
         }
         String boss = com.moddingfromamod.agent.tools.ModifyMobTool.bossCannotBeAPet(tweak,
-                type.key().location().getPath());
+                type.key().identifier().getPath());
         if (boss != null) {
             throw new SimpleCommandExceptionType(Component.literal(boss)).create();
         }
@@ -117,7 +117,7 @@ public final class WishSummonCommand {
                     "Summoned it, but " + String.join(" and ", missed) + " did not take "
                             + notes)).create();
         }
-        src.sendSuccess(() -> Component.literal("Summoned " + type.key().location() + ": "
+        src.sendSuccess(() -> Component.literal("Summoned " + type.key().identifier() + ": "
                 + tweak.summary()), false);
         return 1;
     }

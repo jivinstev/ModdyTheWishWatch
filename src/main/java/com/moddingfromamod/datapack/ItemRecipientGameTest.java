@@ -45,7 +45,7 @@ public class ItemRecipientGameTest {
      */
     private static void run(GameTestHelper helper, String line, BlockPos standingAt) {
         CommandSourceStack source = helper.getLevel().getServer().createCommandSourceStack()
-                .withLevel(helper.getLevel()).withSuppressedOutput().withPermission(4)
+                .withLevel(helper.getLevel()).withSuppressedOutput().withPermission(net.minecraft.server.permissions.LevelBasedPermissionSet.OWNER)
                 .withPosition(net.minecraft.world.phys.Vec3.atCenterOf(
                         helper.absolutePos(standingAt)));
         helper.getLevel().getServer().getCommands()

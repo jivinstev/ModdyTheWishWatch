@@ -59,7 +59,7 @@ public final class RigTalkGameTest {
     }
 
     private static void run(GameTestHelper helper, ServerPlayer op, String line) {
-        CommandSourceStack src = op.createCommandSourceStack().withSuppressedOutput().withPermission(2);
+        CommandSourceStack src = op.createCommandSourceStack().withSuppressedOutput().withPermission(net.minecraft.server.permissions.LevelBasedPermissionSet.GAMEMASTER);
         helper.getLevel().getServer().getCommands().performPrefixedCommand(src, line);
     }
 

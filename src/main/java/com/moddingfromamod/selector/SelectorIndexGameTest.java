@@ -77,7 +77,7 @@ public class SelectorIndexGameTest {
         ServerLevel level = helper.getLevel();
         Vec3 at = Vec3.atCenterOf(helper.absolutePos(SPOT));
         CommandSourceStack src = level.getServer().createCommandSourceStack().withLevel(level)
-                .withPosition(at).withPermission(4).withSuppressedOutput();
+                .withPosition(at).withPermission(net.minecraft.server.permissions.LevelBasedPermissionSet.OWNER).withSuppressedOutput();
         Run r = new Run(helper, prefix, src, new ArrayList<>());
         r.run("scoreboard objectives add $s dummy");
         return r;

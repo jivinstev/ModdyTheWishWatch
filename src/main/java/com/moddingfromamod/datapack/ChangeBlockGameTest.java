@@ -91,7 +91,7 @@ public final class ChangeBlockGameTest {
         var server = helper.getLevel().getServer();
         p.getInventory().clearContent();
         server.getCommands().performPrefixedCommand(
-                p.createCommandSourceStack().withPermission(2).withSuppressedOutput(),
+                p.createCommandSourceStack().withPermission(net.minecraft.server.permissions.LevelBasedPermissionSet.GAMEMASTER).withSuppressedOutput(),
                 line.strip().substring(1));
         ItemStack wand = ItemStack.EMPTY;
         for (int i = 0; i < p.getInventory().getContainerSize(); i++) {

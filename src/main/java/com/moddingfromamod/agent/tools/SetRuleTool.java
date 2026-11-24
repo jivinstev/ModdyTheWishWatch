@@ -203,7 +203,7 @@ public final class SetRuleTool implements McpTool {
         ServerPlayer p = players.isEmpty() ? null : players.get(0);
         CommandSourceStack stack = new CommandSourceStack(net.minecraft.commands.CommandSource.NULL,
                 p == null ? net.minecraft.world.phys.Vec3.ZERO
-                        : p.position(), Vec2.ZERO, server.overworld(), 2, "rule", Component.literal("rule"),
+                        : p.position(), Vec2.ZERO, server.overworld(), net.minecraft.server.permissions.LevelBasedPermissionSet.GAMEMASTER, "rule", Component.literal("rule"),
                 server, p);
         List<String> out = new ArrayList<>();
         for (String c : commands) {

@@ -92,7 +92,7 @@ public final class GrappleGameTest {
                 com.moddingfromamod.datapack.ItemRecipient.ME, null, "minecraft:snowball");
         p.getInventory().clearContent();
         helper.getLevel().getServer().getCommands().performPrefixedCommand(
-                p.createCommandSourceStack().withPermission(2).withSuppressedOutput(), line.strip().substring(1));
+                p.createCommandSourceStack().withPermission(net.minecraft.server.permissions.LevelBasedPermissionSet.GAMEMASTER).withSuppressedOutput(), line.strip().substring(1));
         ItemStack ball = ItemStack.EMPTY;
         for (ItemStack s : p.getInventory().getNonEquipmentItems()) {
             if (!s.isEmpty() && s.getHoverName().getString().equals(name)) {

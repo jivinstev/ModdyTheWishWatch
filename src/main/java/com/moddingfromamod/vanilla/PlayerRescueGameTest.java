@@ -127,7 +127,7 @@ public final class PlayerRescueGameTest {
         int f = floor(helper);
         box(helper, 0, f + 1, 0, 8, f + 4, 8, Blocks.STONE);   // wide enough that the way out is a real move
         ServerPlayer p = standing(helper, new BlockPos(4, f + 1, 4));
-        p.setClientLoaded(true);            // a player whose client has not loaded ignores all damage
+        p.connection.markClientLoaded();    // a player whose client has not loaded ignores all damage
         try {
             float hp = p.getHealth();
             boolean hurt = p.hurtServer(level, level.damageSources().inWall(), 1.0f);

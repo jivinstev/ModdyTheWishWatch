@@ -59,7 +59,7 @@ public final class EventWhenGameTest {
 
     private static void run(MinecraftServer server, ServerLevel level, BlockPos at, String cmd) {
         CommandSourceStack src = server.createCommandSourceStack().withLevel(level)
-                .withPosition(Vec3.atCenterOf(at)).withPermission(4).withSuppressedOutput();
+                .withPosition(Vec3.atCenterOf(at)).withPermission(net.minecraft.server.permissions.LevelBasedPermissionSet.OWNER).withSuppressedOutput();
         server.getCommands().performPrefixedCommand(src, cmd);
     }
 

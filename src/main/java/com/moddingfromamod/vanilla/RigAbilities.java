@@ -513,7 +513,7 @@ public final class RigAbilities {
         if (carrier.onGround()) {
             var v = carrier.getDeltaMovement();
             carrier.setDeltaMovement(v.x * 0.3, SLAM_HOP_VY, v.z * 0.3);
-            carrier.hasImpulse = true;
+            carrier.needsSync = true;
         }
         return true;
     }
@@ -595,7 +595,7 @@ public final class RigAbilities {
         double len = Math.max(0.1, Math.sqrt(dx * dx + dz * dz));
         face(carrier, target);
         carrier.push(dx / len * 1.2, 0.35, dz / len * 1.2);
-        carrier.hasImpulse = true;
+        carrier.needsSync = true;
         st.charging = target.getUUID();
         st.chargeUntil = carrier.tickCount + CHARGE_HIT_TICKS;
         return true;
@@ -626,7 +626,7 @@ public final class RigAbilities {
             double len = Math.max(0.1, Math.sqrt(dx * dx + dz * dz));
             carrier.setDeltaMovement(dx / len * CHARGE_SPEED, carrier.getDeltaMovement().y, dz / len * CHARGE_SPEED);
             face(carrier, t);   // head first, every tick of the rush
-            carrier.hasImpulse = true;
+            carrier.needsSync = true;
             return;
         }
         double dx = t.getX() - carrier.getX();

@@ -404,7 +404,7 @@ public final class WatchPinStage {
         p.getInventory().setSelectedSlot(0);
         p.connection.send(new ClientboundSetHeldSlotPacket(0));
         server.getPlayerList().op(new NameAndId(p.getUUID(), p.getScoreboardName()));
-        level.getGameRules().getRule(GameRules.RULE_KEEPINVENTORY).set(false, server);
+        level.getGameRules().set(GameRules.KEEP_INVENTORY,false, server);
         MatrixCell cell = MATRIX.get(r.name());
         if (cell != null) {
             p.getFoodData().setFoodLevel(10);   // hungry enough that bread in either hand is eaten
@@ -441,8 +441,7 @@ public final class WatchPinStage {
                 }
             }
             case "death", "death_keep" -> {
-                level.getGameRules().getRule(GameRules.RULE_KEEPINVENTORY)
-                        .set(r.name().equals("death_keep"), server);
+                level.getGameRules().set(GameRules.KEEP_INVENTORY, r.name().equals("death_keep"), server);
                 deathAt = p.blockPosition();
                 p.getInventory().setItem(5, new ItemStack(Items.DIRT, 7));
                 p.hurt(p.damageSources().generic(), Float.MAX_VALUE);

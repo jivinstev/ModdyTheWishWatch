@@ -391,6 +391,6 @@ public final class WishGo {
 
     /** The overworld key, so a caller need not import the registry. */
     public static String overworld() {
-        return Level.OVERWORLD.location().toString();
+        return Level.OVERWORLD.identifier().toString();
     }
 }

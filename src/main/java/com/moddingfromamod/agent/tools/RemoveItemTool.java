@@ -93,7 +93,7 @@ public final class RemoveItemTool implements McpTool {
                         int before = placed(level, id);
                         if (before > 0) {
                             server.getCommands().performPrefixedCommand(server.createCommandSourceStack()
-                                    .withLevel(level).withSuppressedOutput().withPermission(2),
+                                    .withLevel(level).withSuppressedOutput().withPermission(net.minecraft.server.permissions.LevelBasedPermissionSet.GAMEMASTER),
                                     "function " + id + ":remove_all");
                             placedGone += before - placed(level, id);
                         }
@@ -107,7 +107,7 @@ public final class RemoveItemTool implements McpTool {
                     var fn = net.minecraft.resources.Identifier.tryParse(id + ":undo_fill");
                     if (fn != null && server.getFunctions().get(fn).isPresent()) {
                         server.getCommands().performPrefixedCommand(server.createCommandSourceStack()
-                                .withSuppressedOutput().withPermission(2), "function " + id + ":undo_fill");
+                                .withSuppressedOutput().withPermission(net.minecraft.server.permissions.LevelBasedPermissionSet.GAMEMASTER), "function " + id + ":undo_fill");
                         fillsGone = 1;
                     }
                 }

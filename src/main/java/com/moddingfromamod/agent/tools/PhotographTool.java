@@ -1007,7 +1007,7 @@ public final class PhotographTool implements McpTool {
                     // run. If he has it, it is moved into his hand instead.
                     if (!intoHand(player, gave[0])) {
                         server.getCommands().performPrefixedCommand(
-                                com.moddingfromamod.compat.EntityCommands.source(player).withPermission(4),
+                                com.moddingfromamod.compat.EntityCommands.source(player).withPermission(net.minecraft.server.permissions.LevelBasedPermissionSet.OWNER),
                                 "wishdatapack " + gave[0] + " give");
                     }
                     shutter(player, label,
@@ -2249,7 +2249,7 @@ public final class PhotographTool implements McpTool {
                 // pictures look far away" into "scale 12.25, subject minecraft:bee" in one run.
                 LOGGER.info("orbit: framing '{}' -> {} blocks tall (entity scale {}, carrier {})",
                         subject, Math.round(h * 10) / 10.0, best.getScale(),
-                        best.getType().builtInRegistryHolder().key().location());
+                        best.getType().builtInRegistryHolder().key().identifier());
                 shape[0] = best.getX();
                 shape[1] = best.getY();
                 shape[2] = best.getZ();

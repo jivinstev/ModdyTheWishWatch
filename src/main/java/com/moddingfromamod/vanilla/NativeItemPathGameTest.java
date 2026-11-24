@@ -203,7 +203,7 @@ public final class NativeItemPathGameTest {
         ServerPlayer p = com.moddingfromamod.testing.MockPlayerNetwork.inLevel(helper);
         try {
         var server = helper.getLevel().getServer();
-        var source = p.createCommandSourceStack().withPermission(2).withSuppressedOutput();
+        var source = p.createCommandSourceStack().withPermission(net.minecraft.server.permissions.LevelBasedPermissionSet.GAMEMASTER).withSuppressedOutput();
 
         String arg = com.moddingfromamod.agent.tools.MakeItemTool.itemArg(
                 new com.moddingfromamod.agent.tools.MakeItemTool.Variant("Native Wand", 0x9966FF),

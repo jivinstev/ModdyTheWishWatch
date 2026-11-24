@@ -43,7 +43,7 @@ public final class EventAnnounce {
         String sub = rest == null || rest.isBlank() ? where(player, at) : rest + " — " + where(player, at);
         player.connection.send(new ClientboundSetSubtitleTextPacket(Component.literal(sub)));
         if (sound != null) {
-            player.playNotifySound(sound, SoundSource.MASTER, 1.0F, 1.0F);
+            com.moddingfromamod.mv.NotifySound.play(player,sound, SoundSource.MASTER, 1.0F, 1.0F);
         }
     }
 

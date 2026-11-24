@@ -52,7 +52,7 @@ public final class IconOverlayGameTest {
         ServerPlayer p = MockPlayerNetwork.inLevel(helper);
         try {
             var server = helper.getLevel().getServer();
-            var source = p.createCommandSourceStack().withPermission(2).withSuppressedOutput();
+            var source = p.createCommandSourceStack().withPermission(net.minecraft.server.permissions.LevelBasedPermissionSet.GAMEMASTER).withSuppressedOutput();
             String sparky = MakeItemTool.gives("held", "t6d3c_zap", wand, 1, "Right-click to use it.",
                     List.of(new MakeItemTool.Variant("Sparky Wand", 0x9966FF)),
                     com.moddingfromamod.datapack.ItemRecipient.ME, null,

@@ -70,7 +70,7 @@ public class WishLibraryGameTest {
 
     public static void rcon(MinecraftServer server, String command) {
         server.getCommands().performPrefixedCommand(
-                server.createCommandSourceStack().withSuppressedOutput().withPermission(4),
+                server.createCommandSourceStack().withSuppressedOutput().withPermission(net.minecraft.server.permissions.LevelBasedPermissionSet.OWNER),
                 command);
     }
 
@@ -269,7 +269,7 @@ public class WishLibraryGameTest {
 
             ServerPlayer child = com.moddingfromamod.testing.MockPlayerNetwork.inLevel(helper);
             server.getCommands().performPrefixedCommand(
-                    child.createCommandSourceStack().withSuppressedOutput().withPermission(2),
+                    child.createCommandSourceStack().withSuppressedOutput().withPermission(net.minecraft.server.permissions.LevelBasedPermissionSet.GAMEMASTER),
                     "wishmob spawn " + key);
             // ⚠ COUNT WHAT A CHILD CAN SEE, NOT WHAT WE REGISTERED.
             //

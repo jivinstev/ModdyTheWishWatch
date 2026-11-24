@@ -731,7 +731,7 @@ public final class LiteProbe {
         }
         record("give_line", give.replace("\n", " ⏎ "));
         CommandSourceStack src = subject.createCommandSourceStack()
-                .withSuppressedOutput().withPermission(4);
+                .withSuppressedOutput().withPermission(net.minecraft.server.permissions.LevelBasedPermissionSet.OWNER);
         int ok = 0;
         int failed = 0;
         for (String line : give.split("\n")) {

@@ -398,7 +398,7 @@ public final class RigInstincts {
             Vec3 m = carrier.getDeltaMovement();
             double[] v = RigInstinct.leap(dx, dz, m.x, m.z);
             carrier.setDeltaMovement(v[0], v[1], v[2]);
-            carrier.hasImpulse = true;
+            carrier.needsSync = true;
             return;
         }
         if (now % STEP == 0) {

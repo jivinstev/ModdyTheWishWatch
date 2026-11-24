@@ -93,7 +93,7 @@ public final class LookAroundTool implements McpTool {
                         + "\nposition: " + pos.getX() + " " + pos.getY() + " " + pos.getZ()
                         + "\ndimension: " + level.dimension().identifier()
                         + "\nbiome: " + level.getBiome(pos).unwrapKey()
-                            .map(k -> k.location().toString()).orElse("unknown")
+                            .map(k -> k.identifier().toString()).orElse("unknown")
                         + "\nstanding on: " + level.getBlockState(below).getBlock()
                             .getDescriptionId()
                         + "\nopen space above: " + headroom + " blocks"

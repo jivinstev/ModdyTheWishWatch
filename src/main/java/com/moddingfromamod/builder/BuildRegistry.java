@@ -485,7 +485,7 @@ public final class BuildRegistry {
         net.minecraft.core.BlockPos p = net.minecraft.core.BlockPos.of(a[0]);
         var dim = DIMENSIONS.get(id);
         int[] t = TOWARD.getOrDefault(id, new int[]{0, 0});
-        return new BuildPlacements.Placement(dim == null ? null : dim.location().toString(),
+        return new BuildPlacements.Placement(dim == null ? null : dim.identifier().toString(),
                 p.getX(), p.getY(), p.getZ(), t[0], t[1], seed, REMOVED.contains(id));
     }
 

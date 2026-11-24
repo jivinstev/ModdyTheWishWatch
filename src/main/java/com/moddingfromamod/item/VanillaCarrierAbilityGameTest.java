@@ -507,7 +507,7 @@ public class VanillaCarrierAbilityGameTest {
                     Component.literal("the production give line did not resolve to the carrier: " + arg));
 
             var server = helper.getLevel().getServer();
-            var source = p.createCommandSourceStack().withPermission(2).withSuppressedOutput();
+            var source = p.createCommandSourceStack().withPermission(net.minecraft.server.permissions.LevelBasedPermissionSet.GAMEMASTER).withSuppressedOutput();
             server.getCommands().performPrefixedCommand(source, "give @s " + arg + " 1");
 
             // ⚠ FOUND BY ITS NAME, NOT BY ITS SLOT — and the slot version passed every assertion
@@ -606,7 +606,7 @@ public class VanillaCarrierAbilityGameTest {
             ServerPlayer p = player(helper, helper.absolutePos(new BlockPos(5, 2, 14)));
             var server = helper.getLevel().getServer();
             server.getCommands().performPrefixedCommand(
-                    p.createCommandSourceStack().withPermission(2).withSuppressedOutput(),
+                    p.createCommandSourceStack().withPermission(net.minecraft.server.permissions.LevelBasedPermissionSet.GAMEMASTER).withSuppressedOutput(),
                     "give @s " + arg + " 1");
 
             ItemStack given = null;

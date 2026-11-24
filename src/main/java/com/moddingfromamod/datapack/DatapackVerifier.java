@@ -157,7 +157,7 @@ public final class DatapackVerifier {
         List<String> failed = new ArrayList<>();
         if (run && loaded) {
             CommandSourceStack src = server.createCommandSourceStack().withSuppressedOutput()
-                    .withPermission(2);
+                    .withPermission(net.minecraft.server.permissions.LevelBasedPermissionSet.GAMEMASTER);
             for (String fn : present) {
                 Identifier key = Identifier.fromNamespaceAndPath(ns, fn);
                 try {
@@ -179,7 +179,7 @@ public final class DatapackVerifier {
         int written = recipeFilesIn(ns);
         int accepted = 0;
         for (var holder : server.getRecipeManager().getRecipes()) {
-            if (ns.equals(holder.id().location().getNamespace())) {
+            if (ns.equals(holder.id().identifier().getNamespace())) {
                 accepted++;
             }
         }
@@ -225,7 +225,7 @@ public final class DatapackVerifier {
         try {
             net.minecraft.commands.functions.CommandFunction.fromLines(
                     Identifier.fromNamespaceAndPath(ns, path), server.getCommands().getDispatcher(),
-                    server.createCommandSourceStack().withPermission(2), lines);
+                    server.createCommandSourceStack().withPermission(net.minecraft.server.permissions.LevelBasedPermissionSet.GAMEMASTER), lines);
             return "";
         } catch (RuntimeException e) {
             String msg = e.getMessage() == null ? e.toString() : e.getMessage();

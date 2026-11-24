@@ -114,7 +114,7 @@ public final class BuilderMaxProbe {
         MinecraftServer server = event.getServer();
         ServerLevel level = server.overworld();
         level.setDayTime(18_000);   // night: the zombies must not burn
-        server.getGameRules().getRule(net.minecraft.world.level.gamerules.GameRules.RULE_DAYLIGHT).set(false, server);
+        server.overworld().getGameRules().set(net.minecraft.world.level.gamerules.GameRules.ADVANCE_TIME,false, server);
         for (int cx = -2; cx <= 3; cx++) {
             for (int cz = -2; cz <= 3; cz++) {
                 level.setChunkForced(cx, cz, true);
@@ -174,7 +174,7 @@ public final class BuilderMaxProbe {
                 var stand = net.neoforged.neoforge.common.util.FakePlayerFactory.getMinecraft(level);
                 stand.snapTo(SIDE / 2.0, ORIGIN.getY() + 1, SIDE / 2.0, 0f, 0f);
                 for (int left = N; left > 0; left -= com.moddingfromamod.mob.SpawnBudget.SCULPTED_MAX_COUNT) {
-                    server.getCommands().performPrefixedCommand(stand.createCommandSourceStack().withPermission(4),
+                    server.getCommands().performPrefixedCommand(stand.createCommandSourceStack().withPermission(net.minecraft.server.permissions.LevelBasedPermissionSet.OWNER),
                             "wishmob spawn " + madeId + " " + Math.min(left, com.moddingfromamod.mob.SpawnBudget.SCULPTED_MAX_COUNT));
                 }
                 // monsters for the moves that aim at them (a breath, a shove), the same six in every arm

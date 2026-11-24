@@ -62,7 +62,7 @@ public final class ThrowAndUseDoneShapeGameTest {
                 com.moddingfromamod.datapack.ItemRecipient.ME, null, base);
         p.getInventory().clearContent();
         helper.getLevel().getServer().getCommands().performPrefixedCommand(
-                p.createCommandSourceStack().withPermission(2).withSuppressedOutput(), line.strip().substring(1));
+                p.createCommandSourceStack().withPermission(net.minecraft.server.permissions.LevelBasedPermissionSet.GAMEMASTER).withSuppressedOutput(), line.strip().substring(1));
         for (ItemStack s : p.getInventory().getNonEquipmentItems()) {
             if (!s.isEmpty() && s.getHoverName().getString().equals(name)) {
                 return s.copy();
@@ -168,7 +168,7 @@ public final class ThrowAndUseDoneShapeGameTest {
         p.setItemInHand(InteractionHand.MAIN_HAND, horn);
         // A horn with no instrument plays nothing; the one in a child's hand always has one.
         helper.getLevel().getServer().getCommands().performPrefixedCommand(
-                p.createCommandSourceStack().withPermission(2).withSuppressedOutput(),
+                p.createCommandSourceStack().withPermission(net.minecraft.server.permissions.LevelBasedPermissionSet.GAMEMASTER).withSuppressedOutput(),
                 "item modify entity @s weapon.mainhand {function:\"minecraft:set_instrument\","
                         + "options:\"#minecraft:goat_horns\"}");
         p.snapTo(feet.getX() + 0.5, feet.getY(), feet.getZ() + 0.5, 0.0F, 0.0F);

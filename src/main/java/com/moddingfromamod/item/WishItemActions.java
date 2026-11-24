@@ -174,6 +174,6 @@ public final class WishItemActions {
         var server = level.getServer();
         server.getFunctions().get(rl).ifPresent(fn ->
                 server.getFunctions().execute(fn,
-                        com.moddingfromamod.compat.EntityCommands.source(player).withPermission(2).withSuppressedOutput()));
+                        com.moddingfromamod.compat.EntityCommands.source(player).withPermission(net.minecraft.server.permissions.LevelBasedPermissionSet.GAMEMASTER).withSuppressedOutput()));
     }
 }

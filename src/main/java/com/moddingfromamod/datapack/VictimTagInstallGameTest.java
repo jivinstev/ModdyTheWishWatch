@@ -47,7 +47,7 @@ public class VictimTagInstallGameTest {
         String p = "gtvt" + Long.toHexString(System.nanoTime() & 0xffffff);
         Vec3 at = Vec3.atBottomCenterOf(helper.absolutePos(new BlockPos(3, 1, 3)));
         CommandSourceStack src = server.createCommandSourceStack().withLevel(helper.getLevel())
-                .withPosition(at).withPermission(4).withSuppressedOutput();
+                .withPosition(at).withPermission(net.minecraft.server.permissions.LevelBasedPermissionSet.OWNER).withSuppressedOutput();
         Runnable[] step = new Runnable[1];
         int[] waited = {0};
         boolean[] started = {false};

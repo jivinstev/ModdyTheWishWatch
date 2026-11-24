@@ -77,7 +77,7 @@ public final class ChatGuard {
 
     /** Chat stays with its sender for this player here: the world says so, and he is no operator. */
     static boolean toSelf(ServerPlayer p) {
-        return com.moddingfromamod.world.WorldPeople.current().chatToSelf() && !p.hasPermissions(2);
+        return com.moddingfromamod.world.WorldPeople.current().chatToSelf() && !p.permissions().hasPermission(net.minecraft.server.permissions.Permissions.COMMANDS_GAMEMASTER);
     }
 
     /**
@@ -92,7 +92,7 @@ public final class ChatGuard {
         if (p == null || text == null || text.isBlank()) {
             return true;
         }
-        if (!com.moddingfromamod.world.WorldPeople.current().placedText() || p.hasPermissions(2)) {
+        if (!com.moddingfromamod.world.WorldPeople.current().placedText() || p.permissions().hasPermission(net.minecraft.server.permissions.Permissions.COMMANDS_GAMEMASTER)) {
             return true;
         }
         PlacedText.Verdict v;

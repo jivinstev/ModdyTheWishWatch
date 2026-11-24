@@ -835,9 +835,9 @@ public final class BehaviourExercise {
      */
     private static void quietWorld(MinecraftServer server, BlockPos at) {
         var rules = level.getGameRules();
-        rules.getRule(net.minecraft.world.level.gamerules.GameRules.RULE_DOMOBSPAWNING).set(false, server);
-        rules.getRule(net.minecraft.world.level.gamerules.GameRules.RULE_DAYLIGHT).set(false, server);
-        rules.getRule(net.minecraft.world.level.gamerules.GameRules.RULE_WEATHER_CYCLE).set(false, server);
+        rules.set(net.minecraft.world.level.gamerules.GameRules.SPAWN_MOBS,false, server);
+        rules.set(net.minecraft.world.level.gamerules.GameRules.ADVANCE_TIME,false, server);
+        rules.set(net.minecraft.world.level.gamerules.GameRules.ADVANCE_WEATHER,false, server);
         level.setDayTime(6000);
         level.setWeatherParameters(12000, 0, false, false);
         // Every other creature about, not only monsters: the second staged run's poison aura
@@ -1004,7 +1004,7 @@ public final class BehaviourExercise {
     private static JsonArray effects(LivingEntity e) {
         JsonArray a = new JsonArray();
         for (MobEffectInstance i : e.getActiveEffects()) {
-            a.add(i.getEffect().unwrapKey().map(k -> k.location().toString()).orElse("?"));
+            a.add(i.getEffect().unwrapKey().map(k -> k.identifier().toString()).orElse("?"));
         }
         return a;
     }

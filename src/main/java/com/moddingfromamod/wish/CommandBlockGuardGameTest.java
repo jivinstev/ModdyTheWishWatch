@@ -256,7 +256,7 @@ public final class CommandBlockGuardGameTest {
         MockPlayerNetwork.clearStaleMocks(helper);
         ServerPlayer him = MockPlayerNetwork.inLevel(helper, "mfam-cmdblock");
         var server = helper.getLevel().getServer();
-        helper.assertTrue(server.isCommandBlockEnabled(),
+        helper.assertTrue(server.overworld().getGameRules().get(net.minecraft.world.level.gamerules.GameRules.COMMAND_BLOCKS_WORK),
                 Component.literal("the test must run with command blocks ENABLED, or it proves nothing"));
         BlockPos at = him.blockPosition();
         // An existing command block for `data merge` to aim at — put there by the test, not a wish.

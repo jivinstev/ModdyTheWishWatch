@@ -81,7 +81,7 @@ public final class WornItemGameTest {
         ServerPlayer p = MockPlayerNetwork.inLevel(helper);
         try {
             var server = helper.getLevel().getServer();
-            var source = p.createCommandSourceStack().withPermission(2).withSuppressedOutput();
+            var source = p.createCommandSourceStack().withPermission(net.minecraft.server.permissions.LevelBasedPermissionSet.GAMEMASTER).withSuppressedOutput();
             String arg = MakeItemTool.itemArg(new MakeItemTool.Variant("Green Boots", 0x33CC55),
                     com.moddingfromamod.datapack.ItemCatalogue.icon("helmet"), "Put it on!", null, null,
                     WishItem.WISH_FEATURE + ":\"t6d2_green_boots\"," + WishItem.WORN + ":\"feet\"",
@@ -145,7 +145,7 @@ public final class WornItemGameTest {
         ServerPlayer p = MockPlayerNetwork.inLevel(helper);
         try {
             var server = helper.getLevel().getServer();
-            var source = p.createCommandSourceStack().withPermission(2).withSuppressedOutput();
+            var source = p.createCommandSourceStack().withPermission(net.minecraft.server.permissions.LevelBasedPermissionSet.GAMEMASTER).withSuppressedOutput();
             String gold = MakeItemTool.itemArg(new MakeItemTool.Variant("Gold Kicks", 0xFFD700), 0,
                     "Put it on!", null, "minecraft:golden_boots",
                     WishItem.WISH_FEATURE + ":\"t6d2_gold\"," + WishItem.WORN + ":\"feet\"", "worn_feet");
@@ -209,7 +209,7 @@ public final class WornItemGameTest {
                 "worn_feet");
         var server = helper.getLevel().getServer();
         server.getCommands().performPrefixedCommand(
-                p.createCommandSourceStack().withPermission(2).withSuppressedOutput(),
+                p.createCommandSourceStack().withPermission(net.minecraft.server.permissions.LevelBasedPermissionSet.GAMEMASTER).withSuppressedOutput(),
                 "give @s " + arg + " 1");
         ItemStack boots = named(p, name).copy();
         if (boots.isEmpty()) {

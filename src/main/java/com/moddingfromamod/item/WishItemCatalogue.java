@@ -596,7 +596,7 @@ public final class WishItemCatalogue {
                 net.minecraft.world.item.enchantment.ItemEnchantments.EMPTY);
         for (var en : ench.entrySet()) {
             en.getKey().unwrapKey().ifPresent(k ->
-                    enchants.put(k.location().toString(), en.getIntValue()));
+                    enchants.put(k.identifier().toString(), en.getIntValue()));
         }
         Double damage = null;
         var mods = stack.getOrDefault(DataComponents.ATTRIBUTE_MODIFIERS,
@@ -605,7 +605,7 @@ public final class WishItemCatalogue {
         boolean any = false;
         for (var m : mods.modifiers()) {
             boolean attack = m.attribute().unwrapKey()
-                    .map(k -> k.location().getPath().endsWith("attack_damage")).orElse(false);
+                    .map(k -> k.identifier().getPath().endsWith("attack_damage")).orElse(false);
             if (attack && m.modifier().operation()
                     == net.minecraft.world.entity.ai.attributes.AttributeModifier.Operation.ADD_VALUE) {
                 sum += m.modifier().amount();

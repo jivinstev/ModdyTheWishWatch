@@ -158,7 +158,7 @@ public class StarterItemRegenGameTest {
             p.snapTo(feet.getX() + 0.5, feet.getY(), feet.getZ() + 0.5, 0.0F, 0.0F);
             p.getInventory().clearContent();
             helper.getLevel().getServer().getCommands().performPrefixedCommand(
-                    p.createCommandSourceStack().withPermission(2).withSuppressedOutput(),
+                    p.createCommandSourceStack().withPermission(net.minecraft.server.permissions.LevelBasedPermissionSet.GAMEMASTER).withSuppressedOutput(),
                     "wishdatapack " + tool.lastMadeId() + " give");
             net.minecraft.world.item.ItemStack sword = net.minecraft.world.item.ItemStack.EMPTY;
             for (var s : p.getInventory().getNonEquipmentItems()) {

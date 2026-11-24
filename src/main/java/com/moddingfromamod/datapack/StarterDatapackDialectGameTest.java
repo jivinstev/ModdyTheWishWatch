@@ -38,7 +38,7 @@ public class StarterDatapackDialectGameTest {
     public static void everyStarterDatapackParsesOnThisBuild(GameTestHelper helper) {
         MinecraftServer server = helper.getLevel().getServer();
         CommandSourceStack source = server.createCommandSourceStack()
-                .withSuppressedOutput().withPermission(2);
+                .withSuppressedOutput().withPermission(net.minecraft.server.permissions.LevelBasedPermissionSet.GAMEMASTER);
         List<String> ids = WishLibrary.keys("datapacks");
         helper.assertTrue(!ids.isEmpty(), Component.literal("the starter library carries no datapacks — this test "
                 + "would pass over nothing"));

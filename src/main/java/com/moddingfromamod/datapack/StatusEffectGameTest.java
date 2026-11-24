@@ -67,7 +67,7 @@ public final class StatusEffectGameTest {
                                 + WishItem.WORN + ":\"" + WornShape.slot(shape) + "\"", shape);
         p.getInventory().clearContent();
         helper.getLevel().getServer().getCommands().performPrefixedCommand(
-                p.createCommandSourceStack().withPermission(2).withSuppressedOutput(), "give @s " + arg + " 1");
+                p.createCommandSourceStack().withPermission(net.minecraft.server.permissions.LevelBasedPermissionSet.GAMEMASTER).withSuppressedOutput(), "give @s " + arg + " 1");
         for (ItemStack s : p.getInventory().getNonEquipmentItems()) {
             if (!s.isEmpty() && s.getHoverName().getString().equals(name)) {
                 return s.copy();

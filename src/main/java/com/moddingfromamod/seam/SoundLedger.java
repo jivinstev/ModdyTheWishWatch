@@ -109,6 +109,6 @@ public final class SoundLedger {
     }
 
     private static String id(net.minecraft.core.Holder<net.minecraft.sounds.SoundEvent> h) {
-        return h.unwrapKey().map(k -> k.location().toString()).orElseGet(() -> h.value().location().toString());
+        return h.unwrapKey().map(k -> k.identifier().toString()).orElseGet(() -> h.value().location().toString());
     }
 }

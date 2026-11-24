@@ -679,7 +679,7 @@ public class VanillaRigBridgeGameTest {
                     .withLevel(helper.getLevel())
                     .withPosition(carrier.position())
                     .withSuppressedOutput()
-                    .withPermission(2);
+                    .withPermission(net.minecraft.server.permissions.LevelBasedPermissionSet.GAMEMASTER);
             server.getCommands().performPrefixedCommand(src,
                     "effect give " + selector + " minecraft:glowing 20 0 true");
 

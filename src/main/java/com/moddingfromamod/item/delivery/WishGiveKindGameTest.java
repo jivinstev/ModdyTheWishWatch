@@ -154,7 +154,7 @@ public class WishGiveKindGameTest {
 
     /** The source an item's use runs its function with ({@code item.WishItemActions.runFunction}). */
     static CommandSourceStack useSource(ServerPlayer p) {
-        return com.moddingfromamod.compat.EntityCommands.source(p).withPermission(2).withSuppressedOutput();
+        return com.moddingfromamod.compat.EntityCommands.source(p).withPermission(net.minecraft.server.permissions.LevelBasedPermissionSet.GAMEMASTER).withSuppressedOutput();
     }
 
     /** Run {@code lines} as a datapack function, as the player, the way an item's use runs one. */

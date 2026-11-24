@@ -56,7 +56,7 @@ public class ImpulseBehaviourGameTest {
                 .map(String::strip).filter(l -> l.startsWith("/")).map(l -> l.substring(1)).toList();
         ServerLevel level = helper.getLevel();
         CommandSourceStack src = level.getServer().createCommandSourceStack()
-                .withLevel(level).withSuppressedOutput().withPermission(4);
+                .withLevel(level).withSuppressedOutput().withPermission(net.minecraft.server.permissions.LevelBasedPermissionSet.OWNER);
         for (String c : lines) {
             level.getServer().getCommands().performPrefixedCommand(src, c);
         }
@@ -533,7 +533,7 @@ public class ImpulseBehaviourGameTest {
         }
         ServerLevel level = helper.getLevel();
         CommandSourceStack cs = level.getServer().createCommandSourceStack()
-                .withLevel(level).withSuppressedOutput().withPermission(4);
+                .withLevel(level).withSuppressedOutput().withPermission(net.minecraft.server.permissions.LevelBasedPermissionSet.OWNER);
         var cmds = level.getServer().getCommands();
         cmds.performPrefixedCommand(cs, "scoreboard objectives add mfam_t1725 dummy");
         cmds.performPrefixedCommand(cs, "scoreboard players set " + counter + " mfam_t1725 0");

@@ -143,7 +143,7 @@ public class ItemRefGameTest {
                 // THE GIVE HAS TO PARSE. A component list that renders and does not parse is the
                 // silent failure this whole issue is about, and only a real server can say.
                 var src = helper.getLevel().getServer().createCommandSourceStack()
-                        .withSuppressedOutput().withPermission(2);
+                        .withSuppressedOutput().withPermission(net.minecraft.server.permissions.LevelBasedPermissionSet.GAMEMASTER);
                 try {
                     helper.getLevel().getServer().getCommands().performPrefixedCommand(
                             src, "give @p " + arg + " 1");

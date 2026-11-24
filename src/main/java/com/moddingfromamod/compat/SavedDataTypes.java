@@ -23,7 +23,7 @@ public final class SavedDataTypes {
             BiFunction<CompoundTag, HolderLookup.Provider, T> load,
             BiFunction<T, HolderLookup.Provider, CompoundTag> save) {
         return new SavedDataType<>(id, ctx -> fresh.get(), ctx -> {
-            HolderLookup.Provider lookup = ctx.levelOrThrow().registryAccess();
+            HolderLookup.Provider lookup = java.util.Objects.requireNonNull(ctx).registryAccess();
             return CompoundTag.CODEC.xmap(tag -> load.apply(tag, lookup), t -> save.apply(t, lookup));
         }, null);
     }

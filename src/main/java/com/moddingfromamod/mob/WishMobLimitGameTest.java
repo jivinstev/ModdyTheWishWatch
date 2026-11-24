@@ -89,7 +89,7 @@ public final class WishMobLimitGameTest {
             lines.add("summon minecraft:creeper " + (p.getX() + i % 3) + " " + p.getY() + " "
                     + (p.getZ() + (i / 3) % 3) + " {NoAI:1b}");
         }
-        var source = server.createCommandSourceStack().withSuppressedOutput().withPermission(4);
+        var source = server.createCommandSourceStack().withSuppressedOutput().withPermission(net.minecraft.server.permissions.LevelBasedPermissionSet.OWNER);
         CommandFunction<net.minecraft.commands.CommandSourceStack> fn = CommandFunction.fromLines(
                 Identifier.fromNamespaceAndPath(ModdingFromAModMod.MODID, "gametest_1265"),
                 server.getCommands().getDispatcher(), source, lines);

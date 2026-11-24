@@ -139,9 +139,10 @@ public final class GameTestAdapter {
                 Holder<TestEnvironmentDefinition> env = envs.computeIfAbsent(key, k -> e.registerEnvironment(
                         Identifier.fromNamespaceAndPath(f.ns(), "batch/" + batch.toLowerCase(Locale.ROOT)),
                         new TestEnvironmentDefinition.AllOf(still.contains(k)
-                                ? List.of(Holder.direct(new TestEnvironmentDefinition.SetGameRules(List.of(), List.of(
-                                        TestEnvironmentDefinition.SetGameRules.entry(
-                                                net.minecraft.world.level.gamerules.GameRules.RULE_RANDOMTICKING, 0)))))
+                                ? List.of(Holder.direct(new TestEnvironmentDefinition.SetGameRules(
+                                        new net.minecraft.world.level.gamerules.GameRuleMap.Builder()
+                                                .set(net.minecraft.world.level.gamerules.GameRules.RANDOM_TICK_SPEED, 0)
+                                                .build())))
                                 : List.of())));
                 Identifier id = Identifier.fromNamespaceAndPath(f.ns(), f.id());
                 TestData<Holder<TestEnvironmentDefinition>> data = new TestData<>(env,

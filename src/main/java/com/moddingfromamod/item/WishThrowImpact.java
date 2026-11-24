@@ -101,7 +101,7 @@ public final class WishThrowImpact {
         CommandSourceStack source = (owner != null ? com.moddingfromamod.compat.EntityCommands.source(owner)
                 : com.moddingfromamod.compat.EntityCommands.source(projectile))
                 .withPosition(at)
-                .withPermission(2)
+                .withPermission(net.minecraft.server.permissions.LevelBasedPermissionSet.GAMEMASTER)
                 .withSuppressedOutput();
         if (owner != null) {
             LAST.put(owner.getUUID(), new Landing(at, level.getGameTime()));

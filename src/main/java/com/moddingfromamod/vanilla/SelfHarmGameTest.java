@@ -81,7 +81,7 @@ public final class SelfHarmGameTest {
     private static void run(GameTestHelper helper, String command) {
         var server = helper.getLevel().getServer();
         server.getCommands().performPrefixedCommand(
-                server.createCommandSourceStack().withSuppressedOutput().withPermission(4), command);
+                server.createCommandSourceStack().withSuppressedOutput().withPermission(net.minecraft.server.permissions.LevelBasedPermissionSet.OWNER), command);
     }
 
     // ── the production bug: fire breath, and the creature does not burn ─────────────────────

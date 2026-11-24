@@ -196,7 +196,7 @@ public final class StockRideStage {
             throw new IllegalStateException("make_item refused " + f + ": " + r.text());
         }
         level.getServer().getCommands().performPrefixedCommand(
-                p.createCommandSourceStack().withPermission(2).withSuppressedOutput(),
+                p.createCommandSourceStack().withPermission(net.minecraft.server.permissions.LevelBasedPermissionSet.GAMEMASTER).withSuppressedOutput(),
                 "wishdatapack " + tool.lastMadeId() + " give");
         ItemStack held = ItemStack.EMPTY;
         for (int i = 0; i < p.getInventory().getContainerSize(); i++) {

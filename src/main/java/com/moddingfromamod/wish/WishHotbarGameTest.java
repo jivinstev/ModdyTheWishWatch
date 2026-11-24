@@ -227,9 +227,9 @@ public final class WishHotbarGameTest {
      */
     private static void knockedOut(GameTestHelper helper, String name, boolean keepInventory) {
         ServerLevel level = helper.getLevel();
-        var rule = level.getGameRules().getRule(GameRules.RULE_KEEPINVENTORY);
-        boolean was = rule.get();
-        rule.set(keepInventory, level.getServer());
+        var rules = level.getGameRules();
+        boolean was = rules.get(GameRules.KEEP_INVENTORY);
+        rules.set(GameRules.KEEP_INVENTORY, keepInventory, level.getServer());
         ServerPlayer p = MockPlayerNetwork.asSurvival(MockPlayerNetwork.inLevel(helper, name));
         ServerPlayer reborn = null;
         BlockPos where = p.blockPosition();
@@ -270,7 +270,7 @@ public final class WishHotbarGameTest {
             check(helper, reborn.getStringUUID().equals(WishHotbar.ownerOf(after.getItem(2))), "the wish is still his");
             helper.succeed();
         } finally {
-            rule.set(was, level.getServer());
+            rules.set(GameRules.KEEP_INVENTORY, was, level.getServer());
             level.getEntitiesOfClass(ItemEntity.class, new AABB(where).inflate(8)).forEach(Entity::discard);
             if (reborn != null && reborn != p) {
                 MockPlayerNetwork.remove(reborn);

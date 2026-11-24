@@ -72,7 +72,7 @@ public final class PolishGlintGameTest {
         var spec = ItemSpecStore.all().stream().filter(s -> name.equals(s.name())).findFirst().orElse(null);
         helper.assertTrue(spec != null, Component.literal("the wand's design was not stored"));
         helper.getLevel().getServer().getCommands().performPrefixedCommand(
-                com.moddingfromamod.compat.EntityCommands.source(p).withPermission(4),
+                com.moddingfromamod.compat.EntityCommands.source(p).withPermission(net.minecraft.server.permissions.LevelBasedPermissionSet.OWNER),
                 "wishdatapack " + spec.id() + " give");
         helper.assertTrue(!held(p, spec.id()).isEmpty(), Component.literal("he was never handed the wand"));
 

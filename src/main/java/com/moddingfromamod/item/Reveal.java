@@ -131,7 +131,7 @@ public final class Reveal {
         }
         double d = Math.sqrt(near.get(0).distToCenterSqr(p.getX(), p.getEyeY(), p.getZ()));
         float pitch = RevealRule.beepPitch(d);
-        p.playNotifySound(SoundEvents.NOTE_BLOCK_BELL.value(), SoundSource.PLAYERS, 1.0F, pitch);
+        com.moddingfromamod.mv.NotifySound.play(p,SoundEvents.NOTE_BLOCK_BELL.value(), SoundSource.PLAYERS, 1.0F, pitch);
         LAST_PITCH.put(p.getUUID(), pitch);
         NEXT_BEEP.put(p.getUUID(), now + RevealRule.beepInterval(d));
     }

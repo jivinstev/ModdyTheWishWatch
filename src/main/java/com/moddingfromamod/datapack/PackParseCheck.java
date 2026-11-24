@@ -104,7 +104,7 @@ public final class PackParseCheck {
         }
         // The source ServerFunctionLibrary.reload parses with: nobody, at the function level.
         CommandSourceStack src = new CommandSourceStack(CommandSource.NULL, Vec3.ZERO, Vec2.ZERO, null,
-                server.getFunctionCompilationLevel(), "", CommonComponents.EMPTY, null, null);
+                server.getFunctionCompilationPermissions(), "", CommonComponents.EMPTY, null, null);
         var dispatcher = server.getCommands().getDispatcher();
         for (var f : functions.entrySet()) {
             Identifier key = Identifier.tryParse(f.getKey());

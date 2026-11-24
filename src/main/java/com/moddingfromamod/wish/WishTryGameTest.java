@@ -187,7 +187,7 @@ public final class WishTryGameTest {
         MockPlayerNetwork.clearStaleMocks(helper);
         ServerPlayer maker = MockPlayerNetwork.inLevel(helper, "gt_maker_" + tag);
         ServerPlayer taker = MockPlayerNetwork.inLevel(helper, "gt_taker_" + tag);
-        helper.assertTrue(!maker.hasPermissions(2) && !taker.hasPermissions(2),
+        helper.assertTrue(!maker.permissions().hasPermission(net.minecraft.server.permissions.Permissions.COMMANDS_GAMEMASTER) && !taker.permissions().hasPermission(net.minecraft.server.permissions.Permissions.COMMANDS_GAMEMASTER),
                 Component.literal("the players in this test must NOT be operators — the command is for anyone"));
         return new Pair(maker, taker);
     }

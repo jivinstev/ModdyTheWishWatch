@@ -139,7 +139,7 @@ public final class WishFeedback {
         show(player, 
                 Component.literal("✨ Making your wish come true...")
                         .setStyle(Style.EMPTY.withColor(ChatFormatting.AQUA)), true);
-        player.playNotifySound(SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.PLAYERS, 0.7f, 1.4f);
+        com.moddingfromamod.mv.NotifySound.play(player,SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.PLAYERS, 0.7f, 1.4f);
     }
 
     /** Wish fulfilled. */
@@ -148,7 +148,7 @@ public final class WishFeedback {
         String text = say == null || say.isBlank() ? "Your wish came true!" : say;
         tell(player, Component.literal("✨ " + text)
                 .setStyle(Style.EMPTY.withColor(ChatFormatting.LIGHT_PURPLE).withBold(true)));
-        player.playNotifySound(SoundEvents.PLAYER_LEVELUP, SoundSource.PLAYERS, 0.6f, 1.6f);
+        com.moddingfromamod.mv.NotifySound.play(player,SoundEvents.PLAYER_LEVELUP, SoundSource.PLAYERS, 0.6f, 1.6f);
         sparkle(player);
     }
 
@@ -191,7 +191,7 @@ public final class WishFeedback {
         tell(player, Component.literal("✨ " + (say == null || say.isBlank()
                         ? "I did most of that one!" : say) + " (some bits didn't work)")
                 .setStyle(Style.EMPTY.withColor(ChatFormatting.GOLD)));
-        player.playNotifySound(SoundEvents.NOTE_BLOCK_BELL.value(), SoundSource.PLAYERS, 0.5f, 0.8f);
+        com.moddingfromamod.mv.NotifySound.play(player,SoundEvents.NOTE_BLOCK_BELL.value(), SoundSource.PLAYERS, 0.5f, 0.8f);
     }
 
     /**
@@ -212,7 +212,7 @@ public final class WishFeedback {
                 k -> new java.util.concurrent.atomic.AtomicInteger()).getAndIncrement();
         tell(player, Component.literal(WishWaitWords.opener(n))
                 .setStyle(Style.EMPTY.withColor(ChatFormatting.AQUA)));
-        player.playNotifySound(SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.PLAYERS, 0.6f, 1.0f);
+        com.moddingfromamod.mv.NotifySound.play(player,SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.PLAYERS, 0.6f, 1.0f);
     }
 
     /** Whose turn of {@link WishWaitWords#OPENERS} is next, per child — rotated, never random. */
@@ -257,7 +257,7 @@ public final class WishFeedback {
     public static void thinkingAboutQuestion(ServerPlayer player) {
         tell(player, Component.literal("🤔 Good question! Let me have a look...")
                 .setStyle(Style.EMPTY.withColor(ChatFormatting.AQUA)));
-        player.playNotifySound(SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.PLAYERS, 0.6f, 1.2f);
+        com.moddingfromamod.mv.NotifySound.play(player,SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.PLAYERS, 0.6f, 1.2f);
     }
 
     /**
@@ -277,7 +277,7 @@ public final class WishFeedback {
     public static void rejected(ServerPlayer player, boolean tookAway, String refunded) {
         tell(player, Component.literal("👍 " + WishRejection.sayToChild(tookAway, refunded))
                 .setStyle(Style.EMPTY.withColor(ChatFormatting.AQUA)));
-        player.playNotifySound(SoundEvents.NOTE_BLOCK_BELL.value(), SoundSource.PLAYERS, 0.5f, 1.0f);
+        com.moddingfromamod.mv.NotifySound.play(player,SoundEvents.NOTE_BLOCK_BELL.value(), SoundSource.PLAYERS, 0.5f, 1.0f);
     }
 
     /** A second 👎 on the wish he has just undone: nothing more happens. */
@@ -428,7 +428,7 @@ public final class WishFeedback {
         tell(player, 
                 Component.literal(com.moddingfromamod.safety.SafetyWords.sayRedirect(redirect))
                         .setStyle(Style.EMPTY.withColor(ChatFormatting.AQUA)));
-        player.playNotifySound(SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.PLAYERS, 0.6f, 1.2f);
+        com.moddingfromamod.mv.NotifySound.play(player,SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.PLAYERS, 0.6f, 1.2f);
     }
 
     /**
@@ -539,7 +539,7 @@ public final class WishFeedback {
         }
         tell(player, Component.literal("✨ " + text)
                 .setStyle(Style.EMPTY.withColor(ChatFormatting.LIGHT_PURPLE).withBold(true)));
-        player.playNotifySound(SoundEvents.PLAYER_LEVELUP, SoundSource.PLAYERS, 0.6f, 1.5f);
+        com.moddingfromamod.mv.NotifySound.play(player,SoundEvents.PLAYER_LEVELUP, SoundSource.PLAYERS, 0.6f, 1.5f);
         sparkle(player);
     }
 
@@ -572,7 +572,7 @@ public final class WishFeedback {
     public static void changing(ServerPlayer player, String name) {
         tell(player, Component.literal("✨ " + changingLine(name))
                 .setStyle(Style.EMPTY.withColor(ChatFormatting.LIGHT_PURPLE)));
-        player.playNotifySound(SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.PLAYERS, 0.8f, 1.2f);
+        com.moddingfromamod.mv.NotifySound.play(player,SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.PLAYERS, 0.8f, 1.2f);
     }
 
     /** Once per wish, when he is watching it and the shape itself is about to change. */
@@ -601,7 +601,7 @@ public final class WishFeedback {
     public static void appearing(ServerPlayer player, String name) {
         tell(player, Component.literal("✨ " + appearingLine(name))
                 .setStyle(Style.EMPTY.withColor(ChatFormatting.LIGHT_PURPLE)));
-        player.playNotifySound(SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.PLAYERS, 0.8f, 1.2f);
+        com.moddingfromamod.mv.NotifySound.play(player,SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.PLAYERS, 0.8f, 1.2f);
     }
 
     /** The shape he is watching is being redone. Said once per wish ({@code WishEarlyReveal}). */
@@ -630,7 +630,7 @@ public final class WishFeedback {
         // finished (the level-up), and now Moddy's verdict is in chat. The description lands 10-20 s
         // after "All done", when he is already playing with the thing, so a quiet bell turns his
         // eyes to the chat. Softer than both: it is a tap on the shoulder, not a celebration.
-        player.playNotifySound(SoundEvents.NOTE_BLOCK_BELL.value(), SoundSource.PLAYERS, 0.35f, 1.5f);
+        com.moddingfromamod.mv.NotifySound.play(player,SoundEvents.NOTE_BLOCK_BELL.value(), SoundSource.PLAYERS, 0.35f, 1.5f);
     }
 
     /**
@@ -749,7 +749,7 @@ public final class WishFeedback {
                     .setStyle(Style.EMPTY.withColor(ChatFormatting.YELLOW)));
         }
         if (!alreadyCelebrated) {
-            player.playNotifySound(SoundEvents.PLAYER_LEVELUP, SoundSource.PLAYERS, 0.6f, 1.4f);
+            com.moddingfromamod.mv.NotifySound.play(player,SoundEvents.PLAYER_LEVELUP, SoundSource.PLAYERS, 0.6f, 1.4f);
             sparkle(player);
         }
     }
@@ -766,7 +766,7 @@ public final class WishFeedback {
         tell(player, Component.literal(
                         "   Don't like it? Open me up and press ↩ Undo my last wish and I'll take it away.")
                 .setStyle(Style.EMPTY.withColor(ChatFormatting.AQUA)));
-        player.playNotifySound(SoundEvents.NOTE_BLOCK_BELL.value(), SoundSource.PLAYERS, 0.5f, 0.8f);
+        com.moddingfromamod.mv.NotifySound.play(player,SoundEvents.NOTE_BLOCK_BELL.value(), SoundSource.PLAYERS, 0.5f, 0.8f);
     }
 
     /** Verdict FAILED: rare. Moddy admits it and takes back what it made rather than leaving a mess. */
@@ -779,7 +779,7 @@ public final class WishFeedback {
                         "   I've cleared it away so it isn't cluttering up your world. "
                                 + "Want to try wishing it a different way? 🪄")
                 .setStyle(Style.EMPTY.withColor(ChatFormatting.AQUA)));
-        player.playNotifySound(SoundEvents.NOTE_BLOCK_BELL.value(), SoundSource.PLAYERS, 0.5f, 0.7f);
+        com.moddingfromamod.mv.NotifySound.play(player,SoundEvents.NOTE_BLOCK_BELL.value(), SoundSource.PLAYERS, 0.5f, 0.7f);
     }
 
     /**
@@ -810,7 +810,7 @@ public final class WishFeedback {
         tell(player, Component.literal(text + (extra == null || extra.isBlank()
                         ? "" : " " + extra.strip()))
                 .setStyle(Style.EMPTY.withColor(ChatFormatting.AQUA).withBold(true)));
-        player.playNotifySound(SoundEvents.NOTE_BLOCK_BELL.value(), SoundSource.PLAYERS, 0.5f, 1.1f);
+        com.moddingfromamod.mv.NotifySound.play(player,SoundEvents.NOTE_BLOCK_BELL.value(), SoundSource.PLAYERS, 0.5f, 1.1f);
     }
 
     /** He pressed stop and there was nothing being made. */

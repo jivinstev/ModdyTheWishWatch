@@ -238,8 +238,8 @@ public final class StockWalkStage {
     private static void build(MinecraftServer server, ServerPlayer child) throws Exception {
         for (ServerLevel l : server.getAllLevels()) {
             l.setDayTime(6000L);
-            l.getGameRules().getRule(GameRules.RULE_DAYLIGHT).set(false, server);
-            l.getGameRules().getRule(GameRules.RULE_WEATHER_CYCLE).set(false, server);
+            l.getGameRules().set(GameRules.ADVANCE_TIME,false, server);
+            l.getGameRules().set(GameRules.ADVANCE_WEATHER,false, server);
             l.setWeatherParameters(6000, 0, false, false);
         }
         List<String> names = parade();

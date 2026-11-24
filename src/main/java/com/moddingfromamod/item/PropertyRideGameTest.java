@@ -72,7 +72,7 @@ public final class PropertyRideGameTest {
                 com.moddingfromamod.datapack.ItemRecipient.ME, null, base);
         p.getInventory().clearContent();
         helper.getLevel().getServer().getCommands().performPrefixedCommand(
-                p.createCommandSourceStack().withPermission(2).withSuppressedOutput(), line.strip().substring(1));
+                p.createCommandSourceStack().withPermission(net.minecraft.server.permissions.LevelBasedPermissionSet.GAMEMASTER).withSuppressedOutput(), line.strip().substring(1));
         for (ItemStack s : p.getInventory().getNonEquipmentItems()) {
             if (!s.isEmpty() && s.getHoverName().getString().equals(name)) {
                 return s.copy();

@@ -106,7 +106,7 @@ public class WishChatGameTest {
     public static void aChildSeesOnlyWishAndModdy(GameTestHelper helper) {
         CommandDispatcher<CommandSourceStack> d = dispatcher(helper);
         CommandSourceStack child = childSource(helper);
-        CommandSourceStack executor = child.withPermission(2);
+        CommandSourceStack executor = child.withPermission(net.minecraft.server.permissions.LevelBasedPermissionSet.GAMEMASTER);
         for (String name : ChildCommands.REPLAY_COMMANDS) {
             var node = d.getRoot().getChild(name);
             helper.assertTrue(node != null, Component.literal("/" + name + " is gone — every saved button needs it"));
@@ -151,6 +151,6 @@ public class WishChatGameTest {
 
     /** Permission 0, which is what every child on the server has; parsing needs no body. */
     private static CommandSourceStack childSource(GameTestHelper helper) {
-        return helper.getLevel().getServer().createCommandSourceStack().withPermission(0);
+        return helper.getLevel().getServer().createCommandSourceStack().withPermission(net.minecraft.server.permissions.LevelBasedPermissionSet.ALL);
     }
 }

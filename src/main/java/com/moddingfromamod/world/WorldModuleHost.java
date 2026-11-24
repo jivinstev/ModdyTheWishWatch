@@ -343,7 +343,7 @@ public final class WorldModuleHost {
     static boolean ourRespawn(ServerPlayer p, Base base) {
         var at = com.moddingfromamod.compat.Respawn.pos(p);
         return at != null && com.moddingfromamod.compat.Respawn.forced(p)
-                && com.moddingfromamod.compat.Respawn.dimension(p).location().toString().equals(base.dimension())
+                && com.moddingfromamod.compat.Respawn.dimension(p).identifier().toString().equals(base.dimension())
                 && base.holds(base.dimension(), at.getX() + 0.5, at.getZ() + 0.5);
     }
 

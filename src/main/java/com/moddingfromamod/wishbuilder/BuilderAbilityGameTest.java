@@ -158,12 +158,12 @@ public final class BuilderAbilityGameTest {
         var level = helper.getLevel();
         var server = level.getServer();
         long dayWas = level.getDayTime();
-        var cycle = level.getGameRules().getRule(net.minecraft.world.level.gamerules.GameRules.RULE_DAYLIGHT);
-        boolean cycleWas = cycle.get();
-        cycle.set(false, server);
+        var cycleRules = level.getGameRules();
+        boolean cycleWas = cycleRules.get(net.minecraft.world.level.gamerules.GameRules.ADVANCE_TIME);
+        cycleRules.set(net.minecraft.world.level.gamerules.GameRules.ADVANCE_TIME, false, server);
         level.setDayTime(18000);   // midnight: no sunburn to keep the zombie alight
         com.moddingfromamod.testing.MockPlayerNetwork.afterTest(helper, () -> {
-            cycle.set(cycleWas, server);
+            cycleRules.set(net.minecraft.world.level.gamerules.GameRules.ADVANCE_TIME, cycleWas, server);
             level.setDayTime(dayWas);
         });
         var p = com.moddingfromamod.testing.MockPlayerNetwork.inLevel(helper, "gtnight");

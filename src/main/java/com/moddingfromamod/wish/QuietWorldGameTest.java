@@ -36,8 +36,8 @@ public class QuietWorldGameTest {
      */
     @GameTest(template = "empty_test", timeoutTicks = 40)
     public void adminCommandOutputIsNotBroadcastToTheChild(GameTestHelper helper) {
-        boolean loud = helper.getLevel().getServer().getGameRules()
-                .getBoolean(GameRules.RULE_LOGADMINCOMMANDS);
+        boolean loud = helper.getLevel().getServer().overworld().getGameRules()
+                .get(GameRules.LOG_ADMIN_COMMANDS);
         if (loud) {
             helper.fail(Component.literal("logAdminCommands is still ON, so every command a wish runs is printed over "
                     + "the child's game. He reported it as a wall of white text he could not see "
@@ -58,8 +58,8 @@ public class QuietWorldGameTest {
      */
     @GameTest(template = "empty_test", timeoutTicks = 40)
     public void theAgentCanStillSeeItsOwnCommandResults(GameTestHelper helper) {
-        boolean feedback = helper.getLevel().getServer().getGameRules()
-                .getBoolean(GameRules.RULE_SENDCOMMANDFEEDBACK);
+        boolean feedback = helper.getLevel().getServer().overworld().getGameRules()
+                .get(GameRules.SEND_COMMAND_FEEDBACK);
         if (!feedback) {
             helper.fail(Component.literal("sendCommandFeedback has been turned off. That is not the rule that was "
                     + "spamming the child — it is the one the agent reads its own results through, "

@@ -173,7 +173,7 @@ public final class LoadAndPourGameTest {
 
         p.getInventory().clearContent();
         helper.getLevel().getServer().getCommands().performPrefixedCommand(
-                p.createCommandSourceStack().withPermission(2).withSuppressedOutput(),
+                p.createCommandSourceStack().withPermission(net.minecraft.server.permissions.LevelBasedPermissionSet.GAMEMASTER).withSuppressedOutput(),
                 "wishdatapack " + tool.lastMadeId() + " give");
         ItemStack machine = ItemStack.EMPTY;
         for (int i = 0; i < p.getInventory().getContainerSize(); i++) {
@@ -415,7 +415,7 @@ public final class LoadAndPourGameTest {
         final String drinkId = drink;
         p.getInventory().clearContent();
         helper.getLevel().getServer().getCommands().performPrefixedCommand(
-                p.createCommandSourceStack().withPermission(2).withSuppressedOutput(),
+                p.createCommandSourceStack().withPermission(net.minecraft.server.permissions.LevelBasedPermissionSet.GAMEMASTER).withSuppressedOutput(),
                 "wishdatapack " + tool.lastMadeId() + " give");
         ItemStack machine = ItemStack.EMPTY;
         for (int i = 0; i < p.getInventory().getContainerSize(); i++) {

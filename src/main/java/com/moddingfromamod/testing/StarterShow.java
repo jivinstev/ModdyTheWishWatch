@@ -131,12 +131,12 @@ public final class StarterShow {
         BehaviourExercise.meadow(level, ground);
         centre = Vec3.atBottomCenterOf(ground);
         var rules = level.getGameRules();
-        rules.getRule(GameRules.RULE_DOMOBSPAWNING).set(false, server);
-        rules.getRule(GameRules.RULE_DAYLIGHT).set(false, server);
-        rules.getRule(GameRules.RULE_WEATHER_CYCLE).set(false, server);
+        rules.set(GameRules.SPAWN_MOBS,false, server);
+        rules.set(GameRules.ADVANCE_TIME,false, server);
+        rules.set(GameRules.ADVANCE_WEATHER,false, server);
         // The sword's lightning lights the grass it strikes, as it does in any world; spreading, the
         // fire ran across the meadow and the frame was flames by the third hit.
-        rules.getRule(GameRules.RULE_DOFIRETICK).set(false, server);
+        rules.set(GameRules.FIRE_SPREAD_RADIUS_AROUND_PLAYER, 0, server);   // doFireTick false (Mojang's own fix)
         level.setDayTime(6000);
         level.setWeatherParameters(12000, 0, false, false);
         for (Entity e : level.getEntities((Entity) null, new AABB(ground).inflate(64),

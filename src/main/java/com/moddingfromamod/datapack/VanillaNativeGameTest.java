@@ -58,7 +58,7 @@ public final class VanillaNativeGameTest {
                     boolean takes = false;
                     if (ench != null) {
                         for (var holder : ench.keySet()) {
-                            if (holder.unwrapKey().map(k -> k.location().toString().equals(id)).orElse(false)) {
+                            if (holder.unwrapKey().map(k -> k.identifier().toString().equals(id)).orElse(false)) {
                                 on = true;
                                 takes = holder.value().isSupportedItem(got);
                             }
@@ -121,7 +121,7 @@ public final class VanillaNativeGameTest {
         // the pack, the way the agent hands it over.
         p.getInventory().clearContent();
         helper.getLevel().getServer().getCommands().performPrefixedCommand(
-                p.createCommandSourceStack().withPermission(2).withSuppressedOutput(),
+                p.createCommandSourceStack().withPermission(net.minecraft.server.permissions.LevelBasedPermissionSet.GAMEMASTER).withSuppressedOutput(),
                 "wishdatapack " + tool.lastMadeId() + " give");
         for (ItemStack s : p.getInventory().getNonEquipmentItems()) {
             if (!s.isEmpty() && s.getHoverName().getString().equals(name)) {

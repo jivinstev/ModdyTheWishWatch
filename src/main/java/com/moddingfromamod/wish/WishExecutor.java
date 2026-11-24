@@ -303,7 +303,8 @@ public final class WishExecutor {
                 return false;
             }
         };
-        CommandSourceStack stack = new CommandSourceStack(sink, pos, Vec2.ZERO, level, 2,
+        CommandSourceStack stack = new CommandSourceStack(sink, pos, Vec2.ZERO, level,
+                net.minecraft.server.permissions.LevelBasedPermissionSet.GAMEMASTER,
                 "wish", Component.literal("wish"), server, asPlayer);
 
         // REPAIR THE RENAMED ATTRIBUTE IDS FIRST — see AttributeIds, and.

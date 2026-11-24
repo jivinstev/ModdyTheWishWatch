@@ -565,7 +565,7 @@ public final class StockIconProbe {
      */
     private static void dress(ServerPlayer player) {
         var server = ((net.minecraft.server.level.ServerLevel) player.level()).getServer();
-        var source = server.createCommandSourceStack().withPermission(2).withSuppressedOutput();
+        var source = server.createCommandSourceStack().withPermission(net.minecraft.server.permissions.LevelBasedPermissionSet.GAMEMASTER).withSuppressedOutput();
         String who = player.getGameProfile().name();
         String[][] pieces = {
                 {"worn_feet", "Red Jump Boots", "E23B3B", null, "armor.feet", "0"},

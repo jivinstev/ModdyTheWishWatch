@@ -47,7 +47,7 @@ public final class Wearables {
             return null;
         }
         return eq.slot().getSerializedName() + " "
-                + eq.assetId().map(k -> k.location().toString()).orElse("none");
+                + eq.assetId().map(k -> k.identifier().toString()).orElse("none");
     }
 
     /** Does this stack glide like an elytra? */

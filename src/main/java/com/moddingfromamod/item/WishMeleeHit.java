@@ -58,7 +58,7 @@ public final class WishMeleeHit {
         // that hands something back needs `@s` to mean the child.
         CommandSourceStack source = com.moddingfromamod.compat.EntityCommands.source(player)
                 .withPosition(target.position())
-                .withPermission(2)
+                .withPermission(net.minecraft.server.permissions.LevelBasedPermissionSet.GAMEMASTER)
                 .withSuppressedOutput();
         var server = level.getServer();
         WishBoltGuard.mark(player);   //: a bolt at what he hit reaches him too; his own wish never strikes him

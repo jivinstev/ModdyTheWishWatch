@@ -312,7 +312,7 @@ public final class InventoryCountGameTest {
     private static void give(GameTestHelper helper, ServerPlayer child, String id) {
         var server = helper.getLevel().getServer();
         server.getCommands().performPrefixedCommand(
-                child.createCommandSourceStack().withSuppressedOutput().withPermission(2),
+                child.createCommandSourceStack().withSuppressedOutput().withPermission(net.minecraft.server.permissions.LevelBasedPermissionSet.GAMEMASTER),
                 "wishdatapack " + id + " give");
     }
 }

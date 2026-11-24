@@ -194,7 +194,7 @@ public final class MountLeashAndHornGameTest {
         seq.thenExecute(() -> {
             RideFitProbeGameTest.plant(helper, id, "starter:pet_dragon", "flies");
             kid.getInventory().clearContent();
-            var src = kid.createCommandSourceStack().withPermission(4);
+            var src = kid.createCommandSourceStack().withPermission(net.minecraft.server.permissions.LevelBasedPermissionSet.OWNER);
             helper.getLevel().getServer().getCommands().performPrefixedCommand(src, "wishmob spawn " + id);
             helper.getLevel().getServer().getCommands().performPrefixedCommand(src, "wishmob spawn " + id);
         });

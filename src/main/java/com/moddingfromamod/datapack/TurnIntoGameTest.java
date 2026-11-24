@@ -103,13 +103,13 @@ public final class TurnIntoGameTest {
 
     private static void cmd(GameTestHelper helper, ServerPlayer p, String command) {
         helper.getLevel().getServer().getCommands().performPrefixedCommand(
-                p.createCommandSourceStack().withPermission(2).withSuppressedOutput(), command);
+                p.createCommandSourceStack().withPermission(net.minecraft.server.permissions.LevelBasedPermissionSet.GAMEMASTER).withSuppressedOutput(), command);
     }
 
     /** Run the item's effect as him, standing at {@code at} — where a throw lands, a swing hits. */
     private static void fire(GameTestHelper helper, ServerPlayer p, String id, BlockPos at) {
         BlockPos a = helper.absolutePos(at);
-        var src = p.createCommandSourceStack().withPermission(2).withLevel(helper.getLevel())
+        var src = p.createCommandSourceStack().withPermission(net.minecraft.server.permissions.LevelBasedPermissionSet.GAMEMASTER).withLevel(helper.getLevel())
                 .withPosition(net.minecraft.world.phys.Vec3.atCenterOf(a));
         var fn = helper.getLevel().getServer().getFunctions().get(Identifier.fromNamespaceAndPath(id, "effect"));
         if (fn.isEmpty()) {

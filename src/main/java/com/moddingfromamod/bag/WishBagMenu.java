@@ -112,7 +112,7 @@ public final class WishBagMenu extends ChestMenu {
      * not rung every time he looks in his bag.
      */
     private static void openFeel(ServerPlayer player) {
-        player.playNotifySound(net.minecraft.sounds.SoundEvents.AMETHYST_BLOCK_CHIME,
+        com.moddingfromamod.mv.NotifySound.play(player,net.minecraft.sounds.SoundEvents.AMETHYST_BLOCK_CHIME,
                 net.minecraft.sounds.SoundSource.PLAYERS, 1.0F, 1.2F);
         if (player.level() instanceof net.minecraft.server.level.ServerLevel level) {
             var look = player.getLookAngle();

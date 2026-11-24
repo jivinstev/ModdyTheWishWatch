@@ -65,7 +65,7 @@ public class StepAndLandGameTest {
     private static void run(GameTestHelper helper, List<String> commands) {
         ServerLevel level = helper.getLevel();
         CommandSourceStack src = level.getServer().createCommandSourceStack().withLevel(level)
-                .withSuppressedOutput().withPermission(4);
+                .withSuppressedOutput().withPermission(net.minecraft.server.permissions.LevelBasedPermissionSet.OWNER);
         for (String c : commands) {
             level.getServer().getCommands().performPrefixedCommand(src, c);
         }

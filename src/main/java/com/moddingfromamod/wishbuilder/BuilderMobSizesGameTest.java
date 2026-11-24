@@ -86,7 +86,7 @@ public final class BuilderMobSizesGameTest {
             }
         }
         List<LivingEntity> here = helper.getLevel().getEntitiesOfClass(LivingEntity.class, new AABB(at).inflate(1),
-                e -> e.getType().builtInRegistryHolder().key().location().toString().equals(mob.substring(4)));
+                e -> e.getType().builtInRegistryHolder().key().identifier().toString().equals(mob.substring(4)));
         helper.assertValueEqual(here.size(), 1, Component.literal(level.name() + " " + mob + "s summoned"));
         return here.get(0);
     }

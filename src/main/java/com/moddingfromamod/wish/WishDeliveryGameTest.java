@@ -210,7 +210,7 @@ public class WishDeliveryGameTest {
         ServerPlayer p = child(helper, "mfam-dlv-op", 9, false);
         try {
             p.level().getServer().getCommands().performPrefixedCommand(
-                    p.createCommandSourceStack().withSuppressedOutput().withPermission(2),
+                    p.createCommandSourceStack().withSuppressedOutput().withPermission(net.minecraft.server.permissions.LevelBasedPermissionSet.GAMEMASTER),
                     "give @s minecraft:melon_slice 5");
             helper.assertValueEqual(inMain(p, Items.MELON_SLICE), 5, Component.literal("vanilla /give, main inventory"));
             helper.assertValueEqual(inBag(p, Items.MELON_SLICE), 0, Component.literal("the Wish Bag"));

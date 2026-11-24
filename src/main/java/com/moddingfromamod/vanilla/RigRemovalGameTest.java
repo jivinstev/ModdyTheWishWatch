@@ -90,7 +90,7 @@ public final class RigRemovalGameTest {
         try {
             return level.getServer().getCommands().getDispatcher().execute(
                     "kill @e[tag=" + WishMobTags.forSpecies(id) + "]",
-                    level.getServer().createCommandSourceStack().withSuppressedOutput().withPermission(4));
+                    level.getServer().createCommandSourceStack().withSuppressedOutput().withPermission(net.minecraft.server.permissions.LevelBasedPermissionSet.OWNER));
         } catch (com.mojang.brigadier.exceptions.CommandSyntaxException e) {
             return -1;
         }

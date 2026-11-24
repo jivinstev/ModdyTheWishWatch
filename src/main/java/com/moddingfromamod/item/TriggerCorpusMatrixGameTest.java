@@ -124,7 +124,7 @@ public final class TriggerCorpusMatrixGameTest {
         }
         p.getInventory().clearContent();
         helper.getLevel().getServer().getCommands().performPrefixedCommand(
-                p.createCommandSourceStack().withPermission(2).withSuppressedOutput(),
+                p.createCommandSourceStack().withPermission(net.minecraft.server.permissions.LevelBasedPermissionSet.GAMEMASTER).withSuppressedOutput(),
                 "wishdatapack " + tool.lastMadeId() + " give");
         for (ItemStack s : p.getInventory().getNonEquipmentItems()) {
             if (!s.isEmpty() && s.getHoverName().getString().equals(name)) {
@@ -296,7 +296,7 @@ public final class TriggerCorpusMatrixGameTest {
             make(helper, p, pair, "on_use_done", 1);
             if (pair.base().equals("minecraft:goat_horn")) {
                 helper.getLevel().getServer().getCommands().performPrefixedCommand(
-                        p.createCommandSourceStack().withPermission(2).withSuppressedOutput(),
+                        p.createCommandSourceStack().withPermission(net.minecraft.server.permissions.LevelBasedPermissionSet.GAMEMASTER).withSuppressedOutput(),
                         "item modify entity @s weapon.mainhand {function:\"minecraft:set_instrument\","
                                 + "options:\"#minecraft:goat_horns\"}");
                 use(p);

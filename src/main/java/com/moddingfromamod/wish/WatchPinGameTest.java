@@ -389,7 +389,7 @@ public class WatchPinGameTest {
 
     private static void run(ServerPlayer p, String command) {
         p.level().getServer().getCommands().performPrefixedCommand(
-                p.createCommandSourceStack().withPermission(4).withSuppressedOutput(), command);
+                p.createCommandSourceStack().withPermission(net.minecraft.server.permissions.LevelBasedPermissionSet.OWNER).withSuppressedOutput(), command);
     }
 
     @GameTest(template = "empty_test", batch = BATCH, timeoutTicks = 100)
@@ -540,9 +540,9 @@ public class WatchPinGameTest {
 
     private static void deathTest(GameTestHelper helper, String name, boolean keep) {
         ServerLevel level = helper.getLevel();
-        var rule = level.getGameRules().getRule(GameRules.RULE_KEEPINVENTORY);
-        boolean was = rule.get();
-        rule.set(keep, level.getServer());
+        var rules = level.getGameRules();
+        boolean was = rules.get(GameRules.KEEP_INVENTORY);
+        rules.set(GameRules.KEEP_INVENTORY, keep, level.getServer());
         ServerPlayer p = MockPlayerNetwork.asSurvival(pinned(helper, name));
         p.getInventory().setItem(3, new ItemStack(Items.DIRT, 5));
         var where = p.blockPosition();
@@ -559,7 +559,7 @@ public class WatchPinGameTest {
                 () -> "keepInventory=" + keep + ": looseAtDeath=" + looseAtDeath + " dirtDropped="
                         + dirtDropped + " reborn=" + state(reborn),
                 () -> {
-                    rule.set(was, level.getServer());
+                    rules.set(GameRules.KEEP_INVENTORY, was, level.getServer());
                     level.getEntitiesOfClass(ItemEntity.class, new AABB(where).inflate(8))
                             .forEach(Entity::discard);
                     done(reborn);

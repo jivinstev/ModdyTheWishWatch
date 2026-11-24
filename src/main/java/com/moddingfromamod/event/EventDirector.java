@@ -107,7 +107,7 @@ public final class EventDirector {
     static CompoundTag write(StagedEvent e) {
         CompoundTag t = new CompoundTag();
         t.putString("id", e.id);
-        t.putString("dim", e.dimension.location().toString());
+        t.putString("dim", e.dimension.identifier().toString());
         t.putString("owner", e.owner);
         t.putString("scale", e.scale.name());
         t.putString("policy", e.policy.name());
