@@ -300,6 +300,14 @@ public final class CommandGuard {
         // swing — new in 26.1: makes the target entities swing their main or off hand (an animation only). DENY, the
         // verdict a root with no row already had: no wish has needed it, and a rig's arm moves through its own animator.
         deny("swing", "makes entities swing a hand (an animation only); no wish needs it yet");
+        // compute — new in 26.3: rolls a number provider (a random range, a loot context's value) and prints it. DENY,
+        // the verdict a root with no row already had: no wish has needed it, and a wish's random choice is its pack's own.
+        deny("compute", "rolls a number provider and prints it; no wish needs it yet");
+        // posteffect — new in 26.3: puts a full-screen post-processing shader on players' screens until cleared. DENY:
+        // a wish never takes over a child's whole view, which no selector here can keep to the child who wished.
+        deny("posteffect", "a full-screen shader on players' screens until cleared; no wish takes over a child's view");
+        // 26.3 also gave `item` two verbs (`fill`, `override`) and `execute` an `if slots` test: the `item` and
+        // `execute` rows below cover them as they cover `item replace` and `execute if items`.
 
         // ── this mod's own commands: each runs something SAVED, never anything arbitrary ───────
         allow("wishbuild", "runs a saved, volume-capped build plan by id");

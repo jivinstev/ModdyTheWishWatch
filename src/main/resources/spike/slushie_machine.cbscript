@@ -121,21 +121,24 @@ advancement pulled_the_handle {
         "pulled": {
             "trigger": "minecraft:default_block_use",
             "conditions": {
-                "location": [
-                    {
-                        "condition": "minecraft:block_state_property",
-                        "block": "minecraft:lever"
-                    },
-                    {
-                        "condition": "minecraft:location_check",
-                        "offsetY": 1,
-                        "predicate": {
-                            "block": {
-                                "blocks": "minecraft:birch_wall_sign"
+                "location": {
+                    "type": "minecraft:all_of",
+                    "terms": [
+                        {
+                            "type": "minecraft:match_block",
+                            "blocks": "minecraft:lever"
+                        },
+                        {
+                            "type": "minecraft:location_check",
+                            "offsetY": 1,
+                            "predicate": {
+                                "block": {
+                                    "blocks": "minecraft:birch_wall_sign"
+                                }
                             }
                         }
-                    }
-                ]
+                    ]
+                }
             }
         }
     },

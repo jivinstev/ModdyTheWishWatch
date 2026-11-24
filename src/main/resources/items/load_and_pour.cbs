@@ -26,9 +26,9 @@ function effect()
     /tag @s add mfam_filler
     # SNEAK-PULL IS HELP, and does nothing else — so he can always find out how it works without
     # spending an ingredient to learn.
-    /execute if predicate {"condition":"minecraft:entity_properties","entity":"this","predicate":{"flags":{"is_sneaking":true}}} run function $namespace:fill_help
-    /execute unless predicate {"condition":"minecraft:entity_properties","entity":"this","predicate":{"flags":{"is_sneaking":true}}} as @e[type=armor_stand,tag=${MACHINE}_built,sort=nearest,limit=1,distance=..6] at @s run function $namespace:fill_here
-    /execute unless predicate {"condition":"minecraft:entity_properties","entity":"this","predicate":{"flags":{"is_sneaking":true}}} unless entity @e[type=armor_stand,tag=${MACHINE}_built,distance=..6] run function $namespace:fill_here
+    /execute if predicate {"type":"minecraft:entity_properties","entity":"this","predicate":{"flags":{"is_sneaking":true}}} run function $namespace:fill_help
+    /execute unless predicate {"type":"minecraft:entity_properties","entity":"this","predicate":{"flags":{"is_sneaking":true}}} as @e[type=armor_stand,tag=${MACHINE}_built,sort=nearest,limit=1,distance=..6] at @s run function $namespace:fill_here
+    /execute unless predicate {"type":"minecraft:entity_properties","entity":"this","predicate":{"flags":{"is_sneaking":true}}} unless entity @e[type=armor_stand,tag=${MACHINE}_built,distance=..6] run function $namespace:fill_here
     /tag @s remove mfam_filler
 end
 
