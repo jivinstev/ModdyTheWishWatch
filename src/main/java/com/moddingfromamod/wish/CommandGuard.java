@@ -300,6 +300,9 @@ public final class CommandGuard {
         // swing — new in 26.1: makes the target entities swing their main or off hand (an animation only). DENY, the
         // verdict a root with no row already had: no wish has needed it, and a rig's arm moves through its own animator.
         deny("swing", "makes entities swing a hand (an animation only); no wish needs it yet");
+        // unpublish — new in 26.2: closes a world opened to LAN with /publish (owner level). DENY with publish: it is
+        // server control, and no wish needs it.
+        deny("unpublish", "server control, the undo of publish; no wish needs it");
         // compute — new in 26.3: rolls a number provider (a random range, a loot context's value) and prints it. DENY,
         // the verdict a root with no row already had: no wish has needed it, and a wish's random choice is its pack's own.
         deny("compute", "rolls a number provider and prints it; no wish needs it yet");

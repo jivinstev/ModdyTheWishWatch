@@ -239,6 +239,7 @@ class CbScriptCorpusTest {
         // Expected numbers are Minecraft's own (DatapackDialect.packFormat() at runtime).
         int expected = switch (com.moddingfromamod.compat.Target.MINECRAFT) {
             case "26.3" -> 121;    //: SharedConstants.DATA_PACK_FORMAT_MAJOR = 121 (minor 0) in 26.3 (the client jar's version.json)
+            case "26.2" -> 107;    //: SharedConstants.DATA_PACK_FORMAT_MAJOR = 107 (minor 1) in 26.2
             case "26.1.2" -> 101;  //: SharedConstants.DATA_PACK_FORMAT_MAJOR = 101 (minor 1) in 26.1.2
             case "1.21.11" -> 94;  //: SharedConstants.DATA_PACK_FORMAT_MAJOR = 94 (minor 1) in 1.21.11
             case "1.21.10" -> 88;  //: SharedConstants.DATA_PACK_FORMAT_MAJOR = 88 (minor 0) in 1.21.10
