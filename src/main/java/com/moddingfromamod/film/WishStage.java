@@ -59,7 +59,45 @@ public final class WishStage {
                         .then(Commands.argument("pos", BlockPosArgument.blockPos())
                                 .then(Commands.argument("n", com.mojang.brigadier.arguments.IntegerArgumentType.integer(0))
                                         .then(Commands.argument("words", StringArgumentType.greedyString())
-                                                .executes(WishStage::apprentice)))));
+                                                .executes(WishStage::apprentice)))))
+                // The wish card's photo is taken through HIS eyes, and on a film he is the camera: its Wish Capture
+                // border and close-up sparkles land on the take. `card off` skips the photo for this server's makes
+                // (the reveal and everything made are unchanged); a restart turns it back on.
+                .then(Commands.literal("card")
+                        .then(Commands.literal("off").executes(ctx -> card(ctx, false)))
+                        .then(Commands.literal("on").executes(ctx -> card(ctx, true))))
+                // Words as if typed in the watch's wish box (a re-wish like "make it bigger" changes his last make).
+                // `type at <x y z> <words>` stands its pillar there (on the creature being changed), not where he looks.
+                .then(Commands.literal("type")
+                        .then(Commands.literal("at")
+                                .then(Commands.argument("pos", BlockPosArgument.blockPos())
+                                        .then(Commands.argument("words", StringArgumentType.greedyString())
+                                                .executes(ctx -> typed(ctx, BlockPosArgument.getBlockPos(ctx, "pos"))))))
+                        .then(Commands.argument("words", StringArgumentType.greedyString()).executes(ctx -> typed(ctx, null))));
+    }
+
+    private static int typed(CommandContext<CommandSourceStack> ctx, BlockPos at)
+            throws com.mojang.brigadier.exceptions.CommandSyntaxException {
+        ServerPlayer player = ctx.getSource().getPlayerOrException();
+        String words = StringArgumentType.getString(ctx, "words");
+        long tick = player.level().getGameTime();
+        if (at != null) {
+            com.moddingfromamod.wish.WishAimer.stageNext(player, at);
+        }
+        WishService.Outcome outcome = WishService.submit(player, words, WishSource.TYPED);
+        // The stage is one-shot and taken when the make locks its spot; still here means nothing was made with it.
+        boolean unused = at != null && com.moddingfromamod.wish.WishAimer.hasStage(player.getUUID());
+        com.moddingfromamod.wish.WishAimer.clearStage(player.getUUID());
+        String line = "wishstage type on game tick " + tick + ": " + outcome
+                + (at == null ? "" : unused ? " (pillar spot unused)" : " (pillar at " + at.getX() + " " + at.getY() + " " + at.getZ() + ")");
+        ctx.getSource().sendSuccess(() -> Component.literal(line), false);
+        return outcome == WishService.Outcome.FULFILLING || outcome == WishService.Outcome.APPRENTICE ? 1 : 0;
+    }
+
+    private static int card(CommandContext<CommandSourceStack> ctx, boolean on) {
+        com.moddingfromamod.wishbuilder.BuilderMake.takeCard = on;
+        ctx.getSource().sendSuccess(() -> Component.literal("wishstage card " + (on ? "on" : "off")), false);
+        return 1;
     }
 
     private static int tryAt(CommandContext<CommandSourceStack> ctx, boolean quick)
