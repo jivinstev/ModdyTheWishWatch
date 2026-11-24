@@ -10,6 +10,7 @@ import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Display;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.phys.Vec3;
 
@@ -98,7 +99,7 @@ public final class FilmCamera {
             if (rig != null && !rig.isRemoved()) {
                 rig.discard();
             }
-            rig = EntityType.ITEM_DISPLAY.create(level, net.minecraft.world.entity.EntitySpawnReason.COMMAND);
+            rig = EntityTypes.ITEM_DISPLAY.create(level, net.minecraft.world.entity.EntitySpawnReason.COMMAND);
             if (rig == null) {
                 return false;
             }

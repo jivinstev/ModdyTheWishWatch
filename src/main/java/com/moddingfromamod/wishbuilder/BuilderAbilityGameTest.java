@@ -21,6 +21,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.ItemStack;
@@ -290,7 +291,7 @@ public final class BuilderAbilityGameTest {
                 scale.removeModifiers();
                 scale.setBaseValue(1.0);
             }
-            p.setPos(helper.absolutePos(new BlockPos(1, 2, 1)).getCenter().add(0, -0.5, 0));
+            p.setPos(net.minecraft.world.phys.Vec3.atCenterOf(helper.absolutePos(new BlockPos(1, 2, 1))).add(0, -0.5, 0));
             return null;
         }).get(10, TimeUnit.SECONDS);
         return last;
@@ -301,7 +302,7 @@ public final class BuilderAbilityGameTest {
     static List<Case> cases() {
         List<Case> out = new ArrayList<>();
         out.add(new Case("lightning sword", spec("item", "items/lightning_sword_lightning"), "Lightning Sword", c -> {
-            var z = EntityType.ZOMBIE.create(c.helper().getLevel(), net.minecraft.world.entity.EntitySpawnReason.COMMAND);
+            var z = EntityTypes.ZOMBIE.create(c.helper().getLevel(), net.minecraft.world.entity.EntitySpawnReason.COMMAND);
             z.setNoAi(true);
             z.setPos(c.p().getX(), c.p().getY(), c.p().getZ() + 2);
             c.helper().getLevel().addFreshEntity(z);
@@ -583,7 +584,7 @@ public final class BuilderAbilityGameTest {
                 case "held" -> {
                     if (w.id().equals("pets")) {
                         // His own wolf, sitting 12 blocks off: the wand must bring it (CallPets moves an OWNED pet).
-                        var wolf = EntityType.WOLF.create(level, net.minecraft.world.entity.EntitySpawnReason.COMMAND);
+                        var wolf = EntityTypes.WOLF.create(level, net.minecraft.world.entity.EntitySpawnReason.COMMAND);
                         wolf.setPos(c.p().getX() + 12, c.p().getY(), c.p().getZ());
                         wolf.tame(c.p());
                         wolf.setOrderedToSit(true);
@@ -732,7 +733,7 @@ public final class BuilderAbilityGameTest {
             LivingEntity[] monster = {null};
             if (d.dials().containsKey("who")) {
                 // A husk (it does not burn by day) two blocks past the block: inside its reach, 5+ from him.
-                var h = EntityType.HUSK.create(level, net.minecraft.world.entity.EntitySpawnReason.COMMAND);
+                var h = EntityTypes.HUSK.create(level, net.minecraft.world.entity.EntitySpawnReason.COMMAND);
                 h.setNoAi(true);
                 h.setPersistenceRequired();
                 h.setPos(c.floor().getX() + 0.5, c.floor().getY() + 1, c.floor().getZ() + 2.5);
@@ -794,7 +795,7 @@ public final class BuilderAbilityGameTest {
 
     /** A still zombie {@code ahead} blocks south of him (he faces south). */
     static net.minecraft.world.entity.monster.zombie.Zombie zombie(Ctx c, int ahead) {
-        var z = EntityType.ZOMBIE.create(c.helper().getLevel(), net.minecraft.world.entity.EntitySpawnReason.COMMAND);
+        var z = EntityTypes.ZOMBIE.create(c.helper().getLevel(), net.minecraft.world.entity.EntitySpawnReason.COMMAND);
         z.setNoAi(true);
         z.setPos(c.p().getX(), c.p().getY(), c.p().getZ() + ahead);
         c.helper().getLevel().addFreshEntity(z);

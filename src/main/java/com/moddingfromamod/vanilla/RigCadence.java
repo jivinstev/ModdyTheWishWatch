@@ -2,12 +2,13 @@ package com.moddingfromamod.vanilla;
 
 import java.util.Collection;
 
+import net.minecraft.world.entity.EntityTypes;
 /**
  * <b>How often a rig atom's POSITION is sent: on the rig's own beat, every {@link #MOVE_INTERVAL} ticks, the same
  * ticks for every atom</b>.
  *
  * <p>{@link RigDriver#follow} moves every display of a walking creature every tick, and vanilla's tracker sends an
- * {@code item_display} every tick it moved ({@code EntityType.ITEM_DISPLAY.updateInterval(1)}). So a walking
+ * {@code item_display} every tick it moved ({@code EntityTypes.ITEM_DISPLAY.updateInterval(1)}). So a walking
  * 40-atom creature cost 40 move packets a tick to every viewer, while the invisible mob it follows (the carrier,
  * {@code updateInterval(3)}) cost one packet every third tick. Each display already eases each move over
  * {@link DisplayRig#MOTION_TICKS} ticks, which is 3 for exactly this reason (it is how the client eases a mob), so a

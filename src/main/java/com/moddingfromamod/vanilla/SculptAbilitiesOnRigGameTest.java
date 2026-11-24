@@ -13,6 +13,7 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.monster.zombie.Husk;
 import net.minecraft.world.entity.projectile.throwableitemprojectile.Snowball;
@@ -54,7 +55,7 @@ public final class SculptAbilitiesOnRigGameTest {
     }
 
     private static Husk husk(GameTestHelper helper, BlockPos at) {
-        Husk husk = helper.spawn(EntityType.HUSK, at);
+        Husk husk = helper.spawn(EntityTypes.HUSK, at);
         husk.setPersistenceRequired();
         husk.setNoAi(true);   // it stands still and never fights back: what moves or hurts it is the move
         return husk;

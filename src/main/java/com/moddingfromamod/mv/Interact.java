@@ -20,4 +20,16 @@ public final class Interact {
         Vec3 middle = entity.getBoundingBox().getCenter().subtract(entity.position());
         return player.interactOn(entity, hand, middle);
     }
+
+    /**
+     * {@code new PlayerInteractEvent.EntityInteract(player, hand, target)}: 26.2 folded {@code EntityInteractSpecific}
+     * into it and gave it the click's location, relative to the target. A scripted click has no real hit, so it is the
+     * middle of the target's box, as {@link #on} clicks.
+     */
+    public static net.neoforged.neoforge.event.entity.player.PlayerInteractEvent.EntityInteract event(Player player,
+            InteractionHand hand, Entity target) {
+        Vec3 middle = target.getBoundingBox().getCenter().subtract(target.position());
+        return new net.neoforged.neoforge.event.entity.player.PlayerInteractEvent.EntityInteract(player, hand, target,
+                middle);
+    }
 }

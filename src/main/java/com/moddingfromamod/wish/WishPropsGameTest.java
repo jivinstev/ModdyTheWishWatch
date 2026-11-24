@@ -11,6 +11,7 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.phys.Vec3;
 import com.moddingfromamod.testing.gt.GameTestHolder;
 
@@ -58,7 +59,7 @@ public class WishPropsGameTest {
         WishRun run = freshRun();
 
         var before = WishProps.snapshot(level, where);
-        Entity stand = EntityType.ARMOR_STAND.create(level, EntitySpawnReason.COMMAND);
+        Entity stand = EntityTypes.ARMOR_STAND.create(level, EntitySpawnReason.COMMAND);
         helper.assertTrue(stand != null, Component.literal("the fixture must be able to make an armour stand"));
         stand.setPos(where.x, where.y, where.z);
         level.addFreshEntity(stand);
@@ -101,7 +102,7 @@ public class WishPropsGameTest {
         // on. Caught by the guard below on this test's first real run, which is what it is for.
         var beforeLiving = com.moddingfromamod.mob.EntityCapture.snapshot(level, where);
         var before = WishProps.snapshot(level, where);
-        Entity carrier = EntityType.BEE.create(level, EntitySpawnReason.COMMAND);
+        Entity carrier = EntityTypes.BEE.create(level, EntitySpawnReason.COMMAND);
         helper.assertTrue(carrier != null, Component.literal("the fixture must be able to make a carrier"));
         carrier.setPos(where.x, where.y, where.z);
         level.addFreshEntity(carrier);
@@ -141,7 +142,7 @@ public class WishPropsGameTest {
         WishRun run = freshRun();
 
         var before = WishProps.snapshot(level, where);
-        Entity stand = EntityType.ARMOR_STAND.create(level, EntitySpawnReason.COMMAND);
+        Entity stand = EntityTypes.ARMOR_STAND.create(level, EntitySpawnReason.COMMAND);
         stand.setPos(where.x, where.y, where.z);
         level.addFreshEntity(stand);
         WishProps.recordNew(level, where, before, run);

@@ -74,7 +74,7 @@ public final class WhichMenu extends ChestMenu {
                     .setStyle(Style.EMPTY.withColor(ChatFormatting.YELLOW).withItalic(false)));
             container.setItem(i, icon);
         }
-        ItemStack none = new ItemStack(Items.GRAY_DYE);
+        ItemStack none = new ItemStack(Items.DYE.gray());
         none.set(DataComponents.CUSTOM_NAME, Component.literal("Something else")
                 .setStyle(Style.EMPTY.withColor(ChatFormatting.GRAY).withItalic(false)));
         container.setItem(NONE_SLOT, none);

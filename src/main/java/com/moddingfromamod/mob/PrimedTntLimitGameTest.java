@@ -8,6 +8,7 @@ import net.minecraft.core.BlockPos;
 import com.moddingfromamod.testing.gt.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.item.PrimedTnt;
 import com.moddingfromamod.testing.gt.GameTestHolder;
 
@@ -28,16 +29,16 @@ public final class PrimedTntLimitGameTest {
     public static void threeThousandLitTntNeverBecomeMoreThanTheCeiling(GameTestHelper helper) {
         int before = PrimedTntLimit.live(helper.getLevel().dimension());
         for (int i = 0; i < 3000; i++) {      // well over the ceiling of 2,048
-            PrimedTnt tnt = helper.spawn(EntityType.TNT, new BlockPos(1 + i % 3, 2, 1 + (i / 3) % 3));
+            PrimedTnt tnt = helper.spawn(EntityTypes.TNT, new BlockPos(1 + i % 3, 2, 1 + (i / 3) % 3));
             tnt.setFuse(30_000);
         }
         helper.runAfterDelay(2, () -> {
-            int inWorld = helper.getEntities(EntityType.TNT).size();
+            int inWorld = helper.getEntities(EntityTypes.TNT).size();
             helper.assertTrue(inWorld <= TntBudget.MAX_LIVE,
                     Component.literal("the level holds " + inWorld + " lit TNT, more than the ceiling of " + TntBudget.MAX_LIVE));
             helper.assertTrue(inWorld >= TntBudget.MAX_LIVE - before - 1,
                     Component.literal("only " + inWorld + " lit TNT got in — the ceiling must admit up to " + TntBudget.MAX_LIVE));
-            helper.getEntities(EntityType.TNT).forEach(t -> t.discard());
+            helper.getEntities(EntityTypes.TNT).forEach(t -> t.discard());
             helper.runAfterDelay(2, () -> {
                 helper.assertTrue(PrimedTntLimit.live(helper.getLevel().dimension()) == before,
                         Component.literal("removing them did not give the budget back ("

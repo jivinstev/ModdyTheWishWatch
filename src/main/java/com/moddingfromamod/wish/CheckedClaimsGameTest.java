@@ -23,6 +23,7 @@ import net.minecraft.gametest.framework.GameTestAssertException;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.animal.cow.Cow;
 import com.moddingfromamod.testing.gt.GameTestHolder;
 
@@ -70,7 +71,7 @@ public class CheckedClaimsGameTest {
         // The child stands well off the court — further than a follower walks, so it HOPS to him.
         child.teleportTo(court.getX() + 20.5, court.getY(), court.getZ() + 0.5);
         for (int i = 0; i < 2; i++) {
-            Cow player = helper.spawn(EntityType.COW, courtRel.offset(i, 0, 0));
+            Cow player = helper.spawn(EntityTypes.COW, courtRel.offset(i, 0, 0));
             player.setCustomName(Component.literal(name));
             if (theyFollowSomeoneAway) {
                 // What a `companion` does: go to the child, who is not on the court.

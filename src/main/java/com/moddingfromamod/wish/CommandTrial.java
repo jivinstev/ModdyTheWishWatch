@@ -113,7 +113,7 @@ public final class CommandTrial {
         List<String> out = new ArrayList<>();
         WarnCapture.Captured<Entity> tried;
         try {
-            tried = WarnCapture.during(() -> EntityType.loadEntityRecursive(tag, level, net.minecraft.world.entity.EntitySpawnReason.COMMAND, e -> e));
+            tried = WarnCapture.during(() -> EntityType.loadEntityRecursive(tag, level, new net.minecraft.world.entity.EntitySpawnRequest(net.minecraft.world.entity.EntitySpawnReason.COMMAND, false), e -> e));
         } catch (RuntimeException e) {
             return List.of("Minecraft couldn't make this creature from its NBT — " + e);
         }

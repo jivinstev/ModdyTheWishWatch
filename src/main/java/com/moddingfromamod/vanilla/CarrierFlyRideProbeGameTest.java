@@ -16,6 +16,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.neoforged.neoforge.common.NeoForge;
@@ -58,7 +59,7 @@ public final class CarrierFlyRideProbeGameTest {
         for (boolean noGravity : new boolean[] {false, true}) {
             String arm = noGravity ? "bat, gravity off" : "bat, as rigged";
             seq.thenExecute(() -> {
-                Mob m = EntityType.BAT.create(helper.getLevel(), EntitySpawnReason.COMMAND);
+                Mob m = EntityTypes.BAT.create(helper.getLevel(), EntitySpawnReason.COMMAND);
                 var p = helper.absolutePos(new BlockPos(4, 2, 1));
                 m.snapTo(p.getX() + 0.5, p.getY(), p.getZ() + 0.5, 0f, 0f);
                 var speed = m.getAttribute(Attributes.MOVEMENT_SPEED);
@@ -73,7 +74,7 @@ public final class CarrierFlyRideProbeGameTest {
                 kid.fallDistance = 0;
                 kid.getInventory().clearContent();
                 kid.teleportTo(m.getX(), m.getY(), m.getZ() - 1);
-                NeoForge.EVENT_BUS.post(new PlayerInteractEvent.EntityInteract(kid, InteractionHand.MAIN_HAND, m));
+                NeoForge.EVENT_BUS.post(com.moddingfromamod.mv.Interact.event(kid, InteractionHand.MAIN_HAND, m));
                 cur[0] = m;
                 rows.add(arm + ": mounted=" + (kid.getVehicle() == m) + " start y=" + String.format("%.1f", m.getY()));
             });

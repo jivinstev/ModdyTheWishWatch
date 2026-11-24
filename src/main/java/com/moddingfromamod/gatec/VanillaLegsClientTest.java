@@ -244,7 +244,7 @@ public final class VanillaLegsClientTest {
         }
         if (t != null) {
             // The server's FilmCamera has the view; the player stays where he was put.
-            mc.options.hideGui = true;
+            com.moddingfromamod.gatec.ClientHarness.setHudHidden(mc, true);
             mc.gui.setScreen(null);
             return;
         }
@@ -262,7 +262,7 @@ public final class VanillaLegsClientTest {
         double cx = sx + o[0];
         double cy = FOOT_Y + o[1] - 1.62;
         double cz = sz + o[2];
-        mc.options.hideGui = true;
+        com.moddingfromamod.gatec.ClientHarness.setHudHidden(mc, true);
         mc.gui.setScreen(null);
         mc.player.getAbilities().flying = true;
         mc.player.setDeltaMovement(net.minecraft.world.phys.Vec3.ZERO);
@@ -429,7 +429,7 @@ public final class VanillaLegsClientTest {
         // A checkerboard: a planted foot stays on its square while the body passes over it.
         for (int x = -6; x <= 22; x++) {
             for (int z = -8; z <= 8; z++) {
-                var block = ((x + z) & 1) == 0 ? Blocks.WHITE_CONCRETE : Blocks.LIGHT_GRAY_CONCRETE;
+                var block = ((x + z) & 1) == 0 ? Blocks.CONCRETE.white() : Blocks.CONCRETE.lightGray();
                 level.setBlock(new BlockPos(x, FLOOR_Y, z), block.defaultBlockState(), 3);
                 for (int y = FLOOR_Y + 1; y < FLOOR_Y + 6; y++) {
                     level.setBlock(new BlockPos(x, y, z), Blocks.AIR.defaultBlockState(), 3);

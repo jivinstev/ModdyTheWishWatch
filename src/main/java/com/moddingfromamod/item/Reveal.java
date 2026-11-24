@@ -15,6 +15,7 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.CustomData;
@@ -169,7 +170,7 @@ public final class Reveal {
     }
 
     private static Entity display(ServerLevel level, BlockPos at, BlockState state) {
-        Entity e = EntityType.BLOCK_DISPLAY.create(level, EntitySpawnReason.COMMAND);
+        Entity e = EntityTypes.BLOCK_DISPLAY.create(level, EntitySpawnReason.COMMAND);
         if (e == null) {
             return null;
         }

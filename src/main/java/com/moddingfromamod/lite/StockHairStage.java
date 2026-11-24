@@ -137,7 +137,7 @@ public final class StockHairStage {
             l.getGameRules().set(GameRules.ADVANCE_WEATHER,false, server);
             com.moddingfromamod.mv.DayTime.weather(l, 6000, 0, false, false);
         }
-        var floor = net.minecraft.world.level.block.Blocks.WHITE_CONCRETE.defaultBlockState();
+        var floor = net.minecraft.world.level.block.Blocks.CONCRETE.white().defaultBlockState();
         for (int x = (int) X - 12; x <= (int) X + 12; x++) {
             for (int z = (int) STAGE_Z - 12; z <= (int) STAGE_Z + 12; z++) {
                 level.setBlock(new net.minecraft.core.BlockPos(x, (int) Math.floor(FOOT_Y) - 1, z),

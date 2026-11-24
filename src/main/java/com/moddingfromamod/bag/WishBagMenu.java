@@ -170,7 +170,7 @@ public final class WishBagMenu extends ChestMenu {
 
     /** Purple trim, with no tooltip at all: hovering it should not say "Purple Stained Glass Pane". */
     private static ItemStack glass() {
-        ItemStack s = new ItemStack(Items.PURPLE_STAINED_GLASS_PANE);
+        ItemStack s = new ItemStack(Items.STAINED_GLASS_PANE.purple());
         com.moddingfromamod.compat.ItemComponents.hideTooltip(s);
         return s;
     }

@@ -18,6 +18,7 @@ import net.minecraft.gametest.framework.GameTestSequence;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.monster.zombie.Zombie;
@@ -353,7 +354,7 @@ public final class TriggerCorpusMatrixGameTest {
                 throw GameTestCompat.assertion("cannot step the raise: " + e);
             }
             helper.assertTrue(p.isBlocking(), Component.literal(pair + ": raised, and not blocking"));
-            Zombie z = helper.spawn(EntityType.ZOMBIE, new BlockPos(1, 2, 3));
+            Zombie z = helper.spawn(EntityTypes.ZOMBIE, new BlockPos(1, 2, 3));
             z.setNoAi(true);
             z.snapTo(p.getX(), p.getY(), p.getZ() + 1.8, 180.0F, 0.0F);
             float before = p.getHealth();
@@ -375,7 +376,7 @@ public final class TriggerCorpusMatrixGameTest {
     public static void hitPairs(GameTestHelper helper) {
         walk(helper, "on_hit", (p, pair) -> {
             make(helper, p, pair, "on_hit", 1);
-            Zombie z = helper.spawn(EntityType.ZOMBIE, new BlockPos(1, 2, 3));
+            Zombie z = helper.spawn(EntityTypes.ZOMBIE, new BlockPos(1, 2, 3));
             z.setNoAi(true);
             z.snapTo(p.getX(), p.getY(), p.getZ() + 1.5, 180.0F, 0.0F);
             float before = z.getHealth();

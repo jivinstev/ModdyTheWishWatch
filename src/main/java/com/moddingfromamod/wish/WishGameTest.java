@@ -14,6 +14,7 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.phys.Vec3;
 import com.moddingfromamod.testing.gt.GameTestHolder;
 import com.moddingfromamod.testing.GateShards;
@@ -47,7 +48,7 @@ public class WishGameTest {
         WishExecutor.Result result =
                 WishExecutor.runOne(server, level, pos, null, "summon minecraft:chicken ~ ~ ~");
         helper.assertTrue(result.success(), Component.literal("summon should have succeeded: " + result.joined()));
-        helper.assertEntityPresent(EntityType.CHICKEN);
+        helper.assertEntityPresent(EntityTypes.CHICKEN);
         helper.succeed();
     }
 
@@ -97,7 +98,7 @@ public class WishGameTest {
         BlockPos rel = new BlockPos(3, 2, 3);
         Vec3 pos = Vec3.atBottomCenterOf(helper.absolutePos(rel));
 
-        var stand = helper.spawn(EntityType.ARMOR_STAND, rel);
+        var stand = helper.spawn(EntityTypes.ARMOR_STAND, rel);
         stand.addTag("attrfix");
 
         // Verbatim shape from the real failure, spelled for the OTHER target -- the 1.21.2 name
@@ -137,7 +138,7 @@ public class WishGameTest {
         BlockPos rel = new BlockPos(5, 2, 5);
         Vec3 pos = Vec3.atBottomCenterOf(helper.absolutePos(rel));
 
-        var stand = helper.spawn(EntityType.ARMOR_STAND, rel);
+        var stand = helper.spawn(EntityTypes.ARMOR_STAND, rel);
         stand.addTag("attrok");
 
         WishExecutor.Result result = WishExecutor.runOne(server, level, pos, null,

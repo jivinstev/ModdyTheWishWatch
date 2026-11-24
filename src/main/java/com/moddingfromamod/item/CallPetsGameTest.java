@@ -16,6 +16,7 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.animal.feline.Cat;
 import net.minecraft.world.entity.animal.wolf.Wolf;
 import net.minecraft.world.item.ItemStack;
@@ -77,15 +78,15 @@ public final class CallPetsGameTest {
     }
 
     private static Pets pets(GameTestHelper helper, ServerPlayer owner) {
-        Wolf mine = helper.spawn(EntityType.WOLF, new BlockPos(6, 2, 6));
+        Wolf mine = helper.spawn(EntityTypes.WOLF, new BlockPos(6, 2, 6));
         mine.tame(owner);
         mine.setOrderedToSit(true);
         mine.setInSittingPose(true);
-        Wolf stranger = helper.spawn(EntityType.WOLF, new BlockPos(6, 2, 1));
+        Wolf stranger = helper.spawn(EntityTypes.WOLF, new BlockPos(6, 2, 1));
         stranger.setTame(true, false);
         stranger.setOwnerReference(net.minecraft.world.entity.EntityReference.<net.minecraft.world.entity.LivingEntity>of(java.util.UUID.randomUUID()));
         stranger.setOrderedToSit(true);
-        Cat cat = helper.spawn(EntityType.CAT, new BlockPos(1, 2, 6));
+        Cat cat = helper.spawn(EntityTypes.CAT, new BlockPos(1, 2, 6));
         cat.tame(owner);
         cat.setOrderedToSit(true);
         return new Pets(mine, stranger, cat);

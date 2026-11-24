@@ -13,6 +13,7 @@ import net.minecraft.nbt.TagParser;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -62,7 +63,7 @@ public final class MineAreaGameTest {
 
     private static int dropped(GameTestHelper helper, Item item) {
         int n = 0;
-        for (var e : helper.getLevel().getEntities(EntityType.ITEM,
+        for (var e : helper.getLevel().getEntities(EntityTypes.ITEM,
                 new AABB(helper.absolutePos(BlockPos.ZERO)).inflate(16), x -> x.getItem().is(item))) {
             n += e.getItem().getCount();
         }

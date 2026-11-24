@@ -22,6 +22,7 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.nbt.CompoundTag;
@@ -140,7 +141,7 @@ public class VanillaRigSurvivalGameTest {
         base.updateDataBeforeSync();   // 1.21.11: invisibility follows the effects here, not in tickEffects
         boolean hiddenAgain = base.isInvisible();
 
-        Entity interaction = EntityType.INTERACTION.create(helper.getLevel(), EntitySpawnReason.COMMAND);
+        Entity interaction = EntityTypes.INTERACTION.create(helper.getLevel(), EntitySpawnReason.COMMAND);
         boolean interactionNeedsNoPotion = interaction != null
                 && !(interaction instanceof LivingEntity);
         if (interaction != null) {
@@ -284,7 +285,7 @@ public class VanillaRigSurvivalGameTest {
         int applied = 0;
         for (var holder : BuiltInRegistries.MOB_EFFECT.asHolderIdMap()) {
             MobEffect effect = holder.value();
-            if (effect.isInstantenous()) {
+            if (effect.isInstantaneous()) {
                 continue;   // instant health/damage has nothing to read back
             }
             base.addEffect(new MobEffectInstance(holder, 100, 0, true, false));
@@ -760,7 +761,7 @@ public class VanillaRigSurvivalGameTest {
         double wantW = CreatureAnatomy.widthBlocks(ex) * s;
         double wantH = CreatureAnatomy.heightBlocks(ex) * s;
 
-        Entity hit = EntityType.INTERACTION.create(helper.getLevel(), EntitySpawnReason.COMMAND);
+        Entity hit = EntityTypes.INTERACTION.create(helper.getLevel(), EntitySpawnReason.COMMAND);
         helper.assertTrue(hit != null, Component.literal("vanilla should offer an interaction entity"));
         hit.snapTo(Vec3.atBottomCenterOf(helper.absolutePos(SPOT)));
 

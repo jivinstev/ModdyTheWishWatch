@@ -17,6 +17,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.players.NameAndId;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -431,7 +432,7 @@ public final class WatchPinStage {
                 p.getInventory().setItem(WatchPin.OFFHAND, bag);
             }
             case "right_click_horse", "right_click_horse_wild" -> {
-                var horse = EntityType.HORSE.create(level, EntitySpawnReason.COMMAND);
+                var horse = EntityTypes.HORSE.create(level, EntitySpawnReason.COMMAND);
                 if (horse != null) {
                     horse.snapTo(s.getX() + 0.5, s.getY(), s.getZ() + 2.5, 180.0F, 0.0F);
                     horse.setNoAi(true);

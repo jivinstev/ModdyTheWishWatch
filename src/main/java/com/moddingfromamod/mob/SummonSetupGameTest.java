@@ -13,6 +13,7 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.ai.memory.MemoryModuleType;
 import net.minecraft.world.entity.monster.warden.Warden;
@@ -46,7 +47,7 @@ public final class SummonSetupGameTest {
         String cmd = "summon minecraft:warden ~ ~ ~ {Tags:[\"summonsetup_test\"],PersistenceRequired:1b}";
         WishExecutor.Result r = summon(helper, wish, cmd);
         helper.assertTrue(r.success(), Component.literal("the summon must run: " + r.joined()));
-        List<Warden> w = helper.getEntities(EntityType.WARDEN);
+        List<Warden> w = helper.getEntities(EntityTypes.WARDEN);
         helper.assertTrue(w.size() == 1, Component.literal("one warden expected, found " + w.size()));
         Warden first = w.get(0);
         helper.assertTrue(first.getBrain().hasMemoryValue(MemoryModuleType.DIG_COOLDOWN),
@@ -56,7 +57,7 @@ public final class SummonSetupGameTest {
         // The budget: a wish's boss that is GONE gives its slot back (the warden that dug away).
         first.discard();
         WishExecutor.Result again = summon(helper, wish, cmd);
-        List<Warden> after = helper.getEntities(EntityType.WARDEN);
+        List<Warden> after = helper.getEntities(EntityTypes.WARDEN);
         helper.assertTrue(again.success() && after.size() == 1,
                 Component.literal("a retry after the first boss vanished must be admitted: " + again.joined()
                         + " (wardens now " + after.size() + ")"));
@@ -65,7 +66,7 @@ public final class SummonSetupGameTest {
             helper.assertTrue(second.isAlive() && !second.isRemoved(),
                     Component.literal("200 ticks on the warden is gone (removal " + second.getRemovalReason() + ")"));
             helper.assertTrue(second.getPose() != Pose.DIGGING, Component.literal("200 ticks on the warden is digging away"));
-            helper.getEntities(EntityType.WARDEN).forEach(Entity::discard);
+            helper.getEntities(EntityTypes.WARDEN).forEach(Entity::discard);
             helper.succeed();
         });
     }
@@ -75,7 +76,7 @@ public final class SummonSetupGameTest {
         WishExecutor.Result r = summon(helper, "gametest-summonsetup-p-" + System.nanoTime(),
                 "summon minecraft:phantom ~ ~3 ~ {Tags:[\"summonsetup_test\"]}");
         helper.assertTrue(r.success(), Component.literal("the summon must run: " + r.joined()));
-        var phantoms = helper.getEntities(EntityType.PHANTOM);
+        var phantoms = helper.getEntities(EntityTypes.PHANTOM);
         helper.assertTrue(phantoms.size() == 1, Component.literal("one phantom expected, found " + phantoms.size()));
         var p = phantoms.get(0);
         CompoundTag own = com.moddingfromamod.compat.EntityNbt.save(p);

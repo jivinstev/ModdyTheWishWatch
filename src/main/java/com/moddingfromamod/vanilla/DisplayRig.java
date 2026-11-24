@@ -13,6 +13,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Display;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -875,7 +876,7 @@ public final class DisplayRig {
         HitProxyPlan.Plan hits = planned.hits();
         double seat = planned.seat();
         RigBase.Choice pick = hits == null ? null : hits.core();
-        EntityType<?> baseType = pick == null ? EntityType.ZOMBIE
+        EntityType<?> baseType = pick == null ? EntityTypes.ZOMBIE
                 : BuiltInRegistries.ENTITY_TYPE.getValue(
                         Identifier.withDefaultNamespace(pick.id()));
         Entity raw = baseType.create(level, EntitySpawnReason.COMMAND);
@@ -1106,7 +1107,7 @@ public final class DisplayRig {
         List<Entity> made = new ArrayList<>();
         for (int gi = 0; gi < groups.size(); gi++) {
             RigPlan.Group g = groups.get(gi);
-            Entity d = EntityType.ITEM_DISPLAY.create(level, EntitySpawnReason.COMMAND);
+            Entity d = EntityTypes.ITEM_DISPLAY.create(level, EntitySpawnReason.COMMAND);
             if (d == null) {
                 continue;
             }
@@ -1712,7 +1713,7 @@ public final class DisplayRig {
             return;
         }
         if (nameplate == null) {
-            Entity made = EntityType.TEXT_DISPLAY.create(base.level(), EntitySpawnReason.COMMAND);
+            Entity made = EntityTypes.TEXT_DISPLAY.create(base.level(), EntitySpawnReason.COMMAND);
             if (made == null) {
                 return;
             }

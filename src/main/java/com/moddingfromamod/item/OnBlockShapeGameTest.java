@@ -16,6 +16,7 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.monster.zombie.Zombie;
 import net.minecraft.world.entity.projectile.arrow.Arrow;
@@ -157,7 +158,7 @@ public final class OnBlockShapeGameTest {
         // stands — not a wand's 5 (MakeItemTool.BLOCK_REACH). Radius 2 round z+2 does not reach z+5.
         BlockPos ahead = feet.offset(0, 1, 2);
         helper.assertFalse(glowstoneNear(helper, ahead, 2), Component.literal("the wish happened on the RAISE, before any block"));
-        Zombie z = helper.spawn(EntityType.ZOMBIE, new BlockPos(1, 2, 3));
+        Zombie z = helper.spawn(EntityTypes.ZOMBIE, new BlockPos(1, 2, 3));
         z.setNoAi(true);
         z.snapTo(feet.getX() + 0.5, feet.getY(), feet.getZ() + 1.8, 180.0F, 0.0F);
         // THE CONTROL: the same hit with the shield down must hurt, or "not hurt" below proves nothing.
@@ -208,7 +209,7 @@ public final class OnBlockShapeGameTest {
         }
         p.snapTo(feet.getX() + 0.5, feet.getY(), feet.getZ() + 0.5, 0.0F, 0.0F);
         raise(helper, p, shield);
-        Zombie z = helper.spawn(EntityType.ZOMBIE, new BlockPos(1, 2, 3));
+        Zombie z = helper.spawn(EntityTypes.ZOMBIE, new BlockPos(1, 2, 3));
         z.removeFreeWill();
         z.snapTo(feet.getX() + 0.5, feet.getY(), feet.getZ() + 1.8, 180.0F, 0.0F);
         net.minecraft.world.phys.Vec3 from = z.position();
@@ -245,10 +246,10 @@ public final class OnBlockShapeGameTest {
         p.snapTo(feet.getX() + 0.5, feet.getY(), feet.getZ() + 0.5, 0.0F, 0.0F);
         raise(helper, p, shield);
         hurtable(p);
-        Zombie archer = helper.spawn(EntityType.ZOMBIE, new BlockPos(1, 2, 7));
+        Zombie archer = helper.spawn(EntityTypes.ZOMBIE, new BlockPos(1, 2, 7));
         archer.setNoAi(true);
         archer.snapTo(feet.getX() + 0.5, feet.getY(), feet.getZ() + 6.5, 180.0F, 0.0F);
-        Arrow arrow = new Arrow(EntityType.ARROW, helper.getLevel());
+        Arrow arrow = new Arrow(EntityTypes.ARROW, helper.getLevel());
         arrow.setOwner(archer);
         arrow.setPos(feet.getX() + 0.5, feet.getY() + 1.4, feet.getZ() + 4.5);
         arrow.setDeltaMovement(new Vec3(0, 0, -1.6));   // north, at him

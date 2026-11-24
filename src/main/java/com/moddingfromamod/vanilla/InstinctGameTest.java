@@ -169,7 +169,7 @@ public final class InstinctGameTest {
     public static void twoPlayersOnACourtStayOnIt(GameTestHelper helper) {
         String id = plant(helper, "t6c5_player", "{base:'wild', powers:['friendly'], speed:0.25}");
         BlockPos court = ground(helper, 1, AWAY + 2);
-        paint(helper, court, 3, Blocks.LIME_CONCRETE);
+        paint(helper, court, 3, Blocks.CONCRETE.lime());
         ServerPlayer kid = childAt(helper, "mfam-t6c5-court", court.offset(AWAY, 0, 0));
         wishAt(helper, id, court.offset(-2, 0, 0));
         wishAt(helper, id, court.offset(2, 0, 0));

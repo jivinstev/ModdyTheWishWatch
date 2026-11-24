@@ -15,6 +15,7 @@ import net.minecraft.gametest.framework.GameTestSequence;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.goal.FloatGoal;
 import net.minecraft.world.entity.monster.zombie.Zombie;
@@ -278,7 +279,7 @@ public final class ArchetypeLifeGameTest {
         // A zombie that stands still (NoAI) close by, in a corner: the archer must BACK OFF across the
         // plot to get into its bow's range (6+), then shoot. (Shot, a live zombie runs a slow body down
         // as it does a real skeleton, which would measure the zombie's legs, not the archer's.)
-        Zombie zombie = helper.spawn(EntityType.ZOMBIE, new BlockPos(2, y, 2));
+        Zombie zombie = helper.spawn(EntityTypes.ZOMBIE, new BlockPos(2, y, 2));
         zombie.setPersistenceRequired();
         zombie.setNoAi(true);
         Mob[] c = new Mob[1];
@@ -347,7 +348,7 @@ public final class ArchetypeLifeGameTest {
             }
         }
         plant(helper, id, a, Species.Base.GUARDIAN, new BlockPos(2, y, 2));
-        Zombie zombie = helper.spawn(EntityType.ZOMBIE, new BlockPos(6, y, 6));
+        Zombie zombie = helper.spawn(EntityTypes.ZOMBIE, new BlockPos(6, y, 6));
         zombie.setPersistenceRequired();
         zombie.setNoAi(true);
         Mob[] c = new Mob[1];

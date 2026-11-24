@@ -210,7 +210,7 @@ public final class VanillaWishClientTest {
                     //
                     // Restarting the settle each tick the overlay is up means the sixty ticks are
                     // sixty ticks of a client that is actually back.
-                    if (mc.getOverlay() != null) {
+                    if (mc.gui.overlay() != null) {
                         ticks = 0;
                         return;
                     }
@@ -407,7 +407,7 @@ public final class VanillaWishClientTest {
         if (mc.player == null) {
             return;
         }
-        mc.options.hideGui = true;
+        com.moddingfromamod.gatec.ClientHarness.setHudHidden(mc, true);
         mc.gui.setScreen(null);
         mc.player.setPos(CAM_X, CAM_Y, CAM_Z);
         mc.player.setYRot(CAM_YAW);
@@ -458,7 +458,7 @@ public final class VanillaWishClientTest {
                 return;
             }
             ServerLevel level = p.level();
-            var floor = net.minecraft.world.level.block.Blocks.WHITE_CONCRETE.defaultBlockState();
+            var floor = net.minecraft.world.level.block.Blocks.CONCRETE.white().defaultBlockState();
             for (int x = (int) CAM_X - 40; x <= (int) CAM_X + 40; x++) {
                 for (int z = (int) CAM_Z - 10; z <= (int) CAM_Z + 60; z++) {
                     level.setBlock(new net.minecraft.core.BlockPos(x, GROUND_Y, z), floor, 3);
@@ -576,8 +576,8 @@ public final class VanillaWishClientTest {
     }
 
     private static int[][] grab(Minecraft mc, String name) {
-        if (mc.getOverlay() != null) {
-            failLater = "a frame was captured with " + mc.getOverlay().getClass().getSimpleName()
+        if (mc.gui.overlay() != null) {
+            failLater = "a frame was captured with " + mc.gui.overlay().getClass().getSimpleName()
                     + " still on screen";
         }
         try (var img = Screenshots.take(mc.gameRenderer.mainRenderTarget())) {

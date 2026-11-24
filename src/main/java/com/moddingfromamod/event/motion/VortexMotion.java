@@ -38,6 +38,7 @@ import net.minecraft.world.entity.Display;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.LightningBolt;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.boss.enderdragon.EnderDragon;
@@ -411,7 +412,7 @@ public final class VortexMotion implements EventMotion {
 
     /** A display of {@code state} at {@code at}, gliding over {@link #POSE_EVERY} ticks, seen from far off. */
     private static Entity display(ServerLevel level, BlockState state, Vec3 at, float scale, EventWriter w) {
-        Entity d = EntityType.BLOCK_DISPLAY.create(level, EntitySpawnReason.COMMAND);
+        Entity d = EntityTypes.BLOCK_DISPLAY.create(level, EntitySpawnReason.COMMAND);
         if (d == null) {
             return null;
         }
@@ -429,14 +430,14 @@ public final class VortexMotion implements EventMotion {
     /** A family's streak slivers — its own blocks where they are opaque, a concrete of its colour for glass. */
     private BlockState[] streakBlocks() {
         return switch (family) {
-            case WATER -> new BlockState[] {net.minecraft.world.level.block.Blocks.LIGHT_BLUE_CONCRETE.defaultBlockState(),
-                    net.minecraft.world.level.block.Blocks.BLUE_CONCRETE.defaultBlockState()};
-            case FIRE -> new BlockState[] {net.minecraft.world.level.block.Blocks.ORANGE_CONCRETE.defaultBlockState(),
-                    net.minecraft.world.level.block.Blocks.RED_CONCRETE.defaultBlockState()};
-            case ENDER -> new BlockState[] {net.minecraft.world.level.block.Blocks.PURPLE_CONCRETE.defaultBlockState(),
+            case WATER -> new BlockState[] {net.minecraft.world.level.block.Blocks.CONCRETE.lightBlue().defaultBlockState(),
+                    net.minecraft.world.level.block.Blocks.CONCRETE.blue().defaultBlockState()};
+            case FIRE -> new BlockState[] {net.minecraft.world.level.block.Blocks.CONCRETE.orange().defaultBlockState(),
+                    net.minecraft.world.level.block.Blocks.CONCRETE.red().defaultBlockState()};
+            case ENDER -> new BlockState[] {net.minecraft.world.level.block.Blocks.CONCRETE.purple().defaultBlockState(),
                     net.minecraft.world.level.block.Blocks.OBSIDIAN.defaultBlockState()};
-            case WIND, CLOUD, OTHER -> new BlockState[] {net.minecraft.world.level.block.Blocks.WHITE_CONCRETE.defaultBlockState(),
-                    net.minecraft.world.level.block.Blocks.LIGHT_GRAY_CONCRETE.defaultBlockState()};
+            case WIND, CLOUD, OTHER -> new BlockState[] {net.minecraft.world.level.block.Blocks.CONCRETE.white().defaultBlockState(),
+                    net.minecraft.world.level.block.Blocks.CONCRETE.lightGray().defaultBlockState()};
             default -> new BlockState[] {material, core != null ? core : material};
         };
     }
@@ -447,7 +448,7 @@ public final class VortexMotion implements EventMotion {
      * back-facing twin (a text background is drawn from its front only), which a Bedrock player is never sent.
      */
     private static Entity ribbon(ServerLevel level, int argb, Vec3 at, EventWriter w, boolean back) {
-        Entity d = EntityType.TEXT_DISPLAY.create(level, EntitySpawnReason.COMMAND);
+        Entity d = EntityTypes.TEXT_DISPLAY.create(level, EntitySpawnReason.COMMAND);
         if (d == null) {
             return null;
         }
@@ -669,7 +670,7 @@ public final class VortexMotion implements EventMotion {
                 || s.hasProperty(BlockStateProperties.DOUBLE_BLOCK_HALF) || s.hasProperty(BlockStateProperties.BED_PART)) {
             return Vortex.Loose.NEVER;   // a chest, the sea, bedrock; a door or a tall flower would leave half behind
         }
-        if (s.is(BlockTags.FLOWERS) || s.is(BlockTags.SAPLINGS) || s.is(BlockTags.CROPS) || s.is(Blocks.SNOW)
+        if (s.is(BlockTags.FLOWERS) || s.is(net.minecraft.tags.BlockItemTags.SAPLINGS.block()) || s.is(BlockTags.CROPS) || s.is(Blocks.SNOW)
                 || s.is(Blocks.SHORT_GRASS) || s.is(Blocks.FERN) || s.is(Blocks.DEAD_BUSH) || s.canBeReplaced()) {
             return Vortex.Loose.PLANT;
         }
@@ -689,7 +690,7 @@ public final class VortexMotion implements EventMotion {
     /** What the world grew rather than he built: a vortex that spares his builds takes only these. */
     static boolean grown(BlockState s) {
         return natural(s) || s.is(BlockTags.LEAVES) || s.is(BlockTags.LOGS) || s.is(BlockTags.FLOWERS)
-                || s.is(BlockTags.SAPLINGS) || s.is(BlockTags.CROPS) || s.is(Blocks.SHORT_GRASS) || s.is(Blocks.FERN)
+                || s.is(net.minecraft.tags.BlockItemTags.SAPLINGS.block()) || s.is(BlockTags.CROPS) || s.is(Blocks.SHORT_GRASS) || s.is(Blocks.FERN)
                 || s.is(Blocks.DEAD_BUSH) || s.is(Blocks.SNOW) || (s.canBeReplaced() && s.getFluidState().isEmpty());
     }
 
@@ -857,7 +858,7 @@ public final class VortexMotion implements EventMotion {
         }
         if (shape == Vortex.Shape.SPIRAL && age % 35 == 17) {
             // Lightning along the eye wall: visual only, so no fire and no hurt (EVENTS_PLAN §16.2).
-            LightningBolt bolt = EntityType.LIGHTNING_BOLT.create(level, EntitySpawnReason.EVENT);
+            LightningBolt bolt = EntityTypes.LIGHTNING_BOLT.create(level, EntitySpawnReason.EVENT);
             if (bolt != null) {
                 double a = random.nextDouble() * Math.PI * 2;
                 double r = Vortex.spiralEye(scale) * (1.2 + random.nextDouble());

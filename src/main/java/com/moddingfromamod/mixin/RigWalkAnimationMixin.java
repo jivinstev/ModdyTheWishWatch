@@ -1,7 +1,6 @@
 package com.moddingfromamod.mixin;
 
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.animal.FlyingAnimal;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -24,7 +23,7 @@ public abstract class RigWalkAnimationMixin {
         LivingEntity self = (LivingEntity) (Object) this;
         if (!self.level().isClientSide()
                 && self.entityTags().contains(com.moddingfromamod.vanilla.DisplayRig.RIG_TAG)) {
-            self.calculateEntityAnimation(self instanceof FlyingAnimal);
+            self.calculateEntityAnimation(com.moddingfromamod.compat.Mobs.isFlyingAnimal(self));
         }
     }
 }

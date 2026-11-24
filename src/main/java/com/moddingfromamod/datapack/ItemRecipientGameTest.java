@@ -10,6 +10,7 @@ import net.minecraft.core.BlockPos;
 import com.moddingfromamod.testing.gt.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.monster.zombie.Zombie;
 import net.minecraft.world.item.ItemStack;
@@ -55,7 +56,7 @@ public class ItemRecipientGameTest {
     @GameTest(template = "empty_test", timeoutTicks = 600)
     public static void aCreatureEndsUpHOLDINGIt(GameTestHelper helper) {
         BlockPos at = new BlockPos(2, 2, 2);
-        Zombie mob = helper.spawn(EntityType.ZOMBIE, at);
+        Zombie mob = helper.spawn(EntityTypes.ZOMBIE, at);
         mob.setPersistenceRequired();
 
         String line = MakeItemTool.gives("plain", "gold_axe_plain", 17, 1, "It's yours to keep.",

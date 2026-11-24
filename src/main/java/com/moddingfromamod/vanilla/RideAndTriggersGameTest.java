@@ -112,7 +112,7 @@ public final class RideAndTriggersGameTest {
             return;
         }
         ServerPlayer kid = kidBesideIt(helper, "mfam-land-" + id);
-        net.minecraft.world.entity.monster.zombie.Husk husk = helper.spawn(net.minecraft.world.entity.EntityType.HUSK,
+        net.minecraft.world.entity.monster.zombie.Husk husk = helper.spawn(net.minecraft.world.entity.EntityTypes.HUSK,
                 SpeciesOnRigGameTest.SPOT.east(2));
         husk.setNoAi(true);
         boolean[] on = {false};

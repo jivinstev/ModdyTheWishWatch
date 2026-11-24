@@ -1132,8 +1132,9 @@ public final class ModifyMobTool implements McpTool {
         PlayerTeam team = scoreboard.getPlayersTeam(teamName);
         if (team == null) {
             team = scoreboard.addPlayerTeam(teamName);
-            ChatFormatting colour = ChatFormatting.getByName(tweak.glow());
-            if (colour != null) {
+            java.util.Optional<net.minecraft.world.scores.TeamColor> colour =
+                    com.moddingfromamod.compat.TeamColors.byName(tweak.glow());
+            if (colour.isPresent()) {
                 team.setColor(colour);
             }
         }

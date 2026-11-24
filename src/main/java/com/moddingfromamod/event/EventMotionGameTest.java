@@ -574,7 +574,7 @@ public final class EventMotionGameTest {
         Map<BlockPos, BlockState> before = snapshot(level, c, 12, g - 1, g + 3);
         String hens = "hens_" + o.getX(), snow = "snow_" + o.getX();
         SkyDropMotion rain = SkyDropMotion.entities(new SkyDrop(8, 2, 10), c, 5,
-                net.minecraft.world.entity.EntityType.CHICKEN);
+                net.minecraft.world.entity.EntityTypes.CHICKEN);
         SkyDropMotion flakes = SkyDropMotion.settling(new SkyDrop(10, 6, 20), c, 6,
                 Blocks.SNOW.defaultBlockState());
         EventDirector.start(level, hens, "", EventScale.LITTLE, EventGuard.Policy.INTO_OPEN, false, rain);

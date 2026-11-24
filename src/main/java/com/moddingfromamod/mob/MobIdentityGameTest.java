@@ -19,6 +19,7 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -107,13 +108,13 @@ public class MobIdentityGameTest {
      */
     @GameTest(template = "empty_test", timeoutTicks = 900, batch = "mobid_goat")
     public static void aSummonedMobIsTheSameMobOnAllThreeRungs(GameTestHelper helper) {
-        ServerLevel level = arrive(helper, EntityType.GOAT);
+        ServerLevel level = arrive(helper, EntityTypes.GOAT);
         Vec3 here = PlotChild.spot(helper);
 
         // Rung 1 — "summon a goat", through the path run_command really uses: diff the entities
         // near the child before and after, and hand a handle to whatever is new.
         var before = EntityCapture.snapshot(level, here);
-        LivingEntity goat = place(level, EntityType.GOAT, here.add(4, 0, 0));
+        LivingEntity goat = place(level, EntityTypes.GOAT, here.add(4, 0, 0));
         EntityCapture.rememberNew(level, here, before);
 
         AtomicReference<Ladder> out = new AtomicReference<>();
@@ -146,13 +147,13 @@ public class MobIdentityGameTest {
      */
     @GameTest(template = "empty_test", timeoutTicks = 900, batch = "mobid_panda")
     public static void theMobHePointedAtStaysTheMobEvenWhenAnotherIsNearer(GameTestHelper helper) {
-        ServerLevel level = arrive(helper, EntityType.PANDA);
+        ServerLevel level = arrive(helper, EntityTypes.PANDA);
         Vec3 here = PlotChild.spot(helper);
         // Twenty blocks is outside the plot: hold that chunk, or his panda is unloaded where he walked it.
         PlotChild.holdChunksAt(helper, here.add(20, 0, 0));
 
         // His panda. Deliberately NOT registered: he pointed at one that was already there.
-        LivingEntity his = place(level, EntityType.PANDA, here.add(4, 0, 0));
+        LivingEntity his = place(level, EntityTypes.PANDA, here.add(4, 0, 0));
         AtomicReference<LivingEntity> decoyRef = new AtomicReference<>();
 
         AtomicReference<Ladder> out = new AtomicReference<>();
@@ -161,7 +162,7 @@ public class MobIdentityGameTest {
             // …the child walks twenty blocks, and another panda is standing nearer than his.
             AgentBridge.onServer(() -> {
                 his.teleportTo(here.x + 20, here.y, here.z);
-                decoyRef.set(place(level, EntityType.PANDA, here.add(3, 0, 0)));
+                decoyRef.set(place(level, EntityTypes.PANDA, here.add(3, 0, 0)));
                 return null;
             });
             l.rung(3, asAFreshWorkerWould("panda"), "\"scale\":4.0");
@@ -195,10 +196,10 @@ public class MobIdentityGameTest {
      */
     @GameTest(template = "empty_test", timeoutTicks = 900, batch = "mobid_fox")
     public static void whenTheMobDiesTheAnswerIsHeIsGoneAndNotAnotherFox(GameTestHelper helper) {
-        ServerLevel level = arrive(helper, EntityType.FOX);
+        ServerLevel level = arrive(helper, EntityTypes.FOX);
         Vec3 here = PlotChild.spot(helper);
 
-        LivingEntity his = place(level, EntityType.FOX, here.add(4, 0, 0));
+        LivingEntity his = place(level, EntityTypes.FOX, here.add(4, 0, 0));
         AtomicReference<LivingEntity> otherRef = new AtomicReference<>();
 
         AtomicReference<Ladder> out = new AtomicReference<>();
@@ -207,7 +208,7 @@ public class MobIdentityGameTest {
             // …it burns at sunrise, and another fox wanders up.
             AgentBridge.onServer(() -> {
                 his.discard();
-                otherRef.set(place(level, EntityType.FOX, here.add(3, 0, 0)));
+                otherRef.set(place(level, EntityTypes.FOX, here.add(3, 0, 0)));
                 return null;
             });
             l.rung(3, asAFreshWorkerWould("fox"), "\"scale\":4.0");
@@ -243,12 +244,12 @@ public class MobIdentityGameTest {
      */
     @GameTest(template = "empty_test", timeoutTicks = 900, batch = "mobid_llama")
     public static void theReferentSurvivesADifferentWorkerOnEveryRung(GameTestHelper helper) {
-        ServerLevel level = arrive(helper, EntityType.LLAMA);
+        ServerLevel level = arrive(helper, EntityTypes.LLAMA);
         Vec3 here = PlotChild.spot(helper);
         // Twenty blocks is outside the plot: hold that chunk, or his llama is unloaded where he walked it.
         PlotChild.holdChunksAt(helper, here.add(20, 0, 0));
 
-        LivingEntity his = place(level, EntityType.LLAMA, here.add(4, 0, 0));
+        LivingEntity his = place(level, EntityTypes.LLAMA, here.add(4, 0, 0));
         AtomicReference<LivingEntity> decoyRef = new AtomicReference<>();
 
         AtomicReference<Ladder> out = new AtomicReference<>();
@@ -257,7 +258,7 @@ public class MobIdentityGameTest {
                     "\"scale\":2.0", "mobid-pool-w2");
             AgentBridge.onServer(() -> {
                 his.teleportTo(here.x + 20, here.y, here.z);
-                decoyRef.set(place(level, EntityType.LLAMA, here.add(3, 0, 0)));
+                decoyRef.set(place(level, EntityTypes.LLAMA, here.add(3, 0, 0)));
                 return null;
             });
             l.rung(3, AgentContext.with("mobid-pool-w3", () -> asAFreshWorkerWould("llama")),
@@ -309,9 +310,9 @@ public class MobIdentityGameTest {
      */
     @GameTest(template = "empty_test", timeoutTicks = 900, batch = "mobid_turtle")
     public static void theNameIsOnDiskAndSurvivesTheWorldClosing(GameTestHelper helper) {
-        ServerLevel level = arrive(helper, EntityType.TURTLE);
+        ServerLevel level = arrive(helper, EntityTypes.TURTLE);
         Vec3 here = PlotChild.spot(helper);
-        LivingEntity turtle = place(level, EntityType.TURTLE, here.add(4, 0, 0));
+        LivingEntity turtle = place(level, EntityTypes.TURTLE, here.add(4, 0, 0));
 
         AtomicReference<Ladder> out = new AtomicReference<>();
         ladder(out, l -> l.rung(2, "turtle", "\"scale\":2.0"));
@@ -364,9 +365,9 @@ public class MobIdentityGameTest {
      */
     @GameTest(template = "empty_test", timeoutTicks = 900, batch = "mobid_sniffer")
     public static void aChangedMobIsRecordedAsSomethingTheWishWasAbout(GameTestHelper helper) {
-        ServerLevel level = arrive(helper, EntityType.SNIFFER);
+        ServerLevel level = arrive(helper, EntityTypes.SNIFFER);
         Vec3 here = PlotChild.spot(helper);
-        LivingEntity sniffer = place(level, EntityType.SNIFFER, here.add(4, 0, 0));
+        LivingEntity sniffer = place(level, EntityTypes.SNIFFER, here.add(4, 0, 0));
 
         AtomicReference<String> reported = new AtomicReference<>();
         AtomicReference<Ladder> out = new AtomicReference<>();
@@ -415,9 +416,9 @@ public class MobIdentityGameTest {
     // nothing else standing at world spawn, which is how CreatureResolverGameTest keeps the same spot clean.
     @GameTest(template = "empty_test", timeoutTicks = 900, batch = "mobid_undo")
     public static void undoingAMobWishPutsTheAnimalBack(GameTestHelper helper) {
-        ServerLevel level = arrive(helper, EntityType.CAMEL);
+        ServerLevel level = arrive(helper, EntityTypes.CAMEL);
         Vec3 here = PlotChild.spot(helper);
-        LivingEntity camel = place(level, EntityType.CAMEL, here.add(4, 0, 0));
+        LivingEntity camel = place(level, EntityTypes.CAMEL, here.add(4, 0, 0));
         double sizeBefore = camel.getAttributeValue(Attributes.SCALE);
 
         var marshal = com.moddingfromamod.marshal.Marshal.global();
@@ -475,9 +476,9 @@ public class MobIdentityGameTest {
     // ModifyMobGameTest's) could push the axolotl out between its rung and the assertion.
     @GameTest(template = "empty_test", timeoutTicks = 900, batch = "mobid_candidates")
     public static void aChangedMobIsSomethingHeCouldMeanByHim(GameTestHelper helper) {
-        ServerLevel level = arrive(helper, EntityType.AXOLOTL);
+        ServerLevel level = arrive(helper, EntityTypes.AXOLOTL);
         Vec3 here = PlotChild.spot(helper);
-        LivingEntity axolotl = place(level, EntityType.AXOLOTL, here.add(4, 0, 0));
+        LivingEntity axolotl = place(level, EntityTypes.AXOLOTL, here.add(4, 0, 0));
 
         AtomicReference<Ladder> out = new AtomicReference<>();
         ladder(out, l -> l.rung(2, "axolotl", "\"scale\":2.0"));
@@ -537,9 +538,9 @@ public class MobIdentityGameTest {
      */
     @GameTest(template = "empty_test", timeoutTicks = 900, batch = "mobid_bee")
     public static void aMobWishMustSayHowManyAnimalsItMeans(GameTestHelper helper) {
-        ServerLevel level = arrive(helper, EntityType.BEE);
+        ServerLevel level = arrive(helper, EntityTypes.BEE);
         Vec3 here = PlotChild.spot(helper);
-        LivingEntity bee = place(level, EntityType.BEE, here.add(4, 0, 0));
+        LivingEntity bee = place(level, EntityTypes.BEE, here.add(4, 0, 0));
 
         AtomicReference<ToolResult> out = new AtomicReference<>();
         offThread(() -> out.set(new ModifyMobTool().call(JsonParser.parseString(
@@ -567,9 +568,9 @@ public class MobIdentityGameTest {
      */
     @GameTest(template = "empty_test", timeoutTicks = 900, batch = "mobid_rabbit")
     public static void claimingTheWholeSpeciesAboutOneAnimalIsRefused(GameTestHelper helper) {
-        ServerLevel level = arrive(helper, EntityType.RABBIT);
+        ServerLevel level = arrive(helper, EntityTypes.RABBIT);
         Vec3 here = PlotChild.spot(helper);
-        LivingEntity rabbit = place(level, EntityType.RABBIT, here.add(4, 0, 0));
+        LivingEntity rabbit = place(level, EntityTypes.RABBIT, here.add(4, 0, 0));
 
         var marshal = com.moddingfromamod.marshal.Marshal.global();
         java.util.UUID wishId = java.util.UUID.randomUUID();
@@ -700,10 +701,10 @@ public class MobIdentityGameTest {
      */
     @GameTest(template = "empty_test", timeoutTicks = 900, batch = "mobid_ocelot")
     public static void twoOfTheSameKindAlreadyChangedMeansAskHim(GameTestHelper helper) {
-        ServerLevel level = arrive(helper, EntityType.OCELOT);
+        ServerLevel level = arrive(helper, EntityTypes.OCELOT);
         Vec3 here = PlotChild.spot(helper);
-        LivingEntity first = place(level, EntityType.OCELOT, here.add(4, 0, 0));
-        LivingEntity second = place(level, EntityType.OCELOT, here.add(8, 0, 0));
+        LivingEntity first = place(level, EntityTypes.OCELOT, here.add(4, 0, 0));
+        LivingEntity second = place(level, EntityTypes.OCELOT, here.add(8, 0, 0));
 
         AtomicReference<Ladder> out = new AtomicReference<>();
         ladder(out, l -> {
@@ -744,7 +745,7 @@ public class MobIdentityGameTest {
      */
     @GameTest(template = "empty_test", timeoutTicks = 900, batch = "mobid_nearest")
     public static void thereIsAWayToSayHeMeansADifferentOne(GameTestHelper helper) {
-        ServerLevel level = arrive(helper, EntityType.MULE);
+        ServerLevel level = arrive(helper, EntityTypes.MULE);
         Vec3 here = PlotChild.spot(helper);
         // @nearest is "whichever mob is nearest", of ANY kind, so this is the one test here whose
         // answer depends on every other animal at world spawn: in defaultBatch,
@@ -755,8 +756,8 @@ public class MobIdentityGameTest {
             e.discard();
         }
         PlotChild.holdChunksAt(helper, here.add(20, 0, 0));   // outside the plot: held for this test
-        LivingEntity his = place(level, EntityType.MULE, here.add(20, 0, 0));
-        LivingEntity other = place(level, EntityType.MULE, here.add(3, 0, 0));
+        LivingEntity his = place(level, EntityTypes.MULE, here.add(20, 0, 0));
+        LivingEntity other = place(level, EntityTypes.MULE, here.add(3, 0, 0));
 
         AtomicReference<Ladder> out = new AtomicReference<>();
         ladder(out, l -> {
@@ -799,9 +800,9 @@ public class MobIdentityGameTest {
      */
     @GameTest(template = "empty_test", timeoutTicks = 900, batch = "mobid_frog")
     public static void makingHimBiggerMayNotMakeHimSmaller(GameTestHelper helper) {
-        ServerLevel level = arrive(helper, EntityType.FROG);
+        ServerLevel level = arrive(helper, EntityTypes.FROG);
         Vec3 here = PlotChild.spot(helper);
-        LivingEntity frog = place(level, EntityType.FROG, here.add(4, 0, 0));
+        LivingEntity frog = place(level, EntityTypes.FROG, here.add(4, 0, 0));
         // SIZE, not speed, even though an earlier issue's headline example is "make him faster". Every mob
         // starts at scale 1.0 against a ceiling of 8, whereas a frog's base MOVEMENT_SPEED is 1.0
         // and MobTweak clamps speed to 0.6 — so on a frog NO legal speed is faster, and the first
@@ -857,9 +858,9 @@ public class MobIdentityGameTest {
      */
     @GameTest(template = "empty_test", timeoutTicks = 900, batch = "mobid_parrot")
     public static void aGlowingMobSaysWhatColourItIsAlreadyGlowing(GameTestHelper helper) {
-        ServerLevel level = arrive(helper, EntityType.PARROT);
+        ServerLevel level = arrive(helper, EntityTypes.PARROT);
         Vec3 here = PlotChild.spot(helper);
-        LivingEntity parrot = place(level, EntityType.PARROT, here.add(4, 0, 0));
+        LivingEntity parrot = place(level, EntityTypes.PARROT, here.add(4, 0, 0));
 
         AtomicReference<Ladder> out = new AtomicReference<>();
         AtomicReference<String> report = new AtomicReference<>();
@@ -1077,7 +1078,7 @@ public class MobIdentityGameTest {
         sb.append("; @camel names ").append(h.map(x -> x.id().toString().substring(0, 8)).orElse("nothing"));
         sb.append("; camels within 64 of the child:");
         for (LivingEntity e : level.getEntitiesOfClass(LivingEntity.class, new AABB(here, here).inflate(64),
-                e -> e.getType() == EntityType.CAMEL)) {
+                e -> e.getType() == EntityTypes.CAMEL)) {
             sb.append(String.format(java.util.Locale.ROOT, " [%s %.1f blocks scale %.2f tags %s]",
                     e.getUUID().toString().substring(0, 8), e.position().distanceTo(here),
                     e.getAttributeValue(Attributes.SCALE), e.entityTags()));

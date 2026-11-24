@@ -15,6 +15,7 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.phys.Vec3;
 import com.moddingfromamod.testing.gt.GameTestHolder;
 
@@ -45,7 +46,7 @@ public final class WishMobLimitGameTest {
         int want = SpawnBudget.perWish(SpawnBudget.Kind.EXPLOSIVE) * 3;
         List<Entity> stands = new ArrayList<>();
         for (int i = 0; i < want; i++) {
-            Entity s = helper.spawn(EntityType.ARMOR_STAND, new BlockPos(1 + i % 3, 2, 1 + (i / 3) % 3));
+            Entity s = helper.spawn(EntityTypes.ARMOR_STAND, new BlockPos(1 + i % 3, 2, 1 + (i / 3) % 3));
             s.addTag(STAND);
             stands.add(s);
         }
@@ -109,7 +110,7 @@ public final class WishMobLimitGameTest {
         int liveBefore = WishMobLimit.live(helper.getLevel().dimension(), SpawnBudget.Kind.EXPLOSIVE);
         int want = SpawnBudget.worldLive(SpawnBudget.Kind.EXPLOSIVE) + 20;
         for (int i = 0; i < want; i++) {
-            helper.spawn(EntityType.CREEPER, new BlockPos(1 + i % 3, 2, 1 + (i / 3) % 3)).setNoAi(true);
+            helper.spawn(EntityTypes.CREEPER, new BlockPos(1 + i % 3, 2, 1 + (i / 3) % 3)).setNoAi(true);
         }
         int made = creepers(helper) - before;
         helper.assertTrue(made == want, Component.literal("unwished creepers were capped: " + made + " of " + want));
@@ -158,12 +159,12 @@ public final class WishMobLimitGameTest {
     @GameTest(template = "empty_test", batch = "wishmoblimit5", timeoutTicks = 200)
     public static void aWishedCreatureTheLevelRefusesIsNotCounted(GameTestHelper helper) {
         var level = helper.getLevel();
-        var first = helper.spawn(EntityType.CREEPER, new BlockPos(1, 2, 1));   // nobody's wish: not counted
+        var first = helper.spawn(EntityTypes.CREEPER, new BlockPos(1, 2, 1));   // nobody's wish: not counted
         first.setNoAi(true);
         int liveBefore = WishMobLimit.live(level.dimension(), SpawnBudget.Kind.EXPLOSIVE);
         String wish = "gametest-2399-dup-" + System.nanoTime();
         boolean added = SpawnScope.during(wish, com.moddingfromamod.item.delivery.DeliveryPlan.Kind.HANDOVER, () -> {
-            var copy = EntityType.CREEPER.create(level, net.minecraft.world.entity.EntitySpawnReason.COMMAND);
+            var copy = EntityTypes.CREEPER.create(level, net.minecraft.world.entity.EntitySpawnReason.COMMAND);
             copy.setUUID(first.getUUID());
             copy.setNoAi(true);
             copy.setPos(Vec3.atBottomCenterOf(helper.absolutePos(new BlockPos(2, 2, 2))));
@@ -190,13 +191,13 @@ public final class WishMobLimitGameTest {
     }
 
     private static int creepers(GameTestHelper helper) {
-        return helper.getEntities(EntityType.CREEPER).size();
+        return helper.getEntities(EntityTypes.CREEPER).size();
     }
 
     /** Remove what we made and prove the guard gave the budget back. */
     private static void cleanUp(GameTestHelper helper, int liveBefore) {
         var level = helper.getLevel();
-        helper.getEntities(EntityType.CREEPER).forEach(Entity::discard);
+        helper.getEntities(EntityTypes.CREEPER).forEach(Entity::discard);
         helper.runAfterDelay(2, () -> {
             helper.assertTrue(WishMobLimit.live(level.dimension(), SpawnBudget.Kind.EXPLOSIVE) == liveBefore,
                     Component.literal("removing them did not give the budget back ("

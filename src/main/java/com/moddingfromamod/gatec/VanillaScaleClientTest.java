@@ -458,7 +458,7 @@ public final class VanillaScaleClientTest {
      */
     private static int renderedEntities(Minecraft mc) {
         try {
-            String s = mc.levelRenderer.getEntityStatistics();
+            String s = mc.levelExtractor.entityStatistics();
             int e = s.indexOf("E: ");
             int slash = s.indexOf('/', e);
             if (e < 0 || slash < 0) {
@@ -543,7 +543,7 @@ public final class VanillaScaleClientTest {
         if (mc.player == null) {
             return;
         }
-        mc.options.hideGui = true;
+        com.moddingfromamod.gatec.ClientHarness.setHudHidden(mc, true);
         mc.gui.setScreen(null);
         mc.player.setPos(CAM_X, CAM_Y, CAM_Z);
         mc.player.setYRot(0f);

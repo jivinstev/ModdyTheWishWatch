@@ -82,8 +82,8 @@ public final class WatchMenu extends ChestMenu {
     private static final net.minecraft.world.item.Item PRESET_ICON = Items.AMETHYST_SHARD;
     private static final net.minecraft.world.item.Item HAPPENING_ICON = Items.CLOCK;
     private static final net.minecraft.world.item.Item CREATION_ICON = Items.BOOK;
-    private static final net.minecraft.world.item.Item REJECT_ICON = Items.RED_DYE;
-    private static final net.minecraft.world.item.Item CLOSE_ICON = Items.GRAY_DYE;
+    private static final net.minecraft.world.item.Item REJECT_ICON = Items.DYE.red();
+    private static final net.minecraft.world.item.Item CLOSE_ICON = Items.DYE.gray();
 
     /** The page on screen now. Not final: paging RE-LAYS this same menu. */
     private WatchPanel.Layout layout;

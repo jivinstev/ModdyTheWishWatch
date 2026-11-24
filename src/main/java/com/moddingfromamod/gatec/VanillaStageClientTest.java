@@ -387,7 +387,7 @@ public final class VanillaStageClientTest {
         if (mc.player == null) {
             return;
         }
-        mc.options.hideGui = true;
+        com.moddingfromamod.gatec.ClientHarness.setHudHidden(mc, true);
         mc.gui.setScreen(null);
         Vec3 foot = stage();
         double aimY = foot.y + camAimY;

@@ -19,6 +19,7 @@ import net.minecraft.world.entity.Display;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.LightningBolt;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.level.block.Blocks;
@@ -131,10 +132,10 @@ public final class VortexGameTest {
         force(helper, o, 40);
         platform(level, o, 24, Blocks.GRASS_BLOCK.defaultBlockState());
         BlockPos at = o.above();
-        var sheep = mob(level, EntityType.SHEEP, at.offset(1, 0, 0));
-        var chicken = mob(level, EntityType.CHICKEN, at.offset(-1, 0, 1));
-        var horse = mob(level, EntityType.HORSE, at.offset(0, 0, -2));
-        Entity boat = EntityType.OAK_BOAT.create(level, EntitySpawnReason.COMMAND);
+        var sheep = mob(level, EntityTypes.SHEEP, at.offset(1, 0, 0));
+        var chicken = mob(level, EntityTypes.CHICKEN, at.offset(-1, 0, 1));
+        var horse = mob(level, EntityTypes.HORSE, at.offset(0, 0, -2));
+        Entity boat = EntityTypes.OAK_BOAT.create(level, EntitySpawnReason.COMMAND);
         boat.snapTo(at.getX() + 0.5, at.getY(), at.getZ() + 2.5, 0, 0);
         level.addFreshEntity(boat);
         double[] rose = new double[4];
@@ -171,8 +172,8 @@ public final class VortexGameTest {
         force(helper, o, 30);
         platform(level, o, 16, Blocks.GRASS_BLOCK.defaultBlockState());
         BlockPos at = o.above();
-        var sheep = mob(level, EntityType.SHEEP, at.offset(1, 0, 0));
-        var chicken = mob(level, EntityType.CHICKEN, at.offset(-1, 0, 0));
+        var sheep = mob(level, EntityTypes.SHEEP, at.offset(1, 0, 0));
+        var chicken = mob(level, EntityTypes.CHICKEN, at.offset(-1, 0, 0));
         double[] rose = new double[2];
         double s0 = sheep.getY(), c0 = chicken.getY();
         String id = stage(helper, design("{\"name\":\"dd\",\"motion\":\"vortex\",\"size\":\"little\",\"path\":\"stay\","
@@ -296,7 +297,7 @@ public final class VortexGameTest {
                 }
             }
         }
-        Entity boat = EntityType.OAK_BOAT.create(level, EntitySpawnReason.COMMAND);
+        Entity boat = EntityTypes.OAK_BOAT.create(level, EntitySpawnReason.COMMAND);
         boat.snapTo(o.getX() + 3.5, o.getY() + 1, o.getZ() + 0.5, 0, 0);
         level.addFreshEntity(boat);
         double y0 = boat.getY();
@@ -328,7 +329,7 @@ public final class VortexGameTest {
         BlockPos o = lane();
         force(helper, o, 40);
         platform(level, o, 20, Blocks.GRASS_BLOCK.defaultBlockState());
-        var chicken = mob(level, EntityType.CHICKEN, o.offset(5, 1, 0));
+        var chicken = mob(level, EntityTypes.CHICKEN, o.offset(5, 1, 0));
         double c0 = chicken.getX();
         java.util.Set<java.util.UUID> bolts = new java.util.HashSet<>();
         double[] blown = {0};
@@ -367,7 +368,7 @@ public final class VortexGameTest {
             var ev = EventDirector.get(level.getServer(), id);
             helper.assertTrue(ev == null || ev.phase() == EventPhase.KEPT, Component.literal("it has spun down"));
             helper.assertTrue(displaysOf(level, o, id) == 0, Component.literal("every display has gone"));
-            int cats = level.getEntities((Entity) null, new AABB(o).inflate(60), e -> e.getType() == EntityType.CAT
+            int cats = level.getEntities((Entity) null, new AABB(o).inflate(60), e -> e.getType() == EntityTypes.CAT
                     && e.entityTags().contains(tag)).size();
             helper.assertTrue(cats >= 20, Component.literal("a cyclone FULL of cats (asked for: way more cats), landed and "
                     + "stayed: " + cats));
@@ -383,8 +384,8 @@ public final class VortexGameTest {
         BlockPos o = lane();
         force(helper, o, 40);
         platform(level, o, 24, Blocks.GRASS_BLOCK.defaultBlockState());
-        var cow = mob(level, EntityType.COW, o.offset(1, 1, 0));
-        var wolf = mob(level, EntityType.WOLF, o.offset(-1, 1, 0));
+        var cow = mob(level, EntityTypes.COW, o.offset(1, 1, 0));
+        var wolf = mob(level, EntityTypes.WOLF, o.offset(-1, 1, 0));
         var owner = helper.makeMockPlayer(net.minecraft.world.level.GameType.SURVIVAL);
         wolf.tame(owner);
         float wolfFull = wolf.getHealth();
@@ -540,7 +541,7 @@ public final class VortexGameTest {
                         Component.literal("waiting for it to tear up a log"));
                 helper.assertTrue(displaysOf(level, o, id) > 0, Component.literal("waiting for it to be drawn"));
                 helper.assertTrue(!level.getEntities((Entity) null, new AABB(o).inflate(80),
-                        e -> e.getType() == EntityType.CAT && e.entityTags().contains(tag)).isEmpty(),
+                        e -> e.getType() == EntityTypes.CAT && e.entityTags().contains(tag)).isEmpty(),
                         Component.literal("waiting for its first cat"));
                 EventDirector.endForTest(level.getServer(), id);
                 ended[0] = true;

@@ -13,6 +13,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.animal.cow.Cow;
 
 /**
@@ -30,7 +31,7 @@ public class SoundLedgerGameTest {
     @GameTest(template = "empty_test", batch = "sound_ledger_subject", timeoutTicks = 100)
     public static void aSoundIsPlacedWhereItsCreatureStoodWhenItWasSent(GameTestHelper helper) {
         MockPlayerNetwork.clearStaleMocks(helper);
-        Cow cow = helper.spawn(EntityType.COW, new BlockPos(2, 2, 2));
+        Cow cow = helper.spawn(EntityTypes.COW, new BlockPos(2, 2, 2));
         ServerPlayer kid = MockPlayerNetwork.inLevel(helper, "mfam-ledger-kid");
         SoundLedger.start();
         try {

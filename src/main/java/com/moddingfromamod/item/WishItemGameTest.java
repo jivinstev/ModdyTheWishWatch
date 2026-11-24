@@ -12,6 +12,7 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.throwableitemprojectile.Snowball;
@@ -60,7 +61,7 @@ public class WishItemGameTest {
         stack.getItem().useOn(new UseOnContext(player, InteractionHand.MAIN_HAND,
                 new BlockHitResult(Vec3.atCenterOf(floor).add(0, 0.5, 0), Direction.UP, floor, false)));
 
-        List<ArmorStand> found = level.getEntities(EntityType.ARMOR_STAND,
+        List<ArmorStand> found = level.getEntities(EntityTypes.ARMOR_STAND,
                 new AABB(floor.above()).inflate(1.5), e -> e.entityTags().contains("wishthing_probe"));
         helper.assertTrue(found.size() == 1,
                 Component.literal("the wish's own tag must reach the anchor, or nothing can find what was placed"));
@@ -90,7 +91,7 @@ public class WishItemGameTest {
 
         stack.getItem().use(level, player, InteractionHand.MAIN_HAND);
 
-        List<Snowball> balls = level.getEntities(EntityType.SNOWBALL,
+        List<Snowball> balls = level.getEntities(EntityTypes.SNOWBALL,
                 new AABB(at).inflate(6.0), e -> e.entityTags().contains("wishthrow_probe"));
         helper.assertTrue(balls.size() == 1,
                 Component.literal("throwing must produce exactly one tagged projectile, produced " + balls.size()));
@@ -218,7 +219,7 @@ public class WishItemGameTest {
         player.setItemInHand(InteractionHand.MAIN_HAND, stack);
         stack.getItem().use(level, player, InteractionHand.MAIN_HAND);
 
-        List<Snowball> balls = level.getEntities(EntityType.SNOWBALL,
+        List<Snowball> balls = level.getEntities(EntityTypes.SNOWBALL,
                 new AABB(at).inflate(8.0), s -> s.entityTags().contains("boom_probe"));
         helper.assertTrue(balls.size() == 1, Component.literal("one tagged projectile"));
         helper.assertTrue(balls.get(0).getPersistentData()
@@ -234,7 +235,7 @@ public class WishItemGameTest {
         ServerLevel level = helper.getLevel();
         ItemStack bare = new ItemStack(ModItems.WISH_ITEM.get());
         Player player = helper.makeMockPlayer(GameType.SURVIVAL);
-        player.setPos(helper.absolutePos(new BlockPos(6, 2, 6)).getCenter().x, 2, 6);
+        player.setPos(net.minecraft.world.phys.Vec3.atCenterOf(helper.absolutePos(new BlockPos(6, 2, 6))).x, 2, 6);
         player.setItemInHand(InteractionHand.MAIN_HAND, bare);
         var result = com.moddingfromamod.compat.Interactions.use(bare.getItem(), level, player, InteractionHand.MAIN_HAND);
         helper.assertTrue(result == net.minecraft.world.InteractionResult.PASS,

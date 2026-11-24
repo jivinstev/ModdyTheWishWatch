@@ -20,6 +20,7 @@ import com.moddingfromamod.testing.gt.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import com.moddingfromamod.testing.gt.GameTestHolder;
@@ -237,7 +238,7 @@ public class ChildExpectationsGameTest {
     @GameTest(template = "empty_test", timeoutTicks = 300, batch = BATCH)
     public static void editingAVanillaMobIsHonestAboutNotBeingSaved(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
-        LivingEntity zombie = EntityType.ZOMBIE.create(level, EntitySpawnReason.COMMAND);
+        LivingEntity zombie = EntityTypes.ZOMBIE.create(level, EntitySpawnReason.COMMAND);
         BlockPos at = helper.absolutePos(new BlockPos(4, 2, 4));
         zombie.snapTo(at.getX() + 0.5, at.getY(), at.getZ() + 0.5, 0, 0);
         level.addFreshEntity(zombie);

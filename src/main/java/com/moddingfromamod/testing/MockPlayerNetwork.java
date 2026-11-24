@@ -464,7 +464,7 @@ public final class MockPlayerNetwork {
         // mock the overworld's spawn.
         net.minecraft.server.level.ServerLevel spawnLevel = level.getServer().overworld();
         player.setServerLevel(spawnLevel);
-        player.snapTo(player.adjustSpawnLocation(spawnLevel, spawnLevel.getRespawnData().pos()).getBottomCenter(),
+        player.snapTo(net.minecraft.world.phys.Vec3.atBottomCenterOf(player.adjustSpawnLocation(spawnLevel, spawnLevel.getRespawnData().pos())),
                 spawnLevel.getRespawnData().yaw(), 0.0F);
         entitiesLoadedWhereHeLands(level.getServer(), landing);
         level.getServer().getPlayerList().placeNewPlayer(connection, player, cookie);

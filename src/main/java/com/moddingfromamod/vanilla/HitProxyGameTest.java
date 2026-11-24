@@ -11,6 +11,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.arrow.Arrow;
@@ -93,7 +94,7 @@ public class HitProxyGameTest {
     }
 
     private static Arrow arrowAt(ServerLevel level, Vec3 target, Vec3 from, Mob owner) {
-        Arrow arrow = EntityType.ARROW.create(level, EntitySpawnReason.COMMAND);
+        Arrow arrow = EntityTypes.ARROW.create(level, EntitySpawnReason.COMMAND);
         arrow.setPos(from.x, from.y, from.z);
         arrow.setNoGravity(true);   // straight at the point, so a miss is the box and not the aim
         if (owner != null) {

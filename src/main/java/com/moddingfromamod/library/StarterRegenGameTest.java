@@ -219,7 +219,7 @@ public class StarterRegenGameTest {
             helper.assertFalse(sword.isEmpty(), Component.literal("no Lightning Sword arrived"));
             p.getInventory().clearContent();
             p.setItemInHand(net.minecraft.world.InteractionHand.MAIN_HAND, sword);
-            var z = helper.spawn(net.minecraft.world.entity.EntityType.ZOMBIE, new net.minecraft.core.BlockPos(1, 2, 3));
+            var z = helper.spawn(net.minecraft.world.entity.EntityTypes.ZOMBIE, new net.minecraft.core.BlockPos(1, 2, 3));
             z.setNoAi(true);
             z.snapTo(p.getX(), p.getY(), p.getZ() + 1.5, 180.0F, 0.0F);
             p.attack(z);

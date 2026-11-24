@@ -71,7 +71,7 @@ public final class CarrierRideProbeGameTest {
                 kid.stopRiding();
                 kid.getInventory().clearContent();
                 kid.teleportTo(m.getX(), m.getY(), m.getZ() - 1);
-                NeoForge.EVENT_BUS.post(new PlayerInteractEvent.EntityInteract(kid, InteractionHand.MAIN_HAND, m));
+                NeoForge.EVENT_BUS.post(com.moddingfromamod.mv.Interact.event(kid, InteractionHand.MAIN_HAND, m));
                 kid.setYRot(0f);
                 kid.setXRot(0f);
                 cur[0] = m;

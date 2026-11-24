@@ -6,6 +6,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BedBlock;
 import net.minecraft.world.level.block.state.BlockState;
@@ -73,7 +74,7 @@ public final class GoHome {
         if (level != null) {
             BlockState state = level.getBlockState(respawn);
             if (state.getBlock() instanceof BedBlock) {
-                var stand = BedBlock.findStandUpPosition(EntityType.PLAYER, level, respawn,
+                var stand = BedBlock.findStandUpPosition(EntityTypes.PLAYER, level, respawn,
                         state.getValue(BedBlock.FACING), com.moddingfromamod.compat.Respawn.angle(p));
                 if (stand.isPresent()) {
                     return new Home(level, stand.get(), true);

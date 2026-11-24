@@ -215,7 +215,7 @@ public final class VanillaStateClientTest {
                     // half-drawn behind it, mean rgb (208,122,144) against the real (166,196,246),
                     // so every difference taken against it was ~100% of the box. The overlay's
                     // absence is the real condition, and it is one call.
-                    if (reloadDone && mc.getOverlay() == null && ticks > 20) {
+                    if (reloadDone && mc.gui.overlay() == null && ticks > 20) {
                         go(Phase.SPAWN);
                     }
                 }
@@ -301,7 +301,7 @@ public final class VanillaStateClientTest {
             // Arm A's JOB in every row is "a creature drawn the ordinary way, so a zero here means
             // the harness never applied the state" -- which any visible vanilla mob does natively.
             // An iron golem: large enough to frame like a creature, and stable with AI off.
-            Mob mob = net.minecraft.world.entity.EntityType.IRON_GOLEM.create(level, EntitySpawnReason.COMMAND);
+            Mob mob = net.minecraft.world.entity.EntityTypes.IRON_GOLEM.create(level, EntitySpawnReason.COMMAND);
             if (mob == null) {
                 finish(false, "could not create the control mob");
                 return;
@@ -344,7 +344,7 @@ public final class VanillaStateClientTest {
             // A cow also happens to be the better control: 0.9 x 1.4 is far closer to this
             // creature's width-to-height than a zombie's 0.6 x 1.95, so the flame comparison is
             // between two similar shapes rather than two opposite ones.
-            var z = net.minecraft.world.entity.EntityType.COW.create(level, EntitySpawnReason.COMMAND);
+            var z = net.minecraft.world.entity.EntityTypes.COW.create(level, EntitySpawnReason.COMMAND);
             if (z != null) {
                 z.snapTo(CAM_X, FOOT_Y, STAGE_Z, 270f, 0f);
                 z.setYBodyRot(270f);
@@ -403,7 +403,7 @@ public final class VanillaStateClientTest {
             ServerLevel level = p.level();
             // WHITE, because a shadow is a subtraction and the darker the floor the less there is
             // to subtract. On grass this measurement would be a handful of pixels.
-            var floor = net.minecraft.world.level.block.Blocks.WHITE_CONCRETE.defaultBlockState();
+            var floor = net.minecraft.world.level.block.Blocks.CONCRETE.white().defaultBlockState();
             int n = 0;
             for (int x = (int) CAM_X - 16; x <= (int) CAM_X + 16; x++) {
                 for (int z = (int) STAGE_Z - 8; z <= (int) STAGE_Z + 8; z++) {
@@ -698,7 +698,7 @@ public final class VanillaStateClientTest {
                     if (team == null) {
                         team = board.addPlayerTeam(GLOW_TEAM);
                     }
-                    team.setColor(net.minecraft.ChatFormatting.RED);
+                    team.setColor(java.util.Optional.of(net.minecraft.world.scores.TeamColor.RED));
                     board.addPlayerToTeam(b.getScoreboardName(), team);
                     b.setGlowingTag(true);
                 }
@@ -997,10 +997,10 @@ public final class VanillaStateClientTest {
     // ------------------------------------------------------------------------------- the pixels
 
     private static int[][] grab(Minecraft mc, String name) {
-        if (mc.getOverlay() != null) {
+        if (mc.gui.overlay() != null) {
             // Belt and braces for the pink-splash baseline: nothing measured through an overlay
             // means anything, and a frame that LOOKS plausible is the expensive kind of wrong.
-            failLater = "a frame was captured with " + mc.getOverlay().getClass().getSimpleName()
+            failLater = "a frame was captured with " + mc.gui.overlay().getClass().getSimpleName()
                     + " still on screen -- every pixel number in this run is measuring that";
         }
         try (var img = Screenshots.take(mc.gameRenderer.mainRenderTarget())) {
@@ -1284,7 +1284,7 @@ public final class VanillaStateClientTest {
      * The GLOW_COLOUR row's outline colour: the carrier's TEAM colour, carried to the displays by
      * the mirror. A red nothing else in frame is.
      */
-    private static final int GLOW_RGB = net.minecraft.ChatFormatting.RED.getColor();
+    private static final int GLOW_RGB = net.minecraft.world.scores.TeamColor.RED.rgb();
     private static final String GLOW_TEAM = "vanillastate_red";
 
     /**
@@ -1378,8 +1378,8 @@ public final class VanillaStateClientTest {
         // difference against a baseline taken inside the SAME state, so the hotbar and crosshair
         // are in both frames and cancel -- and the band being measured is above the creature's
         // head, nowhere near either.
-        mc.options.hideGui = phase != Phase.STATES
-                || State.values()[Math.min(stateIndex, State.values().length - 1)] != State.NAMED;
+        com.moddingfromamod.gatec.ClientHarness.setHudHidden(mc, phase != Phase.STATES
+                || State.values()[Math.min(stateIndex, State.values().length - 1)] != State.NAMED);
         mc.gui.setScreen(null);
         double x = CAM_X;
         double y = CAM_Y;

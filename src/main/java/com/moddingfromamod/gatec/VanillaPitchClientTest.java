@@ -130,7 +130,7 @@ public final class VanillaPitchClientTest {
                 }
                 case PREPARE -> prepare(mc);
                 case RELOAD -> {
-                    if (reloadDone && mc.getOverlay() == null && ticks > 20) {
+                    if (reloadDone && mc.gui.overlay() == null && ticks > 20) {
                         go(Phase.SPAWN);
                     }
                 }
@@ -473,7 +473,7 @@ public final class VanillaPitchClientTest {
         if (mc.player == null) {
             return;
         }
-        mc.options.hideGui = true;
+        com.moddingfromamod.gatec.ClientHarness.setHudHidden(mc, true);
         mc.gui.setScreen(null);
         double eye = EYES + camDy;
         double feet = eye - mc.player.getEyeHeight();
@@ -503,7 +503,7 @@ public final class VanillaPitchClientTest {
                 return;
             }
             ServerLevel level = p.level();
-            var floor = net.minecraft.world.level.block.Blocks.WHITE_CONCRETE.defaultBlockState();
+            var floor = net.minecraft.world.level.block.Blocks.CONCRETE.white().defaultBlockState();
             var air = net.minecraft.world.level.block.Blocks.AIR.defaultBlockState();
             for (int x = (int) X - 12; x <= (int) X + 12; x++) {
                 for (int z = (int) STAGE_Z - 12; z <= (int) STAGE_Z + 12; z++) {

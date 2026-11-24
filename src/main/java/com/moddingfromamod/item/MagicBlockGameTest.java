@@ -18,6 +18,7 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.decoration.ArmorStand;
@@ -166,8 +167,8 @@ public final class MagicBlockGameTest {
                 obj("STRENGTH", "strong", "REACH", "3"),
                 obj("when", "every", "seconds", "0.25", "who", "everyone", "radius", "3")), floor);
         Vec3 centre = Vec3.atBottomCenterOf(floor.above());
-        var inside = still(helper, EntityType.COW, floor.above().east(2).north(1));
-        var outside = still(helper, EntityType.COW, floor.above().west(4));
+        var inside = still(helper, EntityTypes.COW, floor.above().east(2).north(1));
+        var outside = still(helper, EntityTypes.COW, floor.above().west(4));
         double inBefore = inside.position().distanceTo(centre);
         Vec3 outBefore = outside.position();
         helper.runAfterDelay(80, () -> {
@@ -198,8 +199,8 @@ public final class MagicBlockGameTest {
         makeAndPlace(helper, p, spec("Storm Test " + helper.getLevel().getGameTime(), "lightning",
                 obj("STRIKES", "1"),
                 obj("seconds", "0.5", "where", "on_each", "radius", "5")), floor);
-        LivingEntity monster = still(helper, EntityType.HUSK, floor.above().east(3));
-        LivingEntity cow = still(helper, EntityType.COW, floor.above().west(3));
+        LivingEntity monster = still(helper, EntityTypes.HUSK, floor.above().east(3));
+        LivingEntity cow = still(helper, EntityTypes.COW, floor.above().west(3));
         float monsterHp = monster.getHealth();
         float cowHp = cow.getHealth();
         helper.runAfterDelay(60, () -> {

@@ -20,6 +20,7 @@ import net.minecraft.server.level.ServerBossEvent;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ambient.Bat;
@@ -186,7 +187,7 @@ public final class RigPowersGameTest {
     @GameTest(template = "empty_test", batch = BATCH, timeoutTicks = 400)
     public static void anExplodingRigBurstsOnDeathAndBreaksNoBlock(GameTestHelper helper) {
         String id = plant(helper, "t6c4c_explodes", "{base:'wild', powers:['friendly','explodes']}");
-        Zombie zombie = helper.spawn(EntityType.ZOMBIE, SPOT.offset(2, 0, 2));
+        Zombie zombie = helper.spawn(EntityTypes.ZOMBIE, SPOT.offset(2, 0, 2));
         zombie.setNoAi(true);
         zombie.setItemSlot(EquipmentSlot.HEAD, new ItemStack(Items.LEATHER_HELMET));
         BlockPos stone = SPOT.offset(-1, 0, 3);

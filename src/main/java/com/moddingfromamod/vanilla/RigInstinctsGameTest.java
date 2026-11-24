@@ -18,6 +18,7 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.monster.zombie.Zombie;
 import net.minecraft.world.level.GameType;
@@ -87,7 +88,7 @@ public final class RigInstinctsGameTest {
     public static void aGuardianRigHuntsAMonsterAndNeverTheChild(GameTestHelper helper) {
         String id = plant(helper, "t6c4b_guardian", "{base:'guardian', powers:[], damage:6}");
         ServerPlayer kid = child(helper, "mfam-guardian", -2, GameType.SURVIVAL);
-        Zombie zombie = helper.spawn(EntityType.ZOMBIE, SPOT.offset(5, 0, 0));
+        Zombie zombie = helper.spawn(EntityTypes.ZOMBIE, SPOT.offset(5, 0, 0));
         zombie.setNoAi(true);   // it must not hurt the child and muddy the second half
         // A helmet, or it burns in the plot's daylight -- which is how this test first passed on
         // main with nothing going for the zombie at all.
@@ -142,11 +143,11 @@ public final class RigInstinctsGameTest {
         // A hit proxy is a real, invisible, invulnerable vanilla cow standing in for part of
         // another creature. The proxy stands NEARER than the real cow, so a scan that did not
         // skip it would choose it and punch it for ever.
-        var proxy = helper.spawn(EntityType.COW, SPOT.offset(2, 0, 0));
+        var proxy = helper.spawn(EntityTypes.COW, SPOT.offset(2, 0, 0));
         proxy.addTag(HitProxies.PROXY_TAG);
         proxy.setInvulnerable(true);
         proxy.setNoAi(true);
-        var cow = helper.spawn(EntityType.COW, SPOT.offset(4, 0, 3));
+        var cow = helper.spawn(EntityTypes.COW, SPOT.offset(4, 0, 3));
         cow.setNoAi(true);
         AtomicBoolean wentForProxy = new AtomicBoolean();
         helper.onEachTick(() -> {

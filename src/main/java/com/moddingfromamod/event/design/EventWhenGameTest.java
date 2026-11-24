@@ -21,6 +21,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.animal.cow.MushroomCow;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.Vec3;
@@ -117,7 +118,7 @@ public final class EventWhenGameTest {
         WorldRules.put(server, WorldRule.parse(JsonParser.parseString("{\"name\":\"" + rule
                 + "\",\"when\":\"mob_dies\",\"who\":\"minecraft:mooshroom\",\"do\":[\"moddyevent stage "
                 + n + "\"]}").getAsJsonObject()));
-        MushroomCow boss = EntityType.MOOSHROOM.create(level, EntitySpawnReason.COMMAND);
+        MushroomCow boss = EntityTypes.MOOSHROOM.create(level, EntitySpawnReason.COMMAND);
         boss.snapTo(g.getX() + 0.5, g.getY() + 1, g.getZ() + 0.5, 0, 0);
         level.addFreshEntity(boss);
         helper.runAfterDelay(5, () -> Damage.hurt(boss, level.damageSources().generic(), 1000));

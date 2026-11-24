@@ -23,6 +23,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.animal.cow.Cow;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.monster.zombie.Zombie;
@@ -85,7 +86,7 @@ public final class EventCatchGameTest {
                 new BlockPos(o.getX(), g, o.getZ()), -90f);
 
         ItemEntity inPath = item(level, o.getX() + 20.5, g + 1, o.getZ() + 0.5);
-        Cow cow = EntityType.COW.create(level, EntitySpawnReason.COMMAND);
+        Cow cow = EntityTypes.COW.create(level, EntitySpawnReason.COMMAND);
         cow.snapTo(o.getX() + 25.5, g + 1, o.getZ() + 2.5, 0, 0);
         level.addFreshEntity(cow);
         // The control: well off to the side of a 16-wide wave.
@@ -152,8 +153,8 @@ public final class EventCatchGameTest {
     public static void itNeverKillsHimAndOnlyKindEffectsAreOffered(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
         Player child = helper.makeMockPlayer(GameType.SURVIVAL);
-        Zombie zombie = helper.spawn(EntityType.ZOMBIE, new BlockPos(1, 2, 1));
-        Cow cow = helper.spawn(EntityType.COW, new BlockPos(3, 2, 3));
+        Zombie zombie = helper.spawn(EntityTypes.ZOMBIE, new BlockPos(1, 2, 1));
+        Cow cow = helper.spawn(EntityTypes.COW, new BlockPos(3, 2, 3));
 
         Effects.hurt(100).apply(level, new Caught(child, 1, 0, 0), 0);
         helper.assertTrue(child.getHealth() == CatchRules.PLAYER_FLOOR,

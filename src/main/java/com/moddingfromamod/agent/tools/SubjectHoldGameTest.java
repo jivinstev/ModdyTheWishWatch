@@ -6,6 +6,7 @@ import net.minecraft.core.BlockPos;
 import com.moddingfromamod.testing.gt.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import com.moddingfromamod.testing.gt.GameTestHolder;
 
 /**
@@ -21,7 +22,7 @@ public final class SubjectHoldGameTest {
 
     @GameTest(template = "empty_test")
     public static void aLiveMobIsHeldAndThenGivenItsAiBack(GameTestHelper helper) {
-        var cow = helper.spawn(EntityType.COW, new BlockPos(1, 1, 1));
+        var cow = helper.spawn(EntityTypes.COW, new BlockPos(1, 1, 1));
         helper.assertTrue(!cow.isNoAi(), Component.literal("a fresh cow has its AI"));
         cow.setYRot(90f);          // caught mid-turn: the body has not caught up with the entity
         cow.setYBodyRot(45f);
@@ -40,7 +41,7 @@ public final class SubjectHoldGameTest {
 
     @GameTest(template = "empty_test")
     public static void aMobThatWasAlreadyStillStaysStill(GameTestHelper helper) {
-        var cow = helper.spawn(EntityType.COW, new BlockPos(1, 1, 1));
+        var cow = helper.spawn(EntityTypes.COW, new BlockPos(1, 1, 1));
         cow.setNoAi(true);   // a statue the agent made on purpose, or a harness's frozen subject
         SubjectHold.freeze(cow).close();
         helper.assertTrue(cow.isNoAi(), Component.literal("the orbit must not wake a creature somebody else froze"));

@@ -17,6 +17,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.animal.cow.Cow;
 import net.minecraft.world.entity.monster.zombie.Husk;
 import net.minecraft.world.phys.Vec3;
@@ -77,7 +78,7 @@ public class StepAndLandGameTest {
      * counted — measured), and its speed at zero so it never wanders off.
      */
     private static Cow source(GameTestHelper helper, BlockPos at) {
-        Cow c = helper.spawn(EntityType.COW, at);
+        Cow c = helper.spawn(EntityTypes.COW, at);
         c.addTag(TAG);
         var speed = c.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.MOVEMENT_SPEED);
         if (speed != null) {
@@ -87,7 +88,7 @@ public class StepAndLandGameTest {
     }
 
     private static Husk husk(GameTestHelper helper, BlockPos at) {
-        Husk h = helper.spawn(EntityType.HUSK, at);
+        Husk h = helper.spawn(EntityTypes.HUSK, at);
         h.setNoAi(true);
         return h;
     }
@@ -102,7 +103,7 @@ public class StepAndLandGameTest {
     public static void aLandingCatchesWhatIsNearWhereItComesDown(GameTestHelper helper) {
         MockPlayerNetwork.clearStaleMocks(helper);
         Lines l = lines("on_land", Map.of("COMMAND", SLOW, "RADIUS", "3"));
-        Cow src = helper.spawn(EntityType.COW, new BlockPos(4, 6, 4));   // four blocks up: it falls
+        Cow src = helper.spawn(EntityTypes.COW, new BlockPos(4, 6, 4));   // four blocks up: it falls
         src.addTag(TAG);
         Husk near = husk(helper, new BlockPos(5, 2, 4));
         ServerPlayer kid = MockPlayerNetwork.asSurvival(MockPlayerNetwork.inLevel(helper, "mfam-land-kid"));

@@ -12,6 +12,7 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.animal.cow.Cow;
 import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.entity.monster.zombie.Zombie;
@@ -53,8 +54,8 @@ public final class PetBehavioursGameTest {
     public static void aCowThatFollowsWalksToItsOwner(GameTestHelper helper) {
         // The owner can be any entity; an armour stand does not wander off mid-test.
         int y = floor(helper) + 1;
-        ArmorStand owner = helper.spawn(EntityType.ARMOR_STAND, new BlockPos(7, y, 7));
-        Cow cow = helper.spawn(EntityType.COW, new BlockPos(1, y, 1));
+        ArmorStand owner = helper.spawn(EntityTypes.ARMOR_STAND, new BlockPos(7, y, 7));
+        Cow cow = helper.spawn(EntityTypes.COW, new BlockPos(1, y, 1));
         double start = cow.distanceTo(owner);
         helper.assertTrue(start > PetMoves.FOLLOW_CLOSE + 2, Component.literal("the cow started too close to prove anything"));
         PetBehaviours.apply(cow, pet("{follow:true}"), owner.getUUID());
@@ -71,11 +72,11 @@ public final class PetBehavioursGameTest {
         // THE CONTROL FIRST: an ordinary zombie takes the player as its target, or this test
         // proves nothing about the friendly one.
         int y = floor(helper) + 1;
-        Zombie plain = helper.spawn(EntityType.ZOMBIE, new BlockPos(1, y, 1));
+        Zombie plain = helper.spawn(EntityTypes.ZOMBIE, new BlockPos(1, y, 1));
         plain.setTarget(child);
         helper.assertTrue(plain.getTarget() == child, Component.literal("the control zombie would not target at all"));
 
-        Zombie friend = helper.spawn(EntityType.ZOMBIE, new BlockPos(3, y, 3));
+        Zombie friend = helper.spawn(EntityTypes.ZOMBIE, new BlockPos(3, y, 3));
         friend.setTarget(child);
         PetBehaviours.apply(friend, pet("{friendly:true}"), null);
         helper.assertTrue(friend.getTarget() == null, Component.literal("making it friendly did not calm it down"));
@@ -89,7 +90,7 @@ public final class PetBehavioursGameTest {
         int y = floor(helper) + 1;
         BlockPos ore = new BlockPos(7, y - 1, 7);
         helper.setBlock(ore, Blocks.DIAMOND_ORE);
-        Cow cow = helper.spawn(EntityType.COW, new BlockPos(1, y, 1));
+        Cow cow = helper.spawn(EntityTypes.COW, new BlockPos(1, y, 1));
         PetBehaviours.apply(cow, pet("{finds:'diamonds'}"), null);
         BlockPos abs = helper.absolutePos(ore);
         helper.succeedWhen(() -> {
@@ -116,12 +117,12 @@ public final class PetBehavioursGameTest {
     @GameTest(template = "empty_test", batch = "mockplayer", timeoutTicks = 200)
     public static void aRideableCowCarriesHimWhereHeLooks(GameTestHelper helper) {
         ServerPlayer child = MockPlayerNetwork.inLevel(helper, "mfam-rider");
-        Cow cow = helper.spawn(EntityType.COW, new BlockPos(4, floor(helper) + 1, 1));
+        Cow cow = helper.spawn(EntityTypes.COW, new BlockPos(4, floor(helper) + 1, 1));
         PetBehaviours.apply(cow, pet("{rideable:true}"), child.getUUID());
         child.teleportTo(cow.getX(), cow.getY(), cow.getZ() - 1);
 
         var ev = NeoForge.EVENT_BUS.post(
-                new PlayerInteractEvent.EntityInteract(child, InteractionHand.MAIN_HAND, cow));
+                com.moddingfromamod.mv.Interact.event(child, InteractionHand.MAIN_HAND, cow));
         if (child.getVehicle() != cow) {
             helper.fail(Component.literal("an empty hand on a rideable cow did not climb on: canceled=" + ev.isCanceled()
                     + " pet=" + PetBehaviours.stored(cow) + " hand=" + child.getMainHandItem()
@@ -154,7 +155,7 @@ public final class PetBehavioursGameTest {
                 Component.literal("follow and stay together are refused in words: " + refused.text()));
         int y = floor(helper) + 1;
         BlockPos spot = new BlockPos(2, y, 2);
-        Cow cow = helper.spawn(EntityType.COW, spot);
+        Cow cow = helper.spawn(EntityTypes.COW, spot);
         cow.setDeltaMovement(0, 0, 0);
         PetBehaviours.apply(cow, pet("{stay:0}"), null);
         PetBehaviour now = PetBehaviours.of(cow);
@@ -162,7 +163,7 @@ public final class PetBehavioursGameTest {
                 Component.literal("it is home where it stood: " + now));
         helper.assertTrue(cow.isPersistenceRequired(), Component.literal("a stayer does not despawn"));
         var saved = com.moddingfromamod.compat.EntityNbt.save(cow);
-        Cow reloaded = new Cow(EntityType.COW, helper.getLevel());
+        Cow reloaded = new Cow(EntityTypes.COW, helper.getLevel());
         com.moddingfromamod.compat.EntityNbt.load(reloaded, saved);
         helper.assertTrue(PetBehaviours.of(reloaded).stays()
                         && PetBehaviours.of(reloaded).home().equals(now.home()),

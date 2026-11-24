@@ -140,8 +140,9 @@ public final class MobStates {
         PlayerTeam team = scoreboard.getPlayersTeam(teamName);
         if (team == null) {
             team = scoreboard.addPlayerTeam(teamName);
-            ChatFormatting named = ChatFormatting.getByName(colour);
-            if (named != null) {
+            java.util.Optional<net.minecraft.world.scores.TeamColor> named =
+                    com.moddingfromamod.compat.TeamColors.byName(colour);
+            if (named.isPresent()) {
                 team.setColor(named);
             }
         }

@@ -255,7 +255,7 @@ public final class BuilderWorkingBuildsGameTest {
             return "only " + saplings.size() + " saplings in its plan";
         }
         for (BlockPos q : saplings) {
-            if (!level.getBlockState(q).is(BlockTags.SAPLINGS)) {
+            if (!level.getBlockState(q).is(net.minecraft.tags.BlockItemTags.SAPLINGS.block())) {
                 return "no sapling at " + q.toShortString() + " (" + level.getBlockState(q).getBlock() + ")";
             }
             if (!level.getBlockState(q.below()).is(BlockTags.DIRT)) {

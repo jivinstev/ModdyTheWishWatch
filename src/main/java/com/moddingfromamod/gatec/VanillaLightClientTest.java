@@ -202,7 +202,7 @@ public final class VanillaLightClientTest {
                 case PREPARE -> prepare(mc);
                 case RELOAD -> {
                     hold(mc, NOON);
-                    if (reloadDone && mc.getOverlay() == null && ticks > 20) {
+                    if (reloadDone && mc.gui.overlay() == null && ticks > 20) {
                         go(Phase.SPAWN);
                     }
                 }
@@ -248,7 +248,7 @@ public final class VanillaLightClientTest {
         server.overworld().getGameRules().set(net.minecraft.world.level.gamerules.GameRules.ADVANCE_TIME,false, server);
         server.overworld().getGameRules().set(net.minecraft.world.level.gamerules.GameRules.ADVANCE_WEATHER,false, server);
         server.overworld().getGameRules().set(net.minecraft.world.level.gamerules.GameRules.SPAWN_MOBS,false, server);
-        BlockState floor = Blocks.WHITE_CONCRETE.defaultBlockState();
+        BlockState floor = Blocks.CONCRETE.white().defaultBlockState();
         for (Stage s : STAGES) {
             int cx = (int) Math.floor(s.x());
             for (int x = cx - 10; x <= cx + 10; x++) {
@@ -294,14 +294,14 @@ public final class VanillaLightClientTest {
         int y0 = FLOOR_Y;
         int y1 = (int) FOOT_Y + 6;
         BlockState wall = Blocks.STONE_BRICKS.defaultBlockState();
-        BlockState back = Blocks.WHITE_CONCRETE.defaultBlockState();
+        BlockState back = Blocks.CONCRETE.white().defaultBlockState();
         for (int x = cx - 7; x <= cx + 7; x++) {
             for (int z = z0 - 1; z <= z1 + 1; z++) {
                 for (int y = y0; y <= y1; y++) {
                     boolean shell = x == cx - 7 || x == cx + 7 || z == z0 - 1 || z == z1 + 1
                             || y == y0 || y == y1;
                     BlockState st = !shell ? Blocks.AIR.defaultBlockState()
-                            : z == z1 + 1 ? back : y == y0 ? Blocks.WHITE_CONCRETE.defaultBlockState() : wall;
+                            : z == z1 + 1 ? back : y == y0 ? Blocks.CONCRETE.white().defaultBlockState() : wall;
                     level.setBlock(new BlockPos(x, y, z), st, 3);
                 }
             }
@@ -362,7 +362,7 @@ public final class VanillaLightClientTest {
             freeze(rig.base(), 180f);
             VanillaRigAnimator.drive(rig, com.moddingfromamod.vanilla.RigFit.intoRigSpace(parts), clips);
             RIGS.put(s.name(), rig);
-            Mob v = net.minecraft.world.entity.EntityType.VILLAGER.create(level, EntitySpawnReason.COMMAND);
+            Mob v = net.minecraft.world.entity.EntityTypes.VILLAGER.create(level, EntitySpawnReason.COMMAND);
             if (v == null) {
                 continue;
             }
@@ -694,7 +694,7 @@ public final class VanillaLightClientTest {
                 p.connection.teleport(ex, ey, STAGE_Z - STANDOFF, 0f, 6f);
             });
         }
-        mc.options.hideGui = true;
+        com.moddingfromamod.gatec.ClientHarness.setHudHidden(mc, true);
         mc.gui.setScreen(null);
         double feet = s.footY() + FEET_UP;
         double z = STAGE_Z - STANDOFF;

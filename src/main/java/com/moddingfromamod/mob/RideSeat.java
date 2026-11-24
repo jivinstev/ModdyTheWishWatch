@@ -13,10 +13,10 @@ import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ambient.Bat;
-import net.minecraft.world.entity.animal.FlyingAnimal;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -72,7 +72,7 @@ public final class RideSeat {
      * What a seat is. The Bedrock extension seats a rider on it where Java does from a table that must name it
      * (bedrock/geyser-extension/resources/seat-points.txt; SeatPointsMatchJavaGameTest fails if it does not).
      */
-    public static final EntityType<?> SEAT_TYPE = EntityType.ARMADILLO;
+    public static final EntityType<?> SEAT_TYPE = EntityTypes.ARMADILLO;
     /** A lift smaller than this is not worth an entity (and is under the seat's smallest size). */
     static final double MIN_LIFT = 0.05;
     /** The scale range {@code minecraft:scale} allows. */
@@ -310,7 +310,7 @@ public final class RideSeat {
 
     /** A mount that flies: what a flying creature's carrier is. */
     public static boolean flies(Entity mob) {
-        return mob instanceof Bat || com.moddingfromamod.compat.Mobs.isFlyingMob(mob) || mob instanceof FlyingAnimal;
+        return mob instanceof Bat || com.moddingfromamod.compat.Mobs.isFlyingMob(mob) || com.moddingfromamod.compat.Mobs.isFlyingAnimal(mob);
     }
 
     /**

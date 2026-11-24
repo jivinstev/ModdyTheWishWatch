@@ -180,7 +180,7 @@ public final class EventToolGameTest {
                             + "; event " + describeEvent(server, ids[0]) + "; stage_event said: " + a.get()));
                 }
                 helper.assertTrue(level.getBlockState(aim.above()).isAir(), Component.literal("in place: nothing on top"));
-                helper.assertTrue(level.getBlockState(leaf).is(Blocks.PINK_WOOL), Component.literal("the leaves turned pink"));
+                helper.assertTrue(level.getBlockState(leaf).is(Blocks.WOOL.pink()), Component.literal("the leaves turned pink"));
                 helper.assertTrue(level.getBlockState(stone).is(Blocks.STONE_BRICKS),
                         Component.literal("and only the leaves: his stone bricks are neither ground nor leaves"));
                 join(removed, call(new RemoveEventTool(), "{\"id\":\"" + ids[0] + "\"}",
@@ -242,7 +242,7 @@ public final class EventToolGameTest {
         BlockPos aim = EventBuild.ground(level, lane.getX(), lane.getZ());
         BlockPos his = EventBuild.ground(level, lane.getX() + 30, lane.getZ());
         child.teleportTo(his.getX() + 0.5, his.getY() + 1, his.getZ() + 0.5);
-        var own = new net.minecraft.world.entity.animal.equine.Horse(net.minecraft.world.entity.EntityType.HORSE, level);
+        var own = new net.minecraft.world.entity.animal.equine.Horse(net.minecraft.world.entity.EntityTypes.HORSE, level);
         own.snapTo(aim.getX() + 0.5, aim.getY() + 1, aim.getZ() + 0.5, 0, 0);
         own.setPersistenceRequired();
         level.addFreshEntity(own);

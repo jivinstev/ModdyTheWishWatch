@@ -15,6 +15,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.phys.Vec3;
 
 /**
@@ -46,7 +47,7 @@ public class WearDirectGameTest {
 
     /** A detached copy of a display, as it is saved: never added to the world. */
     private static Entity cloneOf(ServerLevel level, Entity d) {
-        Entity c = EntityType.ITEM_DISPLAY.create(level, EntitySpawnReason.COMMAND);
+        Entity c = EntityTypes.ITEM_DISPLAY.create(level, EntitySpawnReason.COMMAND);
         CompoundTag t = EntityNbt.save(d);
         EntityNbt.load(c, t);
         return c;

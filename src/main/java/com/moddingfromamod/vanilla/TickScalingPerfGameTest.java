@@ -17,6 +17,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.animal.pig.Pig;
 import net.minecraft.world.entity.monster.zombie.Zombie;
@@ -86,14 +87,14 @@ public final class TickScalingPerfGameTest {
         com.moddingfromamod.testing.MockPlayerNetwork.afterTest(helper, SpeciesRegistry.putForTest(List.of(shooter)));
         List<Pig> shooters = new ArrayList<>();
         for (int i = 0; i < 30; i++) {
-            Pig p = helper.spawn(EntityType.PIG, new BlockPos(1 + (i % 6), 2, 6 + i / 6));
+            Pig p = helper.spawn(EntityTypes.PIG, new BlockPos(1 + (i % 6), 2, 6 + i / 6));
             p.addTag(DisplayRig.RIG_TAG);
             p.addTag(com.moddingfromamod.entity.WishMobTags.forSpecies(shooter.id()));
             shooters.add(p);
             made.add(p);
         }
         for (int i = 0; i < 15; i++) {
-            Zombie z = helper.spawn(EntityType.ZOMBIE, new BlockPos(1 + (i % 5), 2, 13 + i / 5));
+            Zombie z = helper.spawn(EntityTypes.ZOMBIE, new BlockPos(1 + (i % 5), 2, 13 + i / 5));
             z.setNoAi(true);
             z.setInvulnerable(true);
             made.add(z);

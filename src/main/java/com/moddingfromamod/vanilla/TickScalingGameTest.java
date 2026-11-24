@@ -16,6 +16,7 @@ import net.minecraft.core.BlockPos;
 import com.moddingfromamod.testing.gt.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.animal.pig.Pig;
 import com.moddingfromamod.testing.gt.GameTestHolder;
 
@@ -34,7 +35,7 @@ public final class TickScalingGameTest {
     }
 
     static Pig carrier(GameTestHelper helper, int x, String... speciesIds) {
-        Pig p = helper.spawn(EntityType.PIG, new BlockPos(x, 2, 1));
+        Pig p = helper.spawn(EntityTypes.PIG, new BlockPos(x, 2, 1));
         p.setNoAi(true);
         p.addTag(DisplayRig.RIG_TAG);
         for (String s : speciesIds) {
@@ -54,7 +55,7 @@ public final class TickScalingGameTest {
                 Pig plain = carrier(helper, 1, base);
                 Pig forked = carrier(helper, 2, fork, base);       // a fork wears its ancestor's tag too
                 Pig unknown = carrier(helper, 3, "gt_ts_nobody");
-                Pig notARig = helper.spawn(EntityType.PIG, new BlockPos(4, 2, 1));
+                Pig notARig = helper.spawn(EntityTypes.PIG, new BlockPos(4, 2, 1));
                 notARig.setNoAi(true);
                 notARig.addTag(WishMobTags.forSpecies(base));
                 Pig early = carrier(helper, 5, late);

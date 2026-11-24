@@ -197,7 +197,7 @@ public final class VanillaDeathClientTest {
                 }
                 case PREPARE -> prepare(mc);
                 case RELOAD -> {
-                    if (reloadDone && mc.getOverlay() == null && ticks > 20) {
+                    if (reloadDone && mc.gui.overlay() == null && ticks > 20) {
                         go(Phase.SPAWN);
                     }
                 }
@@ -308,7 +308,7 @@ public final class VanillaDeathClientTest {
             // 🔴 NOTHING is invulnerable in this run, unlike every other state run. The subject IS
             // the death, so making them survivable would be measuring a poke.
 
-            var z = net.minecraft.world.entity.EntityType.COW.create(level, EntitySpawnReason.COMMAND);
+            var z = net.minecraft.world.entity.EntityTypes.COW.create(level, EntitySpawnReason.COMMAND);
             if (z != null) {
                 z.snapTo(CAM_X, FOOT_Y, STAGE_Z, 270f, 0f);
                 z.setYBodyRot(270f);
@@ -565,7 +565,7 @@ public final class VanillaDeathClientTest {
                 return;
             }
             ServerLevel level = p.level();
-            var floor = net.minecraft.world.level.block.Blocks.WHITE_CONCRETE.defaultBlockState();
+            var floor = net.minecraft.world.level.block.Blocks.CONCRETE.white().defaultBlockState();
             for (int x = (int) CAM_X - 16; x <= (int) CAM_X + 16; x++) {
                 for (int z = (int) STAGE_Z - 8; z <= (int) STAGE_Z + 8; z++) {
                     level.setBlock(new net.minecraft.core.BlockPos(x, GROUND_Y, z), floor, 3);
@@ -594,7 +594,7 @@ public final class VanillaDeathClientTest {
         if (mc.player == null) {
             return;
         }
-        mc.options.hideGui = true;
+        com.moddingfromamod.gatec.ClientHarness.setHudHidden(mc, true);
         mc.gui.setScreen(null);
         mc.player.setPos(CAM_X, CAM_Y, CAM_Z);
         mc.player.setYRot(0f);
@@ -738,8 +738,8 @@ public final class VanillaDeathClientTest {
     }
 
     private static int[][] grab(Minecraft mc, String name) {
-        if (mc.getOverlay() != null) {
-            failLater = "a frame was captured with " + mc.getOverlay().getClass().getSimpleName()
+        if (mc.gui.overlay() != null) {
+            failLater = "a frame was captured with " + mc.gui.overlay().getClass().getSimpleName()
                     + " still on screen";
         }
         try (var img = Screenshots.take(mc.gameRenderer.mainRenderTarget())) {

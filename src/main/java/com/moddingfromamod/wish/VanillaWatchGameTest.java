@@ -805,7 +805,7 @@ public class VanillaWatchGameTest {
                             Component.literal(type + " put a panel item on the cursor: " + menu.getCarried()));
                     for (ItemStack held : p.getInventory().getNonEquipmentItems()) {
                         helper.assertTrue(!held.is(Items.AMETHYST_SHARD)
-                                        && !held.is(Items.GRAY_DYE) && !held.is(Items.RED_DYE),
+                                        && !held.is(Items.DYE.gray()) && !held.is(Items.DYE.red()),
                                 Component.literal(type + " moved a panel item into his inventory: " + held));
                     }
                     p.closeContainer();

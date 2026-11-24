@@ -11,6 +11,7 @@ import com.moddingfromamod.testing.gt.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.animal.cow.Cow;
 import net.minecraft.world.entity.monster.zombie.Zombie;
 import com.moddingfromamod.testing.gt.GameTestHolder;
@@ -63,7 +64,7 @@ public class ImpulseBehaviourGameTest {
     }
 
     private static Zombie source(GameTestHelper helper, BlockPos at) {
-        Zombie z = helper.spawn(EntityType.ZOMBIE, at);
+        Zombie z = helper.spawn(EntityTypes.ZOMBIE, at);
         z.addTag(SOURCE_TAG);
         z.setPersistenceRequired();
         return z;
@@ -77,7 +78,7 @@ public class ImpulseBehaviourGameTest {
     public static void impulseNeedsNoNewTemplateForAMob(GameTestHelper helper) {
         BlockPos at = new BlockPos(2, 3, 2);
         source(helper, at);
-        Cow victim = helper.spawn(EntityType.COW, at.offset(1, 0, 0));
+        Cow victim = helper.spawn(EntityTypes.COW, at.offset(1, 0, 0));
         victim.hurt(helper.getLevel().damageSources().magic(), 1.0F);
         helper.assertTrue(victim.hurtTime > 0, Component.literal("the victim must be in its hurt window"));
 
@@ -99,15 +100,15 @@ public class ImpulseBehaviourGameTest {
     public static void directionIsAParameterNotAShape(GameTestHelper helper) {
         BlockPos at = new BlockPos(2, 3, 2);
         source(helper, at);
-        Cow up = helper.spawn(EntityType.COW, at.offset(1, 0, 0));
-        Cow away = helper.spawn(EntityType.COW, at.offset(2, 0, 0));
+        Cow up = helper.spawn(EntityTypes.COW, at.offset(1, 0, 0));
+        Cow away = helper.spawn(EntityTypes.COW, at.offset(2, 0, 0));
         up.hurt(helper.getLevel().damageSources().magic(), 1.0F);
         away.hurt(helper.getLevel().damageSources().magic(), 1.0F);
 
         run(helper, "on_hit", "data modify entity @s Motion set value [0.0d,1.2d,0.0d]", 4);
         helper.assertTrue(up.getDeltaMovement().y > 0.5, Component.literal("UP direction did not lift anything"));
 
-        Cow sideways = helper.spawn(EntityType.COW, at.offset(1, 0, 1));
+        Cow sideways = helper.spawn(EntityTypes.COW, at.offset(1, 0, 1));
         sideways.hurt(helper.getLevel().damageSources().magic(), 1.0F);
         run(helper, "on_hit", "data modify entity @s Motion set value [1.5d,0.2d,0.0d]", 4);
         helper.assertTrue(sideways.getDeltaMovement().x > 0.5,
@@ -138,7 +139,7 @@ public class ImpulseBehaviourGameTest {
     public static void theDamageRouteAlsoPushes(GameTestHelper helper) {
         BlockPos at = new BlockPos(2, 3, 2);
         source(helper, at);
-        Cow victim = helper.spawn(EntityType.COW, at.offset(1, 0, 0));
+        Cow victim = helper.spawn(EntityTypes.COW, at.offset(1, 0, 0));
 
         // PROXIMITY, not on_hit, and NOT pre-hurt. The first version damaged the cow to satisfy
         // on_hit's trigger -- which left it inside its invulnerability window, so the knockback
@@ -175,7 +176,7 @@ public class ImpulseBehaviourGameTest {
     public static void aRampedPushIsSpreadOverTicksNotTeleported(GameTestHelper helper) {
         BlockPos at = new BlockPos(3, 3, 3);
         source(helper, at);
-        Cow victim = helper.spawn(EntityType.COW, at.offset(1, 0, 0));
+        Cow victim = helper.spawn(EntityTypes.COW, at.offset(1, 0, 0));
 
         java.util.Map<String, String> args = new java.util.LinkedHashMap<>();
         args.put("TAG", SOURCE_TAG);
@@ -552,7 +553,7 @@ public class ImpulseBehaviourGameTest {
     }
 
     private static Zombie stillSource(GameTestHelper helper, BlockPos at, String tag) {
-        Zombie z = helper.spawn(EntityType.ZOMBIE, at);
+        Zombie z = helper.spawn(EntityTypes.ZOMBIE, at);
         z.addTag(tag);
         z.setNoAi(true);
         z.setPersistenceRequired();
@@ -582,7 +583,7 @@ public class ImpulseBehaviourGameTest {
     public static void aProximityPushFiresOncePerRearmOnWhatIsNear(GameTestHelper helper) {
         stillSource(helper, new BlockPos(2, 2, 2), "imp1725near");
         BlockPos spot = new BlockPos(4, 2, 2);
-        Cow cow = helper.spawn(EntityType.COW, spot);
+        Cow cow = helper.spawn(EntityTypes.COW, spot);
         cow.setNoAi(true);
         int telegraphs = runTelegraphs(helper, Map.of("TAG", "imp1725near", "TRIGGER", "proximity",
                 "RADIUS", "4"), "#tg1725near", 60, cow, spot);

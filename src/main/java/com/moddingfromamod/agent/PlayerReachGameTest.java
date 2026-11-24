@@ -27,6 +27,7 @@ import net.minecraft.gametest.framework.GameTestRunner;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.phys.AABB;
@@ -153,7 +154,7 @@ public final class PlayerReachGameTest {
             helper.assertTrue(r[1].isError(), Component.literal("moving Bob is refused: " + r[1].text()));
             helper.assertTrue(r[2].isError(), Component.literal("TNT at Bob's feet is refused: " + r[2].text()));
             helper.assertTrue(bob.position().distanceToSqr(bobWas) < 1e-4, Component.literal("Bob was moved: " + bob.position()));
-            helper.assertTrue(helper.getLevel().getEntities(EntityType.TNT,
+            helper.assertTrue(helper.getLevel().getEntities(EntityTypes.TNT,
                     new AABB(bob.blockPosition()).inflate(4), e -> true).isEmpty(), Component.literal("TNT was put by Bob"));
             helper.assertTrue(saidTo(bob, "Alice came to visit!"), Component.literal("Bob was not told: " + MockPlayerNetwork.chat(bob)));
             if (!secondDone[0]) {

@@ -12,6 +12,7 @@ import com.moddingfromamod.testing.gt.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.animal.cow.Cow;
 import net.minecraft.world.entity.monster.zombie.Zombie;
 import net.minecraft.world.phys.Vec3;
@@ -80,8 +81,8 @@ public class AggroBehaviourGameTest {
     @GameTest(template = "empty_test", timeoutTicks = 200)
     public static void whatItHitsEndsUpFightingTheOtherCreature(GameTestHelper helper) {
         BlockPos impact = new BlockPos(2, 2, 2);
-        Cow noob = helper.spawn(EntityType.COW, impact);
-        Zombie other = helper.spawn(EntityType.ZOMBIE, impact.offset(2, 0, 0));
+        Cow noob = helper.spawn(EntityTypes.COW, impact);
+        Zombie other = helper.spawn(EntityTypes.ZOMBIE, impact.offset(2, 0, 0));
         noob.setPersistenceRequired();
         other.setPersistenceRequired();
 
@@ -110,7 +111,7 @@ public class AggroBehaviourGameTest {
     @GameTest(template = "empty_test", timeoutTicks = 200)
     public static void itNeverMakesACreatureFightItself(GameTestHelper helper) {
         BlockPos impact = new BlockPos(2, 2, 2);
-        Cow alone = helper.spawn(EntityType.COW, impact);
+        Cow alone = helper.spawn(EntityTypes.COW, impact);
         alone.setPersistenceRequired();
 
         run(helper, effectCommands("mob"), impact);
@@ -129,8 +130,8 @@ public class AggroBehaviourGameTest {
     @GameTest(template = "empty_test", timeoutTicks = 200)
     public static void theWorkingTagIsCleanedUp(GameTestHelper helper) {
         BlockPos impact = new BlockPos(2, 2, 2);
-        Cow noob = helper.spawn(EntityType.COW, impact);
-        helper.spawn(EntityType.ZOMBIE, impact.offset(2, 0, 0));
+        Cow noob = helper.spawn(EntityTypes.COW, impact);
+        helper.spawn(EntityTypes.ZOMBIE, impact.offset(2, 0, 0));
 
         run(helper, effectCommands("mob"), impact);
 

@@ -22,6 +22,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.item.ItemStack;
@@ -275,7 +276,7 @@ public final class StarterShow {
         }
         if (said != null && (t == 60 || t == 90 || t == 120)) {
             int k = (t - 60) / 30;
-            var pig = EntityType.PIG.create(level, net.minecraft.world.entity.EntitySpawnReason.COMMAND);
+            var pig = EntityTypes.PIG.create(level, net.minecraft.world.entity.EntitySpawnReason.COMMAND);
             pig.snapTo(centre.x - 2 + 2 * k, centre.y + 5, centre.z + 4, 0f, 0f);
             level.addFreshEntity(pig);
             props.add(pig);
@@ -340,7 +341,7 @@ public final class StarterShow {
 
     /** A husk standing in front of him, turned to face the camera (a no-AI mob never turns its body). */
     private static void husk(double x) {
-        var husk = EntityType.HUSK.create(level, net.minecraft.world.entity.EntitySpawnReason.COMMAND);
+        var husk = EntityTypes.HUSK.create(level, net.minecraft.world.entity.EntitySpawnReason.COMMAND);
         husk.snapTo(x, centre.y, centre.z + 5, 200f, 0f);
         husk.setYBodyRot(200f);
         husk.setYHeadRot(200f);
@@ -388,7 +389,7 @@ public final class StarterShow {
     }
 
     private static Mob monster(double dx, double dz) {
-        Mob m = EntityType.HUSK.create(level, net.minecraft.world.entity.EntitySpawnReason.COMMAND);
+        Mob m = EntityTypes.HUSK.create(level, net.minecraft.world.entity.EntitySpawnReason.COMMAND);
         m.snapTo(centre.x + dx, centre.y, centre.z + dz, 180f, 0f);
         m.setNoAi(true);
         m.setPersistenceRequired();

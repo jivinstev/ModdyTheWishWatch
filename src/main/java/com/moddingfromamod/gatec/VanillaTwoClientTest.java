@@ -167,7 +167,7 @@ public final class VanillaTwoClientTest {
                 }
                 case PREPARE_A -> prepareOne(mc);
                 case RELOAD_A -> {
-                    if (reloadDone && mc.getOverlay() == null && ticks > 20) {
+                    if (reloadDone && mc.gui.overlay() == null && ticks > 20) {
                         go(Phase.SPAWN_A);
                     }
                 }
@@ -442,7 +442,7 @@ public final class VanillaTwoClientTest {
                 return;
             }
             ServerLevel level = p.level();
-            var floor = net.minecraft.world.level.block.Blocks.WHITE_CONCRETE.defaultBlockState();
+            var floor = net.minecraft.world.level.block.Blocks.CONCRETE.white().defaultBlockState();
             for (int x = (int) CAM_X - 20; x <= (int) CAM_X + 20; x++) {
                 for (int z = (int) STAGE_Z - 8; z <= (int) STAGE_Z + 8; z++) {
                     level.setBlock(new net.minecraft.core.BlockPos(x, GROUND_Y, z), floor, 3);
@@ -471,7 +471,7 @@ public final class VanillaTwoClientTest {
         if (mc.player == null) {
             return;
         }
-        mc.options.hideGui = true;
+        com.moddingfromamod.gatec.ClientHarness.setHudHidden(mc, true);
         mc.gui.setScreen(null);
         mc.player.setPos(CAM_X, CAM_Y, CAM_Z);
         mc.player.setYRot(0f);
@@ -588,8 +588,8 @@ public final class VanillaTwoClientTest {
     }
 
     private static int[][] grab(Minecraft mc, String name) {
-        if (mc.getOverlay() != null) {
-            failLater = "a frame was captured with " + mc.getOverlay().getClass().getSimpleName()
+        if (mc.gui.overlay() != null) {
+            failLater = "a frame was captured with " + mc.gui.overlay().getClass().getSimpleName()
                     + " still on screen";
         }
         try (var img = Screenshots.take(mc.gameRenderer.mainRenderTarget())) {

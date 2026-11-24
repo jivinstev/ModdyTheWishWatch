@@ -13,6 +13,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.animal.cow.Cow;
 import net.minecraft.world.entity.monster.zombie.Zombie;
@@ -78,7 +79,7 @@ public class TriggerBehaviourGameTest {
 
     /** A creature to hang the ability on, and a victim for it to land on. */
     private static Zombie sourceMob(GameTestHelper helper, BlockPos at) {
-        Zombie z = helper.spawn(EntityType.ZOMBIE, at);
+        Zombie z = helper.spawn(EntityTypes.ZOMBIE, at);
         z.addTag(SOURCE_TAG);
         z.setPersistenceRequired();
         return z;
@@ -96,7 +97,7 @@ public class TriggerBehaviourGameTest {
     public static void onHitLandsOnAMOBVictim(GameTestHelper helper) {
         BlockPos at = new BlockPos(2, 2, 2);
         sourceMob(helper, at);
-        Cow victim = helper.spawn(EntityType.COW, at.offset(1, 0, 0));
+        Cow victim = helper.spawn(EntityTypes.COW, at.offset(1, 0, 0));
 
         // Damage it so HurtTime is set THIS tick, which is what the template keys on.
         victim.hurt(helper.getLevel().damageSources().magic(), 1.0F);
@@ -140,7 +141,7 @@ public class TriggerBehaviourGameTest {
         BlockPos at = new BlockPos(2, 2, 2);
         Zombie inert = sourceMob(helper, at);
         inert.setNoAi(true);        // it cannot attack anything, ever
-        Cow victim = helper.spawn(EntityType.COW, at.offset(1, 0, 0));
+        Cow victim = helper.spawn(EntityTypes.COW, at.offset(1, 0, 0));
 
         // Hurt by something that is NOT the creature — the case the agent assumed was dead.
         victim.hurt(helper.getLevel().damageSources().magic(), 1.0F);
@@ -161,7 +162,7 @@ public class TriggerBehaviourGameTest {
     public static void onHitDoesNotFireForAnUnhurtBystander(GameTestHelper helper) {
         BlockPos at = new BlockPos(2, 2, 2);
         sourceMob(helper, at);
-        Cow bystander = helper.spawn(EntityType.COW, at.offset(1, 0, 0));
+        Cow bystander = helper.spawn(EntityTypes.COW, at.offset(1, 0, 0));
 
         run(helper, commandsOf("on_hit", "effect give @s minecraft:slowness 10 1", 4));
 
@@ -192,7 +193,7 @@ public class TriggerBehaviourGameTest {
     public static void proximityLandsOnANearbyMob(GameTestHelper helper) {
         BlockPos at = new BlockPos(2, 2, 2);
         sourceMob(helper, at);
-        Cow near = helper.spawn(EntityType.COW, at.offset(1, 0, 0));
+        Cow near = helper.spawn(EntityTypes.COW, at.offset(1, 0, 0));
 
         run(helper, commandsOf("proximity",
                 "effect give @e[type=!player,distance=..3,tag=!" + SOURCE_TAG + "] "
@@ -207,7 +208,7 @@ public class TriggerBehaviourGameTest {
     public static void proximityRespectsItsRadius(GameTestHelper helper) {
         BlockPos at = new BlockPos(1, 2, 1);
         sourceMob(helper, at);
-        Cow far = helper.spawn(EntityType.COW, at.offset(6, 0, 0));
+        Cow far = helper.spawn(EntityTypes.COW, at.offset(6, 0, 0));
 
         run(helper, commandsOf("proximity",
                 "effect give @e[type=!player,distance=..2,tag=!" + SOURCE_TAG + "] "
@@ -224,7 +225,7 @@ public class TriggerBehaviourGameTest {
     public static void periodicFiresItsCommand(GameTestHelper helper) {
         BlockPos at = new BlockPos(2, 2, 2);
         sourceMob(helper, at);
-        Cow near = helper.spawn(EntityType.COW, at.offset(1, 0, 0));
+        Cow near = helper.spawn(EntityTypes.COW, at.offset(1, 0, 0));
 
         // PERIOD_TICKS=1 and the scoreboard is stepped by the template's own lines, so a single
         // dispatch of setup+body is one whole period.

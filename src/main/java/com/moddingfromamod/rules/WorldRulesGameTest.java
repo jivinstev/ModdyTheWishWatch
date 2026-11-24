@@ -14,6 +14,7 @@ import com.moddingfromamod.testing.gt.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.animal.cow.Cow;
 import net.minecraft.world.entity.animal.pig.Pig;
 import net.minecraft.world.entity.animal.sheep.Sheep;
@@ -99,7 +100,7 @@ public final class WorldRulesGameTest {
         AtomicBoolean killed = new AtomicBoolean();
         helper.onEachTick(() -> {
             if (set.get() != null && killed.compareAndSet(false, true)) {
-                Husk h = helper.spawn(EntityType.HUSK, at);
+                Husk h = helper.spawn(EntityTypes.HUSK, at);
                 h.hurt(h.damageSources().generic(), 1000f);
             }
         });
@@ -123,7 +124,7 @@ public final class WorldRulesGameTest {
         AtomicReference<net.minecraft.world.entity.Entity> cow = new AtomicReference<>();
         helper.onEachTick(() -> {
             if (set.get() != null && cow.get() == null) {
-                cow.set(helper.spawn(EntityType.MOOSHROOM, new BlockPos(2, floor(helper) + 1, 2)));
+                cow.set(helper.spawn(EntityTypes.MOOSHROOM, new BlockPos(2, floor(helper) + 1, 2)));
             }
         });
         helper.succeedWhen(() -> {
@@ -145,7 +146,7 @@ public final class WorldRulesGameTest {
         double[] bounce = {Double.NEGATIVE_INFINITY};
         helper.onEachTick(() -> {
             if (set.get() != null && pig.get() == null) {
-                pig.set(helper.spawn(EntityType.PIG, new BlockPos(2, fl + 5, 2)));
+                pig.set(helper.spawn(EntityTypes.PIG, new BlockPos(2, fl + 5, 2)));
             }
             Pig p = pig.get();
             if (p != null && p.entityTags().contains("t6c_landed")) {
@@ -171,7 +172,7 @@ public final class WorldRulesGameTest {
         AtomicReference<Sheep> sheep = new AtomicReference<>();
         helper.onEachTick(() -> {
             if (set.get() != null && sheep.get() == null) {
-                sheep.set(helper.spawn(EntityType.SHEEP, new BlockPos(2, floor(helper) + 1, 2)));
+                sheep.set(helper.spawn(EntityTypes.SHEEP, new BlockPos(2, floor(helper) + 1, 2)));
             }
             Sheep r = sheep.get();
             if (r != null) {
@@ -202,7 +203,7 @@ public final class WorldRulesGameTest {
                         helper.setBlock(q, Blocks.STONE);
                     }
                 }
-                PrimedTnt tnt = helper.spawn(EntityType.TNT, at);
+                PrimedTnt tnt = helper.spawn(EntityTypes.TNT, at);
                 tnt.setFuse(2);
             }
         });
@@ -236,12 +237,12 @@ public final class WorldRulesGameTest {
                 return;
             }
             if (cow.get() == null) {
-                Cow c = helper.spawn(EntityType.COW, new BlockPos(4, fl + 1, 4));
+                Cow c = helper.spawn(EntityTypes.COW, new BlockPos(4, fl + 1, 4));
                 c.setNoAi(true);
                 cow.set(c);
             } else if (thrown.compareAndSet(false, true)) {
                 Vec3 above = cow.get().position().add(0, 3, 0);
-                Snowball s = new Snowball(EntityType.SNOWBALL, helper.getLevel());
+                Snowball s = new Snowball(EntityTypes.SNOWBALL, helper.getLevel());
                 s.setPos(above);
                 s.setDeltaMovement(0, -1.2, 0);
                 helper.getLevel().addFreshEntity(s);

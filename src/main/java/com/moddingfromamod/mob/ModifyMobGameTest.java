@@ -16,6 +16,7 @@ import com.moddingfromamod.testing.gt.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.phys.AABB;
@@ -90,7 +91,7 @@ public class ModifyMobGameTest {
     /** "Make it bigger!" on a real mob: the SCALE attribute lands, and the hitbox grows with it. */
     @GameTest(template = "empty_test", timeoutTicks = 300, batch = "modifymob_sheep")
     public static void modifyMobResizesARealMob(GameTestHelper helper) {
-        LivingEntity sheep = besideTheChild(helper, EntityType.SHEEP);
+        LivingEntity sheep = besideTheChild(helper, EntityTypes.SHEEP);
         float widthBefore = sheep.getBbWidth();
 
         AtomicReference<ToolResult> reply = new AtomicReference<>();
@@ -119,7 +120,7 @@ public class ModifyMobGameTest {
      */
     @GameTest(template = "empty_test", timeoutTicks = 300, batch = "modifymob_cow")
     public static void modifyMobGlowsInAColour(GameTestHelper helper) {
-        LivingEntity cow = besideTheChild(helper, EntityType.COW);
+        LivingEntity cow = besideTheChild(helper, EntityTypes.COW);
 
         AtomicReference<ToolResult> reply = new AtomicReference<>();
         offThread(() -> reply.set(new ModifyMobTool().call(
@@ -134,7 +135,7 @@ public class ModifyMobGameTest {
             PlayerTeam team = helper.getLevel().getScoreboard()
                     .getPlayersTeam(cow.getScoreboardName());
             helper.assertTrue(team != null, Component.literal("a glowing mob needs a team for the outline colour"));
-            helper.assertTrue(team.getColor() == ChatFormatting.LIGHT_PURPLE,
+            helper.assertTrue(team.getColor().orElse(null) == net.minecraft.world.scores.TeamColor.LIGHT_PURPLE,
                     Component.literal("'pink' should snap to LIGHT_PURPLE, was " + team.getColor()));
         });
     }
@@ -160,7 +161,7 @@ public class ModifyMobGameTest {
         // the shared registry. No entity with this id has ever been in the world.
         EntityHandles.global().targeted(UUID.randomUUID(), "minecraft:pig", null);
 
-        LivingEntity pig = besideTheChild(helper, EntityType.PIG);
+        LivingEntity pig = besideTheChild(helper, EntityTypes.PIG);
 
         AtomicReference<ToolResult> reply = new AtomicReference<>();
         offThread(() -> reply.set(new ModifyMobTool().call(
@@ -184,7 +185,7 @@ public class ModifyMobGameTest {
      */
     @GameTest(template = "empty_test", timeoutTicks = 300, batch = "modifymob_chicken")
     public static void anUnmatchedTargetExplainsWhatIsNearby(GameTestHelper helper) {
-        besideTheChild(helper, EntityType.CHICKEN);
+        besideTheChild(helper, EntityTypes.CHICKEN);
 
         AtomicReference<ToolResult> reply = new AtomicReference<>();
         offThread(() -> reply.set(new ModifyMobTool().call(

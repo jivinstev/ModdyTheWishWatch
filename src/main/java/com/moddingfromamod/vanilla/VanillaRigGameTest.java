@@ -19,6 +19,7 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.monster.zombie.Zombie;
 import net.minecraft.world.phys.AABB;
@@ -171,7 +172,7 @@ public class VanillaRigGameTest {
         DisplayRig rig = spikor(helper);
         Zombie hunter = null;
         try {
-            hunter = helper.spawnWithNoFreeWill(EntityType.ZOMBIE, SPOT.offset(3, 0, 0));
+            hunter = helper.spawnWithNoFreeWill(EntityTypes.ZOMBIE, SPOT.offset(3, 0, 0));
             hunter.setTarget(rig.living());
             helper.assertTrue(hunter.getTarget() == rig.living(),
                     Component.literal("a vanilla mob should be able to hold the creature as its target"));
@@ -392,7 +393,7 @@ public class VanillaRigGameTest {
         float yaw = 37.5f;   // deliberately not 0 or 90: a yaw convention bug hides at both
 
         // ARM A: the shipped renderer's entity, placed the same way.
-        var armA = EntityType.ZOMBIE.create(helper.getLevel(), EntitySpawnReason.COMMAND);
+        var armA = EntityTypes.ZOMBIE.create(helper.getLevel(), EntitySpawnReason.COMMAND);
         helper.assertTrue(armA != null, Component.literal("could not create the arm-A stand-in"));
         armA.snapTo(at.x, at.y, at.z, yaw, 0f);
         armA.setInvisible(true);

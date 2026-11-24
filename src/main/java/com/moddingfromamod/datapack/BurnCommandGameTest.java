@@ -8,6 +8,7 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import com.moddingfromamod.testing.gt.GameTestHolder;
 
 /**
@@ -30,8 +31,8 @@ public class BurnCommandGameTest {
 
     @GameTest(template = "empty_test")
     public static void theTaughtBurnSetsItAlightAndDamageOnFireDoesNot(GameTestHelper helper) {
-        var lit = helper.spawnWithNoFreeWill(EntityType.PIG, new BlockPos(1, 2, 1));
-        var hurt = helper.spawnWithNoFreeWill(EntityType.PIG, new BlockPos(3, 2, 3));
+        var lit = helper.spawnWithNoFreeWill(EntityTypes.PIG, new BlockPos(1, 2, 1));
+        var hurt = helper.spawnWithNoFreeWill(EntityTypes.PIG, new BlockPos(3, 2, 3));
         float before = hurt.getHealth();
 
         runAs(helper, lit, "data modify entity @s Fire set value 100s");

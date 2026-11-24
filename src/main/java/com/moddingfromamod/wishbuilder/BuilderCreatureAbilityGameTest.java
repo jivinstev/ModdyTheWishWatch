@@ -17,6 +17,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.monster.zombie.Zombie;
 import net.minecraft.world.level.block.Blocks;
@@ -107,7 +108,7 @@ public final class BuilderCreatureAbilityGameTest {
             List<Zombie> zs = new ArrayList<>();
             int[][] around = {{3, 0}, {-3, 0}, {0, 3}, {0, -3}};
             for (int[] d : around) {
-                Zombie z = EntityType.ZOMBIE.create(level, EntitySpawnReason.COMMAND);
+                Zombie z = EntityTypes.ZOMBIE.create(level, EntitySpawnReason.COMMAND);
                 z.setNoAi(true);
                 z.setPersistenceRequired();
                 // A helmet, or it burns in daylight: a full Gate B run once found all four dead before the

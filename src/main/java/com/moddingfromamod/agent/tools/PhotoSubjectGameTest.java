@@ -19,6 +19,7 @@ import net.minecraft.core.BlockPos;
 import com.moddingfromamod.testing.gt.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.GameType;
@@ -48,7 +49,7 @@ public class PhotoSubjectGameTest {
     }
 
     private static LivingEntity creature(GameTestHelper helper, String species, BlockPos at) {
-        var mob = helper.spawnWithNoFreeWill(EntityType.PIG, at);
+        var mob = helper.spawnWithNoFreeWill(EntityTypes.PIG, at);
         mob.addTag(WishMobTags.ALL);
         mob.addTag(WishMobTags.forSpecies(species));
         return mob;
@@ -177,8 +178,8 @@ public class PhotoSubjectGameTest {
     public static void aChangedVanillaMobIsFoundByItsHandle(GameTestHelper helper) {
         Player camera = helper.makeMockPlayer(GameType.CREATIVE);
         camera.snapTo(helper.absoluteVec(new net.minecraft.world.phys.Vec3(0.5, 2, 0.5)));
-        var nearer = helper.spawnWithNoFreeWill(EntityType.SNOW_GOLEM, new BlockPos(1, 2, 1));
-        var golem = helper.spawnWithNoFreeWill(EntityType.SNOW_GOLEM, new BlockPos(6, 2, 6));
+        var nearer = helper.spawnWithNoFreeWill(EntityTypes.SNOW_GOLEM, new BlockPos(1, 2, 1));
+        var golem = helper.spawnWithNoFreeWill(EntityTypes.SNOW_GOLEM, new BlockPos(6, 2, 6));
         String handle = com.moddingfromamod.mob.EntityHandles.global().remember(
                 golem.getUUID(), "minecraft:snow_golem", "Snow Golem");
         helper.assertTrue(handle != null && handle.startsWith("@"), Component.literal("a handle: " + handle));

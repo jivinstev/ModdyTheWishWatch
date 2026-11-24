@@ -95,7 +95,7 @@ public interface BlockHits {
             return CatchRules.Fragile.GLASS;
         }
         if (s.is(BlockTags.LEAVES) || s.is(BlockTags.CROPS) || s.is(BlockTags.FLOWERS)
-                || s.is(BlockTags.SAPLINGS) || s.is(Blocks.SHORT_GRASS) || s.is(Blocks.TALL_GRASS)) {
+                || s.is(net.minecraft.tags.BlockItemTags.SAPLINGS.block()) || s.is(Blocks.SHORT_GRASS) || s.is(Blocks.TALL_GRASS)) {
             return CatchRules.Fragile.PLANT;
         }
         if (s.is(BlockTags.CANDLES) || s.is(BlockTags.FLOWER_POTS) || s.is(BlockTags.WOOL_CARPETS)

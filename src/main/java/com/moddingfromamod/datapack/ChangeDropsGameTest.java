@@ -13,6 +13,7 @@ import net.minecraft.core.BlockPos;
 import com.moddingfromamod.testing.gt.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.monster.zombie.Zombie;
 import net.minecraft.world.item.Item;
@@ -95,7 +96,7 @@ public final class ChangeDropsGameTest {
                     Component.literal("both rules should be read back as LOADED from NeoForge: " + in));
 
             if (acted.compareAndSet(false, true)) {
-                Zombie z = helper.spawn(EntityType.ZOMBIE, mobAt);
+                Zombie z = helper.spawn(EntityTypes.ZOMBIE, mobAt);
                 z.hurt(z.damageSources().generic(), 1000f);
                 helper.setBlock(leafAt, Blocks.OAK_LEAVES);
                 helper.getLevel().destroyBlock(helper.absolutePos(leafAt), true);

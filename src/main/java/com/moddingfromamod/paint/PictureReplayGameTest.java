@@ -39,7 +39,7 @@ public class PictureReplayGameTest {
         // Past MapArtPanels' support check (every 100 ticks), so a picture hung on air is gone.
         helper.runAfterDelay(120, () -> {
             List<ItemFrame> frames = helper.getLevel().getEntitiesOfClass(ItemFrame.class,
-                    new AABB(stand.offset(-4, -2, 2).getCenter(), stand.offset(5, 6, 9).getCenter()), f -> f.getItem().is(Items.FILLED_MAP));
+                    new AABB(net.minecraft.world.phys.Vec3.atCenterOf(stand.offset(-4, -2, 2)), net.minecraft.world.phys.Vec3.atCenterOf(stand.offset(5, 6, 9))), f -> f.getItem().is(Items.FILLED_MAP));
             helper.assertTrue(frames.size() == 9, Component.literal("a 3x3 creeper face is nine map tiles; found "
                     + frames.size()));
             helper.succeed();
@@ -147,7 +147,7 @@ public class PictureReplayGameTest {
         String err = PictureCommand.hang(p, id);
         com.moddingfromamod.testing.MockPlayerNetwork.remove(p);
         helper.assertTrue(err == null, Component.literal("library picture '" + id + "' did not hang: " + err));
-        AABB near = new AABB(stand.offset(-20, -2, 1).getCenter(), stand.offset(20, 20, 12).getCenter());
+        AABB near = new AABB(net.minecraft.world.phys.Vec3.atCenterOf(stand.offset(-20, -2, 1)), net.minecraft.world.phys.Vec3.atCenterOf(stand.offset(20, 20, 12)));
         // Past MapArtPanels' support check (every 100 ticks), so a picture hung on air is gone.
         helper.runAfterDelay(120, () -> {
             long frames = level.getEntitiesOfClass(ItemFrame.class, near,

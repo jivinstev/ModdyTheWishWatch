@@ -63,7 +63,7 @@ public final class BuilderFarmAnimalsGameTest {
         // same ground (the grid starts again at its first corner), so in a long run a cow an earlier test made and
         // left stands within 48 blocks of him — and was counted as his. A stranger's cow is staged right beside him
         // as the control: it is there before the make, so it is not his, and it must not be fed or counted.
-        Cow stranger = net.minecraft.world.entity.EntityType.COW.create(helper.getLevel(),
+        Cow stranger = net.minecraft.world.entity.EntityTypes.COW.create(helper.getLevel(),
                 net.minecraft.world.entity.EntitySpawnReason.COMMAND);
         stranger.snapTo(at.getX() + 3.5, at.getY(), at.getZ() + 0.5, 0f, 0f);
         helper.getLevel().addFreshEntity(stranger);

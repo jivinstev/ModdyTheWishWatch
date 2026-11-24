@@ -7,6 +7,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
 import org.joml.Quaternionf;
@@ -44,7 +45,7 @@ public final class Fx {
     /** A glowing block display at (x, y, z), drawn from {@code range} × 64 blocks away. */
     public static Entity block(ServerLevel level, BlockState state, double x, double y, double z,
                                float range, String wishTag) {
-        Entity d = EntityType.BLOCK_DISPLAY.create(level, EntitySpawnReason.COMMAND);
+        Entity d = EntityTypes.BLOCK_DISPLAY.create(level, EntitySpawnReason.COMMAND);
         if (d == null) {
             return null;
         }
@@ -78,7 +79,7 @@ public final class Fx {
 
     private static Entity light(ServerLevel level, double x, double y, double z, float range, String wishTag,
                                 int argb, String billboard) {
-        Entity d = EntityType.TEXT_DISPLAY.create(level, EntitySpawnReason.COMMAND);
+        Entity d = EntityTypes.TEXT_DISPLAY.create(level, EntitySpawnReason.COMMAND);
         if (d == null) {
             return null;
         }
@@ -154,7 +155,7 @@ public final class Fx {
 
     /** An item display of the real item, for the item reveal. */
     public static Entity item(ServerLevel level, ItemStack stack, double x, double y, double z, String wishTag) {
-        Entity d = EntityType.ITEM_DISPLAY.create(level, EntitySpawnReason.COMMAND);
+        Entity d = EntityTypes.ITEM_DISPLAY.create(level, EntitySpawnReason.COMMAND);
         if (d == null || stack == null || stack.isEmpty()) {
             return null;
         }

@@ -31,6 +31,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.level.block.Blocks;
@@ -182,7 +183,7 @@ public final class VanillaLocomotionClientTest {
                             int floor = 0;
                             for (int x = (int) CAM_X - 16; x <= (int) CAM_X + 16; x++) {
                                 for (int z = (int) STAGE_Z - 8; z <= (int) STAGE_Z + 14; z++) {
-                                    if (s.getBlockState(new BlockPos(x, FLOOR_Y, z)).is(Blocks.WHITE_CONCRETE)) {
+                                    if (s.getBlockState(new BlockPos(x, FLOOR_Y, z)).is(Blocks.CONCRETE.white())) {
                                         floor++;
                                     }
                                 }
@@ -555,7 +556,7 @@ public final class VanillaLocomotionClientTest {
         gr.set(net.minecraft.world.level.gamerules.GameRules.SPAWN_MOBS,false, level.getServer());
         com.moddingfromamod.mv.DayTime.set(level, 6000L);
         com.moddingfromamod.mv.DayTime.weather(level, 6000, 0, false, false);
-        var floor = Blocks.WHITE_CONCRETE.defaultBlockState();
+        var floor = Blocks.CONCRETE.white().defaultBlockState();
         for (int x = (int) CAM_X - 16; x <= (int) CAM_X + 16; x++) {
             for (int z = (int) STAGE_Z - 8; z <= (int) STAGE_Z + 14; z++) {
                 level.setBlock(new BlockPos(x, FLOOR_Y, z), floor, 3);
@@ -605,7 +606,7 @@ public final class VanillaLocomotionClientTest {
         // The floor again, every take: in one run every take after the swim tank was drained drew
         // NO floor on the client while all 759 blocks were there on the server (counted). Laying it
         // again re-sends it; what the drain does to the client's chunk is not this film's subject.
-        var floor = Blocks.WHITE_CONCRETE.defaultBlockState();
+        var floor = Blocks.CONCRETE.white().defaultBlockState();
         for (int x = (int) CAM_X - 16; x <= (int) CAM_X + 16; x++) {
             for (int z = (int) STAGE_Z - 8; z <= (int) STAGE_Z + 14; z++) {
                 level.setBlock(new BlockPos(x, FLOOR_Y, z), Blocks.STONE.defaultBlockState(), 3);
@@ -624,8 +625,8 @@ public final class VanillaLocomotionClientTest {
     // ---- FLY: parrot + bee | the flier, airborne | the same flier, grounded
     private static void setUpFly(ServerLevel level) {
         double air = FOOT_Y + 2.0;
-        vanilla(level, EntityType.PARROT, laneX(0) + 0.4, air, STAGE_Z, true);
-        vanilla(level, EntityType.BEE, laneX(0) - 0.4, air + 0.9, STAGE_Z, true);
+        vanilla(level, EntityTypes.PARROT, laneX(0) + 0.4, air, STAGE_Z, true);
+        vanilla(level, EntityTypes.BEE, laneX(0) - 0.4, air + 0.9, STAGE_Z, true);
         String id = species(level, "fly", List.of("friendly", "flies"));
         Mob w = creature(level, id, laneX(1), air, STAGE_Z, "wished");
         Mob c = creature(level, id, laneX(2), FOOT_Y, STAGE_Z, "control");
@@ -685,8 +686,8 @@ public final class VanillaLocomotionClientTest {
                     net.minecraft.world.effect.MobEffects.NIGHT_VISION, 20 * 120, 0, true, false));
         }
         double mid = FOOT_Y + 1.6;
-        vanilla(level, EntityType.DOLPHIN, laneX(0), mid - 0.3, STAGE_Z, true);
-        vanilla(level, EntityType.COD, laneX(0) + 0.3, mid + 1.0, STAGE_Z - 1, true);
+        vanilla(level, EntityTypes.DOLPHIN, laneX(0), mid - 0.3, STAGE_Z, true);
+        vanilla(level, EntityTypes.COD, laneX(0) + 0.3, mid + 1.0, STAGE_Z - 1, true);
         String id = species(level, "swim", List.of("friendly"));
         Mob w = creature(level, id, laneX(1), mid, STAGE_Z, "wished");
         Mob c = creature(level, id, laneX(2), FOOT_Y, STAGE_Z, "control");
@@ -731,8 +732,8 @@ public final class VanillaLocomotionClientTest {
         String walkId = species(level, "hop", List.of("friendly"), "_walker");
         Mob w = creature(level, hopId, CAM_X - 3.5, FOOT_Y, rowCentre(0), "wished");
         Mob c = creature(level, walkId, CAM_X - 3.5, FOOT_Y, rowCentre(1), "control");
-        Mob rabbit = vanilla(level, EntityType.RABBIT, CAM_X - 3.5, FOOT_Y, rowCentre(2), false);
-        Mob frog = vanilla(level, EntityType.FROG, CAM_X + 3.0, FOOT_Y, rowCentre(2), false);
+        Mob rabbit = vanilla(level, EntityTypes.RABBIT, CAM_X - 3.5, FOOT_Y, rowCentre(2), false);
+        Mob frog = vanilla(level, EntityTypes.FROG, CAM_X + 3.0, FOOT_Y, rowCentre(2), false);
         for (Mob m : new Mob[]{w, c, rabbit, frog}) {
             if (m == null) {
                 continue;
@@ -764,7 +765,7 @@ public final class VanillaLocomotionClientTest {
     private static void setUpSit(ServerLevel level) {
         double[] x = SIT_X;
         Entity fox = sleepingFox(level, x[0], FOOT_Y, STAGE_Z);
-        Mob wolf = vanilla(level, EntityType.WOLF, x[1], FOOT_Y, STAGE_Z, false);
+        Mob wolf = vanilla(level, EntityTypes.WOLF, x[1], FOOT_Y, STAGE_Z, false);
         if (wolf instanceof net.minecraft.world.entity.TamableAnimal tame) {
             tame.setInSittingPose(true);
             tame.setNoAi(true);
@@ -847,7 +848,7 @@ public final class VanillaLocomotionClientTest {
 
     /** A vanilla fox ASLEEP: `Sleeping` is only reachable through its saved data on both versions. */
     private static Entity sleepingFox(ServerLevel level, double x, double y, double z) {
-        Mob fox = vanilla(level, EntityType.FOX, x, y, z, false);
+        Mob fox = vanilla(level, EntityTypes.FOX, x, y, z, false);
         if (fox == null) {
             return null;
         }
@@ -991,7 +992,7 @@ public final class VanillaLocomotionClientTest {
         if (mc.player == null) {
             return;
         }
-        mc.options.hideGui = true;
+        com.moddingfromamod.gatec.ClientHarness.setHudHidden(mc, true);
         mc.gui.setScreen(null);
         mc.player.getAbilities().flying = true;
         mc.player.setPos(c[0], c[1], c[2]);
@@ -1033,7 +1034,7 @@ public final class VanillaLocomotionClientTest {
     }
 
     private static int[][] grab(Minecraft mc) {
-        if (mc.getOverlay() != null) {
+        if (mc.gui.overlay() != null) {
             return null;
         }
         try (var img = Screenshots.take(mc.gameRenderer.mainRenderTarget())) {

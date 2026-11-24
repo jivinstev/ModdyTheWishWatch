@@ -15,6 +15,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.level.block.state.BlockState;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
@@ -99,7 +100,7 @@ public final class DisplayBodyMotion implements EventMotion {
 
     private void spawn(EventWriter w) {
         for (Part p : parts) {
-            Entity d = EntityType.BLOCK_DISPLAY.create(w.level(), EntitySpawnReason.COMMAND);
+            Entity d = EntityTypes.BLOCK_DISPLAY.create(w.level(), EntitySpawnReason.COMMAND);
             if (d == null) {
                 continue;
             }

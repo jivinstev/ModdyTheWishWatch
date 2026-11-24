@@ -4,7 +4,7 @@ import net.minecraft.network.chat.Component;
 import java.util.List;
 
 import com.moddingfromamod.ModdingFromAModMod;
-import net.minecraft.advancements.criterion.ItemPredicate;
+import net.minecraft.advancements.predicates.ItemPredicate;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
@@ -15,6 +15,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.throwableitemprojectile.ThrownSplashPotion;
@@ -109,7 +110,7 @@ public class VanillaCarrierBehaviourGameTest {
                 Component.literal("leather_horse_armor unexpectedly consumed a use-on-block; if that ever becomes "
                         + "true this whole finding changes and the datapack route opens"));
 
-        List<ArmorStand> anchors = level.getEntities(EntityType.ARMOR_STAND,
+        List<ArmorStand> anchors = level.getEntities(EntityTypes.ARMOR_STAND,
                 new AABB(floor.above()).inflate(2.0),
                 e -> e.entityTags().contains("carrier_probe_b"));
         helper.assertTrue(anchors.isEmpty(),
@@ -168,7 +169,7 @@ public class VanillaCarrierBehaviourGameTest {
 
         splash.getItem().use(level, player, InteractionHand.MAIN_HAND);
 
-        List<ThrownSplashPotion> thrown = level.getEntities(EntityType.SPLASH_POTION,
+        List<ThrownSplashPotion> thrown = level.getEntities(EntityTypes.SPLASH_POTION,
                 new AABB(at).inflate(8.0), e -> true);
         helper.assertTrue(thrown.size() == 1,
                 Component.literal("a splash potion must throw natively, produced " + thrown.size()));
@@ -197,7 +198,7 @@ public class VanillaCarrierBehaviourGameTest {
         CompoundTag want = new CompoundTag();
         want.putString(WishItem.ON_USE, "wish:pour_coffee");
         ItemPredicate predicate = ItemPredicate.Builder.item()
-                .withComponents(net.minecraft.advancements.criterion.DataComponentMatchers.Builder.components()
+                .withComponents(net.minecraft.advancements.predicates.DataComponentMatchers.Builder.components()
                         .exact(net.minecraft.core.component.DataComponentExactPredicate.builder()
                                 .expect(DataComponents.CUSTOM_DATA, CustomData.of(want))
                                 .build())

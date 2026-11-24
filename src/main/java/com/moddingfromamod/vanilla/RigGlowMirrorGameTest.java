@@ -136,18 +136,18 @@ public class RigGlowMirrorGameTest {
         var scoreboard = helper.getLevel().getScoreboard();
         String name = "glowtest_" + rig.base().getUUID().toString().substring(0, 8);
         PlayerTeam team = scoreboard.addPlayerTeam(name);
-        team.setColor(ChatFormatting.RED);
+        team.setColor(java.util.Optional.of(net.minecraft.world.scores.TeamColor.RED));
         helper.startSequence()
                 .thenExecuteAfter(2, () -> {
                     scoreboard.addPlayerToTeam(rig.base().getScoreboardName(), team);
                     rig.base().setGlowingTag(true);
                 })
                 .thenExecuteAfter(2, () -> assertMirrored(helper, rig, true,
-                        ChatFormatting.RED.getColor(), "red team"))
+                        net.minecraft.world.scores.TeamColor.RED.rgb(), "red team"))
                 // A colour change with no glow change is still a change.
-                .thenExecuteAfter(1, () -> team.setColor(ChatFormatting.BLUE))
+                .thenExecuteAfter(1, () -> team.setColor(java.util.Optional.of(net.minecraft.world.scores.TeamColor.BLUE)))
                 .thenExecuteAfter(2, () -> assertMirrored(helper, rig, true,
-                        ChatFormatting.BLUE.getColor(), "team recoloured"))
+                        net.minecraft.world.scores.TeamColor.BLUE.rgb(), "team recoloured"))
                 .thenExecuteAfter(1, () -> rig.base().setGlowingTag(false))
                 .thenExecuteAfter(2, () -> assertMirrored(helper, rig, false, -1, "tag off"))
                 .thenExecuteAfter(1, () -> scoreboard.removePlayerTeam(team))
@@ -175,7 +175,7 @@ public class RigGlowMirrorGameTest {
                 .thenWaitUntil(() -> {
                     helper.assertTrue(on.get() != null, Component.literal("waiting for modify_mob"));
                     helper.assertFalse(on.get().isError(), Component.literal("modify_mob: " + on.get().text()));
-                    assertMirrored(helper, rig, true, ChatFormatting.LIGHT_PURPLE.getColor(),
+                    assertMirrored(helper, rig, true, net.minecraft.world.scores.TeamColor.LIGHT_PURPLE.rgb(),
                             "modify_mob glow pink");
                 })
                 .thenExecute(() -> offThread(() -> off.set(new ModifyMobTool().call(

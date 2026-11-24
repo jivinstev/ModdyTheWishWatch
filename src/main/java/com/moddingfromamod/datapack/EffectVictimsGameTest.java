@@ -16,6 +16,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.animal.cow.Cow;
@@ -45,15 +46,15 @@ public class EffectVictimsGameTest {
     private static Cast cast(GameTestHelper helper, String name) {
         MockPlayerNetwork.clearStaleMocks(helper);
         BlockPos at = new BlockPos(2, 2, 4);
-        Cow source = helper.spawn(EntityType.COW, at);
+        Cow source = helper.spawn(EntityTypes.COW, at);
         source.addTag(SOURCE_TAG);
         source.setNoAi(true);
         source.setYRot(-90f);
         source.setYHeadRot(-90f);
         source.setYBodyRot(-90f);
-        Cow cow = helper.spawn(EntityType.COW, at.offset(2, 0, -1));
+        Cow cow = helper.spawn(EntityTypes.COW, at.offset(2, 0, -1));
         cow.setNoAi(true);
-        Husk husk = helper.spawn(EntityType.HUSK, at.offset(2, 0, 1));
+        Husk husk = helper.spawn(EntityTypes.HUSK, at.offset(2, 0, 1));
         husk.setNoAi(true);
         ServerPlayer kid = MockPlayerNetwork.asSurvival(MockPlayerNetwork.inLevel(helper, name));
         BlockPos k = helper.absolutePos(at.offset(3, 0, 0));

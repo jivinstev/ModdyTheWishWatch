@@ -62,8 +62,8 @@ public final class WishOrbs {
     public static volatile boolean enabled = true;
 
     static final BlockState CORE = Blocks.AMETHYST_BLOCK.defaultBlockState();
-    static final BlockState SHELL = Blocks.MAGENTA_STAINED_GLASS.defaultBlockState();
-    static final BlockState COLUMN = Blocks.WHITE_STAINED_GLASS.defaultBlockState();
+    static final BlockState SHELL = Blocks.STAINED_GLASS.magenta().defaultBlockState();
+    static final BlockState COLUMN = Blocks.STAINED_GLASS.white().defaultBlockState();
 
     /** The pillar: a white core with a cyan glowing outline, and the star at its foot. */
     /** The arcs (white-cyan) and the star on the ground (cyan, see-through), ARGB. */
@@ -85,7 +85,7 @@ public final class WishOrbs {
             Blocks.DIAMOND_ORE.defaultBlockState(),
             Blocks.REDSTONE_BLOCK.defaultBlockState(),
     };
-    static final BlockState BEAD_DARK = Blocks.GRAY_STAINED_GLASS.defaultBlockState();
+    static final BlockState BEAD_DARK = Blocks.STAINED_GLASS.gray().defaultBlockState();
     static final BlockState BEAD_LIT = Blocks.GOLD_BLOCK.defaultBlockState();
 
     /** One wish's pillar. Its displays are empty while it is hidden for a photograph. */

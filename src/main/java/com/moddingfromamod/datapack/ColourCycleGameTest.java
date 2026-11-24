@@ -17,6 +17,7 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import com.moddingfromamod.testing.gt.GameTestHolder;
 
 /**
@@ -65,7 +66,7 @@ public class ColourCycleGameTest {
             helper.succeed();
             return;
         }
-        Entity axolotl = helper.spawn(EntityType.AXOLOTL, new BlockPos(1, 2, 1));
+        Entity axolotl = helper.spawn(EntityTypes.AXOLOTL, new BlockPos(1, 2, 1));
         axolotl.addTag("mfam_rainbow_probe");
         int[] start = {variant(axolotl)};
 

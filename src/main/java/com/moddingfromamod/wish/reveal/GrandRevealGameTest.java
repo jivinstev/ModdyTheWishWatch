@@ -12,6 +12,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import com.moddingfromamod.testing.gt.GameTestHolder;
@@ -67,7 +68,7 @@ public final class GrandRevealGameTest {
         WishOrbs.showForTest(level, wish, c[0], c[1], c[2], 4, 0.5f, 0);
         int lights = 0;
         for (Entity e : level.getAllEntities()) {
-            if (e == null || !e.entityTags().contains(Fx.wishTag(wish)) || e.getType() != EntityType.TEXT_DISPLAY) {
+            if (e == null || !e.entityTags().contains(Fx.wishTag(wish)) || e.getType() != EntityTypes.TEXT_DISPLAY) {
                 continue;
             }
             lights++;
@@ -297,8 +298,8 @@ public final class GrandRevealGameTest {
         int shown = Fx.count(level, Fx.wishTag(live));
         helper.assertTrue(shown > 0, Component.literal("the live pillar never stood up"));
 
-        Entity stale = EntityType.BLOCK_DISPLAY.create(level, EntitySpawnReason.COMMAND);
-        Entity other = EntityType.BLOCK_DISPLAY.create(level, EntitySpawnReason.COMMAND);
+        Entity stale = EntityTypes.BLOCK_DISPLAY.create(level, EntitySpawnReason.COMMAND);
+        Entity other = EntityTypes.BLOCK_DISPLAY.create(level, EntitySpawnReason.COMMAND);
         helper.assertTrue(stale != null && other != null, Component.literal("no block display"));
         stale.snapTo(c[0], c[1], c[2], 0f, 0f);
         stale.addTag(Fx.TAG);

@@ -19,6 +19,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.MobCategory;
 import net.neoforged.neoforge.common.NeoForge;
@@ -81,7 +82,7 @@ public final class VanillaRideProbeGameTest {
                 kid.stopRiding();
                 kid.getInventory().clearContent();
                 kid.teleportTo(m.getX(), m.getY(), m.getZ() - 1);
-                NeoForge.EVENT_BUS.post(new PlayerInteractEvent.EntityInteract(kid, InteractionHand.MAIN_HAND, m));
+                NeoForge.EVENT_BUS.post(com.moddingfromamod.mv.Interact.event(kid, InteractionHand.MAIN_HAND, m));
                 kid.setYRot(0f);
                 kid.setXRot(0f);
                 cur[0] = m;
@@ -137,10 +138,10 @@ public final class VanillaRideProbeGameTest {
         var at = helper.absolutePos(new BlockPos(2, 2, 2));
         var src = level.getServer().createCommandSourceStack().withLevel(level)
                 .withPosition(net.minecraft.world.phys.Vec3.atBottomCenterOf(at)).withSuppressedOutput();
-        int before = level.getEntities(EntityType.ENDER_DRAGON, e -> true).size();
+        int before = level.getEntities(EntityTypes.ENDER_DRAGON, e -> true).size();
         level.getServer().getCommands().performPrefixedCommand(src,
                 "wishsummon minecraft:ender_dragon {\"rideable\":true,\"friendly\":true,\"scale\":0.3}");
-        helper.assertTrue(level.getEntities(EntityType.ENDER_DRAGON, e -> true).size() == before,
+        helper.assertTrue(level.getEntities(EntityTypes.ENDER_DRAGON, e -> true).size() == before,
                 Component.literal("wishsummon made a rideable ender dragon; a boss's AI flies it away from him"));
         var tweak = com.moddingfromamod.mob.MobTweak.fromJson(com.google.gson.JsonParser.parseString(
                 "{\"rideable\":true}").getAsJsonObject());
@@ -165,7 +166,7 @@ public final class VanillaRideProbeGameTest {
     @GameTest(template = "empty_test", batch = "watch_on_horse", timeoutTicks = 200)
     public static void holdingTheWatchHeClimbsOntoHisSaddledHorse(GameTestHelper helper) {
         ServerPlayer kid = MockPlayerNetwork.inLevel(helper, "mfam-watch-horse");
-        var horse = EntityType.HORSE.create(helper.getLevel(), EntitySpawnReason.COMMAND);
+        var horse = EntityTypes.HORSE.create(helper.getLevel(), EntitySpawnReason.COMMAND);
         var at = helper.absolutePos(new BlockPos(4, 2, 1));
         horse.snapTo(at.getX() + 0.5, at.getY(), at.getZ() + 0.5, 0f, 0f);
         helper.getLevel().addFreshEntity(horse);
@@ -177,7 +178,7 @@ public final class VanillaRideProbeGameTest {
         kid.setItemInHand(InteractionHand.MAIN_HAND, watch);
         boolean carrier = com.moddingfromamod.item.VanillaCarrierAbilities.isCarrier(kid.getMainHandItem());
         kid.teleportTo(horse.getX(), horse.getY(), horse.getZ() - 1);
-        NeoForge.EVENT_BUS.post(new PlayerInteractEvent.EntityInteract(kid, InteractionHand.MAIN_HAND, horse));
+        NeoForge.EVENT_BUS.post(com.moddingfromamod.mv.Interact.event(kid, InteractionHand.MAIN_HAND, horse));
         helper.assertTrue(kid.getVehicle() == horse, Component.literal("holding the watch (carrier=" + carrier
                 + "), he could not climb onto his own tamed, saddled horse"));
         helper.assertTrue(com.moddingfromamod.wish.VanillaWatchItem.isWatch(kid.getMainHandItem()),

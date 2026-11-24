@@ -13,6 +13,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.monster.zombie.Husk;
 import net.minecraft.world.entity.projectile.throwableitemprojectile.Snowball;
@@ -99,7 +100,7 @@ public final class RigThrowGameTest {
                 + "\"throws\":\"minecraft:fire_charge\"" + (fireBuddy ? ",\"sculpt\":\"starter:fire_imp\"" : "") + "}";
         String made = SpeciesOnRigGameTest.plant(helper, id, extra);
         SpeciesOnRigGameTest.wish(helper, made);
-        Husk husk = helper.spawn(EntityType.HUSK, huskAt);
+        Husk husk = helper.spawn(EntityTypes.HUSK, huskAt);
         husk.setPersistenceRequired();
         husk.setNoAi(true);
         BlockPos at = helper.absolutePos(SpeciesOnRigGameTest.SPOT);

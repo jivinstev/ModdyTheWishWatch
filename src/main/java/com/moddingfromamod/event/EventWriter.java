@@ -159,7 +159,7 @@ public final class EventWriter {
      * replaceable, which is about a player's click, not about water.
      */
     static boolean open(BlockState s) {
-        return s.isAir() || s.canBeReplaced() || s.is(BlockTags.FLOWERS) || s.is(BlockTags.SAPLINGS);
+        return s.isAir() || s.canBeReplaced() || s.is(BlockTags.FLOWERS) || s.is(net.minecraft.tags.BlockItemTags.SAPLINGS.block());
     }
 
     /**

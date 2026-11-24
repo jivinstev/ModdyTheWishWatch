@@ -14,6 +14,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.projectile.arrow.Arrow;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.item.ItemStack;
@@ -239,7 +240,7 @@ public final class StockRideStage {
         }
         // The shield needs something to block: while he holds it up, the wall shoots at him.
         if (current.name().equals("block") && p.isBlocking() && arrowsFired < 3 && phaseTicks % 20 == 0) {
-            Arrow a = new Arrow(EntityType.ARROW, level);
+            Arrow a = new Arrow(EntityTypes.ARROW, level);
             {
                 Vec3 from = p.position().add(0, 1.4, 5);
                 a.snapTo(from.x, from.y, from.z);

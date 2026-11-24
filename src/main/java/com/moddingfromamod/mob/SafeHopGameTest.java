@@ -12,6 +12,7 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.animal.cow.Cow;
 import net.minecraft.world.level.block.Blocks;
 import com.moddingfromamod.testing.gt.GameTestHolder;
@@ -52,7 +53,7 @@ public final class SafeHopGameTest {
         int f = PetBehavioursGameTest.floor(helper);
         int ledge = f + 17;
         ServerPlayer child = MockPlayerNetwork.inLevel(helper, "safehop-flier");
-        Cow cow = helper.spawn(EntityType.COW, new BlockPos(4, f + 1, 4));
+        Cow cow = helper.spawn(EntityTypes.COW, new BlockPos(4, f + 1, 4));
         try {
             fill(helper, ledge, Blocks.STONE);
             BlockPos at = helper.absolutePos(new BlockPos(4, ledge + 1, 4));
@@ -101,7 +102,7 @@ public final class SafeHopGameTest {
         int f = PetBehavioursGameTest.floor(helper);
         int lake = f + 20;
         ServerPlayer child = MockPlayerNetwork.inLevel(helper, "safehop-lava");
-        Cow cow = helper.spawn(EntityType.COW, new BlockPos(4, f + 1, 4));
+        Cow cow = helper.spawn(EntityTypes.COW, new BlockPos(4, f + 1, 4));
         try {
             fill(helper, lake, Blocks.LAVA);
             for (int x = 0; x <= 8; x++) {

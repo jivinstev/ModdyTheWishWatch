@@ -13,6 +13,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.monster.Creeper;
 import net.minecraft.world.level.block.Blocks;
@@ -60,8 +61,8 @@ public final class SpawnPerfProbe {
     private static final String OUT = System.getProperty("moddingfromamod.spawnperfout",
             "/tmp/spawnperf.json");
     private static final BlockPos ORIGIN = new BlockPos(0, 200, 0);
-    private static final List<EntityType<?>> HERD = List.of(EntityType.ZOMBIE, EntityType.SKELETON,
-            EntityType.COW, EntityType.PIG, EntityType.SHEEP, EntityType.CHICKEN);
+    private static final List<EntityType<?>> HERD = List.of(EntityTypes.ZOMBIE, EntityTypes.SKELETON,
+            EntityTypes.COW, EntityTypes.PIG, EntityTypes.SHEEP, EntityTypes.CHICKEN);
 
     private static final List<Double> TICK_MS = new ArrayList<>();
     private static final List<Mob> MOBS = new ArrayList<>();
@@ -132,7 +133,7 @@ public final class SpawnPerfProbe {
             }
         }
         for (int i = 0; i < N; i++) {
-            spawn(level, EntityType.CREEPER, i);
+            spawn(level, EntityTypes.CREEPER, i);
         }
     }
 

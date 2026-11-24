@@ -697,7 +697,7 @@ public final class VanillaWalkClientTest {
         if (mc.player == null) {
             return;
         }
-        mc.options.hideGui = true;
+        com.moddingfromamod.gatec.ClientHarness.setHudHidden(mc, true);
         mc.gui.setScreen(null);
         mc.player.setPos(CAM_X, CAM_Y, CAM_Z);
         mc.player.setYRot(0f);

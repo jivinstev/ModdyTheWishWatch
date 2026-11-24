@@ -363,6 +363,8 @@ public final class VanillaCarrierAbilities {
      * leather horse armour still goes on a horse the way it always did.
      */
     @SubscribeEvent
+    // 26.2 folded EntityInteractSpecific (the click on a specific point of the entity, the one a child
+    // actually performs on a horse) into this event, so this one handler covers both.
     public static void onEntityInteract(PlayerInteractEvent.EntityInteract event) {
         if (!isCarrier(event.getItemStack())) {
             return;
@@ -392,21 +394,6 @@ public final class VanillaCarrierAbilities {
                             net.minecraft.world.entity.EquipmentSlot.BODY,
                             living.getItemBySlot(net.minecraft.world.entity.EquipmentSlot.BODY).copy()))));
         }
-    }
-
-    /**
-     * The same, for the aimed-at-a-part variant — a horse is one entity but vanilla fires this one
-     * when the click lands on a specific point. Missing it would leave the bug reachable from the
-     * exact interaction a child actually performs.
-     */
-    @SubscribeEvent
-    public static void onEntityInteractSpecific(PlayerInteractEvent.EntityInteractSpecific event) {
-        if (!isCarrier(event.getItemStack())) {
-            return;
-        }
-        event.setCancellationResult(InteractionResult.PASS);
-        event.setCanceled(true);
-        undoEntityPrediction(event.getEntity(), event.getTarget());
     }
 
     /** Right-click a block — the {@code placed} and {@code machine} shapes. */

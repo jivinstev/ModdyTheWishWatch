@@ -145,7 +145,7 @@ public final class SurviveDeathGameTest {
             helper.assertTrue(reborn.getHealth() == before,
                     Component.literal("a 30-block fall hurt him with no_fall_damage: " + before + " -> " + reborn.getHealth()));
             reborn.setDeltaMovement(net.minecraft.world.phys.Vec3.ZERO);
-            reborn.knockback(1.5, 1.0, 0.0);
+            reborn.knockback(1.5, 1.0, 0.0, reborn.damageSources().generic(), 0f);
             helper.assertTrue(reborn.getDeltaMovement().horizontalDistance() < 1e-6,
                     Component.literal("a knockback moved him with no_knockback: " + reborn.getDeltaMovement()));
 

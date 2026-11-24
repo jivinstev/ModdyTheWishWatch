@@ -27,6 +27,7 @@ import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.animal.cow.Cow;
 import net.minecraft.world.level.block.Block;
@@ -200,8 +201,8 @@ public final class SafeSpotGameTest {
     public static void aBuildOverACreatureMovesItTheMinimumAndLeavesTheOneInItsAir(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
         int f = floor(helper);
-        Cow under = helper.spawn(EntityType.COW, new BlockPos(4, f + 1, 4));
-        Cow beside = helper.spawn(EntityType.COW, new BlockPos(1, f + 1, 1));
+        Cow under = helper.spawn(EntityTypes.COW, new BlockPos(4, f + 1, 4));
+        Cow beside = helper.spawn(EntityTypes.COW, new BlockPos(1, f + 1, 1));
         under.snapTo(under.getBlockX() + 0.5, under.getY(), under.getBlockZ() + 0.5);
         double ux = under.getX(), uy = under.getY(), uz = under.getZ();
         double bx = beside.getX(), by = beside.getY(), bz = beside.getZ();

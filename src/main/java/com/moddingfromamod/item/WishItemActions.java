@@ -12,6 +12,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.throwableitemprojectile.Snowball;
@@ -106,7 +107,7 @@ public final class WishItemActions {
         Level level = context.getLevel();
         BlockPos pos = new BlockPlaceContext(context).getClickedPos();
         Vec3 at = Vec3.atBottomCenterOf(pos);
-        AABB box = EntityType.ARMOR_STAND.getDimensions().makeBoundingBox(at.x(), at.y(), at.z());
+        AABB box = EntityTypes.ARMOR_STAND.getDimensions().makeBoundingBox(at.x(), at.y(), at.z());
         if (!level.noCollision(null, box) || !level.getEntities(null, box).isEmpty()) {
             return InteractionResult.FAIL;
         }
@@ -128,7 +129,7 @@ public final class WishItemActions {
      * the two can never draw different machines. Null when the stand could not be made.
      */
     public static ArmorStand putDown(ServerLevel serverLevel, Vec3 at, float yaw, String tag) {
-        ArmorStand anchor = EntityType.ARMOR_STAND.create(serverLevel, EntitySpawnReason.COMMAND);
+        ArmorStand anchor = EntityTypes.ARMOR_STAND.create(serverLevel, EntitySpawnReason.COMMAND);
         if (anchor == null) {
             return null;
         }

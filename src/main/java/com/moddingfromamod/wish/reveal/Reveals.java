@@ -764,9 +764,9 @@ public final class Reveals {
             y = g[1];
             z = g[2];
             for (int i = 0; i < BEADS; i++) {
-                block(i % 2 == 0 ? Blocks.CYAN_STAINED_GLASS.defaultBlockState() : Blocks.GOLD_BLOCK.defaultBlockState(), x, y, z);
+                block(i % 2 == 0 ? Blocks.STAINED_GLASS.cyan().defaultBlockState() : Blocks.GOLD_BLOCK.defaultBlockState(), x, y, z);
             }
-            pillar = block(Blocks.WHITE_STAINED_GLASS.defaultBlockState(), x, y, z);
+            pillar = block(Blocks.STAINED_GLASS.white().defaultBlockState(), x, y, z);
         }
 
         @Override

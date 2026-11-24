@@ -16,6 +16,7 @@ import com.moddingfromamod.testing.gt.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import com.moddingfromamod.testing.gt.GameTestHolder;
@@ -34,7 +35,7 @@ public class SurroundingsGameTest {
 
     private static LivingEntity spawnCow(GameTestHelper helper, double scale) {
         ServerLevel level = helper.getLevel();
-        LivingEntity cow = EntityType.COW.create(level, EntitySpawnReason.COMMAND);
+        LivingEntity cow = EntityTypes.COW.create(level, EntitySpawnReason.COMMAND);
         BlockPos at = helper.absolutePos(new BlockPos(2, 2, 2));
         cow.snapTo(at.getX() + 0.5, at.getY(), at.getZ() + 0.5, 0, 0);
         var inst = cow.getAttribute(Attributes.SCALE);
@@ -152,7 +153,7 @@ public class SurroundingsGameTest {
         BuildRegistry.rememberAnchor("sur_castle", BlockPos.ZERO.asLong());
 
         String report = Surroundings.describe(helper.getLevel(),
-                helper.absolutePos(new BlockPos(1, 2, 1)).getCenter());
+                net.minecraft.world.phys.Vec3.atCenterOf(helper.absolutePos(new BlockPos(1, 2, 1))));
 
         helper.assertTrue(report.contains("sur_castle"),
                 Component.literal("the castle must be referenceable: " + report));
@@ -187,7 +188,7 @@ public class SurroundingsGameTest {
                         "light_blue", "held", 1, java.util.List.of("freeze", "ignite"), params));
 
         String report = Surroundings.describe(helper.getLevel(),
-                helper.absolutePos(new BlockPos(1, 2, 1)).getCenter());
+                net.minecraft.world.phys.Vec3.atCenterOf(helper.absolutePos(new BlockPos(1, 2, 1))));
 
         helper.assertTrue(report.contains(id), Component.literal("the wand must be referenceable: " + report));
         helper.assertTrue(report.contains("Frazzlepop"), Component.literal("by name too: " + report));
@@ -239,7 +240,7 @@ public class SurroundingsGameTest {
         }
 
         String report = Surroundings.describe(helper.getLevel(),
-                helper.absolutePos(new BlockPos(1, 2, 1)).getCenter());
+                net.minecraft.world.phys.Vec3.atCenterOf(helper.absolutePos(new BlockPos(1, 2, 1))));
 
         helper.assertTrue(report.contains(id), Component.literal("the rule must be referenceable: " + report));
         helper.assertTrue(report.contains("characters of script"),
@@ -260,7 +261,7 @@ public class SurroundingsGameTest {
     @GameTest(template = "empty_test", timeoutTicks = 200)
     public static void anEmptyWorldReadsAsEmptyNotBroken(GameTestHelper helper) {
         String report = Surroundings.describe(helper.getLevel(),
-                helper.absolutePos(new BlockPos(1, 40, 1)).getCenter());
+                net.minecraft.world.phys.Vec3.atCenterOf(helper.absolutePos(new BlockPos(1, 40, 1))));
         // Asserting the SHAPE, not emptiness: other tests in this batch save buildings and spawn
         // mobs concurrently, so "the world is empty" is not a claim this test can make.
         helper.assertTrue(report.startsWith("Things you can refer to"), Component.literal("header: " + report));

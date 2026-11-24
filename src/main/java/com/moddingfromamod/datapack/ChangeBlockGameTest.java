@@ -244,7 +244,7 @@ public final class ChangeBlockGameTest {
             return;
         }
         try {
-            Block[] want = {Blocks.RED_WOOL, Blocks.ORANGE_WOOL, Blocks.YELLOW_WOOL, Blocks.RED_WOOL};
+            Block[] want = {Blocks.WOOL.red(), Blocks.WOOL.orange(), Blocks.WOOL.yellow(), Blocks.WOOL.red()};
             for (int use = 0; use < want.length; use++) {
                 if (use > 0) {
                     p.gameMode.useItem(p, helper.getLevel(), p.getItemInHand(InteractionHand.MAIN_HAND),

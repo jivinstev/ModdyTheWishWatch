@@ -90,7 +90,7 @@ public final class RideFitProbeGameTest {
         kid.stopRiding();
         kid.getInventory().clearContent();
         kid.teleportTo(c.getX(), c.getY(), c.getZ() - 1);
-        NeoForge.EVENT_BUS.post(new PlayerInteractEvent.EntityInteract(kid, InteractionHand.MAIN_HAND, c));
+        NeoForge.EVENT_BUS.post(com.moddingfromamod.mv.Interact.event(kid, InteractionHand.MAIN_HAND, c));
         boolean onCarrier = com.moddingfromamod.mob.RideSeat.mountOf(kid) == c;
         double seat = Double.NaN;
         if (onCarrier) {
@@ -170,7 +170,7 @@ public final class RideFitProbeGameTest {
                     Component.literal("a flying creature should ride a flying carrier, not a " + c[0].getType()));
             kid.getInventory().clearContent();
             kid.teleportTo(c[0].getX(), c[0].getY(), c[0].getZ() - 1);
-            NeoForge.EVENT_BUS.post(new PlayerInteractEvent.EntityInteract(kid, InteractionHand.MAIN_HAND, c[0]));
+            NeoForge.EVENT_BUS.post(com.moddingfromamod.mv.Interact.event(kid, InteractionHand.MAIN_HAND, c[0]));
             helper.assertTrue(com.moddingfromamod.mob.RideSeat.mountOf(kid) == c[0], Component.literal("he did not climb on"));
             y[0] = c[0].getY();
         });
@@ -273,7 +273,7 @@ public final class RideFitProbeGameTest {
             c[0] = carrier(helper, id);
             kid.getInventory().clearContent();
             kid.teleportTo(c[0].getX(), c[0].getY(), c[0].getZ() - 1);
-            NeoForge.EVENT_BUS.post(new PlayerInteractEvent.EntityInteract(kid, InteractionHand.MAIN_HAND, c[0]));
+            NeoForge.EVENT_BUS.post(com.moddingfromamod.mv.Interact.event(kid, InteractionHand.MAIN_HAND, c[0]));
             helper.assertTrue(com.moddingfromamod.mob.RideSeat.mountOf(kid) == c[0], Component.literal("he did not climb on"));
             helper.getLevel().getServer().getPlayerList().remove(kid);
         });

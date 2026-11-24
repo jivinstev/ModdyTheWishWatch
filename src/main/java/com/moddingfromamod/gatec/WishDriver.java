@@ -19,7 +19,7 @@ import net.minecraft.world.item.ItemStack;
  *
  * <p>This is the end-to-end gate's driver, lifted out of it verbatim. It was the only correct
  * one in the repo after an earlier change, and it stayed the only one because it was private: every other client
- * test kept its own straight-line {@code useItem} → {@code mc.screen instanceof WishScreen} →
+ * test kept its own straight-line {@code useItem} → {@code mc.gui.screen() instanceof WishScreen} →
  * {@code charTyped} sequence, which was the LEGACY route and had been unreachable on the shipped
  * default for the life of the vanilla watch. Those tests did not fail; they could not
  * start. then deleted that screen, so the sequence is uncompilable rather than unreachable.
@@ -247,9 +247,9 @@ public final class WishDriver {
                 // The panel can close between the check and the typing: a world event or rule
                 // the first wish left running fires in the gap (the events smoke's Muse sinkhole
                 // chain restaged its crater whenever a creeper came near, and this line threw an
-                // NPE on mc.screen). That is the world being busy, not the wish failing, so close
+                // NPE on mc.gui.screen()). That is the world being busy, not the wish failing, so close
                 // what is left of the menu and start this wish again from opening the watch.
-                if (mc.screen == null) {
+                if (mc.gui.screen() == null) {
                     System.out.println("wish-driver: the panel closed before typing; reopening the watch");
                     if (mc.player != null) {
                         mc.player.closeContainer();
@@ -326,7 +326,7 @@ public final class WishDriver {
 
     /** The wish box: vanilla's dialog screen, whose text box is where a wish is actually typed. */
     public static boolean wishBoxOpen(Minecraft mc) {
-        return mc.screen instanceof DialogScreen<?>;
+        return mc.gui.screen() instanceof DialogScreen<?>;
     }
 
     /** True once the watch's own UI is up and ready to be typed into. */
@@ -339,7 +339,7 @@ public final class WishDriver {
      * dialog's inputs sit inside its scroll container — so a relaid dialog still finds it.
      */
     public static GuiEventListener wishBox(Minecraft mc) {
-        if (!(mc.screen instanceof DialogScreen<?> d)) {
+        if (!(mc.gui.screen() instanceof DialogScreen<?> d)) {
             return null;
         }
         GuiEventListener box = find(d, l -> l instanceof MultiLineEditBox || l instanceof EditBox);
@@ -360,7 +360,7 @@ public final class WishDriver {
 
     /** Press the wish box's "✨ Make my wish" button; false when there is none. */
     public static boolean pressWish(Minecraft mc) {
-        if (!(mc.screen instanceof DialogScreen<?> d)) {
+        if (!(mc.gui.screen() instanceof DialogScreen<?> d)) {
             return false;
         }
         GuiEventListener b = find(d, l -> l instanceof Button btn
@@ -410,7 +410,7 @@ public final class WishDriver {
      * when the real state was "one tick too early".
      */
     public static String seen(Minecraft mc) {
-        String screen = mc.screen == null ? "null" : mc.screen.getClass().getSimpleName();
+        String screen = mc.gui.screen() == null ? "null" : mc.gui.screen().getClass().getSimpleName();
         String menu = mc.player == null ? "no player"
                 : mc.player.containerMenu.getClass().getSimpleName();
         return "screen=" + screen + " menu=" + menu + " route=" + route();

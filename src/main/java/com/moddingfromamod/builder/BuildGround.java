@@ -167,7 +167,7 @@ public final class BuildGround {
         if (!s.getFluidState().isEmpty()) {
             return BuildClearing.Kind.OTHER;      // water, lava, a waterlogged anything: left alone
         }
-        if (s.is(BlockTags.LOGS) || s.is(BlockTags.LEAVES) || s.is(BlockTags.FLOWERS) || s.is(BlockTags.SAPLINGS)
+        if (s.is(BlockTags.LOGS) || s.is(BlockTags.LEAVES) || s.is(BlockTags.FLOWERS) || s.is(net.minecraft.tags.BlockItemTags.SAPLINGS.block())
                 || s.is(BlockTags.REPLACEABLE_BY_TREES) || s.is(BlockTags.CAVE_VINES)
                 || s.is(Blocks.SNOW) || s.is(Blocks.MOSS_CARPET) || s.is(Blocks.SWEET_BERRY_BUSH)
                 || s.is(Blocks.BROWN_MUSHROOM) || s.is(Blocks.RED_MUSHROOM) || s.is(Blocks.SUGAR_CANE)

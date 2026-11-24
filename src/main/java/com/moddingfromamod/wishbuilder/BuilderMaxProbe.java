@@ -179,7 +179,7 @@ public final class BuilderMaxProbe {
                 }
                 // monsters for the moves that aim at them (a breath, a shove), the same six in every arm
                 for (int i = 0; i < 6; i++) {
-                    var z = net.minecraft.world.entity.EntityType.ZOMBIE.create(level, net.minecraft.world.entity.EntitySpawnReason.COMMAND);
+                    var z = net.minecraft.world.entity.EntityTypes.ZOMBIE.create(level, net.minecraft.world.entity.EntitySpawnReason.COMMAND);
                     if (z != null) {
                         z.snapTo(2 + i * 2 + 0.5, ORIGIN.getY() + 1, 2.5, 0f, 0f);
                         z.setPersistenceRequired();

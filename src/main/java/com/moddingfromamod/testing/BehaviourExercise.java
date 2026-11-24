@@ -33,6 +33,7 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -80,7 +81,7 @@ public final class BehaviourExercise {
     public static final String ENEMY_TAG = "bx_enemy";
     public static final String FRIEND_TAG = "bx_friend";
     private static final List<EntityType<? extends Mob>> ENEMY_KINDS =
-            List.of(EntityType.HUSK, EntityType.VINDICATOR, EntityType.SPIDER);
+            List.of(EntityTypes.HUSK, EntityTypes.VINDICATOR, EntityTypes.SPIDER);
 
     private BehaviourExercise() {
     }
@@ -403,7 +404,7 @@ public final class BehaviourExercise {
         // arthropod.
         friend = null;
         if (throwFilm()) {
-            Mob m = spawn(EntityType.HUSK, centre.add(ExercisePlan.THROW_ENEMY[0], 0, ExercisePlan.THROW_ENEMY[1]), ENEMY_TAG);
+            Mob m = spawn(EntityTypes.HUSK, centre.add(ExercisePlan.THROW_ENEMY[0], 0, ExercisePlan.THROW_ENEMY[1]), ENEMY_TAG);
             m.setNoAi(true);   // it stands where the camera expects it, facing nothing
             enemies.add(m);
             enemyStart.put(m.getUUID(), m.position());
@@ -413,8 +414,8 @@ public final class BehaviourExercise {
                 double[] o = ExercisePlan.ENEMIES[i];
                 enemies.add(spawn(ENEMY_KINDS.get(i % ENEMY_KINDS.size()), centre.add(o[0], 0, o[1]), ENEMY_TAG));
             }
-            enemies.add(spawn(EntityType.HUSK, centre.add(ExercisePlan.FAR_ENEMY[0], 0, ExercisePlan.FAR_ENEMY[1]), ENEMY_TAG));
-            friend = spawn(EntityType.SHEEP, centre.add(ExercisePlan.FRIEND[0], 0, ExercisePlan.FRIEND[1]), FRIEND_TAG);
+            enemies.add(spawn(EntityTypes.HUSK, centre.add(ExercisePlan.FAR_ENEMY[0], 0, ExercisePlan.FAR_ENEMY[1]), ENEMY_TAG));
+            friend = spawn(EntityTypes.SHEEP, centre.add(ExercisePlan.FRIEND[0], 0, ExercisePlan.FRIEND[1]), FRIEND_TAG);
             for (Mob m : enemies) {
                 enemyStart.put(m.getUUID(), m.position());
                 healthStart.put(m.getUUID(), m.getHealth());

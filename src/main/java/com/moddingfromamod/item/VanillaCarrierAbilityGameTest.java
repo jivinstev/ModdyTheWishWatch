@@ -17,6 +17,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.entity.monster.zombie.Zombie;
 import net.minecraft.world.entity.projectile.throwableitemprojectile.Snowball;
@@ -221,14 +222,14 @@ public class VanillaCarrierAbilityGameTest {
 
         with(true, () -> {
             for (String arm : List.of("A", "B")) {
-                level.getEntities(EntityType.SNOWBALL, new AABB(at).inflate(10), e -> true)
+                level.getEntities(EntityTypes.SNOWBALL, new AABB(at).inflate(10), e -> true)
                         .forEach(e -> e.discard());
                 ItemStack stack = "A".equals(arm)
                         ? modItem(WishItem.THROW_TAG, "ab_fly", WishItem.HIT_FN, PROBE_FN)
                         : carrier(WishItem.THROW_TAG, "ab_fly", WishItem.HIT_FN, PROBE_FN);
                 rightClickAir(p, stack);
 
-                List<Snowball> balls = level.getEntities(EntityType.SNOWBALL,
+                List<Snowball> balls = level.getEntities(EntityTypes.SNOWBALL,
                         new AABB(at).inflate(10), e -> e.entityTags().contains("ab_fly"));
                 helper.assertTrue(balls.size() == 1,
                         Component.literal("arm " + arm + ": expected exactly one tagged projectile, got "
@@ -268,7 +269,7 @@ public class VanillaCarrierAbilityGameTest {
                             ? modItem(WishItem.PLACE_TAG, tag) : carrier(WishItem.PLACE_TAG, tag);
                     rightClickBlock(p, stack, floor);
 
-                    List<ArmorStand> found = level.getEntities(EntityType.ARMOR_STAND,
+                    List<ArmorStand> found = level.getEntities(EntityTypes.ARMOR_STAND,
                             new AABB(floor.above()).inflate(1.5),
                             e -> e.entityTags().contains(tag));
                     helper.assertTrue(found.size() == 1,
@@ -303,7 +304,7 @@ public class VanillaCarrierAbilityGameTest {
 
         with(false, () -> {
             for (String arm : List.of("A", "B")) {
-                Zombie target = EntityType.ZOMBIE.create(helper.getLevel(), EntitySpawnReason.COMMAND);
+                Zombie target = EntityTypes.ZOMBIE.create(helper.getLevel(), EntitySpawnReason.COMMAND);
                 helper.assertTrue(target != null, Component.literal("could not make a target"));
                 target.setPos(at.getX() + 1.5, at.getY(), at.getZ());
                 target.setNoAi(true);   // a punching bag, not an opponent — it must not fight back
@@ -341,10 +342,10 @@ public class VanillaCarrierAbilityGameTest {
         ServerPlayer p = player(helper, at);
 
         with(true, () -> {
-            level.getEntities(EntityType.SNOWBALL, new AABB(at).inflate(12), e -> true)
+            level.getEntities(EntityTypes.SNOWBALL, new AABB(at).inflate(12), e -> true)
                     .forEach(e -> e.discard());
             rightClickAir(p, modItem(WishItem.THROW_TAG, "ab_double", WishItem.HIT_FN, PROBE_FN));
-            List<Snowball> balls = level.getEntities(EntityType.SNOWBALL,
+            List<Snowball> balls = level.getEntities(EntityTypes.SNOWBALL,
                     new AABB(at).inflate(12), e -> e.entityTags().contains("ab_double"));
             helper.assertTrue(balls.size() == 1,
                     Component.literal("one right-click on the MOD item produced " + balls.size() + " projectiles — "
@@ -372,7 +373,7 @@ public class VanillaCarrierAbilityGameTest {
                     helper.getLevel().getBlockState(floor.above()).is(Blocks.OAK_PLANKS),
                     Component.literal("a plain oak plank no longer places on a block with the bridge on"));
             helper.assertTrue(
-                    helper.getLevel().getEntities(EntityType.ARMOR_STAND,
+                    helper.getLevel().getEntities(EntityTypes.ARMOR_STAND,
                             new AABB(floor.above()).inflate(2.0), e -> true).isEmpty(),
                     Component.literal("an ordinary item put down an anchor — the place-tag guard is not holding"));
             helper.getLevel().setBlockAndUpdate(floor.above(),
@@ -569,7 +570,7 @@ public class VanillaCarrierAbilityGameTest {
         ServerPlayer p = player(helper, at);
 
         with(true, () -> {
-            var horse = net.minecraft.world.entity.EntityType.HORSE.create(helper.getLevel(), EntitySpawnReason.COMMAND);
+            var horse = net.minecraft.world.entity.EntityTypes.HORSE.create(helper.getLevel(), EntitySpawnReason.COMMAND);
             helper.assertTrue(horse != null, Component.literal("could not make a horse"));
             horse.setPos(at.getX() + 1.0, at.getY(), at.getZ());
             horse.setTamed(true);
@@ -696,7 +697,7 @@ public class VanillaCarrierAbilityGameTest {
         BlockPos floorRel = new BlockPos(2, 1, 10);
         helper.setBlock(floorRel, Blocks.STONE);
         BlockPos floor = helper.absolutePos(floorRel);
-        Supplier<List<ArmorStand>> anchors = () -> level.getEntities(EntityType.ARMOR_STAND,
+        Supplier<List<ArmorStand>> anchors = () -> level.getEntities(EntityTypes.ARMOR_STAND,
                 new AABB(floor.above()).inflate(1.5), e -> true);
 
         with(true, () -> {

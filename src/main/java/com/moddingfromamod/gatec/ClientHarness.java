@@ -61,6 +61,15 @@ public final class ClientHarness {
      * zombie at all. A test world that differs from the one a child plays in measures a game nobody
      * plays. A test that needs Peaceful asks for it, by name.
      */
+    /**
+     * {@code mc.options.hideGui = hidden}: 26.2 moved the F1 state to the HUD, where only {@code toggle()} writes it.
+     */
+    public static void setHudHidden(Minecraft mc, boolean hidden) {
+        if (mc.gui.hud.isHidden() != hidden) {
+            mc.gui.hud.toggle();
+        }
+    }
+
     public static final Difficulty TEST_DIFFICULTY = Difficulty.EASY;
 
     private ClientHarness() {
@@ -114,13 +123,13 @@ public final class ClientHarness {
     private static boolean bootstrap(Minecraft mc, String namePrefix, int ticks, boolean flat,
                                      boolean deep) {
         mc.options.pauseOnLostFocus = false;
-        if (mc.screen instanceof AccessibilityOnboardingScreen) {
+        if (mc.gui.screen() instanceof AccessibilityOnboardingScreen) {
             mc.options.onboardAccessibility = false;
             mc.options.save();
             mc.gui.setScreen(new TitleScreen());
             return false;
         }
-        if (!(mc.screen instanceof TitleScreen) || ticks < TITLE_SETTLE) {
+        if (!(mc.gui.screen() instanceof TitleScreen) || ticks < TITLE_SETTLE) {
             return false;
         }
         String name = namePrefix + "-" + Long.toHexString(System.nanoTime());
@@ -167,7 +176,7 @@ public final class ClientHarness {
         if (ticks < 10) {
             return false;
         }
-        mc.options.hideGui = false;   // the HUD comes back between photographs
+        com.moddingfromamod.gatec.ClientHarness.setHudHidden(mc, false);   // the HUD comes back between photographs
         return true;
     }
 
@@ -337,13 +346,13 @@ public final class ClientHarness {
      * @param keepView shoot the frame as the player sees it, dismissing nothing
      */
     public static String snap(Minecraft mc, Path sigDir, String name, boolean keepView) {
-        String problem = keepView || mc.screen == null ? null
-                : "a screen (" + mc.screen.getClass().getSimpleName() + ") was open at the shutter "
+        String problem = keepView || mc.gui.screen() == null ? null
+                : "a screen (" + mc.gui.screen().getClass().getSimpleName() + ") was open at the shutter "
                         + "— the photograph is of a menu";
         try {
             if (!keepView) {
                 mc.gui.setScreen(null);
-                mc.options.hideGui = true;   // backstop only; must already be set, see class javadoc
+                com.moddingfromamod.gatec.ClientHarness.setHudHidden(mc, true);   // backstop only; must already be set, see class javadoc
             }
             var img = Screenshots.take(mc.gameRenderer.mainRenderTarget());
             try {

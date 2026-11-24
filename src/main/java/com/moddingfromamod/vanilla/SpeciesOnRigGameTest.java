@@ -388,8 +388,7 @@ public final class SpeciesOnRigGameTest {
             if (!mounted[0]) {
                 child.getInventory().clearContent();
                 child.teleportTo(c.getX(), c.getY(), c.getZ() - 1);
-                net.neoforged.neoforge.common.NeoForge.EVENT_BUS.post(new net.neoforged.neoforge.event.entity.player
-                        .PlayerInteractEvent.EntityInteract(child, net.minecraft.world.InteractionHand.MAIN_HAND, c));
+                net.neoforged.neoforge.common.NeoForge.EVENT_BUS.post(com.moddingfromamod.mv.Interact.event(child, net.minecraft.world.InteractionHand.MAIN_HAND, c));
                 helper.assertTrue(com.moddingfromamod.mob.RideSeat.mountOf(child) == c, Component.literal("an empty hand on a rideable creature did not climb on"));
                 child.setYRot(0f);
                 child.setXRot(0f);

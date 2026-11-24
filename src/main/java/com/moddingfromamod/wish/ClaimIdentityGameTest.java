@@ -35,6 +35,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.animal.cow.Cow;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -120,7 +121,7 @@ public class ClaimIdentityGameTest {
             BlockPos spot = ctx.spot;
             // He walked 40 blocks east; Spikor, set to follow, came with him.
             ctx.child.teleportTo(spot.getX() + 40.5, spot.getY(), spot.getZ() + 0.5);
-            Cow spikor = helper.spawn(EntityType.COW, new BlockPos(4 + 38, ctx.relY, 4));
+            Cow spikor = helper.spawn(EntityTypes.COW, new BlockPos(4 + 38, ctx.relY, 4));
             spikor.setCustomName(Component.literal("Spikor"));
             PetBehaviours.apply(spikor, new PetBehaviour(true, null, null, null), ctx.child.getUUID());
             ctx.run.creatureSpawned("spikor", spikor.getUUID());
@@ -129,7 +130,7 @@ public class ClaimIdentityGameTest {
             ctx.cleanup.add(spikor::discard);
             // The heart's red rows: 50 blocks 28–32 blocks from the spot, outside the old cube of 24.
             for (int i = 0; i < 50; i++) {
-                ctx.setBlock(spot.offset(-30, 3 + i / 25, -12 + i % 25), Blocks.RED_CONCRETE.defaultBlockState());
+                ctx.setBlock(spot.offset(-30, 3 + i / 25, -12 + i % 25), Blocks.CONCRETE.red().defaultBlockState());
             }
         });
     }
@@ -144,11 +145,11 @@ public class ClaimIdentityGameTest {
         claims.put("a unicorn appears", check("creature_count", "unicorn"));
         claims.put("the fox follows me", check("follows", "minecraft:fox"));
         drive(helper, "mfam-ci-dead", 9, claims, claims.keySet(), null, (ctx) -> {
-            Cow dodo = helper.spawn(EntityType.COW, new BlockPos(2, ctx.relY, 2));
+            Cow dodo = helper.spawn(EntityTypes.COW, new BlockPos(2, ctx.relY, 2));
             dodo.setCustomName(Component.literal("Dodo"));
             ctx.run.creatureSpawned("dodo", dodo.getUUID());
             dodo.setHealth(0.0F);   // dead: not alive, wherever it is
-            var fox = helper.spawn(EntityType.FOX, new BlockPos(3, ctx.relY, 3));
+            var fox = helper.spawn(EntityTypes.FOX, new BlockPos(3, ctx.relY, 3));
             fox.setNoAi(true);
             ctx.run.commandSpawned(fox.getUUID(), "", "minecraft:fox");
             ctx.cleanup.add(fox::discard);
@@ -175,7 +176,7 @@ public class ClaimIdentityGameTest {
             // Summoned by this wish, then the ground opened and they were gone (archive: "the
             // creepers seem to have vanished", "3 you had already cleared").
             for (int i = 0; i < 3; i++) {
-                var creeper = helper.spawn(EntityType.CREEPER, new BlockPos(1 + i, ctx.relY, 1));
+                var creeper = helper.spawn(EntityTypes.CREEPER, new BlockPos(1 + i, ctx.relY, 1));
                 ctx.run.commandSpawned(creeper.getUUID(), "", "minecraft:creeper");
                 creeper.discard();
             }
