@@ -1,0 +1,1 @@
+Stills for the pull request that fixes issue #26 (a rideable flier seating its rider above its back). Java 1.21.8, starter pet dragon given wings and made rideable after it was made, seen from the side. Not for merging.
