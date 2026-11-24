@@ -72,7 +72,10 @@ public final class WishHotbar {
     public static final String ADD_LABEL = "🎯 Add to hotbar";
     public static final String REMOVE_LABEL = "🎯 Take off hotbar";
 
-    /** Ticks a proxy rests after a use: long enough that one click is one wish. */
+    /**
+     * Ticks a proxy rests after a use: long enough that one click is one wish. A world's charge can name a longer (or
+     * shorter) rest per wish ({@link WishCharge#restLeft}), and the sweep then shows that.
+     */
     public static final int REST_TICKS = 20;
 
     /** What a proxy copies from the thing's picture: how it LOOKS, never what it does. */
@@ -141,8 +144,7 @@ public final class WishHotbar {
             s.set(DataComponents.ENCHANTMENT_GLINT_OVERRIDE, true);
         }
         s.set(DataComponents.MAX_STACK_SIZE, 1);
-        s.set(DataComponents.USE_COOLDOWN, new UseCooldown(REST_TICKS / 20f, Optional.of(
-                Identifier.fromNamespaceAndPath(ModdingFromAModMod.MODID, WishHotbarPlan.group(cell.recipeId())))));
+        s.set(DataComponents.USE_COOLDOWN, new UseCooldown(REST_TICKS / 20f, Optional.of(group(cell.recipeId()))));
         CompoundTag tag = new CompoundTag();
         tag.putString(RECIPE, cell.recipeId());
         tag.putString(OWNER, owner.toString());
@@ -356,6 +358,7 @@ public final class WishHotbar {
     private static void place(ServerPlayer sp, WatchPanel.Cell cell, int slot) {
         remove(sp, cell.recipeId());   // never two of one wish
         sp.getInventory().setItem(slot, proxy(cell, sp.getUUID()));
+        showRests(sp);   // a wish still resting in his world shows the time left, whether or not it was off a while
         sp.sendSystemMessage(Component.literal("🎯 On your hotbar, slot " + (slot + 1)
                 + ". Hold it and use it to make one."));
     }
@@ -405,8 +408,91 @@ public final class WishHotbar {
             player.sendSystemMessage(Component.literal("🎯 That wish belongs to someone else."));
             return new Use(Used.NOT_YOURS, null);
         }
-        player.getCooldowns().addCooldown(stack, REST_TICKS);
-        return new Use(Used.WISHED, WishCommands.again(player, recipe));
+        player.getCooldowns().addCooldown(stack, REST_TICKS);   // at once: a second click inside the fire is no wish
+        WishService.Outcome outcome = WishCommands.again(player, recipe);
+        // The world's rest, asked AFTER the fire so it answers for what just happened: the rest a fire it allowed
+        // started, the time left on one it refused because the wish is still resting (never a fresh rest), none for
+        // one it refused for another reason. A charge that does not say keeps the one second above.
+        int ticks = WishHotbarPlan.shownRest(true, restLeft(player, recipe), REST_TICKS);
+        if (ticks != REST_TICKS) {
+            setRest(player, recipe, ticks);
+        }
+        return new Use(Used.WISHED, outcome);
+    }
+
+    // ── resting ───────────────────────────────────────────────────────────────────────────────────
+
+    /** The world's charge's {@link WishCharge#restLeft} for this wish, or -1 when it does not say (or throws). */
+    static int restLeft(ServerPlayer player, String recipe) {
+        try {
+            return WishCharge.get().restLeft(WishAsk.replay(player.getUUID(), recipe));
+        } catch (RuntimeException e) {
+            return -1;   // a world's fault never stops his hotbar: the core's own rest stands
+        }
+    }
+
+    /** The cooldown group of this wish's proxy (one per recipe, shared with nothing else). */
+    static Identifier group(String recipe) {
+        return Identifier.fromNamespaceAndPath(ModdingFromAModMod.MODID, WishHotbarPlan.group(recipe));
+    }
+
+    /** Set this wish's sweep to {@code ticks} from now ({@code 0} clears it); the server sends it to his client. */
+    private static void setRest(ServerPlayer player, String recipe, int ticks) {
+        if (ticks > 0) {
+            player.getCooldowns().addCooldown(group(recipe), ticks);
+        } else if (ticks == 0) {
+            player.getCooldowns().removeCooldown(group(recipe));
+        }
+    }
+
+    /**
+     * A proxy was put into his inventory (or his client was made anew): put each one's sweep back at the rest the
+     * world's charge says is left, so taking it off and adding it again neither dodges a rest nor loses it. A charge
+     * that does not say leaves the cooldown as the game kept it. How many sweeps were set.
+     */
+    static int showRests(ServerPlayer player) {
+        Inventory inv = player.getInventory();
+        java.util.Set<String> done = new java.util.HashSet<>();
+        int n = 0;
+        for (int i = 0; i < inv.getContainerSize(); i++) {
+            String recipe = recipeOf(inv.getItem(i));
+            if (recipe == null || !done.add(recipe)) {
+                continue;
+            }
+            int ticks = WishHotbarPlan.shownRest(false, restLeft(player, recipe), REST_TICKS);
+            if (ticks > 0) {
+                setRest(player, recipe, ticks);
+                n++;
+            }
+        }
+        return n;
+    }
+
+    /** Logged in: a new body, and the game keeps no cooldown across a logout. */
+    @SubscribeEvent
+    public static void onLogin(PlayerEvent.PlayerLoggedInEvent event) {
+        if (event.getEntity() instanceof ServerPlayer sp) {
+            showRests(sp);
+        }
+    }
+
+    /**
+     * Respawned (after a knock-out, or out of the End): a new body with no cooldowns, and a client player made anew,
+     * so this is after the respawn reached his client (the Clone, where his wishes come back, is before it).
+     */
+    @SubscribeEvent
+    public static void onRespawn(PlayerEvent.PlayerRespawnEvent event) {
+        if (event.getEntity() instanceof ServerPlayer sp) {
+            showRests(sp);
+        }
+    }
+
+    /** Another dimension: the server keeps his cooldowns, but his client's player is made anew without them. */
+    @SubscribeEvent
+    public static void onChangedDimension(PlayerEvent.PlayerChangedDimensionEvent event) {
+        if (event.getEntity() instanceof ServerPlayer sp) {
+            showRests(sp);
+        }
     }
 
     @SubscribeEvent
