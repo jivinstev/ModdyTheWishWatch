@@ -20,9 +20,9 @@ plugins {
 
 // ── ONE TARGET: Minecraft 1.21.8 (was 1.21.4, D13). The 1.21.1 compat build, its rename pipeline and Create
 // were PARKED on 2026-10-15 (branch parked/create-trains-mc1.21.1, docs/PARKED_CREATE_TRAINS_1211.md).
-// The version keys live in versions/1.21.10.properties; `mcDefault` stays the one place the target is
+// The version keys live in versions/1.21.11.properties; `mcDefault` stays the one place the target is
 // NAMED, because other tools read it from this file.
-ext.mcDefault = '1.21.10'
+ext.mcDefault = '1.21.11'
 ext.mcTarget = ext.mcDefault
 if (project.hasProperty('mc') && project.property('mc').toString() != ext.mcDefault) {
     throw new GradleException("-Pmc=${project.property('mc')}: this tree builds Minecraft ${ext.mcDefault} only. " +
