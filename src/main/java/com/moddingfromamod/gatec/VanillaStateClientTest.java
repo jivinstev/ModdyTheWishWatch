@@ -424,8 +424,8 @@ public final class VanillaStateClientTest {
         }
         server.execute(() -> {
             for (ServerLevel level : server.getAllLevels()) {
-                level.setDayTime(6000L);
-                level.setWeatherParameters(6000, 0, false, false);
+                com.moddingfromamod.mv.DayTime.set(level, 6000L);
+                com.moddingfromamod.mv.DayTime.weather(level, 6000, 0, false, false);
             }
             server.overworld().getGameRules().set(net.minecraft.world.level.gamerules.GameRules.ADVANCE_TIME,false, server);
             server.overworld().getGameRules().set(net.minecraft.world.level.gamerules.GameRules.ADVANCE_WEATHER,false, server);
@@ -608,7 +608,7 @@ public final class VanillaStateClientTest {
             }
             boolean night = next == State.EMISSIVE;
             for (ServerLevel level : server.getAllLevels()) {
-                level.setDayTime(night ? 18000L : 6000L);
+                com.moddingfromamod.mv.DayTime.set(level, night ? 18000L : 6000L);
             }
         });
     }
@@ -710,7 +710,7 @@ public final class VanillaStateClientTest {
                     // immune to nightfall, this row is where that shows up: arm A darkens and
                     // arm B does not.
                     for (ServerLevel level : server.getAllLevels()) {
-                        level.setDayTime(18000L);
+                        com.moddingfromamod.mv.DayTime.set(level, 18000L);
                     }
                 }
                 case EMISSIVE -> {

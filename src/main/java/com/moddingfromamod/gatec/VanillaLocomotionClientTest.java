@@ -285,10 +285,10 @@ public final class VanillaLocomotionClientTest {
             onServer(mc, s -> stay(SUBJECTS.get("wished"), 0));
         }
         if (ticks == SIT_NIGHT) {
-            onServer(mc, s -> s.setDayTime(18000L));
+            onServer(mc, s -> com.moddingfromamod.mv.DayTime.set(s, 18000L));
         }
         if (ticks == SIT_DAWN) {
-            onServer(mc, s -> s.setDayTime(6000L));
+            onServer(mc, s -> com.moddingfromamod.mv.DayTime.set(s, 6000L));
         }
         if (ticks == SIT_FREE) {
             onServer(mc, s -> stay(SUBJECTS.get("wished"), com.moddingfromamod.mob.PetBehaviour.STAY_OFF));
@@ -504,7 +504,7 @@ public final class VanillaLocomotionClientTest {
                 String own = com.moddingfromamod.vanilla.DisplayRig.RIG_OWNER_PREFIX + m.getUUID();
                 long dirty = 0;
                 for (Entity d : m.level().getEntities((Entity) null, m.getBoundingBox().inflate(4),
-                        x -> x instanceof net.minecraft.world.entity.Display && x.getTags().contains(own))) {
+                        x -> x instanceof net.minecraft.world.entity.Display && x.entityTags().contains(own))) {
                     if (d.getEntityData().isDirty()) {
                         dirty++;
                         for (int id : dirtyIds(d.getEntityData())) {
@@ -553,8 +553,8 @@ public final class VanillaLocomotionClientTest {
         gr.set(net.minecraft.world.level.gamerules.GameRules.ADVANCE_TIME,false, level.getServer());
         gr.set(net.minecraft.world.level.gamerules.GameRules.ADVANCE_WEATHER,false, level.getServer());
         gr.set(net.minecraft.world.level.gamerules.GameRules.SPAWN_MOBS,false, level.getServer());
-        level.setDayTime(6000L);
-        level.setWeatherParameters(6000, 0, false, false);
+        com.moddingfromamod.mv.DayTime.set(level, 6000L);
+        com.moddingfromamod.mv.DayTime.weather(level, 6000, 0, false, false);
         var floor = Blocks.WHITE_CONCRETE.defaultBlockState();
         for (int x = (int) CAM_X - 16; x <= (int) CAM_X + 16; x++) {
             for (int z = (int) STAGE_Z - 8; z <= (int) STAGE_Z + 14; z++) {
@@ -583,7 +583,7 @@ public final class VanillaLocomotionClientTest {
             e.discard();
         }
         SPAWNED.clear();
-        level.setDayTime(6000L);
+        com.moddingfromamod.mv.DayTime.set(level, 6000L);
         // drain the tank and the pens the take built
         for (int x = (int) CAM_X - 12; x <= (int) CAM_X + 12; x++) {
             for (int z = (int) STAGE_Z - 6; z <= (int) STAGE_Z + 12; z++) {

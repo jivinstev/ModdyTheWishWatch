@@ -242,8 +242,8 @@ public final class VanillaLightClientTest {
     // ------------------------------------------------------------------------------- the stages
 
     private static void buildAll(ServerLevel level) {
-        level.setDayTime(6000L);
-        level.setWeatherParameters(6000, 0, false, false);
+        com.moddingfromamod.mv.DayTime.set(level, 6000L);
+        com.moddingfromamod.mv.DayTime.weather(level, 6000, 0, false, false);
         var server = level.getServer();
         server.overworld().getGameRules().set(net.minecraft.world.level.gamerules.GameRules.ADVANCE_TIME,false, server);
         server.overworld().getGameRules().set(net.minecraft.world.level.gamerules.GameRules.ADVANCE_WEATHER,false, server);
@@ -530,7 +530,7 @@ public final class VanillaLightClientTest {
         hold(mc, NOON);
         if (!fired) {
             fired = true;
-            server(mc, level -> level.setDayTime(18000L));
+            server(mc, level -> com.moddingfromamod.mv.DayTime.set(level, 18000L));
         }
         if (take(mc, "night", NOON, 0)) {
             verdict();
@@ -756,7 +756,7 @@ public final class VanillaLightClientTest {
                 int cx = sv[k * 5] >> 4, cz = sv[k * 5 + 2] >> 4;
                 for (int dx = -1; dx <= 1; dx++) {
                     for (int dz = -1; dz <= 1; dz++) {
-                        if (sent.add(net.minecraft.world.level.ChunkPos.asLong(cx + dx, cz + dz))) {
+                        if (sent.add(net.minecraft.world.level.ChunkPos.pack(cx + dx, cz + dz))) {
                             p.connection.send(new net.minecraft.network.protocol.game.ClientboundLevelChunkWithLightPacket(
                                     level.getChunk(cx + dx, cz + dz), level.getLightEngine(), null, null));
                         }

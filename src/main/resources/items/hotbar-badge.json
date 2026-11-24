@@ -1,7 +1,7 @@
 {
  "_comment": "The hotbar wish's Moddy badge (pack/HotbarBadge.java, tools/gen-hotbar-badge.py). IDS ONLY: which look ships, the block items the rule draws flat (minecraft:item/<path>), and the items the rule cannot draw (their proxy keeps its own picture and the glint). Measured against the client jar of the pinned Minecraft; HotbarBadgeTest fails when it is stale.",
  "look": "corner",
- "minecraft": "1.21.11",
+ "minecraft": "minecraft",
  "flatBlocks": [
   "minecraft:acacia_door",
   "minecraft:acacia_hanging_sign",
@@ -90,6 +90,7 @@
   "minecraft:glass_pane",
   "minecraft:glow_item_frame",
   "minecraft:glow_lichen",
+  "minecraft:golden_dandelion",
   "minecraft:gray_candle",
   "minecraft:gray_stained_glass_pane",
   "minecraft:green_candle",

@@ -124,8 +124,9 @@ public final class ClientHarness {
             return false;
         }
         String name = namePrefix + "-" + Long.toHexString(System.nanoTime());
-        LevelSettings settings = new LevelSettings(name, GameType.CREATIVE, false,
-                ClientHarness.TEST_DIFFICULTY, true, ClientWorlds.rules(), WorldDataConfiguration.DEFAULT);
+        LevelSettings settings = new LevelSettings(name, GameType.CREATIVE,
+                new LevelSettings.DifficultySettings(ClientHarness.TEST_DIFFICULTY, false, false), true,
+                WorldDataConfiguration.DEFAULT);   // 26.1: the game rules left LevelSettings (a new world's are the defaults)
         if (deep) {
             ClientWorlds.createDeepFlat(mc, name, settings);
         } else {

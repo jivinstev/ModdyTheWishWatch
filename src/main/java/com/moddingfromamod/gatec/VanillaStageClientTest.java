@@ -259,10 +259,10 @@ public final class VanillaStageClientTest {
             if (srv != null) {
                 srv.execute(() -> {
                     for (ServerLevel l : srv.getAllLevels()) {
-                        l.setDayTime(6000L);
+                        com.moddingfromamod.mv.DayTime.set(l, 6000L);
                         l.getGameRules().set(net.minecraft.world.level.gamerules.GameRules.ADVANCE_TIME,false, srv);
                         l.getGameRules().set(net.minecraft.world.level.gamerules.GameRules.ADVANCE_WEATHER,false, srv);
-                        l.setWeatherParameters(6000, 0, false, false);
+                        com.moddingfromamod.mv.DayTime.weather(l, 6000, 0, false, false);
                     }
                 });
             }

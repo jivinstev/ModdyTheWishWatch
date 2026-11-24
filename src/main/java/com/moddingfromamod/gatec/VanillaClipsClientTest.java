@@ -523,8 +523,8 @@ public final class VanillaClipsClientTest {
         }
         server.execute(() -> {
             for (ServerLevel level : server.getAllLevels()) {
-                level.setDayTime(6000L);
-                level.setWeatherParameters(6000, 0, false, false);
+                com.moddingfromamod.mv.DayTime.set(level, 6000L);
+                com.moddingfromamod.mv.DayTime.weather(level, 6000, 0, false, false);
             }
             server.overworld().getGameRules().set(net.minecraft.world.level.gamerules.GameRules.ADVANCE_TIME,false, server);
             server.overworld().getGameRules().set(net.minecraft.world.level.gamerules.GameRules.ADVANCE_WEATHER,false, server);

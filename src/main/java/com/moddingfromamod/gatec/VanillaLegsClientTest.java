@@ -424,8 +424,8 @@ public final class VanillaLegsClientTest {
         gr.set(net.minecraft.world.level.gamerules.GameRules.ADVANCE_TIME,false, server);
         gr.set(net.minecraft.world.level.gamerules.GameRules.ADVANCE_WEATHER,false, server);
         gr.set(net.minecraft.world.level.gamerules.GameRules.SPAWN_MOBS,false, server);
-        level.setDayTime(6000L);
-        level.setWeatherParameters(6000, 0, false, false);
+        com.moddingfromamod.mv.DayTime.set(level, 6000L);
+        com.moddingfromamod.mv.DayTime.weather(level, 6000, 0, false, false);
         // A checkerboard: a planted foot stays on its square while the body passes over it.
         for (int x = -6; x <= 22; x++) {
             for (int z = -8; z <= 8; z++) {

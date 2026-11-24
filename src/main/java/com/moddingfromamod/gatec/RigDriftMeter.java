@@ -288,7 +288,7 @@ public final class RigDriftMeter {
             Vec3 p = d.getPosition(partial).add(rotated(tr.getMatrix().transformPosition(new Vector3f()), d.getYRot(partial)));
             worst = Math.max(worst, step(d.getId(), p, t));
             Quaternionf q = new Quaternionf().rotationY((float) Math.toRadians(-d.getYRot(partial)))
-                    .mul(tr.getLeftRotation()).mul(tr.getRightRotation());
+                    .mul(tr.leftRotation()).mul(tr.rightRotation());
             double[] w = spin(d.getId(), q, tickNo + partial);
             angVel = Math.max(angVel, w[0]);
             angAcc = Math.max(angAcc, w[1]);
@@ -297,7 +297,7 @@ public final class RigDriftMeter {
         Display d0 = ds.get(0);
         Transformation t0 = d0.renderState().transformation().get(d0.calculateInterpolationProgress(partial));
         firstQ = new Quaternionf().rotationY((float) Math.toRadians(-d0.getYRot(partial)))
-                .mul(t0.getLeftRotation()).mul(t0.getRightRotation());
+                .mul(t0.leftRotation()).mul(t0.rightRotation());
         lastAngVel = angVel;
         lastAngAcc = angAcc;
         lastAngFwd = angFwd == -Double.MAX_VALUE ? 0 : angFwd;
@@ -437,7 +437,7 @@ public final class RigDriftMeter {
                 if (!(e instanceof Display.ItemDisplay)) {
                     continue;
                 }
-                for (String t : e.getTags()) {
+                for (String t : e.entityTags()) {
                     if (t.startsWith(DisplayRig.RIG_OWNER_PREFIX)) {
                         found.computeIfAbsent(t, k -> new ArrayList<>()).add(e.getId());
                         break;

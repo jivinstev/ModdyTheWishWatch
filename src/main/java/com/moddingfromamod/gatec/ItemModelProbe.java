@@ -30,8 +30,8 @@ public final class ItemModelProbe {
         if (state.isEmpty()) {
             return "none";
         }
-        var sprite = state.pickParticleIcon(RandomSource.create(0L));
-        return sprite == null ? "none" : sprite.contents().name().toString();
+        var material = state.pickParticleMaterial(RandomSource.create(0L));
+        return material == null ? "none" : material.sprite().contents().name().toString();
     }
 
     /** True when the stack renders as the missing model (or not at all). */

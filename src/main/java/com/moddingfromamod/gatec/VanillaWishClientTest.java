@@ -298,7 +298,7 @@ public final class VanillaWishClientTest {
         Entity carrier = null;
         for (ServerLevel level : server.getAllLevels()) {
             for (Entity e : level.getEntities().getAll()) {
-                if (e.getTags().contains(DisplayRig.RIG_TAG)) {
+                if (e.entityTags().contains(DisplayRig.RIG_TAG)) {
                     carrier = e;
                 }
             }
@@ -391,7 +391,7 @@ public final class VanillaWishClientTest {
                     all.add(e);
                 }
                 for (Entity e : all) {
-                    if (e == carrier || e.getTags().contains(owner)) {
+                    if (e == carrier || e.entityTags().contains(owner)) {
                         e.teleportTo(e.getX() + dx, e.getY() + dy, e.getZ() + dz);
                         e.setNoGravity(true);
                         moved++;
@@ -477,8 +477,8 @@ public final class VanillaWishClientTest {
         }
         server.execute(() -> {
             for (ServerLevel level : server.getAllLevels()) {
-                level.setDayTime(6000L);
-                level.setWeatherParameters(6000, 0, false, false);
+                com.moddingfromamod.mv.DayTime.set(level, 6000L);
+                com.moddingfromamod.mv.DayTime.weather(level, 6000, 0, false, false);
             }
             server.overworld().getGameRules().set(net.minecraft.world.level.gamerules.GameRules.ADVANCE_TIME,false, server);
             server.overworld().getGameRules().set(net.minecraft.world.level.gamerules.GameRules.ADVANCE_WEATHER,false, server);

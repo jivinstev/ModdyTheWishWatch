@@ -297,6 +297,9 @@ public final class CommandGuard {
         // state every player shares, kept in the save). DENY, the verdict a root with no row already had: no wish has
         // needed it, and a race timer a wish makes is a datapack's scoreboard, scoped to that wish.
         deny("stopwatch", "server-wide named stopwatches kept in the save; no wish needs it yet");
+        // swing — new in 26.1: makes the target entities swing their main or off hand (an animation only). DENY, the
+        // verdict a root with no row already had: no wish has needed it, and a rig's arm moves through its own animator.
+        deny("swing", "makes entities swing a hand (an animation only); no wish needs it yet");
 
         // ── this mod's own commands: each runs something SAVED, never anything arbitrary ───────
         allow("wishbuild", "runs a saved, volume-capped build plan by id");

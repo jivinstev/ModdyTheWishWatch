@@ -10,7 +10,7 @@ import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.screens.dialog.DialogScreen;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.inventory.ChestMenu;
-import net.minecraft.world.inventory.ClickType;
+import net.minecraft.world.inventory.ContainerInput;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.ItemStack;
 
@@ -227,8 +227,8 @@ public final class WishDriver {
                     return false;
                 }
                 onBeforeCompose.run();
-                mc.gameMode.handleInventoryMouseClick(mc.player.containerMenu.containerId,
-                        COMPOSE_SLOT, 0, ClickType.PICKUP, mc.player);
+                mc.gameMode.handleContainerInput(mc.player.containerMenu.containerId,
+                        COMPOSE_SLOT, 0, ContainerInput.PICKUP, mc.player);
                 advance();
             }
             case 3 -> {
@@ -272,7 +272,7 @@ public final class WishDriver {
                 }
                 // Typed key by key into the box itself, so its max_length is the client's own.
                 for (char c : text.toCharArray()) {
-                    box.charTyped(new net.minecraft.client.input.CharacterEvent(c, 0));   // 1.21.9: one CharacterEvent
+                    box.charTyped(new net.minecraft.client.input.CharacterEvent(c));   // 1.21.9: one CharacterEvent
                 }
                 String typed = boxValue(box);
                 if (!text.equals(typed)) {
