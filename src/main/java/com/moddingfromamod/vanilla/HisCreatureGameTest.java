@@ -100,13 +100,13 @@ public final class HisCreatureGameTest {
                     + reply.get().text()));
             LivingEntity his = near.get(0);
             helper.assertTrue(Creatures.carriersOf(level, forkId).contains(his),
-                    Component.literal("his one dragon does not wear his copy '" + forkId + "': tags " + his.getTags()
+                    Component.literal("his one dragon does not wear his copy '" + forkId + "': tags " + his.entityTags()
                             + ", fork registered " + (com.moddingfromamod.species.SpeciesRegistry
                             .get(forkId) != null) + ". It said: " + reply.get().text()));
             helper.assertTrue(displays(level, his) > partsBefore, Component.literal("his dragon has "
                     + displays(level, his) + " parts, as before the horns (" + partsBefore + ")"));
-            helper.assertTrue(his.getTags().contains(tagOf(child)), Component.literal("his dragon lost the stamp "
-                    + "that says it was spawned for him: " + his.getTags()));
+            helper.assertTrue(his.entityTags().contains(tagOf(child)), Component.literal("his dragon lost the stamp "
+                    + "that says it was spawned for him: " + his.entityTags()));
             tidy(level, already, DRAGON, forkId);
             Marshal.global().finish(wish);
             MockPlayerNetwork.remove(child);
@@ -191,7 +191,7 @@ public final class HisCreatureGameTest {
         int n = 0;
         for (var e : level.getEntities().getAll()) {
             if (e instanceof net.minecraft.world.entity.Display && !e.isRemoved()
-                    && e.getTags().contains(own)) {
+                    && e.entityTags().contains(own)) {
                 n++;
             }
         }

@@ -449,7 +449,7 @@ public final class EventMotionGameTest {
             var box = new net.minecraft.world.phys.AABB(o.getX() - 64, g - 4, o.getZ() - 16,
                     o.getX() + 96, g + 120, o.getZ() + 16);
             int left = level.getEntitiesOfClass(net.minecraft.world.entity.Display.BlockDisplay.class, box,
-                    d -> d.getTags().contains(EventDirector.entityTag(id))).size();
+                    d -> d.entityTags().contains(EventDirector.entityTag(id))).size();
             helper.assertTrue(left == 0, Component.literal(left + " displays of its body were left behind"));
             force(level, o.getX() - 64, o.getZ() - 16, o.getX() + 96, o.getZ() + 16, false);
         });
@@ -585,7 +585,7 @@ public final class EventMotionGameTest {
         String tag = EventDirector.entityTag(hens);
         java.util.function.IntSupplier henCount = () -> level.getEntitiesOfClass(
                 net.minecraft.world.entity.animal.chicken.Chicken.class,
-                new net.minecraft.world.phys.AABB(c).inflate(20, 40, 20), x -> x.getTags().contains(tag)).size();
+                new net.minecraft.world.phys.AABB(c).inflate(20, 40, 20), x -> x.entityTags().contains(tag)).size();
         helper.succeedWhen(() -> {
             if (!undone[0]) {
                 StagedEvent h = EventDirector.get(level.getServer(), hens);

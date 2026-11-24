@@ -61,7 +61,7 @@ public final class ReshapeInPlaceGameTest {
         String own = DisplayRig.RIG_OWNER_PREFIX + carrier.getUUID();
         Set<UUID> out = new HashSet<>();
         for (Entity e : helper.getLevel().getEntities((Entity) null,
-                carrier.getBoundingBox().inflate(32), e -> e instanceof Display && e.getTags().contains(own))) {
+                carrier.getBoundingBox().inflate(32), e -> e instanceof Display && e.entityTags().contains(own))) {
             out.add(e.getUUID());
         }
         return out;
@@ -174,7 +174,7 @@ public final class ReshapeInPlaceGameTest {
         java.util.List<Mob> out = new java.util.ArrayList<>();
         for (Entity e : helper.getLevel().getEntities((Entity) null,
                 new net.minecraft.world.phys.AABB(helper.absolutePos(new net.minecraft.core.BlockPos(2, 2, 2))).inflate(48),
-                e -> e.getTags().contains(DisplayRig.RIG_TAG) && e.getTags().contains(tag))) {
+                e -> e.entityTags().contains(DisplayRig.RIG_TAG) && e.entityTags().contains(tag))) {
             if (e instanceof Mob m && !m.isRemoved()) {
                 out.add(m);
             }
@@ -191,7 +191,7 @@ public final class ReshapeInPlaceGameTest {
 
     private static long leavingNear(GameTestHelper helper, Mob c) {
         return helper.getLevel().getEntities((Entity) null, c.getBoundingBox().inflate(32),
-                e -> e.getTags().contains(DisplayRig.LEAVING_TAG)).size();
+                e -> e.entityTags().contains(DisplayRig.LEAVING_TAG)).size();
     }
 
     @GameTest(template = "empty_test", batch = "reshape_transform_parts", timeoutTicks = 500)

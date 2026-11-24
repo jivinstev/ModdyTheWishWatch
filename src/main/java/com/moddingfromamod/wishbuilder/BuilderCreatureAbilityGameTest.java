@@ -177,7 +177,7 @@ public final class BuilderCreatureAbilityGameTest {
         }
         BuilderAbilityGameTest.onServer(server, () -> {
             for (Entity e : level.getEntitiesOfClass(Entity.class, p.getBoundingBox().inflate(48),
-                    e -> e.getTags().contains("gt_moves") || e instanceof ItemEntity)) {
+                    e -> e.entityTags().contains("gt_moves") || e instanceof ItemEntity)) {
                 e.discard();
             }
             Entity b = creature(level, p, id);

@@ -12,7 +12,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.inventory.ClickType;
+import net.minecraft.world.inventory.ContainerInput;
 
 /**
  * <b>The Builder's 🔍 Find, through the real menu path</b> (§2): a click on the Find tile opens the box (a dialog
@@ -105,7 +105,7 @@ public final class BuilderFindGameTest {
             helper.fail(Component.literal("'" + id + "' is not on the page: " + menu.page().slots().values()));
             return;
         }
-        menu.clicked(slot, 0, ClickType.PICKUP, child);
+        menu.clicked(slot, 0, ContainerInput.PICKUP, child);
     }
 
     /** What the flow's From picks are, read off its page. */

@@ -137,7 +137,7 @@ public final class OnShotShapeGameTest {
                     throw GameTestCompat.assertion(what + ": no wish at the wall two ticks after the shot — "
                             + "the beam did not run (a full-power arrow flies ~3 blocks a tick, so it has not reached the wall). Glowstone, "
                             + "relative to his feet: " + found + "; facing yaw " + p.getYRot() + " pitch "
-                            + p.getXRot() + "; tags " + p.getTags());
+                            + p.getXRot() + "; tags " + p.entityTags());
                 }
                 if (arrowsNear(helper, feet) <= arrowsBefore) {
                     throw GameTestCompat.assertion(what + ": the wish ran but the weapon shot NOTHING — "

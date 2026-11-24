@@ -119,7 +119,7 @@ public final class BuilderEventGameTest {
                 if (m.field().equals("drop")) {
                     String tag = EventDirector.entityTag(e.id());
                     List<Entity> came = helper.getLevel().getEntitiesOfClass(Entity.class, p.getBoundingBox().inflate(64),
-                            x -> x.getTags().contains(tag));
+                            x -> x.entityTags().contains(tag));
                     return came.isEmpty() ? "no " + what + " came" : null;
                 }
                 return e.written() == null ? "it wrote no blocks" : null;

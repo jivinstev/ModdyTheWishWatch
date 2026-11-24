@@ -423,7 +423,7 @@ public class BuilderEditGameTest {
             return out;
         }
         for (var e : helper.getLevel().getAllEntities()) {
-            if (e instanceof net.minecraft.world.entity.Mob && e.isAlive() && e.getTags().contains("wishmob_" + id)) {
+            if (e instanceof net.minecraft.world.entity.Mob && e.isAlive() && e.entityTags().contains("wishmob_" + id)) {
                 out.add(e);
             }
         }

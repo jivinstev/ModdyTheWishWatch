@@ -174,7 +174,7 @@ public final class FlierCarrierLightGameTest {
         int sky = 15;
         int seen = 0;
         for (Entity d : level.getEntities((Entity) null, new AABB(carrier.blockPosition()).inflate(16),
-                e -> e instanceof Display && e.getTags().contains(tag))) {
+                e -> e instanceof Display && e.entityTags().contains(tag))) {
             int packed = ((DisplayLightInvoker) d).moddingfromamod$packedBrightnessOverride();
             if (packed == -1) {
                 continue;

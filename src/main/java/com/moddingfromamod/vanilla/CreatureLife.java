@@ -317,7 +317,7 @@ public final class CreatureLife {
         if (life.herdRadius() > 0) {
             String tag = com.moddingfromamod.entity.WishMobTags.forSpecies(sp.id());
             var mates = level.getEntitiesOfClass(Mob.class, m.getBoundingBox().inflate(life.herdRadius() * 2),
-                    e -> e != m && e.isAlive() && e.getTags().contains(tag) && e.getTags().contains(DisplayRig.RIG_TAG));
+                    e -> e != m && e.isAlive() && e.entityTags().contains(tag) && e.entityTags().contains(DisplayRig.RIG_TAG));
             if (!mates.isEmpty()) {
                 hx = 0;
                 hz = 0;

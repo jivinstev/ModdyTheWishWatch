@@ -19,7 +19,7 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.RegistryOps;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.inventory.ClickType;
+import net.minecraft.world.inventory.ContainerInput;
 
 /**
  * <b>The Builder's real menus, pressed the way a client presses them</b> (B0b).
@@ -164,6 +164,6 @@ public final class BuilderMenusGameTest {
             helper.fail(Component.literal("'" + id + "' is not on the page: " + menu.page().slots().values()));
             return;
         }
-        menu.clicked(slot, 0, ClickType.PICKUP, child);
+        menu.clicked(slot, 0, ContainerInput.PICKUP, child);
     }
 }

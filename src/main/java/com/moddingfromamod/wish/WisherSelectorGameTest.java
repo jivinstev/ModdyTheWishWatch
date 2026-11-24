@@ -67,9 +67,9 @@ public class WisherSelectorGameTest {
             WishExecutor.runOne(helper.getLevel().getServer(), helper.getLevel(),
                     acting.position(), acting, "tag @p add " + REACHED);
 
-            helper.assertTrue(ay.getTags().contains(REACHED),
+            helper.assertTrue(ay.entityTags().contains(REACHED),
                     Component.literal("the wisher was not reached — an agent-authored @p in A's wish must land on A"));
-            helper.assertFalse(bee.getTags().contains(REACHED),
+            helper.assertFalse(bee.entityTags().contains(REACHED),
                     Component.literal("the OTHER child was reached: this is #529's bug, and it is silent — the "
                             + "command succeeds, the agent is told 'Ran: OK', and the diamond is "
                             + "in the wrong inventory"));
@@ -105,7 +105,7 @@ public class WisherSelectorGameTest {
             WishExecutor.runOne(helper.getLevel().getServer(), helper.getLevel(),
                     bee.position(), bee, "tag @p add " + REACHED);
 
-            helper.assertTrue(bee.getTags().contains(REACHED) && !ay.getTags().contains(REACHED),
+            helper.assertTrue(bee.entityTags().contains(REACHED) && !ay.entityTags().contains(REACHED),
                     Component.literal("run from B's position, @p must reach B — if it cannot tell the two apart then "
                             + "the test above proves nothing about who the source is"));
         } finally {

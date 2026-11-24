@@ -61,7 +61,7 @@ public final class RigThrowGameTest {
         }
         listening = true;
         NeoForge.EVENT_BUS.addListener((EntityJoinLevelEvent e) -> {
-            if (!e.getLevel().isClientSide() && e.getEntity().getTags().contains(RigAbilities.THROW_TAG)) {
+            if (!e.getLevel().isClientSide() && e.getEntity().entityTags().contains(RigAbilities.THROW_TAG)) {
                 SPAWNED.put(e.getEntity().getUUID(), e.getEntity().position());
                 if (e.getEntity() instanceof Snowball b && b.getOwner() instanceof Mob owner) {
                     Vec3 hand = drawnCentre(owner, "fireball");
@@ -125,7 +125,7 @@ public final class RigThrowGameTest {
                     c.teleportTo(at.getX() + 0.5, at.getY(), at.getZ() + 0.5);
                 }
                 for (Snowball b : helper.getLevel().getEntitiesOfClass(Snowball.class, c.getBoundingBox().inflate(6),
-                        b -> b.getOwner() == c && b.getTags().contains(RigAbilities.THROW_TAG))) {
+                        b -> b.getOwner() == c && b.entityTags().contains(RigAbilities.THROW_TAG))) {
                     ball[0] = b.getUUID();
                     distance[0] = c.distanceTo(husk);
                     feet[0] = c.position();

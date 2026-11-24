@@ -138,7 +138,7 @@ public final class GoalGuide {
             String hint = !help.hint().isEmpty() ? help.hint()
                     : d.getDescription().getString().replaceAll("\\s+", " ").strip();
             String icon = net.minecraft.core.registries.BuiltInRegistries.ITEM
-                    .getKey(d.getIcon().getItem()).toString();
+                    .getKey(d.getIcon().item().value()).toString();
             out.add(new Line(d.getTitle().getString(), hint,
                     player.getAdvancements().getOrStartProgress(h).isDone(), icon));
         }

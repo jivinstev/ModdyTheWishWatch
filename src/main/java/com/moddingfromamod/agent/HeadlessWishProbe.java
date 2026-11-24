@@ -373,10 +373,10 @@ public final class HeadlessWishProbe {
                 child.setYRot(0f);
                 child.setXRot(10f);
             }
-            ChunkPos centre = new ChunkPos(spawn);
+            ChunkPos centre = ChunkPos.containing(spawn);
             for (int dx = -FORCED_CHUNKS; dx <= FORCED_CHUNKS; dx++) {
                 for (int dz = -FORCED_CHUNKS; dz <= FORCED_CHUNKS; dz++) {
-                    level.setChunkForced(centre.x + dx, centre.z + dz, true);
+                    level.setChunkForced(centre.x() + dx, centre.z() + dz, true);
                 }
             }
             LOGGER.info("{} forced {} chunks around {} so machines actually tick", TAG,

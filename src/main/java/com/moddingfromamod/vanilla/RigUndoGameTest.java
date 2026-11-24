@@ -134,7 +134,7 @@ public class RigUndoGameTest {
         String owner = DisplayRig.RIG_OWNER_PREFIX + carrier.getUUID();
         int n = 0;
         for (Entity e : level.getEntities().getAll()) {
-            if (e instanceof Display && e.getTags().contains(owner) && !e.isRemoved()) {
+            if (e instanceof Display && e.entityTags().contains(owner) && !e.isRemoved()) {
                 n++;
             }
         }
@@ -154,8 +154,8 @@ public class RigUndoGameTest {
     private static void tidy(ServerLevel level, String id) {
         List<Entity> doomed = new ArrayList<>();
         for (Entity e : level.getEntities().getAll()) {
-            if (e.getTags().contains(WishMobTags.forSpecies(id))
-                    && e.getTags().contains(DisplayRig.RIG_TAG)) {
+            if (e.entityTags().contains(WishMobTags.forSpecies(id))
+                    && e.entityTags().contains(DisplayRig.RIG_TAG)) {
                 doomed.add(e);
             }
         }

@@ -23,7 +23,7 @@ public abstract class RigWalkAnimationMixin {
     private void moddingfromamod$serverWalkAnimation(CallbackInfo ci) {
         LivingEntity self = (LivingEntity) (Object) this;
         if (!self.level().isClientSide()
-                && self.getTags().contains(com.moddingfromamod.vanilla.DisplayRig.RIG_TAG)) {
+                && self.entityTags().contains(com.moddingfromamod.vanilla.DisplayRig.RIG_TAG)) {
             self.calculateEntityAnimation(self instanceof FlyingAnimal);
         }
     }

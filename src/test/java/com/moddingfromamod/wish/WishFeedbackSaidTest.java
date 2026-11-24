@@ -44,12 +44,13 @@ class WishFeedbackSaidTest {
     @Test
     void everySendGoesThroughTheLoggedPair() throws IOException {
         String src = Files.readString(Path.of("src/main/java/com/moddingfromamod/wish/WishFeedback.java"));
-        Matcher m = Pattern.compile("\\.(sendSystemMessage|displayClientMessage)\\(").matcher(src);
+        Matcher m = Pattern.compile("\\.(sendSystemMessage|sendOverlayMessage|displayClientMessage)\\(").matcher(src);
         int direct = 0;
         while (m.find()) {
             direct++;
         }
-        assertEquals(2, direct, "WishFeedback may send directly only inside tell() and show(); "
+        // 26.1 split displayClientMessage(line, overlay) into sendOverlayMessage / sendSystemMessage, so show() holds two sends
+        assertEquals(3, direct, "WishFeedback may send directly only inside tell() and show(); "
                 + "anything else must call tell(player, …) / show(player, …, overlay) so it is logged");
     }
 

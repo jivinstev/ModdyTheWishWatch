@@ -194,7 +194,7 @@ public final class VanillaRigAnimator {
             var near = base.level().getNearestPlayer(base, 64);
             called = near == null || near.distanceTo(base) > CALLED_BLOCKS;
         }
-        long t = Math.floorMod(base.level().getDayTime(), 24000L);
+        long t = Math.floorMod(com.moddingfromamod.mv.DayTime.get(base.level()), 24000L);
         boolean night = base.level().dimensionType().hasSkyLight() && t >= 13000 && t < 23000;
         boolean wants = base.walkAnimation.speed() > AnimationState.WALK_THRESHOLD
                 || !base.getNavigation().isDone();
@@ -424,7 +424,7 @@ public final class VanillaRigAnimator {
      */
     static Adopt adoptOne(ServerLevel level, Mob carrier, boolean rebuild) {
         if (!carrier.isAlive()
-                || !carrier.getTags().contains(DisplayRig.RIG_TAG)
+                || !carrier.entityTags().contains(DisplayRig.RIG_TAG)
                 || LIVE.containsKey(carrier.getUUID())
                 // A body a TRANSFORMATION holds — the old one going white, or the new one hung
                 // TINY before the swap — is undriven on purpose, not orphaned. Adopting it
@@ -783,7 +783,7 @@ public final class VanillaRigAnimator {
     public static void onJoin(net.neoforged.neoforge.event.entity.EntityJoinLevelEvent event) {
         if (event.loadedFromDisk() && event.getLevel() instanceof ServerLevel level
                 && event.getEntity() instanceof Mob gone
-                && gone.getTags().contains(DisplayRig.LEAVING_TAG)) {
+                && gone.entityTags().contains(DisplayRig.LEAVING_TAG)) {
             // the old body of a transformation the server stopped in the middle of: its
             // new body was saved too, so this one is a duplicate
             level.getServer().execute(() -> {
@@ -795,7 +795,7 @@ public final class VanillaRigAnimator {
         if (event.loadedFromDisk()
                 && event.getLevel() instanceof ServerLevel level
                 && event.getEntity() instanceof Mob carrier
-                && carrier.getTags().contains(DisplayRig.RIG_TAG)
+                && carrier.entityTags().contains(DisplayRig.RIG_TAG)
                 && !LIVE.containsKey(carrier.getUUID())) {
             PENDING.put(carrier.getUUID(), new Pending(level, 0));
         }

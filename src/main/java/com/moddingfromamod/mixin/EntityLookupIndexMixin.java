@@ -51,7 +51,7 @@ public abstract class EntityLookupIndexMixin<T extends EntityAccess> implements 
         if (!(t instanceof Entity e) || byId.get(e.getId()) != t || moddingfromamod$index.contains(e)) {
             return;
         }
-        if (!(e.getTags() instanceof ObservedTagSet tags)) {
+        if (!(e.entityTags() instanceof ObservedTagSet tags)) {
             moddingfromamod$poison(e);   // an entity this build did not construct: never guess
             return;
         }
@@ -80,7 +80,7 @@ public abstract class EntityLookupIndexMixin<T extends EntityAccess> implements 
             return;
         }
         moddingfromamod$index.removed(e);
-        if (e.getTags() instanceof ObservedTagSet tags) {
+        if (e.entityTags() instanceof ObservedTagSet tags) {
             tags.listen(null);
         }
     }

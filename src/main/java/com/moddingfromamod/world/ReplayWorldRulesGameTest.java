@@ -58,7 +58,7 @@ public class ReplayWorldRulesGameTest {
         };
         WorldRules.Parsed parsed = WorldRules.parse(RULES, "closed");
         helper.assertTrue(parsed.ok(), Component.literal("rules: " + parsed.errors()));
-        long dayBefore = helper.getLevel().getDayTime();
+        long dayBefore = com.moddingfromamod.mv.DayTime.get(helper.getLevel());
         try {
             WorldModuleHost.forTest(world);
             WorldRulesService.forTest(parsed.rules());

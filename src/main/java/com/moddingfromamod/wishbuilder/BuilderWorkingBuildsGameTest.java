@@ -28,7 +28,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.FarmBlock;
+import net.minecraft.world.level.block.FarmlandBlock;
 import net.minecraft.world.level.block.state.BlockState;
 
 /**
@@ -161,10 +161,10 @@ public final class BuilderWorkingBuildsGameTest {
                 return "its soil at " + q.toShortString() + " is " + level.getBlockState(q).getBlock();
             }
             for (int i = 0; i < 3; i++) {   // vanilla's own random tick: wet next to water, dry (then dirt) without
-                level.getBlockState(q).randomTick(level, q, level.random);
+                level.getBlockState(q).randomTick(level, q, level.getRandom());
             }
             BlockState s = level.getBlockState(q);
-            if (!s.is(Blocks.FARMLAND) || s.getValue(FarmBlock.MOISTURE) != FarmBlock.MAX_MOISTURE) {
+            if (!s.is(Blocks.FARMLAND) || s.getValue(FarmlandBlock.MOISTURE) != FarmlandBlock.MAX_MOISTURE) {
                 return "its soil at " + q.toShortString() + " did not stay wet farmland by its water (" + s + ")";
             }
         }
@@ -186,7 +186,7 @@ public final class BuilderWorkingBuildsGameTest {
         level.setBlockAndUpdate(dry.above(), Blocks.AIR.defaultBlockState());
         for (int i = 0; i < 3; i++) {
             if (level.getBlockState(dry).is(Blocks.FARMLAND)) {
-                level.getBlockState(dry).randomTick(level, dry, level.random);
+                level.getBlockState(dry).randomTick(level, dry, level.getRandom());
             }
         }
         boolean dried = !level.getBlockState(dry).is(Blocks.FARMLAND);
@@ -291,7 +291,7 @@ public final class BuilderWorkingBuildsGameTest {
                 return "its centre " + c.toShortString() + " has sky light " + sky + " and block light " + block
                         + ": too light for monsters";
             }
-            if (dy == 0 && !net.minecraft.world.entity.monster.Monster.isDarkEnoughToSpawn(level, c, level.random)) {
+            if (dy == 0 && !net.minecraft.world.entity.monster.Monster.isDarkEnoughToSpawn(level, c, level.getRandom())) {
                 return "a monster may not spawn at its centre " + c.toShortString();
             }
         }

@@ -99,8 +99,8 @@ public class SpawnInPlainSightGameTest {
         List<LivingEntity> out = new ArrayList<>();
         for (Entity e : level.getEntities().getAll()) {
             if (e instanceof LivingEntity l && e.isAlive()
-                    && e.getTags().contains(DisplayRig.RIG_TAG)
-                    && e.getTags().contains(WishMobTags.forSpecies(id))) {
+                    && e.entityTags().contains(DisplayRig.RIG_TAG)
+                    && e.entityTags().contains(WishMobTags.forSpecies(id))) {
                 out.add(l);
             }
         }

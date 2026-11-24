@@ -318,7 +318,7 @@ public final class WatchPinStage {
                 && event.getEntity() instanceof net.minecraft.world.entity.projectile.Projectile pr) {
             itemJoins++;
             itemJoinWhat.add("projectile " + pr.getType().toShortString());
-            if (pr.getTags().contains(com.moddingfromamod.item.OffhandMatrix.THROW_TAG)) {
+            if (pr.entityTags().contains(com.moddingfromamod.item.OffhandMatrix.THROW_TAG)) {
                 taggedThrows++;
             } else {
                 plainThrows++;
@@ -427,7 +427,7 @@ public final class WatchPinStage {
                 ItemStack bag = new ItemStack(Items.BUNDLE);
                 bag.set(net.minecraft.core.component.DataComponents.BUNDLE_CONTENTS,
                         new net.minecraft.world.item.component.BundleContents(List.of(
-                                new ItemStack(Items.DIRT, 5), new ItemStack(Items.COBBLESTONE, 3))));
+                                new net.minecraft.world.item.ItemStackTemplate(Items.DIRT, 5), new net.minecraft.world.item.ItemStackTemplate(Items.COBBLESTONE, 3))));
                 p.getInventory().setItem(WatchPin.OFFHAND, bag);
             }
             case "right_click_horse", "right_click_horse_wild" -> {
@@ -611,8 +611,8 @@ public final class WatchPinStage {
             var c = off.get(net.minecraft.core.component.DataComponents.BUNDLE_CONTENTS);
             int n = 0;
             if (c != null) {
-                for (ItemStack s : c.items()) {
-                    n += s.getCount();
+                for (net.minecraft.world.item.ItemStackTemplate s : c.items()) {
+                    n += s.count();
                 }
             }
             if (!off.is(Items.BUNDLE) || n != 8) {
@@ -657,7 +657,7 @@ public final class WatchPinStage {
             main.add("thrown");
         }
         if (!level.getEntitiesOfClass(net.minecraft.world.entity.decoration.ArmorStand.class, stageBox,
-                a -> a.getTags().contains(com.moddingfromamod.item.OffhandMatrix.PLACE_TAG)).isEmpty()) {
+                a -> a.entityTags().contains(com.moddingfromamod.item.OffhandMatrix.PLACE_TAG)).isEmpty()) {
             main.add("placed");
         }
         if (cell.row() == com.moddingfromamod.item.OffhandMatrix.Row.WORN

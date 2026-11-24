@@ -241,7 +241,7 @@ public final class Fx {
         // getAllEntities() is iterating, and when that map shrinks mid-loop the iterator runs off its end.
         java.util.List<Entity> found = new java.util.ArrayList<>();
         for (Entity e : level.getAllEntities()) {
-            if (e != null && e.getTags().contains(tag)) {
+            if (e != null && e.entityTags().contains(tag)) {
                 found.add(e);
             }
         }
@@ -253,7 +253,7 @@ public final class Fx {
     public static int count(ServerLevel level, String tag) {
         int n = 0;
         for (Entity e : level.getAllEntities()) {
-            if (e != null && e.isAlive() && e.getTags().contains(tag)) {
+            if (e != null && e.isAlive() && e.entityTags().contains(tag)) {
                 n++;
             }
         }

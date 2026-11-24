@@ -543,7 +543,7 @@ public final class WishProgress {
             // This is the choke point; a future caller inherits the rule without knowing it exists.
             ServerPlayer owner = ownerOf(player, wishId);
             ServerPlayer shownTo = owner == null ? player : owner;
-            var b = new net.minecraft.server.level.ServerBossEvent(
+            var b = new net.minecraft.server.level.ServerBossEvent(java.util.UUID.randomUUID(),
                     Component.literal("✨ Moddy"),
                     net.minecraft.world.BossEvent.BossBarColor.PURPLE,
                     net.minecraft.world.BossEvent.BossBarOverlay.PROGRESS);
@@ -652,7 +652,7 @@ public final class WishProgress {
             if (w != null && wishId.equals(w.wishId())) {
                 STATUS.remove(player.getUUID());
                 // blank the action bar now, rather than leave the last line up for its fade
-                player.displayClientMessage(Component.empty(), true);
+                player.sendOverlayMessage(Component.empty());
             }
         }
     }
@@ -771,9 +771,9 @@ public final class WishProgress {
             boolean agentWorkingIt = wish.status() == WishStatus.RUNNING
                     && com.moddingfromamod.agent.AgentSession.isRunning();
             if (elapsed > (agentWorkingIt ? ABSOLUTE_MAX_MS : MAX_WAIT_MS)) {
-                player.displayClientMessage(Component.literal(
+                player.sendOverlayMessage(Component.literal(
                                 "😴 That one is taking a very long time. Try asking again!")
-                        .setStyle(Style.EMPTY.withColor(ChatFormatting.GRAY)), true);
+                        .setStyle(Style.EMPTY.withColor(ChatFormatting.GRAY)));
                 forget(pid);
                 continue;
             }
@@ -794,8 +794,8 @@ public final class WishProgress {
             }
             WishPlan plan = PLANS.get(waiting.wishId());
             String step = plan == null || plan.isThinking() ? "" : plan.currentLabel();
-            player.displayClientMessage(
-                    render(now, elapsed, track, step, STATUS.get(pid), ahead), true);
+            player.sendOverlayMessage(
+                    render(now, elapsed, track, step, STATUS.get(pid), ahead));
             conjure(player, elapsed);
         }
     }

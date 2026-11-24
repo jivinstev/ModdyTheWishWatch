@@ -45,7 +45,7 @@ public abstract class ProxyProjectileMixin {
         // whatever it returned — only an arrow honours it; read from the bytecode), so a friendly
         // creature's ball still landed on the child. Refused here, it simply flies on through.
         Projectile self = (Projectile) (Object) this;
-        if (self.getTags().contains(com.moddingfromamod.vanilla.RigAbilities.THROW_TAG)
+        if (self.entityTags().contains(com.moddingfromamod.vanilla.RigAbilities.THROW_TAG)
                 && !com.moddingfromamod.vanilla.RigAbilities.mayThrowAt(self, target)) {
             cir.setReturnValue(false);
             return;

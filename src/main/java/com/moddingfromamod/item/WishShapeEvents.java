@@ -238,7 +238,7 @@ public final class WishShapeEvents {
     }
 
     @SubscribeEvent
-    public static void onBreak(BlockEvent.BreakEvent event) {
+    public static void onBreak(net.neoforged.neoforge.event.level.block.BreakBlockEvent event) {
         if (!(event.getLevel() instanceof ServerLevel level) || event.getPlayer() == null) {
             return;
         }

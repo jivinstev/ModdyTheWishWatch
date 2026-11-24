@@ -189,8 +189,8 @@ public class KeptIsNotAPropGameTest {
         helper.onEachTick(() -> {
             if (finished.get() == null) {
                 for (Entity e : level.getEntities().getAll()) {
-                    if (e != null && (e.getTags().contains(TAG) || e.getTags().contains(PROBE)
-                            || e.getTags().contains(STATUE))) {
+                    if (e != null && (e.entityTags().contains(TAG) || e.entityTags().contains(PROBE)
+                            || e.entityTags().contains(STATUE))) {
                         seen.add(e);
                     }
                 }
@@ -238,14 +238,14 @@ public class KeptIsNotAPropGameTest {
             // which isRemoved() also reports. The minecart check below always asked for the reason;
             // these two did not, and a release build's busy Gate B unloaded the statue's chunk and read
             // as "the named statue was removed" (2026-11-02, the release; passed in the two before).
-            if (e.getTags().contains(PROBE)) {
+            if (e.entityTags().contains(PROBE)) {
                 probes++;
                 if (!swept(e)) {
                     probesStanding++;
                 }
                 continue;
             }
-            if (e.getTags().contains(STATUE)) {
+            if (e.entityTags().contains(STATUE)) {
                 statues++;
                 if (swept(e)) {
                     statuesSwept++;
@@ -255,7 +255,7 @@ public class KeptIsNotAPropGameTest {
                     statueReason = e.getRemovalReason() + ", last damage "
                             + (src == null ? "none" : src.getMsgId() + (src.getEntity() == null ? ""
                                     : " by " + net.minecraft.world.entity.EntityType.getKey(
-                                            src.getEntity().getType()) + " " + src.getEntity().getTags()))
+                                            src.getEntity().getType()) + " " + src.getEntity().entityTags()))
                             + " at " + e.blockPosition().toShortString();
                 }
                 continue;
@@ -346,8 +346,8 @@ public class KeptIsNotAPropGameTest {
     private static void tidy(ServerLevel level, Wish wish, ServerPlayer mock) {
         java.util.List<Entity> ours = new java.util.ArrayList<>();
         for (Entity e : level.getEntities().getAll()) {
-            if (e != null && (e.getTags().contains(TAG) || e.getTags().contains(GONE)
-                    || e.getTags().contains(PROBE) || e.getTags().contains(STATUE))) {
+            if (e != null && (e.entityTags().contains(TAG) || e.entityTags().contains(GONE)
+                    || e.entityTags().contains(PROBE) || e.entityTags().contains(STATUE))) {
                 ours.add(e);
             }
         }

@@ -26,7 +26,7 @@ public final class RigReadout {
         String own = DisplayRig.RIG_OWNER_PREFIX + carrier.getUUID();
         Map<Integer, Integer> out = new HashMap<>();
         for (Entity d : level.getEntities().getAll()) {
-            if (d instanceof Display.ItemDisplay && !d.isRemoved() && d.getTags().contains(own)) {
+            if (d instanceof Display.ItemDisplay && !d.isRemoved() && d.entityTags().contains(own)) {
                 CompoundTag tag = com.moddingfromamod.compat.EntityNbt.save(d);
                 ItemStack stack = com.moddingfromamod.compat.EntityNbt.parseStack(level.registryAccess(), tag.getCompoundOrEmpty("item"))
                         .orElse(ItemStack.EMPTY);
@@ -46,12 +46,12 @@ public final class RigReadout {
         String own = DisplayRig.RIG_OWNER_PREFIX + carrier.getUUID();
         double v = 0;
         for (Entity d : level.getEntities().getAll()) {
-            if (d instanceof Display && !d.isRemoved() && d.getTags().contains(own)) {
+            if (d instanceof Display && !d.isRemoved() && d.entityTags().contains(own)) {
                 CompoundTag tag = com.moddingfromamod.compat.EntityNbt.save(d);
                 var tf = com.mojang.math.Transformation.EXTENDED_CODEC
                         .parse(NbtOps.INSTANCE, tag.get("transformation")).result().orElse(null);
                 if (tf != null) {
-                    var s = tf.getScale();
+                    var s = tf.scale();
                     v += Math.abs((double) s.x() * s.y() * s.z());
                 }
             }

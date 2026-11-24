@@ -68,9 +68,9 @@ public final class AddDropModifier extends LootModifier {
 
     private final DropRule rule;
 
-    private AddDropModifier(LootItemCondition[] conditions, String source, String which, String item,
+    private AddDropModifier(LootItemCondition[] conditions, int priority, String source, String which, String item,
                             float chance, int count) {
-        super(conditions);
+        super(conditions, priority);
         this.rule = new DropRule("", DropRule.Source.of(source), which, item, chance, count);
     }
 

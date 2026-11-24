@@ -132,10 +132,10 @@ public final class StockHairStage {
     private static void build(MinecraftServer server, ServerPlayer child) {
         ServerLevel level = child.level();
         for (ServerLevel l : server.getAllLevels()) {
-            l.setDayTime(6000L);
+            com.moddingfromamod.mv.DayTime.set(l, 6000L);
             l.getGameRules().set(GameRules.ADVANCE_TIME,false, server);
             l.getGameRules().set(GameRules.ADVANCE_WEATHER,false, server);
-            l.setWeatherParameters(6000, 0, false, false);
+            com.moddingfromamod.mv.DayTime.weather(l, 6000, 0, false, false);
         }
         var floor = net.minecraft.world.level.block.Blocks.WHITE_CONCRETE.defaultBlockState();
         for (int x = (int) X - 12; x <= (int) X + 12; x++) {

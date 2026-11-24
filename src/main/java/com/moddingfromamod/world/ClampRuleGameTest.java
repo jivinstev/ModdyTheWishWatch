@@ -128,7 +128,7 @@ public final class ClampRuleGameTest {
 
     private static Entity tagged(GameTestHelper helper, String tag) {
         for (Entity e : helper.getLevel().getAllEntities()) {
-            if (e != null && e.getTags().contains(tag)) {
+            if (e != null && e.entityTags().contains(tag)) {
                 return e;
             }
         }

@@ -328,7 +328,7 @@ public final class RigInstincts {
         }
         // a real mob with a behaviour profile, or anyone's friendly pet, is a wished creature
         // too: an army of guardian endermen does not hunt itself because endermen are monsters.
-        if (e.getTags().contains(DisplayRig.RIG_TAG)
+        if (e.entityTags().contains(DisplayRig.RIG_TAG)
                 || com.moddingfromamod.mob.RealMobBehaviours.isDriven(e)
                 || (!com.moddingfromamod.mob.PetBehaviours.stored(e).isEmpty()
                         && Boolean.TRUE.equals(com.moddingfromamod.mob.PetBehaviours.storedOf(e).friendly()))) {

@@ -51,7 +51,7 @@ public final class CustomCatch {
         }
         ItemStack rod = p.getMainHandItem().is(Items.FISHING_ROD) ? p.getMainHandItem() : p.getOffhandItem();
         String[] c = setting(rod);
-        if (c == null || level.random.nextInt(100) >= Integer.parseInt(c[1])) {
+        if (c == null || level.getRandom().nextInt(100) >= Integer.parseInt(c[1])) {
             return;
         }
         ItemStack caught = make(level, pick(level, c[0]));
@@ -80,7 +80,7 @@ public final class CustomCatch {
 
     static String pick(ServerLevel level, String what) {
         List<String> all = List.of(what.split(","));
-        return all.get(level.random.nextInt(all.size()));
+        return all.get(level.getRandom().nextInt(all.size()));
     }
 
     /** One catch, from our words or a checked id; empty when the id is not a real item. */
@@ -90,12 +90,12 @@ public final class CustomCatch {
             chest.set(DataComponents.CONTAINER_LOOT, new SeededContainerLoot(
                     ResourceKey.create(Registries.LOOT_TABLE,
                             Identifier.withDefaultNamespace("chests/buried_treasure")),
-                    level.random.nextLong()));
+                    level.getRandom().nextLong()));
             chest.set(DataComponents.CUSTOM_NAME, net.minecraft.network.chat.Component.literal("Treasure Chest"));
             return chest;
         }
         if ("enchanted_book".equals(what)) {
-            return EnchantmentHelper.enchantItem(level.random, new ItemStack(Items.BOOK), 30,
+            return EnchantmentHelper.enchantItem(level.getRandom(), new ItemStack(Items.BOOK), 30,
                     level.registryAccess(), Optional.empty());
         }
         Identifier id = Identifier.tryParse(what);
@@ -112,6 +112,6 @@ public final class CustomCatch {
         e.setDeltaMovement(dx * 0.1, dy * 0.1 + Math.sqrt(Math.sqrt(dx * dx + dy * dy + dz * dz)) * 0.08, dz * 0.1);
         level.addFreshEntity(e);
         level.addFreshEntity(new ExperienceOrb(level, p.getX(), p.getY() + 0.5, p.getZ() + 0.5,
-                level.random.nextInt(6) + 1));
+                level.getRandom().nextInt(6) + 1));
     }
 }

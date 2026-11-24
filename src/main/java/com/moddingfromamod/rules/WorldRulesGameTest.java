@@ -128,7 +128,7 @@ public final class WorldRulesGameTest {
         });
         helper.succeedWhen(() -> {
             assertSet(helper, set);
-            helper.assertTrue(cow.get() != null && cow.get().getTags().contains("t6c_spawned"),
+            helper.assertTrue(cow.get() != null && cow.get().entityTags().contains("t6c_spawned"),
                     Component.literal("a mooshroom appeared under 'when a mooshroom appears, tag it' and was not tagged"));
             removed(helper, rm, name);
         });
@@ -148,13 +148,13 @@ public final class WorldRulesGameTest {
                 pig.set(helper.spawn(EntityType.PIG, new BlockPos(2, fl + 5, 2)));
             }
             Pig p = pig.get();
-            if (p != null && p.getTags().contains("t6c_landed")) {
+            if (p != null && p.entityTags().contains("t6c_landed")) {
                 bounce[0] = Math.max(bounce[0], p.getY() - helper.absolutePos(new BlockPos(0, fl, 0)).getY());
             }
         });
         helper.succeedWhen(() -> {
             assertSet(helper, set);
-            helper.assertTrue(pig.get() != null && pig.get().getTags().contains("t6c_landed"),
+            helper.assertTrue(pig.get() != null && pig.get().entityTags().contains("t6c_landed"),
                     Component.literal("a pig fell four blocks and its landing rule never ran"));
             helper.assertTrue(bounce[0] > 1.8, Component.literal("the landed pig was never pushed back up (highest "
                     + "after landing: " + bounce[0] + " blocks above the floor)"));
@@ -180,7 +180,7 @@ public final class WorldRulesGameTest {
         });
         helper.succeedWhen(() -> {
             assertSet(helper, set);
-            helper.assertTrue(sheep.get() != null && sheep.get().getTags().contains("t6c_jumped"),
+            helper.assertTrue(sheep.get() != null && sheep.get().entityTags().contains("t6c_jumped"),
                     Component.literal("a sheep jumped under 'when a sheep jumps, tag it' and was not tagged"));
             removed(helper, rm, name);
         });
@@ -249,7 +249,7 @@ public final class WorldRulesGameTest {
         });
         helper.succeedWhen(() -> {
             assertSet(helper, set);
-            helper.assertTrue(cow.get() != null && cow.get().getTags().contains("t6c_hit"),
+            helper.assertTrue(cow.get() != null && cow.get().entityTags().contains("t6c_hit"),
                     Component.literal("a snowball hit a cow under 'when a snowball hits a cow' and the rule never ran"));
             removed(helper, rm, name);
         });
@@ -324,7 +324,7 @@ public final class WorldRulesGameTest {
                 startedAt[0] = helper.getTick();
             }
             int n = helper.getLevel().getEntities((net.minecraft.world.entity.Entity) null,
-                    new net.minecraft.world.phys.AABB(spot).inflate(4), e -> e.getTags().contains("t6c_crowd")).size();
+                    new net.minecraft.world.phys.AABB(spot).inflate(4), e -> e.entityTags().contains("t6c_crowd")).size();
             helper.assertTrue(n <= 12 + 3, Component.literal("the crowd cap let " + n + " armour stands pile up"));
             helper.assertTrue(helper.getTick() - startedAt[0] > 400 && n >= 12,
                     Component.literal("still filling (" + n + " so far)"));
@@ -332,7 +332,7 @@ public final class WorldRulesGameTest {
             removed(helper, rm, name);
             if (rm.get().get() != null) {
                 helper.getLevel().getEntities((net.minecraft.world.entity.Entity) null,
-                        new net.minecraft.world.phys.AABB(spot).inflate(4), e -> e.getTags().contains("t6c_crowd"))
+                        new net.minecraft.world.phys.AABB(spot).inflate(4), e -> e.entityTags().contains("t6c_crowd"))
                         .forEach(e -> e.discard());
             }
         });

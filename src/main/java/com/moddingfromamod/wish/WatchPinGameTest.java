@@ -251,11 +251,11 @@ public class WatchPinGameTest {
         picked.put(hotbar0, net.minecraft.network.HashedStack.EMPTY);
         p.connection.handleContainerClick(new net.minecraft.network.protocol.game
                 .ServerboundContainerClickPacket(menu.containerId, menu.getStateId(), (short) hotbar0, (byte) 0,
-                net.minecraft.world.inventory.ClickType.PICKUP, picked,
+                net.minecraft.world.inventory.ContainerInput.PICKUP, picked,
                 net.minecraft.network.HashedStack.create(VanillaWatchItem.stack(), hasher)));
         p.connection.handleContainerClick(new net.minecraft.network.protocol.game
                 .ServerboundContainerClickPacket(menu.containerId, menu.getStateId(), (short) -999, (byte) 0,
-                net.minecraft.world.inventory.ClickType.PICKUP,
+                net.minecraft.world.inventory.ContainerInput.PICKUP,
                 new it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap<>(), net.minecraft.network.HashedStack.EMPTY));
         long start = helper.getLevel().getGameTime();
         helper.succeedWhen(() -> {
@@ -377,7 +377,7 @@ public class WatchPinGameTest {
         ItemFrame frame = new ItemFrame(helper.getLevel(), wall.north(), Direction.NORTH);
         helper.getLevel().addFreshEntity(frame);
         long start = helper.getLevel().getGameTime();
-        p.interactOn(frame, InteractionHand.MAIN_HAND);
+        com.moddingfromamod.mv.Interact.on(p, frame, InteractionHand.MAIN_HAND);
         within(helper, start, () -> home(p) && frame.getItem().isEmpty(),
                 () -> "frame: " + state(p) + " frame=" + frame.getItem(), () -> {
                     frame.discard();

@@ -500,15 +500,15 @@ public final class MockPlayerNetwork {
             return;
         }
         net.minecraft.server.level.ServerLevel overworld = server.overworld();
-        net.minecraft.world.level.ChunkPos c = new net.minecraft.world.level.ChunkPos(
+        net.minecraft.world.level.ChunkPos c = net.minecraft.world.level.ChunkPos.containing(
                 landing != null ? landing : overworld.getRespawnData().pos());
         java.util.List<net.minecraft.world.level.ChunkPos> want = new java.util.ArrayList<>();
         for (int dx = -2; dx <= 2; dx++) {
             for (int dz = -2; dz <= 2; dz++) {
-                want.add(new net.minecraft.world.level.ChunkPos(c.x + dx, c.z + dz));
+                want.add(new net.minecraft.world.level.ChunkPos(c.x() + dx, c.z() + dz));
             }
         }
-        if (want.stream().allMatch(p -> overworld.areEntitiesLoaded(p.toLong()))) {
+        if (want.stream().allMatch(p -> overworld.areEntitiesLoaded(p.pack()))) {
             return;
         }
         Object manager;
@@ -525,7 +525,7 @@ public final class MockPlayerNetwork {
             throw new IllegalStateException("MockPlayerNetwork: ServerLevel.entityManager changed shape — " + e, e);
         }
         // The 3x3 vanilla's wait asks for, and the ring round it: all inside the plot's forced chunks' loaded ring.
-        want.forEach(p -> overworld.getChunk(p.x, p.z));
+        want.forEach(p -> overworld.getChunk(p.x(), p.z()));
         long deadline = System.nanoTime() + 120_000_000_000L;
         server.managedBlock(() -> {
             while (overworld.getChunkSource().pollTask()) {
@@ -537,7 +537,7 @@ public final class MockPlayerNetwork {
                 throw new IllegalStateException("MockPlayerNetwork: processPendingLoads failed — " + e, e);
             }
             for (net.minecraft.world.level.ChunkPos p : want) {
-                if (!overworld.areEntitiesLoaded(p.toLong())) {
+                if (!overworld.areEntitiesLoaded(p.pack())) {
                     if (System.nanoTime() > deadline) {
                         throw new IllegalStateException("MockPlayerNetwork: the entities where he lands, at " + p
                                 + " did not load in 120 s of wall clock; placing a mock now would block the Server"

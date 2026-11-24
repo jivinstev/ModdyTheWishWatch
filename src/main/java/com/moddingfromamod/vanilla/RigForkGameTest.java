@@ -128,7 +128,7 @@ public final class RigForkGameTest {
                         + "the creature he meant still wears '" + base + "': "
                         + Creatures.carriersOf(level, base).contains(his)
                         + ". The tool told him: " + notes));
-                helper.assertTrue(forked.get(0).getTags().contains(
+                helper.assertTrue(forked.get(0).entityTags().contains(
                                 com.moddingfromamod.entity.WishMobTags.forSpecies(base)),
                         Component.literal("the fork lost its ancestor's tag, so the abilities it inherited (the "
                                 + "starter dragon's breath selects @e[tag=wishmob_pet_dragon]) no "

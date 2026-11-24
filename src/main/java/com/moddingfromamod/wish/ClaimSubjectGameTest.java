@@ -58,7 +58,7 @@ public class ClaimSubjectGameTest {
             helper.assertTrue(carrier != null, Component.literal("the creature did not stand up"));
             for (Entity e : level.getEntities().getAll()) {
                 if (e instanceof Mob m && HitProxies.isProxy(e)
-                        && e.getTags().contains(HitProxies.PROXY_OWNER_PREFIX + carrier.getUUID())) {
+                        && e.entityTags().contains(HitProxies.PROXY_OWNER_PREFIX + carrier.getUUID())) {
                     proxies.add(m);
                 }
             }

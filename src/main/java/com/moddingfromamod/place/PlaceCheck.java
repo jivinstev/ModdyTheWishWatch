@@ -288,8 +288,8 @@ public final class PlaceCheck {
         if (e instanceof ItemEntity it) {
             return "a dropped " + it.getItem().getHoverName().getString();
         }
-        if (e.getTags().stream().anyMatch(t -> t.endsWith("_here") || t.endsWith("_new") || t.endsWith("_built"))) {
-            return "the placed marker of " + e.getTags().stream().filter(t -> t.endsWith("_here") || t.endsWith("_new")
+        if (e.entityTags().stream().anyMatch(t -> t.endsWith("_here") || t.endsWith("_new") || t.endsWith("_built"))) {
+            return "the placed marker of " + e.entityTags().stream().filter(t -> t.endsWith("_here") || t.endsWith("_new")
                     || t.endsWith("_built")).findFirst().orElse("?");
         }
         return label != null ? "creature '" + label + "'" : (e.hasCustomName() ? type + " '" + e.getCustomName().getString()

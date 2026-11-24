@@ -308,7 +308,7 @@ public final class ModifyMobTool implements McpTool {
                     List<LivingEntity> brought = new ArrayList<>();
                     for (ServerLevel l : server.getAllLevels()) {
                         l.getEntities(net.minecraft.world.level.entity.EntityTypeTest.forClass(LivingEntity.class),
-                                x -> x.isAlive() && x.getTags().contains(tag), brought);
+                                x -> x.isAlive() && x.entityTags().contains(tag), brought);
                     }
                     if (brought.isEmpty()) {
                         return ToolResult.error("Nothing the event " + eventId + " brought is still about"

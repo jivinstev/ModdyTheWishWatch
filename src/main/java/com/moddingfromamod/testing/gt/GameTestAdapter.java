@@ -126,7 +126,7 @@ public final class GameTestAdapter {
             }
         }));
         modBus.addListener(RegisterGameTestsEvent.class, e -> {
-            Map<String, Holder<TestEnvironmentDefinition>> envs = new HashMap<>();
+            Map<String, Holder<TestEnvironmentDefinition<?>>> envs = new HashMap<>();
             java.util.Set<String> still = new java.util.HashSet<>();
             for (Found f : found()) {
                 if (!f.spec().randomTicks()) {
@@ -136,7 +136,7 @@ public final class GameTestAdapter {
             for (Found f : found()) {
                 String batch = batchOf(f);
                 String key = f.ns() + ":" + batch;
-                Holder<TestEnvironmentDefinition> env = envs.computeIfAbsent(key, k -> e.registerEnvironment(
+                Holder<TestEnvironmentDefinition<?>> env = envs.computeIfAbsent(key, k -> e.registerEnvironment(
                         Identifier.fromNamespaceAndPath(f.ns(), "batch/" + batch.toLowerCase(Locale.ROOT)),
                         new TestEnvironmentDefinition.AllOf(still.contains(k)
                                 ? List.of(Holder.direct(new TestEnvironmentDefinition.SetGameRules(
@@ -145,21 +145,21 @@ public final class GameTestAdapter {
                                                 .build())))
                                 : List.of())));
                 Identifier id = Identifier.fromNamespaceAndPath(f.ns(), f.id());
-                TestData<Holder<TestEnvironmentDefinition>> data = new TestData<>(env,
+                TestData<Holder<TestEnvironmentDefinition<?>>> data = new TestData<>(env,
                         Identifier.fromNamespaceAndPath(f.ns(), f.spec().template()),
                         CoverageMap.timeoutOf(f.method(), f.spec().timeoutTicks()), 0, f.spec().required(), net.minecraft.world.level.block.Rotation.NONE,
-                        false, f.spec().attempts(), 1, f.spec().skyAccess());
+                        false, f.spec().attempts(), 1, f.spec().skyAccess(), 0);
                 e.registerTest(id, new FunctionGameTestInstance(ResourceKey.create(Registries.TEST_FUNCTION, id), data));
             }
             if (CoverageMap.on()) {
-                Holder<TestEnvironmentDefinition> idle = e.registerEnvironment(
+                Holder<TestEnvironmentDefinition<?>> idle = e.registerEnvironment(
                         Identifier.fromNamespaceAndPath(CoverageMap.IDLE_ID.getNamespace(), "batch/covmap_idle"),
                         new TestEnvironmentDefinition.AllOf(List.of()));
                 e.registerTest(CoverageMap.IDLE_ID, new FunctionGameTestInstance(
                         ResourceKey.create(Registries.TEST_FUNCTION, CoverageMap.IDLE_ID),
                         new TestData<>(idle, Identifier.fromNamespaceAndPath(CoverageMap.IDLE_ID.getNamespace(), "empty_test"),
                                 CoverageMap.IDLE_TICKS * 2, 0, true, net.minecraft.world.level.block.Rotation.NONE,
-                                false, 1, 1, false)));
+                                false, 1, 1, false, 0)));
             }
             LOG.info("gt-adapter: registered {} tests in {} environments", found().size(), envs.size());
         });

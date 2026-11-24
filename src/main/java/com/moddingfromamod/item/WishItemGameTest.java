@@ -61,7 +61,7 @@ public class WishItemGameTest {
                 new BlockHitResult(Vec3.atCenterOf(floor).add(0, 0.5, 0), Direction.UP, floor, false)));
 
         List<ArmorStand> found = level.getEntities(EntityType.ARMOR_STAND,
-                new AABB(floor.above()).inflate(1.5), e -> e.getTags().contains("wishthing_probe"));
+                new AABB(floor.above()).inflate(1.5), e -> e.entityTags().contains("wishthing_probe"));
         helper.assertTrue(found.size() == 1,
                 Component.literal("the wish's own tag must reach the anchor, or nothing can find what was placed"));
         helper.assertTrue(found.get(0).blockPosition().equals(floor.above()),
@@ -91,7 +91,7 @@ public class WishItemGameTest {
         stack.getItem().use(level, player, InteractionHand.MAIN_HAND);
 
         List<Snowball> balls = level.getEntities(EntityType.SNOWBALL,
-                new AABB(at).inflate(6.0), e -> e.getTags().contains("wishthrow_probe"));
+                new AABB(at).inflate(6.0), e -> e.entityTags().contains("wishthrow_probe"));
         helper.assertTrue(balls.size() == 1,
                 Component.literal("throwing must produce exactly one tagged projectile, produced " + balls.size()));
         helper.assertTrue(balls.get(0).getDeltaMovement().lengthSqr() > 0.5,
@@ -219,7 +219,7 @@ public class WishItemGameTest {
         stack.getItem().use(level, player, InteractionHand.MAIN_HAND);
 
         List<Snowball> balls = level.getEntities(EntityType.SNOWBALL,
-                new AABB(at).inflate(8.0), s -> s.getTags().contains("boom_probe"));
+                new AABB(at).inflate(8.0), s -> s.entityTags().contains("boom_probe"));
         helper.assertTrue(balls.size() == 1, Component.literal("one tagged projectile"));
         helper.assertTrue(balls.get(0).getPersistentData()
                         .getStringOr(WishThrowImpact.HIT_FN, "").equals("probe:boom"),

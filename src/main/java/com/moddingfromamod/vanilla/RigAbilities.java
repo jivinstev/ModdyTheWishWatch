@@ -239,7 +239,7 @@ public final class RigAbilities {
     @net.neoforged.bus.api.SubscribeEvent
     public static void onThrowTicks(net.neoforged.neoforge.event.tick.EntityTickEvent.Post event) {
         if (!(event.getEntity() instanceof net.minecraft.world.entity.projectile.throwableitemprojectile.Snowball ball)
-                || !(ball.level() instanceof ServerLevel level) || !ball.getTags().contains(THROW_TAG)
+                || !(ball.level() instanceof ServerLevel level) || !ball.entityTags().contains(THROW_TAG)
                 || ball.isRemoved()) {
             return;
         }
@@ -319,7 +319,7 @@ public final class RigAbilities {
     @net.neoforged.bus.api.SubscribeEvent
     public static void onThrowLands(net.neoforged.neoforge.event.entity.ProjectileImpactEvent event) {
         var ball = event.getProjectile();
-        if (ball.level().isClientSide() || !ball.getTags().contains(THROW_TAG)
+        if (ball.level().isClientSide() || !ball.entityTags().contains(THROW_TAG)
                 || !(event.getRayTraceResult() instanceof net.minecraft.world.phys.EntityHitResult hit)
                 || !(ball.getOwner() instanceof Mob carrier)
                 || !(hit.getEntity() instanceof LivingEntity victim)
@@ -667,14 +667,14 @@ public final class RigAbilities {
      * nowhere: a trail of sparkles now runs from the summoner to each one as it arrives.
      */
     static boolean summon(ServerLevel level, Mob carrier, Species sp) {
-        if (carrier.getTags().contains(MINION_TAG)) {
+        if (carrier.entityTags().contains(MINION_TAG)) {
             return false;
         }
-        if (!carrier.getTags().contains(DisplayRig.RIG_TAG)) {
+        if (!carrier.entityTags().contains(DisplayRig.RIG_TAG)) {
             return summonReal(level, carrier);
         }
         int nearby = level.getEntitiesOfClass(Mob.class, carrier.getBoundingBox().inflate(24.0),
-                e -> e.getTags().contains(DisplayRig.RIG_TAG)).size();
+                e -> e.entityTags().contains(DisplayRig.RIG_TAG)).size();
         if (nearby > SUMMON_CAP) {
             return false;
         }
@@ -712,7 +712,7 @@ public final class RigAbilities {
                 helper.addTag(MINION_TAG);
                 helper.addTag(MINION_OF + carrier.getUUID());
                 // A vex's life: 20 * (30 + random(90)) ticks (Evoker.EvokerSummonSpellGoal).
-                helper.addTag(MINION_UNTIL + (level.getGameTime() + 20L * (30 + level.random.nextInt(90))));
+                helper.addTag(MINION_UNTIL + (level.getGameTime() + 20L * (30 + level.getRandom().nextInt(90))));
                 arrive(level, carrier, helper.position());
                 any = true;
             }
@@ -768,7 +768,7 @@ public final class RigAbilities {
             }
             helper.addTag(MINION_TAG);
             helper.addTag(MINION_OF + carrier.getUUID());
-            helper.addTag(MINION_UNTIL + (level.getGameTime() + 20L * (30 + level.random.nextInt(90))));
+            helper.addTag(MINION_UNTIL + (level.getGameTime() + 20L * (30 + level.getRandom().nextInt(90))));
             level.addFreshEntity(helper);
             com.moddingfromamod.mob.PetBehaviours.putBack(helper,
                     com.moddingfromamod.mob.PetBehaviours.stored(carrier),
@@ -800,7 +800,7 @@ public final class RigAbilities {
 
     /** The summoner of a helper, or null for a creature that is not one. */
     public static UUID ownerOf(net.minecraft.world.entity.Entity e) {
-        for (String t : e.getTags()) {
+        for (String t : e.entityTags()) {
             if (t.startsWith(MINION_OF)) {
                 try {
                     return UUID.fromString(t.substring(MINION_OF.length()));
@@ -814,7 +814,7 @@ public final class RigAbilities {
 
     /** The game time a helper leaves at, or {@link Long#MAX_VALUE} for one that never does. */
     public static long expiresAt(net.minecraft.world.entity.Entity e) {
-        for (String t : e.getTags()) {
+        for (String t : e.entityTags()) {
             if (t.startsWith(MINION_UNTIL)) {
                 try {
                     return Long.parseLong(t.substring(MINION_UNTIL.length()));

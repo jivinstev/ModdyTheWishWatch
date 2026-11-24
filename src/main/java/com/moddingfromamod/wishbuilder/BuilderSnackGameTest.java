@@ -29,7 +29,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.effect.MobEffects;
-import net.minecraft.world.inventory.ClickType;
+import net.minecraft.world.inventory.ContainerInput;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 
@@ -247,6 +247,6 @@ public final class BuilderSnackGameTest {
             helper.fail(Component.literal("'" + id + "' is not on the page: " + menu.page().slots().values()));
             return;
         }
-        menu.clicked(slot, 0, ClickType.PICKUP, child);
+        menu.clicked(slot, 0, ContainerInput.PICKUP, child);
     }
 }

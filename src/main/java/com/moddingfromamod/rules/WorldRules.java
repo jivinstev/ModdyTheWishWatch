@@ -242,8 +242,8 @@ public final class WorldRules {
         if (e == null) {
             return r.who() == null;
         }
-        return r.whoMatches(e instanceof Player, typeId(e), tag -> e.getType().is(
-                TagKey.create(Registries.ENTITY_TYPE, Identifier.parse(tag))), e.getTags()::contains);
+        return r.whoMatches(e instanceof Player, typeId(e), tag -> e.getType().builtInRegistryHolder().is(
+                TagKey.create(Registries.ENTITY_TYPE, Identifier.parse(tag))), e.entityTags()::contains);
     }
 
     static boolean blockMatches(BlockState state, String block) {
@@ -341,7 +341,7 @@ public final class WorldRules {
 
     private static boolean projectileMatches(String want, Entity p, String pid) {
         return want.startsWith("#")
-                ? p.getType().is(TagKey.create(Registries.ENTITY_TYPE, Identifier.parse(want.substring(1))))
+                ? p.getType().builtInRegistryHolder().is(TagKey.create(Registries.ENTITY_TYPE, Identifier.parse(want.substring(1))))
                 : want.equals(pid);
     }
 
@@ -391,7 +391,7 @@ public final class WorldRules {
 
     private static void poll(MinecraftServer server, List<WorldRule> rules, long tick) {
         ServerLevel over = server.overworld();
-        long day = over.getDayTime();
+        long day = com.moddingfromamod.mv.DayTime.get(over);
         boolean sunrise = RuleClock.crossed(lastDayTime, day, RuleClock.SUNRISE);
         boolean sunset = RuleClock.crossed(lastDayTime, day, RuleClock.SUNSET);
         lastDayTime = day;

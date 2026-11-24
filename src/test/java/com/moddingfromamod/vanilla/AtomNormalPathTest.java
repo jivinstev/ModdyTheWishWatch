@@ -181,8 +181,10 @@ public class AtomNormalPathTest {
     }
 
     private static boolean orthonormal(Quaternionf left, Vector3f scale, Quaternionf right) {
-        return MatrixUtil.isOrthonormal(
-                new Transformation(new Vector3f(), left, scale, right).getMatrix());
+        // 26.1 removed MatrixUtil.isOrthonormal; PoseStack.Pose.mulPose now asks checkPropertyRaw(m, 16) after
+        // isPureTranslation has determined the properties, which is checkProperty(m, PROPERTY_ORTHONORMAL).
+        return MatrixUtil.checkProperty(
+                new Transformation(new Vector3f(), left, scale, right).getMatrix(), org.joml.Matrix4fc.PROPERTY_ORTHONORMAL);
     }
 
     /** What VANILLA sends: {@code Pose.transformNormal}, which normalizes an untrusted normal. */

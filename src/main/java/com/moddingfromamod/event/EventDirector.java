@@ -156,7 +156,7 @@ public final class EventDirector {
         String tag = entityTag(eventId);
         List<net.minecraft.world.entity.Entity> gone = new ArrayList<>();
         for (net.minecraft.world.entity.Entity e : level.getAllEntities()) {
-            if (e.getTags().contains(tag)) {
+            if (e.entityTags().contains(tag)) {
                 gone.add(e);
             }
         }

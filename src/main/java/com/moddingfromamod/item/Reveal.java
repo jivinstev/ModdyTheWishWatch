@@ -77,7 +77,7 @@ public final class Reveal {
 
     @SubscribeEvent
     public static void onJoin(EntityJoinLevelEvent event) {
-        if (event.loadedFromDisk() && event.getEntity().getTags().contains(TAG)) {
+        if (event.loadedFromDisk() && event.getEntity().entityTags().contains(TAG)) {
             event.setCanceled(true);
         }
     }

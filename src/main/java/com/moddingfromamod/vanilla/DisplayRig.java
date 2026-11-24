@@ -498,7 +498,7 @@ public final class DisplayRig {
         if (e == null) {
             return null;
         }
-        for (String tag : e.getTags()) {
+        for (String tag : e.entityTags()) {
             if (tag.startsWith(RIG_OWNER_PREFIX)) {
                 try {
                     return java.util.UUID.fromString(tag.substring(RIG_OWNER_PREFIX.length()));
@@ -512,7 +512,7 @@ public final class DisplayRig {
 
     /** The group index a display is tagged with, or -1 if it carries no index tag. */
     public static int indexOf(Entity display) {
-        for (String tag : display.getTags()) {
+        for (String tag : display.entityTags()) {
             if (tag.startsWith(RIG_INDEX_PREFIX)) {
                 try {
                     return Integer.parseInt(tag.substring(RIG_INDEX_PREFIX.length()));
@@ -544,7 +544,7 @@ public final class DisplayRig {
      * @return the species, or null if this entity is not a rig carrier we know
      */
     public static com.moddingfromamod.species.Species speciesOn(Entity carrier) {
-        if (carrier == null || !carrier.getTags().contains(RIG_TAG)) {
+        if (carrier == null || !carrier.entityTags().contains(RIG_TAG)) {
             return null;
         }
         // A fork's carrier wears its ancestor's tag as well as its own (see speciesTags), so the
@@ -552,7 +552,7 @@ public final class DisplayRig {
         // wearing TWO species tags can be one, so every other carrier keeps the first-match early
         // return — this runs every tick for every rig (RigInstincts, RigPowers).
         int speciesTags = 0;
-        for (String t : carrier.getTags()) {
+        for (String t : carrier.entityTags()) {
             if (t.startsWith(com.moddingfromamod.entity.WishMobTags.PREFIX)) {
                 speciesTags++;
             }
@@ -564,7 +564,7 @@ public final class DisplayRig {
         // match" and "a fork wins over its ancestor" are decided exactly as the scan decided them.
         TagIndex idx = tagIndex();
         int first = -1, firstFork = -1;
-        for (String t : carrier.getTags()) {
+        for (String t : carrier.entityTags()) {
             int[] at = idx.byTag().get(t);
             if (at == null) {
                 continue;
@@ -619,11 +619,11 @@ public final class DisplayRig {
      * must agree on every carrier.
      */
     static com.moddingfromamod.species.Species speciesOnByScan(Entity carrier) {
-        if (carrier == null || !carrier.getTags().contains(RIG_TAG)) {
+        if (carrier == null || !carrier.entityTags().contains(RIG_TAG)) {
             return null;
         }
         int speciesTags = 0;
-        for (String t : carrier.getTags()) {
+        for (String t : carrier.entityTags()) {
             if (t.startsWith(com.moddingfromamod.entity.WishMobTags.PREFIX)) {
                 speciesTags++;
             }
@@ -631,7 +631,7 @@ public final class DisplayRig {
         boolean mayBeAFork = speciesTags > 1;
         com.moddingfromamod.species.Species found = null;
         for (var candidate : com.moddingfromamod.species.SpeciesRegistry.all()) {
-            if (carrier.getTags().contains(
+            if (carrier.entityTags().contains(
                     com.moddingfromamod.entity.WishMobTags.forSpecies(candidate.id()))) {
                 if (!mayBeAFork
                         || com.moddingfromamod.marshal.ArtifactOwner.isFork(candidate.id())) {
@@ -686,7 +686,7 @@ public final class DisplayRig {
         // this bug -- the world looks cleaned up and accumulates one ghost per kill.
         java.util.List<Entity> doomed = new ArrayList<>();
         for (Entity e : level.getEntities().getAll()) {
-            if ((e instanceof Display && e.getTags().contains(want))
+            if ((e instanceof Display && e.entityTags().contains(want))
                     || HitProxies.belongsTo(e, carrier)) {   //: its hit proxies too
                 doomed.add(e);
             }
@@ -1256,10 +1256,10 @@ public final class DisplayRig {
         List<Entity> stale = new ArrayList<>();
         List<Entity> plates = new ArrayList<>();
         for (Entity e : level.getEntities().getAll()) {
-            if (!(e instanceof Display) || !e.getTags().contains(want)) {
+            if (!(e instanceof Display) || !e.entityTags().contains(want)) {
                 continue;
             }
-            if (e.getTags().contains(LEAVING_TAG)) {
+            if (e.entityTags().contains(LEAVING_TAG)) {
                 stale.add(e);   // a transformation the server stopped in the middle of
                 continue;
             }

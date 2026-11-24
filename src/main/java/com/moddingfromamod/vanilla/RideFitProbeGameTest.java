@@ -114,7 +114,7 @@ public final class RideFitProbeGameTest {
         for (Mob p : proxies) {
             kid.stopRiding();
             kid.teleportTo(p.getX(), p.getY(), p.getZ() - 1);
-            kid.interactOn(p, InteractionHand.MAIN_HAND);
+            com.moddingfromamod.mv.Interact.on(kid, p, InteractionHand.MAIN_HAND);
             if (com.moddingfromamod.mob.RideSeat.mountOf(kid) == c) {
                 climbs++;
             }
@@ -281,7 +281,7 @@ public final class RideFitProbeGameTest {
         String tag = WishMobTags.forSpecies(id);
         AABB near = new AABB(helper.absolutePos(SPOT)).inflate(48);
         for (Entity e : helper.getLevel().getEntities((Entity) null, near,
-                e -> e.getTags().contains(DisplayRig.RIG_TAG) && e.getTags().contains(tag))) {
+                e -> e.entityTags().contains(DisplayRig.RIG_TAG) && e.entityTags().contains(tag))) {
             if (e instanceof Mob m && m.isAlive()) {
                 return m;
             }

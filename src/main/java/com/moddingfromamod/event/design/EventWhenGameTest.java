@@ -137,7 +137,7 @@ public final class EventWhenGameTest {
         MinecraftServer server = level.getServer();
         MockPlayerNetwork.clearStaleMocks(helper);
         ServerPlayer child = MockPlayerNetwork.inLevel(helper);
-        long was = level.getDayTime();
+        long was = com.moddingfromamod.mv.DayTime.get(level);
         String n = name("quake");
         // Effects only, no blocks: staged beside a mock in a shared plot, it must touch nothing.
         keep(server, "{\"name\":\"" + n + "\",\"motion\":\"none\",\"size\":\"little\",\"seconds\":5}");
@@ -147,31 +147,31 @@ public final class EventWhenGameTest {
         try {
             store.reloadForTest(level.registryAccess()); // as after a load: the first look only re-bases
             long t0 = 100_000L;
-            level.setDayTime(t0);
+            com.moddingfromamod.mv.DayTime.set(level, t0);
             EventDesigns.tickSchedules(server);
-            level.setDayTime(t0 + 12_000);
+            com.moddingfromamod.mv.DayTime.set(level, t0 + 12_000);
             EventDesigns.tickSchedules(server);
             helper.assertTrue(of(server, n).isEmpty(), Component.literal("half a day is not a day"));
             long banked = bank(server, n);
-            level.setDayTime(t0);
+            com.moddingfromamod.mv.DayTime.set(level, t0);
             EventDesigns.tickSchedules(server);
             helper.assertTrue(bank(server, n) == banked, Component.literal("winding the clock back banked nothing: "
                     + banked + " -> " + bank(server, n)));
             store.reloadForTest(level.registryAccess());
             helper.assertTrue(bank(server, n) == banked, Component.literal("the bank survives a save and a reload"));
-            level.setDayTime(t0 + 1);
+            com.moddingfromamod.mv.DayTime.set(level, t0 + 1);
             EventDesigns.tickSchedules(server); // re-base after the reload
-            level.setDayTime(t0 + 1 + 12_000);
+            com.moddingfromamod.mv.DayTime.set(level, t0 + 1 + 12_000);
             EventDesigns.tickSchedules(server);
             helper.assertTrue(of(server, n).size() == 1, Component.literal("a whole day banked: it happened"));
             helper.assertTrue(bank(server, n) < 24_000, Component.literal("and the day was spent: " + bank(server, n)));
-            level.setDayTime(t0 + 1 + 12_000 + 24_000 * 3);
+            com.moddingfromamod.mv.DayTime.set(level, t0 + 1 + 12_000 + 24_000 * 3);
             EventDesigns.tickSchedules(server);
             helper.assertTrue(of(server, n).size() == 1, Component.literal("never a second while the first is still going"));
         } finally {
             EventDesigns.stop(server, n);
             of(server, n).forEach(e -> EventDirector.undo(server, e.id()));
-            level.setDayTime(was);
+            com.moddingfromamod.mv.DayTime.set(level, was);
             MockPlayerNetwork.remove(child);
         }
         helper.succeed();

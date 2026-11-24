@@ -187,6 +187,7 @@ class NoQueueLanguageTest {
             for (Path p : files.filter(f -> f.toString().endsWith(".java")).toList()) {
                 String src = Files.readString(p);
                 boolean talks = src.contains("sendSystemMessage(")
+                        || src.contains("sendOverlayMessage(")
                         || src.contains("displayClientMessage(");
                 boolean listed = SPEAKS_TO_HIM.stream().anyMatch(f -> p.toString().endsWith(
                         f.substring(f.lastIndexOf('/') + 1)));

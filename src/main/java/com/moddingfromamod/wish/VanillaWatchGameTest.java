@@ -15,7 +15,7 @@ import net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket;
 import net.minecraft.network.protocol.game.ClientboundOpenScreenPacket;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.inventory.ClickType;
+import net.minecraft.world.inventory.ContainerInput;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -231,7 +231,7 @@ public class VanillaWatchGameTest {
                 WatchPanel.Cell guide = ((WatchMenu) p.containerMenu).layout().at(WatchPanel.GUIDE_SLOT);
                 helper.assertTrue(guide != null && guide.action() == WatchPanel.Action.GUIDE,
                         Component.literal("no guide button at slot " + WatchPanel.GUIDE_SLOT));
-                p.containerMenu.clicked(WatchPanel.GUIDE_SLOT, 0, ClickType.PICKUP, p);
+                p.containerMenu.clicked(WatchPanel.GUIDE_SLOT, 0, ContainerInput.PICKUP, p);
                 helper.assertTrue(p.containerMenu instanceof WatchMenu, Component.literal("the guide must re-lay the same chest"));
                 WatchPanel.Layout shown = ((WatchMenu) p.containerMenu).layout();
                 WatchPanel.Cell head = shown.at(com.moddingfromamod.marshal.GuidePanel.HEADLINE_SLOT);
@@ -240,7 +240,7 @@ public class VanillaWatchGameTest {
                 helper.assertTrue(p.containerMenu.getSlot(com.moddingfromamod.marshal.GuidePanel.HEADLINE_SLOT)
                                 .getItem().is(net.minecraft.world.item.Items.PAINTING),
                         Component.literal("the headline's icon did not reach the chest"));
-                p.containerMenu.clicked(com.moddingfromamod.marshal.GuidePanel.BACK_SLOT, 0, ClickType.PICKUP, p);
+                p.containerMenu.clicked(com.moddingfromamod.marshal.GuidePanel.BACK_SLOT, 0, ContainerInput.PICKUP, p);
                 helper.assertTrue(((WatchMenu) p.containerMenu).layout().at(WatchPanel.GUIDE_SLOT) != null,
                         Component.literal("◀ Back did not return to the wishes"));
                 p.closeContainer();
@@ -266,7 +266,7 @@ public class VanillaWatchGameTest {
             String who = p.getUUID().toString();
             com.moddingfromamod.testing.MockPlayerNetwork.withoutChannels(p, () -> {
                 helper.assertTrue(WatchMenu.open(p), Component.literal("the panel refused to open"));
-                p.containerMenu.clicked(WatchPanel.GUIDE_SLOT, 0, ClickType.PICKUP, p);
+                p.containerMenu.clicked(WatchPanel.GUIDE_SLOT, 0, ContainerInput.PICKUP, p);
                 p.closeContainer();
             });
             boolean opened = false;
@@ -337,7 +337,7 @@ public class VanillaWatchGameTest {
                 helper.assertTrue(!preset.arg().isBlank(), Component.literal("a preset with no wish text"));
                 drain(helper, p);
                 // The REAL path: a container click, as the network handler delivers one.
-                p.containerMenu.clicked(preset.slot(), 0, ClickType.PICKUP, p);
+                p.containerMenu.clicked(preset.slot(), 0, ContainerInput.PICKUP, p);
                 helper.assertTrue(!java.util.Objects.equals(newestId(serverOf()), before),
                         Component.literal("pressing a preset recorded no wish"));
                 assertNothingNamesTheMod(helper, drain(helper, p));
@@ -421,7 +421,7 @@ public class VanillaWatchGameTest {
                             Component.literal("a taught recipe did not become a panel button, so the zero-typing "
                                     + "path cannot reach anything he has been given"));
                     Object before = newestId(server);
-                    p.containerMenu.clicked(learned.slot(), 0, ClickType.PICKUP, p);
+                    p.containerMenu.clicked(learned.slot(), 0, ContainerInput.PICKUP, p);
 
                     var recent = WishBook.get(server).recent(1);
                     helper.assertTrue(!recent.isEmpty() && !java.util.Objects.equals(recent.get(0).id(), before),
@@ -569,7 +569,7 @@ public class VanillaWatchGameTest {
                         helper.assertTrue(WatchMenu.open(p), Component.literal("the panel refused to open"));
                         ((WatchMenu) p.containerMenu).showPage(p, onPage);
                         var before = newestOf(server, p);
-                        p.containerMenu.clicked(tile.slot(), button, ClickType.PICKUP, p);
+                        p.containerMenu.clicked(tile.slot(), button, ContainerInput.PICKUP, p);
                         var after = newestOf(server, p);
                         helper.assertTrue(java.util.Objects.equals(before == null ? null : before.id(),
                                         after == null ? null : after.id()),
@@ -591,7 +591,7 @@ public class VanillaWatchGameTest {
                     helper.assertTrue(again >= 0, Component.literal("the page offers no Make another one: "
                             + page.tiles()));
                     var beforeAgain = newestOf(server, p);
-                    p.containerMenu.clicked(again, 0, ClickType.PICKUP, p);
+                    p.containerMenu.clicked(again, 0, ContainerInput.PICKUP, p);
                     var wish = newestOf(server, p);
                     helper.assertTrue(wish != null && (beforeAgain == null || !wish.id().equals(beforeAgain.id())),
                             Component.literal("Make another one made no wish; Moddy said: "
@@ -743,7 +743,7 @@ public class VanillaWatchGameTest {
                 WatchPanel.Cell preset = turnToFirstPreset(p);
                 helper.assertTrue(preset != null, Component.literal("no preset to press, so there is nothing to "
                         + "reject and this test would pass having measured nothing"));
-                p.containerMenu.clicked(preset.slot(), 0, ClickType.PICKUP, p);
+                p.containerMenu.clicked(preset.slot(), 0, ContainerInput.PICKUP, p);
                 var made = WishBook.get(serverOf()).recent(40).stream()
                         .filter(w -> p.getUUID().equals(w.playerId()))
                         .reduce((a, b) -> b).orElse(null);
@@ -760,7 +760,7 @@ public class VanillaWatchGameTest {
                 helper.assertTrue(reject != null, Component.literal("the panel has no 👎 cell at all — it is pinned "
                         + "in the control row, so its absence is the bug rather than this test's"));
                 drain(helper, p);
-                p.containerMenu.clicked(reject.slot(), 0, ClickType.PICKUP, p);
+                p.containerMenu.clicked(reject.slot(), 0, ContainerInput.PICKUP, p);
 
                 var after = WishBook.get(serverOf()).byId(made.id()).orElse(null);
                 helper.assertTrue(after != null, Component.literal("the wish vanished from the book entirely"));
@@ -794,9 +794,9 @@ public class VanillaWatchGameTest {
         withRoute(() -> {
             ServerPlayer p = player(helper);
             com.moddingfromamod.testing.MockPlayerNetwork.withoutChannels(p, () -> {
-                for (ClickType type : new ClickType[] {ClickType.PICKUP, ClickType.QUICK_MOVE,
-                        ClickType.CLONE, ClickType.THROW, ClickType.SWAP, ClickType.PICKUP_ALL,
-                        ClickType.QUICK_CRAFT}) {
+                for (ContainerInput type : new ContainerInput[] {ContainerInput.PICKUP, ContainerInput.QUICK_MOVE,
+                        ContainerInput.CLONE, ContainerInput.THROW, ContainerInput.SWAP, ContainerInput.PICKUP_ALL,
+                        ContainerInput.QUICK_CRAFT}) {
                     helper.assertTrue(WatchMenu.open(p), Component.literal("the panel refused to open"));
                     var menu = p.containerMenu;
                     // Slot 0 is a preset when there are any; whatever it is, it must not come out.
@@ -830,7 +830,7 @@ public class VanillaWatchGameTest {
                 int firstPlayerSlot = WatchPanel.SIZE;
                 for (int i = firstPlayerSlot; i < menu.slots.size(); i++) {
                     if (menu.slots.get(i).getItem().is(Items.DIAMOND)) {
-                        menu.clicked(i, 0, ClickType.QUICK_MOVE, p);
+                        menu.clicked(i, 0, ContainerInput.QUICK_MOVE, p);
                     }
                 }
                 p.closeContainer();
@@ -932,7 +932,7 @@ public class VanillaWatchGameTest {
 
             Object before = newestId(serverOf());
             drain(helper, p);
-            p.containerMenu.clicked(slot, 0, ClickType.PICKUP, p);
+            p.containerMenu.clicked(slot, 0, ContainerInput.PICKUP, p);
             helper.assertTrue(p.containerMenu == p.inventoryMenu,
                     Component.literal("the watch is still open under the wish box: " + p.containerMenu.getClass().getSimpleName()));
             com.google.gson.JsonObject dialog = shownDialog(helper, drain(helper, p));

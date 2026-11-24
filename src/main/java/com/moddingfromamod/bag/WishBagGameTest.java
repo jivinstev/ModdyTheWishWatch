@@ -18,7 +18,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
-import net.minecraft.world.inventory.ClickType;
+import net.minecraft.world.inventory.ContainerInput;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.CustomData;
@@ -85,7 +85,7 @@ public class WishBagGameTest {
             var menu = p.containerMenu;
             // A normal block on the cursor, clicked onto an empty bag cell.
             menu.setCarried(new ItemStack(Items.DIRT, 5));
-            menu.clicked(3, 0, ClickType.PICKUP, p);
+            menu.clicked(3, 0, ContainerInput.PICKUP, p);
             helper.assertTrue(bag(p).isEmpty(), Component.literal("a regular block went into the Wish Bag: " + bag(p)));
             helper.assertTrue(menu.getCarried().is(Items.DIRT) && menu.getCarried().getCount() == 5,
                     Component.literal("the refused dirt is not back on his cursor: " + menu.getCarried()));
@@ -95,7 +95,7 @@ public class WishBagGameTest {
             menu.setCarried(ItemStack.EMPTY);
             // A wished thing goes in, and to the front.
             menu.setCarried(wished("Hot Coffee"));
-            menu.clicked(7, 0, ClickType.PICKUP, p);
+            menu.clicked(7, 0, ContainerInput.PICKUP, p);
             helper.assertValueEqual(bag(p).size(), 1, Component.literal("things in the bag after putting a wished one in"));
             helper.assertTrue(bag(p).get(0).getHoverName().getString().equals("Hot Coffee"),
                     Component.literal("the bag holds " + bag(p)));
@@ -108,7 +108,7 @@ public class WishBagGameTest {
                     appleSlot = i;
                 }
             }
-            menu.clicked(appleSlot, 0, ClickType.QUICK_MOVE, p);
+            menu.clicked(appleSlot, 0, ContainerInput.QUICK_MOVE, p);
             helper.assertValueEqual(bag(p).size(), 1, Component.literal("an apple was shift-clicked into the bag"));
             helper.assertValueEqual(p.getInventory().getItem(15).getCount(), 3, Component.literal("apples left in his inventory"));
             helper.succeed();
@@ -142,7 +142,7 @@ public class WishBagGameTest {
             helper.assertTrue(menu.getSlot(0).getItem().getHoverName().getString().equals("Tracker"),
                     Component.literal("page 1's first cell shows " + menu.getSlot(0).getItem()));
             // Take the melon slices out (cell 2), onto the cursor.
-            menu.clicked(1, 0, ClickType.PICKUP, p);
+            menu.clicked(1, 0, ContainerInput.PICKUP, p);
             helper.assertTrue(menu.getCarried().is(Items.MELON_SLICE) && menu.getCarried().getCount() == 32,
                     Component.literal("took out " + menu.getCarried()));
             helper.assertValueEqual(bag(p).size(), 1, Component.literal("entries left in the bag"));
@@ -151,11 +151,11 @@ public class WishBagGameTest {
             menu.setCarried(ItemStack.EMPTY);
             // A plain gift that came OUT cannot go back IN (design choice (b), WishedItems).
             menu.setCarried(new ItemStack(Items.MELON_SLICE, 32));
-            menu.clicked(5, 0, ClickType.PICKUP, p);
+            menu.clicked(5, 0, ContainerInput.PICKUP, p);
             helper.assertValueEqual(bag(p).size(), 1, Component.literal("a plain melon slice went back in"));
             menu.setCarried(ItemStack.EMPTY);
             // Shift-click the Tracker out into his inventory.
-            menu.clicked(0, 0, ClickType.QUICK_MOVE, p);
+            menu.clicked(0, 0, ContainerInput.QUICK_MOVE, p);
             helper.assertTrue(bag(p).isEmpty(), Component.literal("the bag still holds " + bag(p)));
             helper.assertTrue(p.getInventory().hasAnyMatching(s -> s.getHoverName().getString().equals("Tracker")),
                     Component.literal("the Tracker is not in his inventory"));
@@ -192,7 +192,7 @@ public class WishBagGameTest {
                     Component.literal("the newest is not first: " + bag(p).get(0).getHoverName().getString()));
             WishBagMenu.open(p);
             WishBagMenu menu = (WishBagMenu) p.containerMenu;
-            menu.clicked(WishBagPages.OLDER_SLOT, 0, ClickType.PICKUP, p);
+            menu.clicked(WishBagPages.OLDER_SLOT, 0, ContainerInput.PICKUP, p);
             helper.assertValueEqual(menu.page(), 1, Component.literal("page after pressing 'older wishes'"));
             helper.assertTrue(menu.getSlot(0).getItem().getHoverName().getString().equals("Gem 0"),
                     Component.literal("page 2 starts with " + menu.getSlot(0).getItem().getHoverName().getString()));

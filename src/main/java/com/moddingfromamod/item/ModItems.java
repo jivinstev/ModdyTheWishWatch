@@ -34,19 +34,19 @@ public final class ModItems {
 
     /** A plain example item — proves the registration + creative-tab + test wiring end to end. */
     public static final Supplier<Item> EXAMPLE_GEM =
-            ITEMS.<Item>registerItem("example_gem", Item::new, new Item.Properties());
+            ITEMS.<Item>registerItem("example_gem", Item::new, () -> new Item.Properties());
 
     /** Moddy — right-click to open the wish screen. One per player is plenty. */
     public static final Supplier<Item> WISH_WATCH =
             ITEMS.<Item>registerItem("wish_watch", WishWatchItem::new,
-                    new Item.Properties().stacksTo(1).rarity(net.minecraft.world.item.Rarity.RARE));
+                    () -> new Item.Properties().stacksTo(1).rarity(net.minecraft.world.item.Rarity.RARE));
 
     /**
      * The spawn egg for every wished-for creature — ONE registered item whose creature is data on the
      * stack. See {@link WishEggItem} for why it can't be one item per creature.
      */
     public static final Supplier<Item> WISH_EGG =
-            ITEMS.<Item>registerItem("wish_egg", WishEggItem::new, new Item.Properties());
+            ITEMS.<Item>registerItem("wish_egg", WishEggItem::new, () -> new Item.Properties());
 
     /**
      * The item every "thing" wish wears — one registry entry, unlimited wishes, same shape as
@@ -55,7 +55,7 @@ public final class ModItems {
      * answer to the two limits a datapack cannot cross: the icon, and the creative menu.
      */
     public static final Supplier<Item> WISH_ITEM =
-            ITEMS.<Item>registerItem("wish_item", WishItem::new, new Item.Properties());
+            ITEMS.<Item>registerItem("wish_item", WishItem::new, () -> new Item.Properties());
 
     private ModItems() {
     }

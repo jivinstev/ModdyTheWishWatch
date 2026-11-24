@@ -88,7 +88,7 @@ public final class LookAroundTool implements McpTool {
                     }
                     headroom++;
                 }
-                long dayTime = level.getDayTime() % 24000L;
+                long dayTime = com.moddingfromamod.mv.DayTime.get(level) % 24000L;
                 String base = "player: " + player.getGameProfile().name()
                         + "\nposition: " + pos.getX() + " " + pos.getY() + " " + pos.getZ()
                         + "\ndimension: " + level.dimension().identifier()

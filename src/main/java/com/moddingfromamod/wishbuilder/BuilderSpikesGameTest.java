@@ -119,7 +119,7 @@ public final class BuilderSpikesGameTest {
                     if (sp != null && id.equals(sp.id()) && e instanceof LivingEntity l && l.isAlive()) {
                         alive++;
                     }
-                    if (e.getTags().contains("mfam_erl_wishmob_" + id)) {
+                    if (e.entityTags().contains("mfam_erl_wishmob_" + id)) {
                         eruptions.get(i).add(e.getUUID());
                     }
                 }

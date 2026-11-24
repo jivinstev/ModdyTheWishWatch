@@ -150,7 +150,7 @@ public final class OffhandMatrix {
     public static ItemStack backpack() {
         ItemStack bag = new ItemStack(Items.BUNDLE);
         bag.set(DataComponents.BUNDLE_CONTENTS, new BundleContents(List.of(
-                new ItemStack(Items.DIRT, 5), new ItemStack(Items.COBBLESTONE, 3))));
+                new net.minecraft.world.item.ItemStackTemplate(Items.DIRT, 5), new net.minecraft.world.item.ItemStackTemplate(Items.COBBLESTONE, 3))));
         return bag;
     }
 
@@ -159,8 +159,8 @@ public final class OffhandMatrix {
         BundleContents c = bag.get(DataComponents.BUNDLE_CONTENTS);
         int n = 0;
         if (c != null) {
-            for (ItemStack s : c.items()) {
-                n += s.getCount();
+            for (net.minecraft.world.item.ItemStackTemplate s : c.items()) {
+                n += s.count();
             }
         }
         return n;
@@ -206,7 +206,7 @@ public final class OffhandMatrix {
                 ItemStack bag = give(lookup, "Flower Bag", "minecraft:bundle", "plain", feature(r));
                 if (bag != null) {
                     bag.set(DataComponents.BUNDLE_CONTENTS, new BundleContents(List.of(
-                            new ItemStack(Items.POPPY, 4))));
+                            new net.minecraft.world.item.ItemStackTemplate(Items.POPPY, 4))));
                 }
                 yield bag;
             }

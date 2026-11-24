@@ -243,7 +243,7 @@ public class RewishGameTest {
                         wrong.set("the page should offer both Fluffys and the Magician: " + words);
                         return;
                     }
-                    menu.clicked(slot, 0, net.minecraft.world.inventory.ClickType.PICKUP, p);
+                    menu.clicked(slot, 0, net.minecraft.world.inventory.ContainerInput.PICKUP, p);
                     pressed.set(true);
                 }));
         com.moddingfromamod.test.RealTime.succeedWhen(helper, () -> {

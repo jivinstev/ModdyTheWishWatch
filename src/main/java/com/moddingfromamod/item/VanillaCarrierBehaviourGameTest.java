@@ -111,7 +111,7 @@ public class VanillaCarrierBehaviourGameTest {
 
         List<ArmorStand> anchors = level.getEntities(EntityType.ARMOR_STAND,
                 new AABB(floor.above()).inflate(2.0),
-                e -> e.getTags().contains("carrier_probe_b"));
+                e -> e.entityTags().contains("carrier_probe_b"));
         helper.assertTrue(anchors.isEmpty(),
                 Component.literal("the vanilla carrier placed something, which contradicts it having no useOn"));
 

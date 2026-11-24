@@ -1119,7 +1119,7 @@ public final class PhotographTool implements McpTool {
                                     || com.moddingfromamod.datapack.MagicBlock.SHAPE.equals(spec2.shape()))) {
                             net.minecraft.world.entity.Entity stand = null;
                             for (var e : p2.level().getEntities().getAll()) {
-                                if (e != null && !e.isRemoved() && e.getTags().contains(subject + "_built")
+                                if (e != null && !e.isRemoved() && e.entityTags().contains(subject + "_built")
                                         && (stand == null || e.distanceToSqr(p2) < stand.distanceToSqr(p2))) {
                                     stand = e;
                                 }
@@ -1130,7 +1130,7 @@ public final class PhotographTool implements McpTool {
                                 subjectXZ[1] = mAt.getZ() + 0.5;
                                 // The shape tags which way it faces (${FEATURE}_s/_n/_e/_w: the
                                 // handle is on that side), so the first frame is its front.
-                                java.util.Set<String> tags = stand.getTags();
+                                java.util.Set<String> tags = stand.entityTags();
                                 double front = tags.contains(subject + "_s") ? 180
                                         : tags.contains(subject + "_e") ? 90
                                         : tags.contains(subject + "_w") ? 270 : 0;
@@ -2269,7 +2269,7 @@ public final class PhotographTool implements McpTool {
                     //. A frame-honesty check that cannot see the frame is worse than none.
                     String sp = e instanceof com.moddingfromamod.entity.WishMobEntity w
                             ? w.speciesId() : null;
-                    if (com.moddingfromamod.runtime.CaptureSubject.isAnyWishCreature(sp, e.getTags())
+                    if (com.moddingfromamod.runtime.CaptureSubject.isAnyWishCreature(sp, e.entityTags())
                             && e.distanceToSqr(best) < 400) {
                         onStage++;
                     }
@@ -2965,7 +2965,7 @@ public final class PhotographTool implements McpTool {
             String species = e instanceof com.moddingfromamod.entity.WishMobEntity w
                     ? w.speciesId() : null;
             if (!com.moddingfromamod.runtime.CaptureSubject.isSubject(
-                    subjectId, species, e.getTags())) {
+                    subjectId, species, e.entityTags())) {
                 continue;
             }
             found.add(living);
@@ -3059,7 +3059,7 @@ public final class PhotographTool implements McpTool {
         var species = com.moddingfromamod.species.SpeciesRegistry.get(subject);
         if (units <= 0 && species == null
                 && !(found instanceof com.moddingfromamod.entity.WishMobEntity)
-                && !found.getTags().contains(com.moddingfromamod.vanilla.DisplayRig.RIG_TAG)) {
+                && !found.entityTags().contains(com.moddingfromamod.vanilla.DisplayRig.RIG_TAG)) {
             // A plain vanilla mob found by its handle (A) has no model of ours: its own
             // hitbox IS what is drawn, already scaled. Never for a rig — its box is the carrier's.
             return Math.max(0.5, found.getBbHeight());

@@ -1,1 +1,4 @@
 # 26.1.2: from<TAB>to (plain type, member:, re:) -- see prepare-sources.py
+# 26.1.2 (this mod's call shapes; generic ones are harvest candidates for MMVU's shared library):
+net.minecraft.world.inventory.ClickType	net.minecraft.world.inventory.ContainerInput
+# Entity.getTags() -> Entity.entityTags(): applied by hand at the compiler's own error lines only (other types keep getTags()).

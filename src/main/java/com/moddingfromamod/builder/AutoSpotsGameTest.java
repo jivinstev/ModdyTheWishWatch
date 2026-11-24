@@ -64,7 +64,7 @@ public class AutoSpotsGameTest {
 
     private static Entity tagged(ServerLevel level, String tag) {
         for (Entity e : level.getEntities().getAll()) {
-            if (e.getTags().contains(tag)) {
+            if (e.entityTags().contains(tag)) {
                 return e;
             }
         }

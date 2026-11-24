@@ -18,7 +18,7 @@ import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ChestMenu;
-import net.minecraft.world.inventory.ClickType;
+import net.minecraft.world.inventory.ContainerInput;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -847,11 +847,11 @@ public final class WatchMenu extends ChestMenu {
     }
 
     @Override
-    public void clicked(int slotId, int button, ClickType type, Player player) {
+    public void clicked(int slotId, int button, ContainerInput type, Player player) {
         boolean panelSlot = slotId >= 0 && slotId < WatchPanel.SIZE;
         // A drag can only reach a panel slot with something on the cursor, and nothing can ever get
         // onto the cursor from here — but refuse it anyway rather than rely on that reasoning.
-        if (type == ClickType.QUICK_CRAFT) {
+        if (type == ContainerInput.QUICK_CRAFT) {
             refuse(player);
             return;
         }
@@ -863,7 +863,7 @@ public final class WatchMenu extends ChestMenu {
         }
         // the BUTTON matters now — left makes a past wish again, right opens its card. A
         // stock client sends both as PICKUP; every other verb presses as a left click always did.
-        press(slotId, com.moddingfromamod.marshal.WatchClick.secondary(type == ClickType.PICKUP, button),
+        press(slotId, com.moddingfromamod.marshal.WatchClick.secondary(type == ContainerInput.PICKUP, button),
                 player);
     }
 

@@ -88,7 +88,7 @@ public final class Locate {
             r.run();
         }
         for (ServerPlayer p : event.getServer().getPlayerList().getPlayers()) {
-            for (String tag : List.copyOf(p.getTags())) {
+            for (String tag : List.copyOf(p.entityTags())) {
                 if (tag.startsWith(TAG)) {
                     p.removeTag(tag);
                     String suffix = tag.substring(TAG.length());
@@ -219,7 +219,7 @@ public final class Locate {
     /** Vanilla's own search for the nearest place of this kind. */
     public static Optional<BlockPos> find(ServerLevel level, BlockPos from, LocateTargets.Target t) {
         if (t.kind() == LocateTargets.Kind.STRUCTURE) {
-            if (!level.getServer().getWorldData().worldGenOptions().generateStructures()) {
+            if (!level.getServer().getWorldGenSettings().options().generateStructures()) {
                 return Optional.empty();   // nothing to find, and searching for it froze the game 59 s
             }
             net.minecraft.core.HolderGetter<Structure> reg = level.holderLookup(Registries.STRUCTURE);

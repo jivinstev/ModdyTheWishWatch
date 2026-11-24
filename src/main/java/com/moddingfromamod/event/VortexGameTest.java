@@ -106,7 +106,7 @@ public final class VortexGameTest {
     private static int displaysOf(ServerLevel level, BlockPos o, String id) {
         String tag = EventDirector.entityTag(id);
         return level.getEntities((Entity) null, new AABB(o).inflate(80), e -> e instanceof Display
-                && e.getTags().contains(tag)).size();
+                && e.entityTags().contains(tag)).size();
     }
 
     /** It has played out: gone (it gave the world back) or KEPT (a wrecker keeps its damage until undo). */
@@ -368,7 +368,7 @@ public final class VortexGameTest {
             helper.assertTrue(ev == null || ev.phase() == EventPhase.KEPT, Component.literal("it has spun down"));
             helper.assertTrue(displaysOf(level, o, id) == 0, Component.literal("every display has gone"));
             int cats = level.getEntities((Entity) null, new AABB(o).inflate(60), e -> e.getType() == EntityType.CAT
-                    && e.getTags().contains(tag)).size();
+                    && e.entityTags().contains(tag)).size();
             helper.assertTrue(cats >= 20, Component.literal("a cyclone FULL of cats (asked for: way more cats), landed and "
                     + "stayed: " + cats));
             helper.assertTrue(level.getBlockState(poppy).is(Blocks.POPPY), Component.literal("the poppy it tore up is back"));
@@ -540,14 +540,14 @@ public final class VortexGameTest {
                         Component.literal("waiting for it to tear up a log"));
                 helper.assertTrue(displaysOf(level, o, id) > 0, Component.literal("waiting for it to be drawn"));
                 helper.assertTrue(!level.getEntities((Entity) null, new AABB(o).inflate(80),
-                        e -> e.getType() == EntityType.CAT && e.getTags().contains(tag)).isEmpty(),
+                        e -> e.getType() == EntityType.CAT && e.entityTags().contains(tag)).isEmpty(),
                         Component.literal("waiting for its first cat"));
                 EventDirector.endForTest(level.getServer(), id);
                 ended[0] = true;
             }
             helper.assertTrue(EventDirector.get(level.getServer(), id) == null, Component.literal("it is forgotten"));
             helper.assertTrue(displaysOf(level, o, id) == 0, Component.literal("every display went with it"));
-            helper.assertTrue(level.getEntities((Entity) null, new AABB(o).inflate(80), e -> e.getTags().contains(tag))
+            helper.assertTrue(level.getEntities((Entity) null, new AABB(o).inflate(80), e -> e.entityTags().contains(tag))
                     .isEmpty(), Component.literal("and every cat it brought"));
             for (BlockPos p : logs) {
                 helper.assertTrue(level.getBlockState(p).is(Blocks.OAK_LOG), Component.literal("the log at " + p + " is back"));

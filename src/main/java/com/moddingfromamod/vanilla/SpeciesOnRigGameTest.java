@@ -136,7 +136,7 @@ public final class SpeciesOnRigGameTest {
         String tag = WishMobTags.forSpecies(id);
         AABB near = new AABB(helper.absolutePos(SPOT)).inflate(48);
         for (Entity e : helper.getLevel().getEntities((Entity) null, near,
-                e -> e.getTags().contains(DisplayRig.RIG_TAG) && e.getTags().contains(tag))) {
+                e -> e.entityTags().contains(DisplayRig.RIG_TAG) && e.entityTags().contains(tag))) {
             if (e instanceof Mob m && m.isAlive()) {
                 return m;
             }
@@ -153,7 +153,7 @@ public final class SpeciesOnRigGameTest {
         String own = DisplayRig.RIG_OWNER_PREFIX + carrier.getUUID();
         double best = Double.MAX_VALUE;
         for (Entity d : helper.getLevel().getEntities((Entity) null, to.getBoundingBox().inflate(48),
-                e -> e instanceof Display && e.getTags().contains(own))) {
+                e -> e instanceof Display && e.entityTags().contains(own))) {
             best = Math.min(best, d.distanceTo(to));
         }
         return best;

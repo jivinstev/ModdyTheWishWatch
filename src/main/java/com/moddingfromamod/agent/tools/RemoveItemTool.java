@@ -134,7 +134,7 @@ public final class RemoveItemTool implements McpTool {
     private static int placed(net.minecraft.server.level.ServerLevel level, String id) {
         int n = 0;
         for (var e : level.getEntities().getAll()) {
-            if (e != null && !e.isRemoved() && e.getTags().contains(id + "_built")) {
+            if (e != null && !e.isRemoved() && e.entityTags().contains(id + "_built")) {
                 n++;
             }
         }

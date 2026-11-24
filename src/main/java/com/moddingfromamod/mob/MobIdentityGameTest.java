@@ -1080,7 +1080,7 @@ public class MobIdentityGameTest {
                 e -> e.getType() == EntityType.CAMEL)) {
             sb.append(String.format(java.util.Locale.ROOT, " [%s %.1f blocks scale %.2f tags %s]",
                     e.getUUID().toString().substring(0, 8), e.position().distanceTo(here),
-                    e.getAttributeValue(Attributes.SCALE), e.getTags()));
+                    e.getAttributeValue(Attributes.SCALE), e.entityTags()));
         }
         return sb.toString();
     }

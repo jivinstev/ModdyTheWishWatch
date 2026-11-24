@@ -52,7 +52,7 @@ public final class WishBoltGuard {
     static boolean spared(Player p) {
         Long until = UNTIL.get(p.getUUID());
         MinecraftServer server = serverOf(p);
-        return p.getTags().contains(TAG) || until != null && server != null
+        return p.entityTags().contains(TAG) || until != null && server != null
                 && server.getTickCount() <= until;
     }
 
@@ -74,7 +74,7 @@ public final class WishBoltGuard {
     public static void onTick(ServerTickEvent.Post event) {
         long now = event.getServer().getTickCount();
         for (ServerPlayer p : event.getServer().getPlayerList().getPlayers()) {
-            if (p.getTags().contains(TAG)) {
+            if (p.entityTags().contains(TAG)) {
                 UNTIL.merge(p.getUUID(), now + SPARE_TICKS, Math::max);
                 p.removeTag(TAG);
             }

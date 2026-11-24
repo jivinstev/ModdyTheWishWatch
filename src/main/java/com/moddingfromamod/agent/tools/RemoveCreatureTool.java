@@ -58,7 +58,7 @@ public final class RemoveCreatureTool implements McpTool {
         for (var e : level.getEntities().getAll()) {
             if (e instanceof net.minecraft.world.entity.LivingEntity
                     && !e.isRemoved()
-                    && e.getTags().contains(com.moddingfromamod.vanilla.DisplayRig.RIG_TAG)) {
+                    && e.entityTags().contains(com.moddingfromamod.vanilla.DisplayRig.RIG_TAG)) {
                 var sp = com.moddingfromamod.vanilla.DisplayRig.speciesOn(e);
                 if (sp != null && speciesId.equalsIgnoreCase(sp.id())) {
                     carriers.add(e);

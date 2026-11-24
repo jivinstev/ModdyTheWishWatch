@@ -41,10 +41,9 @@ public class ItemYieldGameTest {
             throws CommandSyntaxException {
         String line = giveLine.strip();
         int afterTarget = line.indexOf(' ', line.indexOf(' ') + 1) + 1;
-        ItemParser.ItemResult r = new ItemParser(helper.getLevel().registryAccess())
+        net.minecraft.commands.arguments.item.ItemInput r = new ItemParser(helper.getLevel().registryAccess())
                 .parse(new StringReader(line.substring(afterTarget, line.lastIndexOf("] ") + 1)));
-        ItemStack s = new ItemStack(r.item(), 1);
-        s.applyComponents(r.components());
+        ItemStack s = r.createItemStack(1);
         return s;
     }
 

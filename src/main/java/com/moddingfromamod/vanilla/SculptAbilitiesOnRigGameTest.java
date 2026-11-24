@@ -218,7 +218,7 @@ public final class SculptAbilitiesOnRigGameTest {
             if (!on[0] && c.tickCount > 5) {
                 kid.teleportTo(c.getX() + 1, c.getY(), c.getZ());
                 kid.getInventory().clearContent();
-                kid.interactOn(c, InteractionHand.MAIN_HAND);
+                com.moddingfromamod.mv.Interact.on(kid, c, InteractionHand.MAIN_HAND);
                 on[0] = com.moddingfromamod.mob.RideSeat.mountOf(kid) == c;
             }
             if (kid.getHealth() < kidFull) {
@@ -528,7 +528,7 @@ public final class SculptAbilitiesOnRigGameTest {
         // fourth helper can only be a helper summoning.
         after(helper, id, 200, c -> {
             var minions = helper.getLevel().getEntitiesOfClass(Mob.class, c.getBoundingBox().inflate(24),
-                    e -> e.getTags().contains(RigAbilities.MINION_TAG) && e.isAlive());
+                    e -> e.entityTags().contains(RigAbilities.MINION_TAG) && e.isAlive());
             if (minions.isEmpty()) {
                 helper.fail(Component.literal("a summoning creature called in no helpers in 200 ticks"));
             }
@@ -541,9 +541,9 @@ public final class SculptAbilitiesOnRigGameTest {
             // The SUMMONER is the one without the minion tag: helpers wear its species tag too, so
             // the species lookup may hand back a helper (it did: "0.6 vs 0.6", helper against helper).
             Mob summoner = helper.getLevel().getEntitiesOfClass(Mob.class, c.getBoundingBox().inflate(24),
-                    e -> e.getTags().contains(com.moddingfromamod.entity.WishMobTags.forSpecies(id))
-                            && e.getTags().contains(DisplayRig.RIG_TAG)
-                            && !e.getTags().contains(RigAbilities.MINION_TAG)).stream().findFirst().orElse(c);
+                    e -> e.entityTags().contains(com.moddingfromamod.entity.WishMobTags.forSpecies(id))
+                            && e.entityTags().contains(DisplayRig.RIG_TAG)
+                            && !e.entityTags().contains(RigAbilities.MINION_TAG)).stream().findFirst().orElse(c);
             DisplayRig own = VanillaRigAnimator.rigOf(summoner);
             for (Mob m : minions) {
                 DisplayRig r = VanillaRigAnimator.rigOf(m);
@@ -561,8 +561,8 @@ public final class SculptAbilitiesOnRigGameTest {
     private static Mob summoner(GameTestHelper helper, String id) {
         return helper.getLevel().getEntitiesOfClass(Mob.class,
                 new AABB(helper.absolutePos(SpeciesOnRigGameTest.SPOT)).inflate(32),
-                e -> e.isAlive() && e.getTags().contains(com.moddingfromamod.entity.WishMobTags.forSpecies(id))
-                        && e.getTags().contains(DisplayRig.RIG_TAG)
+                e -> e.isAlive() && e.entityTags().contains(com.moddingfromamod.entity.WishMobTags.forSpecies(id))
+                        && e.entityTags().contains(DisplayRig.RIG_TAG)
                         && RigAbilities.ownerOf(e) == null).stream().findFirst().orElse(null);
     }
 
@@ -669,7 +669,7 @@ public final class SculptAbilitiesOnRigGameTest {
                 long soon = helper.getLevel().getGameTime() + 10;
                 for (Mob h : hs) {
                     seen.add(h.getUUID());
-                    h.getTags().removeIf(t -> t.startsWith(RigAbilities.MINION_UNTIL));
+                    h.entityTags().removeIf(t -> t.startsWith(RigAbilities.MINION_UNTIL));
                     h.addTag(RigAbilities.MINION_UNTIL + soon);
                 }
                 cut[0] = true;

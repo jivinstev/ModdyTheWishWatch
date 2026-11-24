@@ -105,11 +105,11 @@ public class HitProxyCensusGameTest {
         // never pitch.
         Quaternionf turn = new Quaternionf().rotationY((float) Math.toRadians(-display.getYRot()));
         Vec3 rel = display.position().subtract(feet);
-        Vector3f t = new Vector3f(tf.getTranslation()).rotate(turn)
+        Vector3f t = new Vector3f(tf.translation()).rotate(turn)
                 .add((float) rel.x, (float) rel.y, (float) rel.z);
-        Quaternionf l = new Quaternionf(turn).mul(tf.getLeftRotation());
-        Vector3f s = new Vector3f(tf.getScale());
-        Quaternionf r = new Quaternionf(tf.getRightRotation());
+        Quaternionf l = new Quaternionf(turn).mul(tf.leftRotation());
+        Vector3f s = new Vector3f(tf.scale());
+        Quaternionf r = new Quaternionf(tf.rightRotation());
         double[] lo = {Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE};
         double[] hi = {-Double.MAX_VALUE, -Double.MAX_VALUE, -Double.MAX_VALUE};
         for (int c = 0; c < 8; c++) {

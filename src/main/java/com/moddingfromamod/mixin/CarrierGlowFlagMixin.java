@@ -41,8 +41,8 @@ public abstract class CarrierGlowFlagMixin {
         // one int compare there.
         // A hit proxy is the same invisible mob in a different place, and a glowing one
         // would outline a cow over the creature's head.
-        if (flag == 6 && value && (((Entity) (Object) this).getTags().contains(DisplayRig.RIG_TAG)
-                || ((Entity) (Object) this).getTags().contains(
+        if (flag == 6 && value && (((Entity) (Object) this).entityTags().contains(DisplayRig.RIG_TAG)
+                || ((Entity) (Object) this).entityTags().contains(
                         com.moddingfromamod.vanilla.HitProxies.PROXY_TAG))) {
             ci.cancel();
             setSharedFlag(6, false);   // re-enters with value=false, which passes straight through

@@ -800,8 +800,7 @@ public final class MagicianSetup {
 
     /** The action-bar line for a step of the setup. */
     static void progress(ServerPlayer p, int step, String words) {
-        p.displayClientMessage(Component.literal(MagicianPresets.progress(step, words)).withStyle(ChatFormatting.AQUA),
-                true);
+        p.sendOverlayMessage(Component.literal(MagicianPresets.progress(step, words)).withStyle(ChatFormatting.AQUA));
     }
 
     static void runCheck(ServerPlayer p, MagicianPresets.Preset preset) {

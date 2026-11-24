@@ -374,16 +374,16 @@ public class VanillaRigSurvivalGameTest {
         Mob base = rig.base();
 
         String species = WishMobTags.forSpecies("spikor");
-        boolean carriesAll = base.getTags().contains(WishMobTags.ALL);
-        boolean carriesSpecies = base.getTags().contains(species);
+        boolean carriesAll = base.entityTags().contains(WishMobTags.ALL);
+        boolean carriesSpecies = base.entityTags().contains(species);
 
         LOG.info("VANILLA-RIG survival: agent selector check — carrier tags={} "
                         + "wants '{}' and '{}' -> ALL={} SPECIES={}",
-                base.getTags(), WishMobTags.ALL, species, carriesAll, carriesSpecies);
+                base.entityTags(), WishMobTags.ALL, species, carriesAll, carriesSpecies);
 
         helper.assertTrue(carriesAll && carriesSpecies,
                 Component.literal("an ability's selectors are @e[tag=" + WishMobTags.ALL + "] and @e[tag=" + species
-                        + "]; the carrier has " + base.getTags() + ", so every ability the agent "
+                        + "]; the carrier has " + base.entityTags() + ", so every ability the agent "
                         + "builds would select NOTHING and report DONE"));
         helper.succeed();
     }
@@ -406,7 +406,7 @@ public class VanillaRigSurvivalGameTest {
 
         int wearing = 0;
         for (Entity e : rig.all()) {
-            if (e.getTags().contains(WishMobTags.ALL)) {
+            if (e.entityTags().contains(WishMobTags.ALL)) {
                 wearing++;
             }
         }

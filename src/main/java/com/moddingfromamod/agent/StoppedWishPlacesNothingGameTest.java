@@ -54,7 +54,7 @@ public final class StoppedWishPlacesNothingGameTest {
         String tag = WishMobTags.forSpecies(id);
         int n = 0;
         for (Entity e : level.getAllEntities()) {
-            if (e instanceof Mob m && m.isAlive() && e.getTags().contains(DisplayRig.RIG_TAG) && e.getTags().contains(tag)) {
+            if (e instanceof Mob m && m.isAlive() && e.entityTags().contains(DisplayRig.RIG_TAG) && e.entityTags().contains(tag)) {
                 n++;
             }
         }
@@ -67,7 +67,7 @@ public final class StoppedWishPlacesNothingGameTest {
         // iterated threw ArrayIndexOutOfBoundsException from the fastutil map (Gate B, 2026-11-10).
         java.util.List<Mob> found = new java.util.ArrayList<>();
         for (Entity e : level.getAllEntities()) {
-            if (e instanceof Mob m && e.getTags().contains(DisplayRig.RIG_TAG) && e.getTags().contains(tag)) {
+            if (e instanceof Mob m && e.entityTags().contains(DisplayRig.RIG_TAG) && e.entityTags().contains(tag)) {
                 found.add(m);
             }
         }

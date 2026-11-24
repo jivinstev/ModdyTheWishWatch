@@ -220,7 +220,7 @@ public final class WishOrbs {
 
     /** True for a wish display loaded back from a chunk: never live, always refused. */
     public static boolean staleFromDisk(Entity e, boolean loadedFromDisk) {
-        return loadedFromDisk && e != null && e.getTags().contains(Fx.TAG);
+        return loadedFromDisk && e != null && e.entityTags().contains(Fx.TAG);
     }
 
     /** One pass. Public so a GameTest can drive it with the runs it wants to be live. */

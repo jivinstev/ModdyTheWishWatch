@@ -87,7 +87,7 @@ public final class ModelData {
 
     /** The {@code item_model} this stack names EXPLICITLY (its patch, not the item's default), or null. */
     public static String itemModelOf(net.minecraft.world.item.ItemStack stack) {
-        var patch = stack.getComponentsPatch().get(net.minecraft.core.component.DataComponents.ITEM_MODEL);
+        var patch = stack.getComponentsPatch().getPatch(net.minecraft.core.component.DataComponents.ITEM_MODEL);
         return patch == null || patch.isEmpty() ? null : patch.get().toString();
     }
 

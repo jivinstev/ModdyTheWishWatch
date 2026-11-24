@@ -202,7 +202,7 @@ public final class GiveAgainGameTest {
                     }
                 }
                 helper.assertTrue(beta >= 0, Component.literal("no Beta tile: " + page.tiles()));
-                p.containerMenu.clicked(beta, 0, net.minecraft.world.inventory.ClickType.PICKUP, p);
+                p.containerMenu.clicked(beta, 0, net.minecraft.world.inventory.ContainerInput.PICKUP, p);
                 helper.assertTrue(countNamed(p, b) == 1 && countNamed(p, a) == 0,
                         Component.literal("pressing Beta did not give exactly Beta (Alpha " + countNamed(p, a)
                                 + ", Beta " + countNamed(p, b) + ")"));

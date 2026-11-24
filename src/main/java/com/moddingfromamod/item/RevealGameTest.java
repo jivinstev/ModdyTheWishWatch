@@ -43,7 +43,7 @@ public final class RevealGameTest {
 
     private static long glowingAt(GameTestHelper helper, BlockPos at) {
         return helper.getLevel().getEntitiesOfClass(Display.BlockDisplay.class, new AABB(at).inflate(0.1),
-                d -> d.getTags().contains(Reveal.TAG) && d.hasGlowingTag()).size();
+                d -> d.entityTags().contains(Reveal.TAG) && d.hasGlowingTag()).size();
     }
 
     @GameTest(template = "empty_test", batch = "reveal", timeoutTicks = 100)

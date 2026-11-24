@@ -98,7 +98,7 @@ public final class SpawnHoldGameTest {
     }
 
     private static List<? extends Pig> pigs(ServerLevel level, String tag) {
-        return level.getEntities(EntityTypeTest.forClass(Pig.class), p -> p.getTags().contains(tag));
+        return level.getEntities(EntityTypeTest.forClass(Pig.class), p -> p.entityTags().contains(tag));
     }
 
     private static JsonObject json(String s) {

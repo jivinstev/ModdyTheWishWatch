@@ -68,9 +68,9 @@ public class VictimTagInstallGameTest {
                 cmd(server, src, "summon pig ~2 ~ ~ {NoAI:1b,Tags:[\"" + p + "_old\"]}");
                 cmd(server, src, "execute as @e[tag=" + p + "_fresh] at @s run function " + PACK + ":effect");
                 Entity fresh = one(helper, p + "_fresh");
-                helper.assertTrue(fresh != null && scale(fresh) < 0.5 && fresh.getTags().contains("mfam_grow_on"),
+                helper.assertTrue(fresh != null && scale(fresh) < 0.5 && fresh.entityTags().contains("mfam_grow_on"),
                         Component.literal("the cookie did not shrink and tag the pig: " + (fresh == null ? "no pig"
-                                : scale(fresh) + " " + fresh.getTags())));
+                                : scale(fresh) + " " + fresh.entityTags())));
                 cmd(server, src, "scoreboard players set @e[tag=" + p + "_fresh] mfam_grow 3");
                 // the OLD pack's leftovers: shrunk, a score, and no tag
                 cmd(server, src, "attribute @e[tag=" + p + "_old,limit=1] minecraft:scale base set 0.3");
@@ -81,14 +81,14 @@ public class VictimTagInstallGameTest {
             }
             Entity fresh = one(helper, p + "_fresh");
             Entity old = one(helper, p + "_old");
-            boolean freshDone = fresh != null && scale(fresh) == 1.0 && !fresh.getTags().contains("mfam_grow_on");
+            boolean freshDone = fresh != null && scale(fresh) == 1.0 && !fresh.entityTags().contains("mfam_grow_on");
             boolean oldDone = old != null && scale(old) == 1.0;
             if (freshDone && oldDone) {
                 helper.succeed();
             } else if (waited[0] > 400) {   // the sweep runs every 200 ticks
                 helper.fail(Component.literal("after " + waited[0] + " ticks: fresh pig "
-                        + (fresh == null ? "gone" : scale(fresh) + " " + fresh.getTags()) + ", old-timer pig "
-                        + (old == null ? "gone" : scale(old) + " " + old.getTags())
+                        + (fresh == null ? "gone" : scale(fresh) + " " + fresh.entityTags()) + ", old-timer pig "
+                        + (old == null ? "gone" : scale(old) + " " + old.entityTags())
                         + " -- a shrink that never wears off"));
             } else {
                 helper.runAfterDelay(5, () -> step[0].run());   // a FRESH Runnable each time (SourceRuleSweepTest)
@@ -103,7 +103,7 @@ public class VictimTagInstallGameTest {
 
     private static Entity one(GameTestHelper helper, String tag) {
         for (Entity e : helper.getLevel().getEntities().getAll()) {
-            if (e.getTags().contains(tag) && e.isAlive()) {
+            if (e.entityTags().contains(tag) && e.isAlive()) {
                 return e;
             }
         }

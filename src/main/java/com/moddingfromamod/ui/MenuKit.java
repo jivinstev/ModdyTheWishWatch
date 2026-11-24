@@ -15,7 +15,7 @@ import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ChestMenu;
-import net.minecraft.world.inventory.ClickType;
+import net.minecraft.world.inventory.ContainerInput;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -193,9 +193,9 @@ public final class MenuKit {
         }
 
         @Override
-        public void clicked(int slot, int button, ClickType type, Player player) {
+        public void clicked(int slot, int button, ContainerInput type, Player player) {
             if (slot < 0 || slot >= page.size()) {
-                if (type != ClickType.QUICK_MOVE) {
+                if (type != ContainerInput.QUICK_MOVE) {
                     super.clicked(slot, button, type, player);
                 }
                 return;
@@ -204,7 +204,7 @@ public final class MenuKit {
                 return;
             }
             sp.containerMenu.sendAllDataToRemote();
-            if (type == ClickType.QUICK_CRAFT) {
+            if (type == ContainerInput.QUICK_CRAFT) {
                 return;
             }
             String what = page.at(slot);

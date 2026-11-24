@@ -62,7 +62,7 @@ public final class RideAndTriggersGameTest {
             if (!on[0]) {
                 kid.teleportTo(c.getX() + 1, c.getY(), c.getZ());
                 kid.getInventory().clearContent();
-                kid.interactOn(c, InteractionHand.MAIN_HAND);
+                com.moddingfromamod.mv.Interact.on(kid, c, InteractionHand.MAIN_HAND);
                 on[0] = com.moddingfromamod.mob.RideSeat.mountOf(kid) == c;
                 if (on[0] && boost) {
                     c.addEffect(new MobEffectInstance(MobEffects.JUMP_BOOST, 20 * 60, 4, false, false));
@@ -136,7 +136,7 @@ public final class RideAndTriggersGameTest {
             if (!on[0]) {
                 kid.teleportTo(c.getX() + 1, c.getY(), c.getZ());
                 kid.getInventory().clearContent();
-                kid.interactOn(c, InteractionHand.MAIN_HAND);
+                com.moddingfromamod.mv.Interact.on(kid, c, InteractionHand.MAIN_HAND);
                 on[0] = com.moddingfromamod.mob.RideSeat.mountOf(kid) == c;
                 mountedAt[0] = c.tickCount;
                 return;
@@ -219,7 +219,7 @@ public final class RideAndTriggersGameTest {
             if (!on[0]) {
                 kid.teleportTo(c.getX() + 1, c.getY(), c.getZ());
                 kid.getInventory().clearContent();
-                kid.interactOn(c, InteractionHand.MAIN_HAND);
+                com.moddingfromamod.mv.Interact.on(kid, c, InteractionHand.MAIN_HAND);
                 on[0] = com.moddingfromamod.mob.RideSeat.mountOf(kid) == c;
                 mountedAt[0] = c.tickCount;
                 return;

@@ -462,7 +462,7 @@ public final class HitProxies {
     // ---- who is what ----
 
     public static boolean isProxy(Entity e) {
-        return e != null && e.getTags().contains(PROXY_TAG);
+        return e != null && e.entityTags().contains(PROXY_TAG);
     }
 
     /** The carrier this proxy stands for, if it is alive in the proxy's level. */
@@ -470,7 +470,7 @@ public final class HitProxies {
         if (!(proxy.level() instanceof ServerLevel level)) {
             return null;
         }
-        for (String tag : proxy.getTags()) {
+        for (String tag : proxy.entityTags()) {
             if (tag.startsWith(PROXY_OWNER_PREFIX)) {
                 try {
                     Entity c = level.getEntity(UUID.fromString(
@@ -486,7 +486,7 @@ public final class HitProxies {
 
     /** Is this entity one of that carrier's proxies? For the reaper's sweep. */
     static boolean belongsTo(Entity e, UUID carrier) {
-        return e.getTags().contains(PROXY_OWNER_PREFIX + carrier);
+        return e.entityTags().contains(PROXY_OWNER_PREFIX + carrier);
     }
 
     // ---- forwarding ----
@@ -536,7 +536,7 @@ public final class HitProxies {
             event.setCancellationResult(InteractionResult.PASS);   // his own mount: nothing to do
             return;
         }
-        event.setCancellationResult(event.getEntity().interactOn(carrier, event.getHand()));
+        event.setCancellationResult(com.moddingfromamod.mv.Interact.on(event.getEntity(), carrier, event.getHand()));
     }
 
     /** A projectile that reaches a proxy reaches the carrier, seen by every other listener too. */

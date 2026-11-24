@@ -58,10 +58,9 @@ public class ItemPropertiesGameTest {
     /** The stack {@code /give} would actually hand him. Throws if the spelling is wrong. */
     private static ItemStack parse(GameTestHelper helper, String giveLine)
             throws CommandSyntaxException {
-        ItemParser.ItemResult r = new ItemParser(helper.getLevel().registryAccess())
+        net.minecraft.commands.arguments.item.ItemInput r = new ItemParser(helper.getLevel().registryAccess())
                 .parse(new StringReader(itemArgument(giveLine)));
-        ItemStack stack = new ItemStack(r.item(), 1);
-        stack.applyComponents(r.components());
+        ItemStack stack = r.createItemStack(1);
         return stack;
     }
 

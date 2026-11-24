@@ -51,7 +51,7 @@ public final class SummonSetupGameTest {
         Warden first = w.get(0);
         helper.assertTrue(first.getBrain().hasMemoryValue(MemoryModuleType.DIG_COOLDOWN),
                 Component.literal("a warden summoned with NBT must get finalizeSpawn's dig cooldown back"));
-        helper.assertTrue(first.getTags().contains("summonsetup_test"), Component.literal("the NBT the agent asked for is kept"));
+        helper.assertTrue(first.entityTags().contains("summonsetup_test"), Component.literal("the NBT the agent asked for is kept"));
 
         // The budget: a wish's boss that is GONE gives its slot back (the warden that dug away).
         first.discard();
@@ -84,7 +84,7 @@ public final class SummonSetupGameTest {
         helper.assertTrue(anchor.isPresent() && anchor.get().equals(want),
                 Component.literal("its anchor must be above where it appeared, not the world origin: anchor_pos "
                         + anchor.map(BlockPos::toShortString).orElse("absent") + ", wanted " + want.toShortString()));
-        helper.assertTrue(p.getTags().contains("summonsetup_test"), Component.literal("the NBT the agent asked for is kept"));
+        helper.assertTrue(p.entityTags().contains("summonsetup_test"), Component.literal("the NBT the agent asked for is kept"));
         p.discard();
         helper.succeed();
     }

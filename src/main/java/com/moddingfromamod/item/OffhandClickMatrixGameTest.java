@@ -181,11 +181,11 @@ public class OffhandClickMatrixGameTest {
             seen.add("ability");
         }
         if (!level.getEntitiesOfClass(Snowball.class, box(at),
-                s -> s.getTags().contains(OffhandMatrix.THROW_TAG)).isEmpty()) {
+                s -> s.entityTags().contains(OffhandMatrix.THROW_TAG)).isEmpty()) {
             seen.add("thrown");
         }
         if (!level.getEntitiesOfClass(ArmorStand.class, box(at),
-                s -> s.getTags().contains(OffhandMatrix.PLACE_TAG)).isEmpty()) {
+                s -> s.entityTags().contains(OffhandMatrix.PLACE_TAG)).isEmpty()) {
             seen.add("placed");
         }
         if (row == Row.WORN && !p.getItemBySlot(EquipmentSlot.HEAD).isEmpty()) {
@@ -204,7 +204,7 @@ public class OffhandClickMatrixGameTest {
             case EMPTY -> off.isEmpty() ? "-" : "?" + off;
             case SNOWBALL -> {
                 boolean flew = !level.getEntitiesOfClass(Snowball.class, box(at),
-                        s -> !s.getTags().contains(OffhandMatrix.THROW_TAG)).isEmpty();
+                        s -> !s.entityTags().contains(OffhandMatrix.THROW_TAG)).isEmpty();
                 yield flew || off.getCount() != 8 ? "thrown" : "-";
             }
             case BUNDLE -> usingOff || OffhandMatrix.inside(off) != 8 ? "emptying" : "-";

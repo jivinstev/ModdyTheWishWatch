@@ -116,7 +116,7 @@ public final class RideSeat {
     }
 
     public static boolean isSeat(Entity e) {
-        return e != null && e.getTags().contains(SEAT_TAG);
+        return e != null && e.entityTags().contains(SEAT_TAG);
     }
 
     /** How high over its feet the carrier would seat {@code rider} by itself. */
@@ -389,7 +389,7 @@ public final class RideSeat {
     public static void onLoggedOut(net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedOutEvent event) {
         Player p = event.getEntity();
         Entity mount = mountOf(p);
-        if (mount != null && mount.getTags().contains(com.moddingfromamod.vanilla.DisplayRig.RIG_TAG)) {
+        if (mount != null && mount.entityTags().contains(com.moddingfromamod.vanilla.DisplayRig.RIG_TAG)) {
             p.stopRiding();
         }
     }

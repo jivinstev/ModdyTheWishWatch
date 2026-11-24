@@ -249,7 +249,7 @@ public final class RigPerfProbe {
         }
         if (LIGHT && sampling) {
             ServerLevel level = event.getServer().overworld();
-            level.setDayTime(level.getDayTime() + 50);
+            com.moddingfromamod.mv.DayTime.set(level, com.moddingfromamod.mv.DayTime.get(level) + 50);
         }
         for (DisplayRig r : RIGS) {
             Vec3 was = LAST.get(r.base());

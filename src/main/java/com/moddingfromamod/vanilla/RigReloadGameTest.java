@@ -41,7 +41,7 @@ public class RigReloadGameTest {
         List<Entity> out = new ArrayList<>();
         for (Entity e : level.getEntities().getAll()) {
             boolean mine = proxies ? HitProxies.belongsTo(e, carrier)
-                    : e instanceof Display && e.getTags().contains(
+                    : e instanceof Display && e.entityTags().contains(
                             DisplayRig.RIG_OWNER_PREFIX + carrier);
             if (mine && !e.isRemoved()) {
                 out.add(e);
@@ -92,9 +92,9 @@ public class RigReloadGameTest {
                         + "\"speed\":0.0,\"scale\":1.0}").getAsJsonObject()));
         // Far from every test, so no other ticket holds the chunk and no test's cleanup reaches it.
         BlockPos base = helper.absolutePos(new BlockPos(4, 1, 4)).offset(4096, 0, 0);
-        ChunkPos chunk = new ChunkPos(base);
+        ChunkPos chunk = ChunkPos.containing(base);
         Vec3 at = Vec3.atBottomCenterOf(base);
-        level.setChunkForced(chunk.x, chunk.z, true);
+        level.setChunkForced(chunk.x(), chunk.z(), true);
 
         UUID[] carrier = new UUID[1];
         Mob[] first = new Mob[1];
@@ -119,7 +119,7 @@ public class RigReloadGameTest {
                     helper.assertTrue(VanillaRigAnimator.isDriving(first[0]), Component.literal("not driven to begin "
                             + "with"));
                     helper.assertTrue(proxies[0] > 0, Component.literal("the whale was given no proxies to lose"));
-                    level.setChunkForced(chunk.x, chunk.z, false);
+                    level.setChunkForced(chunk.x(), chunk.z(), false);
                 })
                 .thenWaitUntil(() -> {
                     // A GameTest server ticks flat out, so vanilla's unloader never finds the
@@ -131,7 +131,7 @@ public class RigReloadGameTest {
                             Component.literal("the carrier's chunk has not unloaded yet (" + first[0].getRemovalReason()
                                     + ", noSave=" + level.noSave + ")"));
                 })
-                .thenExecute(() -> level.setChunkForced(chunk.x, chunk.z, true))
+                .thenExecute(() -> level.setChunkForced(chunk.x(), chunk.z(), true))
                 .thenWaitUntil(() -> {
                     Entity back = level.getEntity(carrier[0]);
                     helper.assertTrue(back != null && back != first[0],
@@ -170,7 +170,7 @@ public class RigReloadGameTest {
                             DisplayRig.reap(level, carrier[0]);
                             back.discard();
                         }
-                        level.setChunkForced(chunk.x, chunk.z, false);
+                        level.setChunkForced(chunk.x(), chunk.z(), false);
                     }
                 })
                 .thenSucceed();

@@ -79,7 +79,7 @@ public final class Trail {
         }
         BlockState state = switch (trail) {
             case "fire" -> BaseFireBlock.getState(level, at);
-            case "flowers" -> FLOWERS.get(level.random.nextInt(FLOWERS.size())).defaultBlockState();
+            case "flowers" -> FLOWERS.get(level.getRandom().nextInt(FLOWERS.size())).defaultBlockState();
             case "snow" -> Blocks.SNOW.defaultBlockState();
             case "light" -> Blocks.LIGHT.defaultBlockState();
             default -> null;

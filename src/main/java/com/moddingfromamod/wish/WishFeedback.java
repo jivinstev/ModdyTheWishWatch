@@ -39,7 +39,11 @@ public final class WishFeedback {
         if (heldBack(line)) {
             return;
         }
-        player.displayClientMessage(line, overlay);
+        if (overlay) {
+            player.sendOverlayMessage(line);
+        } else {
+            player.sendSystemMessage(line);
+        }
         record(player, line, overlay);
     }
 

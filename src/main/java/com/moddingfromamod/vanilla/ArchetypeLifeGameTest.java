@@ -61,7 +61,7 @@ public final class ArchetypeLifeGameTest {
         // another run's plot (2026-11-02). Clear them before this run's own.
         String tag = com.moddingfromamod.entity.WishMobTags.forSpecies(id);
         for (var e : helper.getLevel().getEntities((net.minecraft.world.entity.Entity) null,
-                new net.minecraft.world.phys.AABB(at).inflate(96), e -> e.getTags().contains(tag))) {
+                new net.minecraft.world.phys.AABB(at).inflate(96), e -> e.entityTags().contains(tag))) {
             DisplayRig.reap(helper.getLevel(), e.getUUID());
             e.discard();
         }

@@ -202,7 +202,7 @@ public class HitProxyGameTest {
                     Component.literal("Wally"));
             child.setItemInHand(InteractionHand.MAIN_HAND, tag);
             Mob proxy = rig.proxies().get(0);
-            child.interactOn(proxy, InteractionHand.MAIN_HAND);
+            com.moddingfromamod.mv.Interact.on(child, proxy, InteractionHand.MAIN_HAND);
             helper.assertTrue(rig.base().hasCustomName()
                             && "Wally".equals(rig.base().getCustomName().getString()),
                     Component.literal("a name tag used on a proxy did not name the whale: " + rig.base().getCustomName()));

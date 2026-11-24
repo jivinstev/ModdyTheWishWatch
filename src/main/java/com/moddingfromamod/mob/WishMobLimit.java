@@ -79,7 +79,7 @@ public final class WishMobLimit {
             return;
         }
         if (event.loadedFromDisk()) {
-            SpawnBudget.Kind k = e.getTags().contains(WISHED_TAG) ? kindOf(e) : null;
+            SpawnBudget.Kind k = e.entityTags().contains(WISHED_TAG) ? kindOf(e) : null;
             if (k != null) {
                 joined(level, k);   // counted, never cancelled: it is already his
             }
@@ -129,7 +129,7 @@ public final class WishMobLimit {
     @SubscribeEvent
     public static void onLeave(EntityLeaveLevelEvent event) {
         Entity e = event.getEntity();
-        if (event.getLevel().isClientSide() || isRigDisplay(e) || !e.getTags().contains(WISHED_TAG)) {
+        if (event.getLevel().isClientSide() || isRigDisplay(e) || !e.entityTags().contains(WISHED_TAG)) {
             return;
         }
         SpawnBudget.Kind k = kindOf(e);
@@ -176,7 +176,7 @@ public final class WishMobLimit {
             }
             if (isRigDisplay(e)) {
                 n.merge(SpawnBudget.Kind.SCULPTED, 1, Integer::sum);
-            } else if (e.getTags().contains(WISHED_TAG)) {
+            } else if (e.entityTags().contains(WISHED_TAG)) {
                 SpawnBudget.Kind k = kindOf(e);
                 if (k != null) {
                     n.merge(k, 1, Integer::sum);
@@ -211,14 +211,14 @@ public final class WishMobLimit {
 
     /** A rig's carrier or hit proxy: part of a sculpted creature, priced by its displays instead. */
     private static boolean isRigPart(Entity e) {
-        return e.getTags().contains(DisplayRig.RIG_TAG) || HitProxies.isProxy(e);
+        return e.entityTags().contains(DisplayRig.RIG_TAG) || HitProxies.isProxy(e);
     }
 
     private static boolean isRigDisplay(Entity e) {
         if (!(e instanceof Display)) {
             return false;
         }
-        for (String t : e.getTags()) {
+        for (String t : e.entityTags()) {
             if (t.startsWith(DisplayRig.RIG_OWNER_PREFIX)) {
                 return true;
             }

@@ -543,8 +543,8 @@ public final class VortexMotion implements EventMotion {
             double[] bend = VortexLook.sway(shape, scale, d.piece().y(), age, swayPhase[d.funnel()]);
             Transformation t = d.ribbon() ? ribbonPose(d.piece(), age, d.flip()) : piecePose(d.piece(), age);
             set(d.display(), f, bend[0] == 0 && bend[1] == 0 ? t : new Transformation(
-                    t.getTranslation().add((float) bend[0], 0f, (float) bend[1], new Vector3f()),
-                    t.getLeftRotation(), t.getScale(), t.getRightRotation()));
+                    t.translation().add((float) bend[0], 0f, (float) bend[1], new Vector3f()),
+                    t.leftRotation(), t.scale(), t.rightRotation()));
         }
         List<Debris> gone = new ArrayList<>();
         for (Debris b : debris) {

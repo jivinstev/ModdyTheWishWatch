@@ -109,7 +109,7 @@ public class VanillaRigBridgeGameTest {
         List<net.minecraft.world.entity.LivingEntity> out = new ArrayList<>();
         for (Entity e : inPlot(helper)) {
             if (e instanceof net.minecraft.world.entity.LivingEntity le
-                    && e.getTags().contains(DisplayRig.RIG_TAG)) {
+                    && e.entityTags().contains(DisplayRig.RIG_TAG)) {
                 out.add(le);
             }
         }
@@ -119,7 +119,7 @@ public class VanillaRigBridgeGameTest {
     private static net.minecraft.world.entity.LivingEntity carrier(GameTestHelper helper) {
         for (Entity e : inPlot(helper)) {
             if (e instanceof net.minecraft.world.entity.LivingEntity le
-                    && e.getTags().contains(DisplayRig.RIG_TAG)) {
+                    && e.entityTags().contains(DisplayRig.RIG_TAG)) {
                 return le;
             }
         }
@@ -279,7 +279,7 @@ public class VanillaRigBridgeGameTest {
                             + "looks identical to a creature with no animation at all"));
             Mob carrier = null;
             for (Entity e : inPlot(helper)) {
-                if (e instanceof Mob m && m.getTags().contains(DisplayRig.RIG_TAG)) {
+                if (e instanceof Mob m && m.entityTags().contains(DisplayRig.RIG_TAG)) {
                     carrier = m;
                 }
             }
@@ -323,7 +323,7 @@ public class VanillaRigBridgeGameTest {
         helper.runAfterDelay(60, () -> {
             Mob carrier = null;
             for (Entity e : inPlot(helper)) {
-                if (e instanceof Mob m && m.getTags().contains(DisplayRig.RIG_TAG)) {
+                if (e instanceof Mob m && m.entityTags().contains(DisplayRig.RIG_TAG)) {
                     carrier = m;
                 }
             }
@@ -850,7 +850,7 @@ public class VanillaRigBridgeGameTest {
             String owner = DisplayRig.RIG_OWNER_PREFIX + old.getUUID();
             List<Entity> displays = new ArrayList<>();
             level.getEntities().getAll().forEach(e -> {
-                if (e instanceof Display && e.getTags().contains(owner)) {
+                if (e instanceof Display && e.entityTags().contains(owner)) {
                     displays.add(e);
                 }
             });
@@ -865,7 +865,7 @@ public class VanillaRigBridgeGameTest {
                     d.discard();
                     continue;
                 }
-                for (String t : new ArrayList<>(d.getTags())) {
+                for (String t : new ArrayList<>(d.entityTags())) {
                     if (t.startsWith(DisplayRig.RIG_INDEX_PREFIX)) {
                         d.removeTag(t);
                     }
@@ -899,7 +899,7 @@ public class VanillaRigBridgeGameTest {
                             + "exactly the failure blocker 5 described"));
             List<String> left = new ArrayList<>();
             level.getEntities().getAll().forEach(e -> {
-                if (e.isAlive() && e.getTags().contains(owner)) {
+                if (e.isAlive() && e.entityTags().contains(owner)) {
                     left.add(e.getType().toShortString());
                 }
             });
@@ -916,7 +916,7 @@ public class VanillaRigBridgeGameTest {
             int total = 0;
             String nowOwner = DisplayRig.RIG_OWNER_PREFIX + now.getUUID();
             for (Entity e : level.getEntities().getAll()) {
-                if (e instanceof Display && e.getTags().contains(nowOwner)) {
+                if (e instanceof Display && e.entityTags().contains(nowOwner)) {
                     total++;
                     if (DisplayRig.indexOf(e) < 0) {
                         unindexed++;

@@ -67,7 +67,7 @@ public final class GrandRevealGameTest {
         WishOrbs.showForTest(level, wish, c[0], c[1], c[2], 4, 0.5f, 0);
         int lights = 0;
         for (Entity e : level.getAllEntities()) {
-            if (e == null || !e.getTags().contains(Fx.wishTag(wish)) || e.getType() != EntityType.TEXT_DISPLAY) {
+            if (e == null || !e.entityTags().contains(Fx.wishTag(wish)) || e.getType() != EntityType.TEXT_DISPLAY) {
                 continue;
             }
             lights++;
@@ -206,7 +206,7 @@ public final class GrandRevealGameTest {
         for (var e : level.getEntitiesOfClass(net.minecraft.world.entity.Display.class,
                 new net.minecraft.world.phys.AABB(floor.getX() - 8, floor.getY() + 5, floor.getZ() - 8,
                         floor.getX() + 12, floor.getY() + 12, floor.getZ() + 12))) {
-            if (e.getTags().contains(Fx.wishTag(id))) {
+            if (e.entityTags().contains(Fx.wishTag(id))) {
                 below++;
             }
         }
@@ -315,7 +315,7 @@ public final class GrandRevealGameTest {
 
         // Its chunk unloads a live display from under it: the pillar notices and builds itself again.
         for (Entity e : level.getAllEntities()) {
-            if (e != null && e.getTags().contains(Fx.wishTag(live))) {
+            if (e != null && e.entityTags().contains(Fx.wishTag(live))) {
                 e.remove(Entity.RemovalReason.UNLOADED_TO_CHUNK);
                 break;
             }

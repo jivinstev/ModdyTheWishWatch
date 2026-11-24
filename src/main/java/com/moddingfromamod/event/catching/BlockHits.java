@@ -66,7 +66,7 @@ public interface BlockHits {
         default BlockHits times(int n) {
             return (w, age) -> {
                 for (int i = 0; i < n; i++) {
-                    strike(w, age, w.level().random);
+                    strike(w, age, w.level().getRandom());
                 }
             };
         }

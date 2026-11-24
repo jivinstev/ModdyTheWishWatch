@@ -132,10 +132,10 @@ public final class PoolProbe {
             for (int i = 0; i < rows.size(); i++) {
                 double x = spawn.getX() + 0.5 + (i == 0 ? -SEPARATION / 2 : SEPARATION / 2);
                 double z = spawn.getZ() + 0.5;
-                ChunkPos c = new ChunkPos(BlockPos.containing(x, 0, z));
+                ChunkPos c = ChunkPos.containing(BlockPos.containing(x, 0, z));
                 for (int dx = -2; dx <= 2; dx++) {
                     for (int dz = -2; dz <= 2; dz++) {
-                        level.setChunkForced(c.x + dx, c.z + dz, true);
+                        level.setChunkForced(c.x() + dx, c.z() + dz, true);
                     }
                 }
                 double y = level.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES,

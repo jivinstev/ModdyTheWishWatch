@@ -137,8 +137,8 @@ public final class StarterShow {
         // The sword's lightning lights the grass it strikes, as it does in any world; spreading, the
         // fire ran across the meadow and the frame was flames by the third hit.
         rules.set(GameRules.FIRE_SPREAD_RADIUS_AROUND_PLAYER, 0, server);   // doFireTick false (Mojang's own fix)
-        level.setDayTime(6000);
-        level.setWeatherParameters(12000, 0, false, false);
+        com.moddingfromamod.mv.DayTime.set(level, 6000);
+        com.moddingfromamod.mv.DayTime.weather(level, 12000, 0, false, false);
         for (Entity e : level.getEntities((Entity) null, new AABB(ground).inflate(64),
                 x -> x instanceof net.minecraft.world.entity.LivingEntity && !(x instanceof net.minecraft.world.entity.player.Player))) {
             e.discard();

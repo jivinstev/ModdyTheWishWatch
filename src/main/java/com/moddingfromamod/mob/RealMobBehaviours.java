@@ -58,7 +58,7 @@ public final class RealMobBehaviours {
 
     /** What was set on this mob; {@code NONE} for a mob with no profile, or any rig carrier. */
     public static BehaviourProfile profileOf(Entity e) {
-        if (e == null || e.getTags().contains(DisplayRig.RIG_TAG)) {
+        if (e == null || e.entityTags().contains(DisplayRig.RIG_TAG)) {
             return BehaviourProfile.NONE;
         }
         return BehaviourProfile.fromStored(e.getPersistentData().getStringOr(KEY, ""));
@@ -73,7 +73,7 @@ public final class RealMobBehaviours {
     public static boolean isDriven(Entity e) {
         // Cheap on purpose: an instinct asks this of every mob it can see, every step. A stored
         // profile is never written empty (restore removes the key), so present means non-empty.
-        return e instanceof Mob && !e.getTags().contains(DisplayRig.RIG_TAG)
+        return e instanceof Mob && !e.entityTags().contains(DisplayRig.RIG_TAG)
                 && !e.getPersistentData().getString(KEY).isEmpty();
     }
 
@@ -86,7 +86,7 @@ public final class RealMobBehaviours {
         if (e == null) {
             return null;
         }
-        if (e.getTags().contains(DisplayRig.RIG_TAG)) {
+        if (e.entityTags().contains(DisplayRig.RIG_TAG)) {
             return DisplayRig.speciesOn(e);
         }
         if (!(e instanceof Mob mob)) {
@@ -176,7 +176,7 @@ public final class RealMobBehaviours {
     }
 
     private static void track(Mob mob) {
-        if (mob.level() instanceof ServerLevel level && !mob.getTags().contains(DisplayRig.RIG_TAG)) {
+        if (mob.level() instanceof ServerLevel level && !mob.entityTags().contains(DisplayRig.RIG_TAG)) {
             DRIVEN.computeIfAbsent(level, l -> ConcurrentHashMap.newKeySet()).add(mob);
         }
     }
@@ -209,7 +209,7 @@ public final class RealMobBehaviours {
         for (Map.Entry<ServerLevel, Set<Mob>> entry : DRIVEN.entrySet()) {
             ServerLevel level = entry.getKey();
             for (Mob mob : new HashSet<>(entry.getValue())) {
-                if (!mob.isAlive() || mob.level() != level || mob.getTags().contains(DisplayRig.RIG_TAG)) {
+                if (!mob.isAlive() || mob.level() != level || mob.entityTags().contains(DisplayRig.RIG_TAG)) {
                     entry.getValue().remove(mob);
                     continue;
                 }

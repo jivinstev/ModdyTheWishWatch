@@ -153,10 +153,10 @@ public final class StockAtomStage {
         // FREEZE THE SCENE, exactly as the harness does. A moving sun is a moving lightmap, and
         // the whole measurement is a brightness.
         for (ServerLevel l : server.getAllLevels()) {
-            l.setDayTime(6000L);
+            com.moddingfromamod.mv.DayTime.set(l, 6000L);
             l.getGameRules().set(GameRules.ADVANCE_TIME,false, server);
             l.getGameRules().set(GameRules.ADVANCE_WEATHER,false, server);
-            l.setWeatherParameters(6000, 0, false, false);
+            com.moddingfromamod.mv.DayTime.weather(l, 6000, 0, false, false);
         }
 
         if (FIT_SCENE.equals(name)) {

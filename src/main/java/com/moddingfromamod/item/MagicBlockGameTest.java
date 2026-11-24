@@ -117,7 +117,7 @@ public final class MagicBlockGameTest {
 
     private static boolean anchorsLeft(GameTestHelper helper, String id, BlockPos near) {
         return !helper.getLevel().getEntitiesOfClass(ArmorStand.class, new AABB(near).inflate(3),
-                a -> a.getTags().contains(id + "_built")).isEmpty();
+                a -> a.entityTags().contains(id + "_built")).isEmpty();
     }
 
     /**

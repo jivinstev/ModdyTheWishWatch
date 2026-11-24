@@ -222,10 +222,10 @@ public final class RigVeilService {
     @SubscribeEvent
     public static void onEntityJoin(net.neoforged.neoforge.event.entity.EntityJoinLevelEvent event) {
         Entity e = event.getEntity();
-        if (e.getTags().contains(VEILED_TAG) && !VEILED_CARRIERS.contains(e.getUUID())) {
+        if (e.entityTags().contains(VEILED_TAG) && !VEILED_CARRIERS.contains(e.getUUID())) {
             e.removeTag(VEILED_TAG);
         }
-        if (e instanceof ServerPlayer && e.getTags().contains(BLIND_TAG) && !RigVeil.isVeiling()) {
+        if (e instanceof ServerPlayer && e.entityTags().contains(BLIND_TAG) && !RigVeil.isVeiling()) {
             e.removeTag(BLIND_TAG);
         }
     }

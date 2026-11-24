@@ -14,7 +14,7 @@ import net.minecraft.nbt.TagParser;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.TagKey;
-import net.minecraft.world.inventory.ClickType;
+import net.minecraft.world.inventory.ContainerInput;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -71,19 +71,19 @@ public final class OneKindBagGameTest {
         p.getInventory().setItem(BAG_SLOT, bag("food"));
         var menu = p.inventoryMenu;
         menu.setCarried(new ItemStack(Items.STONE, 5));
-        menu.clicked(BAG_SLOT, 0, ClickType.PICKUP, p);   // stone clicked onto the bag
+        menu.clicked(BAG_SLOT, 0, ContainerInput.PICKUP, p);   // stone clicked onto the bag
         ItemStack theBag = p.getInventory().getItem(BAG_SLOT);
         helper.assertTrue(inside(theBag) == 0, Component.literal("a stone went into the food bag: " + theBag.get(DataComponents.BUNDLE_CONTENTS)));
         helper.assertTrue(menu.getCarried().is(Items.STONE) && menu.getCarried().getCount() == 5,
                 Component.literal("the stone did not stay on his cursor: " + menu.getCarried()));
         menu.setCarried(new ItemStack(Items.BREAD, 3));
-        menu.clicked(BAG_SLOT, 0, ClickType.PICKUP, p);   // bread clicked onto the bag
+        menu.clicked(BAG_SLOT, 0, ContainerInput.PICKUP, p);   // bread clicked onto the bag
         helper.assertTrue(inside(p.getInventory().getItem(BAG_SLOT)) > 0, Component.literal("bread did not go into the food bag"));
 
         // The other direction: the bag on the cursor, clicked onto a stone in a slot.
         p.getInventory().setItem(THING_SLOT, new ItemStack(Items.COBBLESTONE, 4));
         menu.setCarried(p.getInventory().removeItemNoUpdate(BAG_SLOT));
-        menu.clicked(THING_SLOT, 1, ClickType.PICKUP, p);
+        menu.clicked(THING_SLOT, 1, ContainerInput.PICKUP, p);
         helper.assertTrue(p.getInventory().getItem(THING_SLOT).is(Items.COBBLESTONE)
                         && p.getInventory().getItem(THING_SLOT).getCount() == 4,
                 Component.literal("the carried bag took cobblestone from the slot: " + p.getInventory().getItem(THING_SLOT)));

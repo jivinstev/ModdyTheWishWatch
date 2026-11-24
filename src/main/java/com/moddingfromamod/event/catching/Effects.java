@@ -67,7 +67,7 @@ public final class Effects {
     /** Jolted about: a new sideways jolt each time, never one added to the last. */
     public static Effect shake() {
         return (level, c, age) -> {
-            double[] j = CatchRules.shake(c.strength(), level.random.nextDouble() * Math.PI * 2);
+            double[] j = CatchRules.shake(c.strength(), level.getRandom().nextDouble() * Math.PI * 2);
             Vec3 v = c.entity().getDeltaMovement();
             move(level, c.entity(), new Vec3(j[0], Math.max(v.y, j[1]), j[2]));
         };

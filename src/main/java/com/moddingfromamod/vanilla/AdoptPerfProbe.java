@@ -234,7 +234,7 @@ public final class AdoptPerfProbe {
     private static void spawnTwins(ServerLevel level) {
         int gone = 0;
         for (Entity e : toList(level)) {
-            if (e.getTags().contains(TWIN_TAG)) {
+            if (e.entityTags().contains(TWIN_TAG)) {
                 e.discard();    // a previous boot's twins, saved with the world: never mix two arms
                 gone++;
             }
@@ -244,7 +244,7 @@ public final class AdoptPerfProbe {
         }
         int n = 0;
         for (Entity e : toList(level)) {
-            if (!(e instanceof Mob m) || !m.getTags().contains(DisplayRig.RIG_TAG)) {
+            if (!(e instanceof Mob m) || !m.entityTags().contains(DisplayRig.RIG_TAG)) {
                 continue;
             }
             Entity twin = m.getType().create(level, EntitySpawnReason.COMMAND);
@@ -282,7 +282,7 @@ public final class AdoptPerfProbe {
     }
 
     private static String group(Entity e) {
-        Set<String> tags = e.getTags();
+        Set<String> tags = e.entityTags();
         String type = net.minecraft.world.entity.EntityType.getKey(e.getType()).getPath();
         if (tags.contains(TWIN_TAG)) {
             return "twin:" + type;
@@ -345,7 +345,7 @@ public final class AdoptPerfProbe {
     private static int carriers(ServerLevel level, boolean drivenOnly) {
         int c = 0;
         for (Entity e : level.getEntities().getAll()) {
-            if (e instanceof Mob m && m.getTags().contains(DisplayRig.RIG_TAG)
+            if (e instanceof Mob m && m.entityTags().contains(DisplayRig.RIG_TAG)
                     && (!drivenOnly || VanillaRigAnimator.isDriving(m))) {
                 c++;
             }

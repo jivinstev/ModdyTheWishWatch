@@ -643,8 +643,8 @@ public final class LiteProbe {
             if (twoChildren()) {
                 record("sent.action_bar", "SKIPPED (twochildren arm owns the action bar)");
             } else {
-                subject.displayClientMessage(Component.literal("LITEPROBE status line"), true);
-                record("sent.action_bar", "displayClientMessage(overlay=true)");
+                subject.sendOverlayMessage(Component.literal("LITEPROBE status line"));
+                record("sent.action_bar", "sendOverlayMessage");
             }
             subject.sendSystemMessage(Component.literal("LITEPROBE chat line"));
             record("sent.chat", "sendSystemMessage");

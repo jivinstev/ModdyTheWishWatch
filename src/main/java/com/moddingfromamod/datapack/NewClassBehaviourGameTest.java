@@ -126,7 +126,7 @@ public class NewClassBehaviourGameTest {
                 "PARTICLE", "minecraft:snowflake", "SOUND", "minecraft:block.powder_snow.place"));
 
         long markers = helper.getLevel().getEntities(EntityType.ARMOR_STAND,
-                        e -> e.getTags().contains("mfam_zone_" + tag)).size();
+                        e -> e.entityTags().contains("mfam_zone_" + tag)).size();
         helper.assertTrue(markers > 0,
                 Component.literal("no zone marker was dropped, so nothing is left behind and this is just an aura"));
 
@@ -135,7 +135,7 @@ public class NewClassBehaviourGameTest {
         mob.teleportTo(helper.absolutePos(moved).getX() + 0.5,
                 helper.absolutePos(moved).getY(), helper.absolutePos(moved).getZ() + 0.5);
         var stand = helper.getLevel().getEntities(EntityType.ARMOR_STAND,
-                e -> e.getTags().contains("mfam_zone_" + tag)).get(0);
+                e -> e.entityTags().contains("mfam_zone_" + tag)).get(0);
         helper.assertTrue(stand.distanceTo(mob) > 4.0,
                 Component.literal("the zone followed the creature, which makes it an aura with extra steps"));
         System.out.println("ZONE: marker stayed put, " + String.format("%.1f", stand.distanceTo(mob))
@@ -179,14 +179,14 @@ public class NewClassBehaviourGameTest {
         // walking around" is a worse bug than one that never fires.
         helper.runAfterDelay(4, () -> {
             long early = helper.getLevel().getEntities(EntityType.ARMOR_STAND,
-                    e -> e.getTags().contains("deathmark")).size();
+                    e -> e.entityTags().contains("deathmark")).size();
             helper.assertTrue(early == 0,
                     Component.literal("the death act fired " + early + " time(s) while the creature was still ALIVE"));
             mob.hurt(helper.getLevel().damageSources().magic(), 1000.0F);
         });
         helper.runAfterDelay(12, () -> {
             long marks = helper.getLevel().getEntities(EntityType.ARMOR_STAND,
-                    e -> e.getTags().contains("deathmark")).size();
+                    e -> e.entityTags().contains("deathmark")).size();
             helper.assertTrue(marks > 0,
                     Component.literal("nothing ran as the creature died. NOTE: the obvious DeathTime selector cannot "
                             + "work at all — @e never matches a dead entity — so this is the "
@@ -221,7 +221,7 @@ public class NewClassBehaviourGameTest {
             runOnce(helper, tag, "on_low_health", words);
         }
         long early = helper.getLevel().getEntities(EntityType.ARMOR_STAND,
-                e -> e.getTags().contains("phase2")).size();
+                e -> e.entityTags().contains("phase2")).size();
         helper.assertTrue(early == 0,
                 Component.literal("phase two fired at FULL health (" + early + " marker(s)), so it is not a phase "
                         + "change, it is a spawn effect"));
@@ -232,7 +232,7 @@ public class NewClassBehaviourGameTest {
             runOnce(helper, tag, "on_low_health", words);
         }
         long late = helper.getLevel().getEntities(EntityType.ARMOR_STAND,
-                e -> e.getTags().contains("phase2")).size();
+                e -> e.entityTags().contains("phase2")).size();
         helper.assertTrue(late > 0,
                 Component.literal("the creature was at a quarter health and phase two never fired"));
         System.out.println("PHASE 2: silent at full health, fired at 25% (" + late + " marker(s))");
@@ -396,7 +396,7 @@ public class NewClassBehaviourGameTest {
         runOnce(helper, tag, "trail", words);
         helper.assertBlockNotPresent(net.minecraft.world.level.block.Blocks.SNOW, next);
         helper.assertTrue(helper.getLevel().getEntities(EntityType.ARMOR_STAND,
-                e -> e.getTags().contains("mfam_tr_" + tag)).size() <= 1, Component.literal("faded marks are gone"));
+                e -> e.entityTags().contains("mfam_tr_" + tag)).size() <= 1, Component.literal("faded marks are gone"));
         mob.discard();
         helper.succeed();
     }
@@ -412,7 +412,7 @@ public class NewClassBehaviourGameTest {
         Map<String, String> words = Map.of("ITEM", "minecraft:honey_bottle", "SOUND", "minecraft:entity.chicken.egg",
                 "MOST", "3", "PERIOD_TICKS", "1");
         java.util.function.Supplier<java.util.List<? extends net.minecraft.world.entity.item.ItemEntity>> lying = () ->
-                helper.getLevel().getEntities(EntityType.ITEM, e -> e.getTags().contains("mfam_drop_" + tag));
+                helper.getLevel().getEntities(EntityType.ITEM, e -> e.entityTags().contains("mfam_drop_" + tag));
         for (int i = 0; i < 6; i++) {
             runOnce(helper, tag, "drops", words);
         }

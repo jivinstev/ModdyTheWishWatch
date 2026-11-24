@@ -46,7 +46,7 @@ public final class GoHome {
     /** The pearl he threw would put him where it landed; this wish sends him home instead. */
     @SubscribeEvent(priority = EventPriority.HIGH)
     public static void onPearlLands(EntityTeleportEvent.EnderPearl event) {
-        if (event.getPlayer().getTags().contains(TAG)) {
+        if (event.getPlayer().entityTags().contains(TAG)) {
             event.setCanceled(true);
         }
     }
@@ -54,7 +54,7 @@ public final class GoHome {
     @SubscribeEvent
     public static void onServerTick(ServerTickEvent.Post event) {
         for (ServerPlayer p : event.getServer().getPlayerList().getPlayers()) {
-            if (p.getTags().contains(TAG)) {
+            if (p.entityTags().contains(TAG)) {
                 p.removeTag(TAG);
                 sendHome(p);
             }

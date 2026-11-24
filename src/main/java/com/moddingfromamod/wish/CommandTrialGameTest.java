@@ -47,7 +47,7 @@ public final class CommandTrialGameTest {
 
     private static List<Entity> tagged(GameTestHelper helper, BlockPos at, String tag) {
         return helper.getLevel().getEntities((Entity) null, new AABB(at).inflate(8),
-                e -> e.getTags().contains(tag));
+                e -> e.entityTags().contains(tag));
     }
 
     /** The shark's shape at run time: it SUCCEEDS, and now it says what it ignored. */

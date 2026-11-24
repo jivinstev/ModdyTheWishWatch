@@ -71,7 +71,7 @@ public final class WishTryGameTest {
         Wish made = makersWish(helper, p.maker, "a tiny whale", id, "creature");
         String tag = com.moddingfromamod.entity.WishMobTags.forSpecies(id);
         tryAndExpect(helper, p, made, made.id().toString(), () -> {
-            long near = countNear(p.taker, e -> e.getTags().contains(tag));
+            long near = countNear(p.taker, e -> e.entityTags().contains(tag));
             helper.assertTrue(near >= 1, Component.literal("no copy of the maker's creature arrived beside the taker"));
         });
     }

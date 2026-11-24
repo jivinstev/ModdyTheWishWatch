@@ -157,14 +157,14 @@ public final class BuilderAbilityGameTest {
         }
         var level = helper.getLevel();
         var server = level.getServer();
-        long dayWas = level.getDayTime();
+        long dayWas = com.moddingfromamod.mv.DayTime.get(level);
         var cycleRules = level.getGameRules();
         boolean cycleWas = cycleRules.get(net.minecraft.world.level.gamerules.GameRules.ADVANCE_TIME);
         cycleRules.set(net.minecraft.world.level.gamerules.GameRules.ADVANCE_TIME, false, server);
-        level.setDayTime(18000);   // midnight: no sunburn to keep the zombie alight
+        com.moddingfromamod.mv.DayTime.set(level, 18000);   // midnight: no sunburn to keep the zombie alight
         com.moddingfromamod.testing.MockPlayerNetwork.afterTest(helper, () -> {
             cycleRules.set(net.minecraft.world.level.gamerules.GameRules.ADVANCE_TIME, cycleWas, server);
-            level.setDayTime(dayWas);
+            com.moddingfromamod.mv.DayTime.set(level, dayWas);
         });
         var p = com.moddingfromamod.testing.MockPlayerNetwork.inLevel(helper, "gtnight");
         BlockPos at = helper.absolutePos(new BlockPos(1, 2, 1));
@@ -283,7 +283,7 @@ public final class BuilderAbilityGameTest {
                 p.setItemSlot(slot, ItemStack.EMPTY);
             }
             p.removeAllEffects();
-            p.getTags().removeIf(t -> t.startsWith("mfam_go_home") || t.startsWith("mfam_call_pets"));
+            p.entityTags().removeIf(t -> t.startsWith("mfam_go_home") || t.startsWith("mfam_call_pets"));
             p.clearFire();
             var scale = p.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.SCALE);
             if (scale != null) {
@@ -647,10 +647,10 @@ public final class BuilderAbilityGameTest {
                 case "glow" -> BlockPos.betweenClosedStream(p.blockPosition().offset(-8, -3, -8), p.blockPosition().offset(8, 4, 8))
                         .anyMatch(q -> level.getBlockState(q).is(Blocks.LIGHT)) ? null
                         : mined[0] != null ? "mined, and no light where he mined" : "no light where he pointed";
-                case "home" -> p.getTags().contains("mfam_go_home") || p.position().distanceTo(from) > 2 ? null
+                case "home" -> p.entityTags().contains("mfam_go_home") || p.position().distanceTo(from) > 2 ? null
                         : "used, and he is not on his way home";
                 case "pets" -> level.getEntitiesOfClass(net.minecraft.world.entity.animal.wolf.Wolf.class,
-                        p.getBoundingBox().inflate(32), wf -> wf.getTags().contains("gt_pet")).stream()
+                        p.getBoundingBox().inflate(32), wf -> wf.entityTags().contains("gt_pet")).stream()
                         .anyMatch(wf -> wf.distanceTo(p) < 5) ? null : "used, and his wolf did not come";
                 // the block put down where he pointed (and taken away again, so water or lava does not run into
                 // the next case); the thing he carried turned into the other; the block he pointed at changed.

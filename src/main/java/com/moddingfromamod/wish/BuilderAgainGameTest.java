@@ -29,7 +29,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.inventory.ClickType;
+import net.minecraft.world.inventory.ContainerInput;
 import net.minecraft.world.item.ItemStack;
 
 /**
@@ -70,7 +70,7 @@ public final class BuilderAgainGameTest {
     private static List<net.minecraft.world.entity.Entity> tagged(GameTestHelper helper, String id) {
         List<net.minecraft.world.entity.Entity> out = new ArrayList<>();
         for (var e : helper.getLevel().getAllEntities()) {
-            if (e instanceof net.minecraft.world.entity.Mob && e.isAlive() && e.getTags().contains("wishmob_" + id)) {
+            if (e instanceof net.minecraft.world.entity.Mob && e.isAlive() && e.entityTags().contains("wishmob_" + id)) {
                 out.add(e);
             }
         }
@@ -355,6 +355,6 @@ public final class BuilderAgainGameTest {
             helper.fail(Component.literal("'" + id + "' is not on the page: " + menu.page().slots().values()));
             return;
         }
-        menu.clicked(slot, 0, ClickType.PICKUP, child);
+        menu.clicked(slot, 0, ContainerInput.PICKUP, child);
     }
 }

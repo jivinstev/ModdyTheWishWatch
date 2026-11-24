@@ -155,7 +155,7 @@ public class RemoveGuardrailsGameTest {
         List<net.minecraft.world.entity.LivingEntity> out = new java.util.ArrayList<>();
         for (var e : level.getEntities().getAll()) {
             if (e instanceof net.minecraft.world.entity.LivingEntity live
-                    && e.getTags().contains(com.moddingfromamod.vanilla.DisplayRig.RIG_TAG)) {
+                    && e.entityTags().contains(com.moddingfromamod.vanilla.DisplayRig.RIG_TAG)) {
                 var sp = com.moddingfromamod.vanilla.DisplayRig.speciesOn(live);
                 if (sp != null && id.equalsIgnoreCase(sp.id())) {
                     out.add(live);

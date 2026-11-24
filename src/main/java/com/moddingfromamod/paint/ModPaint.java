@@ -41,7 +41,7 @@ public final class ModPaint {
      * properties. Every exotic property is a way for Create to refuse to carry it.
      */
     public static final Supplier<Block> PAINT_PANEL = BLOCKS.<Block>registerBlock(PANEL_ID,
-            PaintPanelBlock::new, panelProperties());
+            PaintPanelBlock::new, ModPaint::panelProperties);
 
     private static BlockBehaviour.Properties panelProperties() {
         BlockBehaviour.Properties p = BlockBehaviour.Properties.of()

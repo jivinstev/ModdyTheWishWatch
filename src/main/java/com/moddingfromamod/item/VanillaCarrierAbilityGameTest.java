@@ -229,7 +229,7 @@ public class VanillaCarrierAbilityGameTest {
                 rightClickAir(p, stack);
 
                 List<Snowball> balls = level.getEntities(EntityType.SNOWBALL,
-                        new AABB(at).inflate(10), e -> e.getTags().contains("ab_fly"));
+                        new AABB(at).inflate(10), e -> e.entityTags().contains("ab_fly"));
                 helper.assertTrue(balls.size() == 1,
                         Component.literal("arm " + arm + ": expected exactly one tagged projectile, got "
                                 + balls.size()));
@@ -270,7 +270,7 @@ public class VanillaCarrierAbilityGameTest {
 
                     List<ArmorStand> found = level.getEntities(EntityType.ARMOR_STAND,
                             new AABB(floor.above()).inflate(1.5),
-                            e -> e.getTags().contains(tag));
+                            e -> e.entityTags().contains(tag));
                     helper.assertTrue(found.size() == 1,
                             Component.literal("arm " + arm + " / " + tag + ": expected one tagged anchor, got "
                                     + found.size() + " — a datapack watching for this tag is how "
@@ -345,7 +345,7 @@ public class VanillaCarrierAbilityGameTest {
                     .forEach(e -> e.discard());
             rightClickAir(p, modItem(WishItem.THROW_TAG, "ab_double", WishItem.HIT_FN, PROBE_FN));
             List<Snowball> balls = level.getEntities(EntityType.SNOWBALL,
-                    new AABB(at).inflate(12), e -> e.getTags().contains("ab_double"));
+                    new AABB(at).inflate(12), e -> e.entityTags().contains("ab_double"));
             helper.assertTrue(balls.size() == 1,
                     Component.literal("one right-click on the MOD item produced " + balls.size() + " projectiles — "
                             + "the bridge fired on top of WishItem.use. A doubled effect reads as "
@@ -577,7 +577,7 @@ public class VanillaCarrierAbilityGameTest {
 
             ItemStack wished = carrier(WishItem.ON_USE, PROBE_FN);
             p.setItemInHand(InteractionHand.MAIN_HAND, wished);
-            p.interactOn(horse, InteractionHand.MAIN_HAND);
+            com.moddingfromamod.mv.Interact.on(p, horse, InteractionHand.MAIN_HAND);
 
             helper.assertFalse(horse.isWearingBodyArmor(),
                     Component.literal("the child's wished thing was equipped ONTO THE HORSE — he right-clicked a "

@@ -263,7 +263,7 @@ public final class VanillaRigBridge {
         if (event.getLevel().isClientSide()
                 || !(event.getLevel() instanceof ServerLevel level)
                 || !(e instanceof LivingEntity)
-                || !e.getTags().contains(DisplayRig.RIG_TAG)) {
+                || !e.entityTags().contains(DisplayRig.RIG_TAG)) {
             return;
         }
         Entity.RemovalReason why = e.getRemovalReason();

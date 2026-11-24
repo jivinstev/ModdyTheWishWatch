@@ -168,7 +168,7 @@ public final class WishShimmer {
     }
 
     private static boolean isPreview(Entity e) {
-        return e != null && e.getTags().contains(PREVIEW_TAG);
+        return e != null && e.entityTags().contains(PREVIEW_TAG);
     }
 
     /** A preview made whole: it can be hurt, moves and makes its sounds. */

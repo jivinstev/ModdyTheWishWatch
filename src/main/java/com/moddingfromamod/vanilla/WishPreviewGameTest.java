@@ -299,7 +299,7 @@ public final class WishPreviewGameTest {
                     Entity c = level.getEntity(real.get());
                     helper.assertTrue(c instanceof Mob, Component.literal("the creature is gone"));
                     Mob m = (Mob) c;
-                    helper.assertTrue(!m.getTags().contains(WishShimmer.PREVIEW_TAG) && !m.isNoAi()
+                    helper.assertTrue(!m.entityTags().contains(WishShimmer.PREVIEW_TAG) && !m.isNoAi()
                                     && !m.isInvulnerable(),
                             Component.literal("he was left a frozen, unkillable statue rather than his creature"));
                     WishShimmer.end(server, wish);
@@ -326,7 +326,7 @@ public final class WishPreviewGameTest {
     private static List<Mob> previews(ServerLevel level, String species) {
         List<Mob> out = new ArrayList<>();
         for (Entity e : level.getAllEntities()) {
-            if (e instanceof Mob m && m.getTags().contains(WishShimmer.PREVIEW_TAG)) {
+            if (e instanceof Mob m && m.entityTags().contains(WishShimmer.PREVIEW_TAG)) {
                 var sp = DisplayRig.speciesOn(m);
                 if (sp != null && species.equals(sp.id())) {
                     out.add(m);

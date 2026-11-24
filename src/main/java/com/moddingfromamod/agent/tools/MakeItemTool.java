@@ -2194,7 +2194,7 @@ public final class MakeItemTool implements McpTool {
             net.minecraft.world.item.ItemStack to,
             net.minecraft.core.component.DataComponentType<T> type) {
         T v = from.get(type);
-        if (v != null && from.getComponentsPatch().get(type) != null) {
+        if (v != null && from.getComponentsPatch().getPatch(type) != null) {
             to.set(type, v);
         }
     }

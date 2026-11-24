@@ -209,7 +209,7 @@ public class WishMobEntity extends PathfinderMob {
         String want = WishMobTags.forSpecies(s.id());
         // Drop stale per-species tags first — re-sculpting under a new id must not leave a creature
         // answering to both names, or "@e[tag=wishmob_spikor]" starts matching last week's dragon.
-        for (String tag : new java.util.ArrayList<>(this.getTags())) {
+        for (String tag : new java.util.ArrayList<>(this.entityTags())) {
             if (WishMobTags.isSpeciesTag(tag) && !tag.equals(want)) {
                 this.removeTag(tag);
             }
@@ -540,7 +540,7 @@ public class WishMobEntity extends PathfinderMob {
             return;
         }
         if (bossBar == null) {
-            bossBar = new net.minecraft.server.level.ServerBossEvent(this.getDisplayName(),
+            bossBar = new net.minecraft.server.level.ServerBossEvent(java.util.UUID.randomUUID(), this.getDisplayName(),
                     net.minecraft.world.BossEvent.BossBarColor.PURPLE,
                     net.minecraft.world.BossEvent.BossBarOverlay.PROGRESS);
         }

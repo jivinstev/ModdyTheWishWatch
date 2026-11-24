@@ -37,7 +37,7 @@ public final class Creatures {
                 EntityType.getKey(e.getType()).toString(),
                 sp == null ? null : sp.id(),
                 sp == null ? null : sp.name(),
-                e.getTags(),
+                e.entityTags(),
                 e.getCustomName() == null ? null : e.getCustomName().getString());
     }
 
@@ -46,7 +46,7 @@ public final class Creatures {
         if (e == null) {
             return false;
         }
-        if (CreatureMatch.isRigInternal(e.getTags())) {
+        if (CreatureMatch.isRigInternal(e.entityTags())) {
             return true;
         }
         return e instanceof net.minecraft.world.entity.Display && DisplayRig.ownerOf(e) != null;
@@ -105,7 +105,7 @@ public final class Creatures {
         }
         for (Entity e : level.getEntities().getAll()) {
             if (e instanceof LivingEntity living && living.isAlive() && !e.isRemoved()
-                    && e.getTags().contains(DisplayRig.RIG_TAG)) {
+                    && e.entityTags().contains(DisplayRig.RIG_TAG)) {
                 Species sp = DisplayRig.speciesOn(e);
                 if (sp != null && speciesId.equalsIgnoreCase(sp.id())) {
                     out.add(living);
@@ -126,7 +126,7 @@ public final class Creatures {
         }
         for (Entity e : level.getEntities().getAll()) {
             if (e instanceof LivingEntity living && living.isAlive() && !e.isRemoved()
-                    && e.getTags().contains(DisplayRig.RIG_TAG)) {
+                    && e.entityTags().contains(DisplayRig.RIG_TAG)) {
                 Species sp = DisplayRig.speciesOn(e);
                 if (sp != null) {
                     out.computeIfAbsent(sp.id().toLowerCase(java.util.Locale.ROOT),
@@ -147,7 +147,7 @@ public final class Creatures {
 
     /** {@link CreatureMatch#hisFirst} over live entities, nearest first in, nearest first out. */
     public static <T extends Entity> List<T> hisFirst(List<T> nearestFirst, String playerId) {
-        return CreatureMatch.hisFirst(nearestFirst, Entity::getTags, playerId);
+        return CreatureMatch.hisFirst(nearestFirst, Entity::entityTags, playerId);
     }
 
     /**
@@ -160,7 +160,7 @@ public final class Creatures {
     public static void wearSpecies(Entity e, String speciesId) {
         if (e instanceof com.moddingfromamod.entity.WishMobEntity wish) {
             wish.setSpeciesId(speciesId);
-        } else if (e != null && e.getTags().contains(DisplayRig.RIG_TAG)) {
+        } else if (e != null && e.entityTags().contains(DisplayRig.RIG_TAG)) {
             for (String t : DisplayRig.speciesTags(speciesId)) {
                 e.addTag(t);
             }

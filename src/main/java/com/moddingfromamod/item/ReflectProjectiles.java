@@ -35,7 +35,7 @@ public final class ReflectProjectiles {
 
     /** Run after a wished shield's function: reflect what he blocked if it asked, then clear the ask. */
     public static void afterBlock(LivingEntity blocker, Entity blocked) {
-        if (!blocker.getTags().contains(TAG)) {
+        if (!blocker.entityTags().contains(TAG)) {
             return;
         }
         blocker.removeTag(TAG);

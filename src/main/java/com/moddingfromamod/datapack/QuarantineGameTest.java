@@ -94,7 +94,7 @@ public final class QuarantineGameTest {
     private static int tagged(ServerLevel level, String tag) {
         int n = 0;
         for (Entity e : level.getAllEntities()) {
-            if (e != null && e.getTags().contains(tag)) {
+            if (e != null && e.entityTags().contains(tag)) {
                 n++;
             }
         }
@@ -104,7 +104,7 @@ public final class QuarantineGameTest {
     private static void killTagged(ServerLevel level, String tag) {
         List<Entity> doomed = new java.util.ArrayList<>();
         for (Entity e : level.getAllEntities()) {      // collect first: discarding while walking throws
-            if (e != null && e.getTags().contains(tag)) {
+            if (e != null && e.entityTags().contains(tag)) {
                 doomed.add(e);
             }
         }
@@ -294,7 +294,7 @@ public final class QuarantineGameTest {
                         + "attributes:[{id:\"minecraft:max_health\",base:1024.0}],Health:1024f}");
         LivingEntity victim = null;
         for (Entity e : helper.getLevel().getAllEntities()) {
-            if (e != null && e.getTags().contains(tag + "_victim") && e instanceof LivingEntity le) {
+            if (e != null && e.entityTags().contains(tag + "_victim") && e instanceof LivingEntity le) {
                 victim = le;
             }
         }

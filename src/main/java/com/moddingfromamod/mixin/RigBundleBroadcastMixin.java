@@ -35,7 +35,7 @@ public abstract class RigBundleBroadcastMixin {
 
     @Inject(method = "sendToTrackingPlayers(Lnet/minecraft/network/protocol/Packet;)V", at = @At("HEAD"), cancellable = true)
     private void moddingfromamod$holdRigPacket(Packet<?> packet, CallbackInfo ci) {
-        if (RigBundle.holding() && entity instanceof Display && RigCadence.isRigAtom(entity.getTags())) {
+        if (RigBundle.holding() && entity instanceof Display && RigCadence.isRigAtom(entity.entityTags())) {
             RigBundle.hold(seenBy, packet);
             ci.cancel();
         }

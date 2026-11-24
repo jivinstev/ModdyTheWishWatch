@@ -56,16 +56,16 @@ public final class StrongerWhenGameTest {
     @GameTest(template = "empty_test", batch = "strongerwhen", timeoutTicks = 200)
     public static void theNightSwordIsStrongerAtNightAndOnlyWhileHeld(GameTestHelper helper) throws Exception {
         ServerLevel level = helper.getLevel();
-        long was = level.getDayTime();
+        long was = com.moddingfromamod.mv.DayTime.get(level);
         MockPlayerNetwork.clearStaleMocks(helper);
         ServerPlayer p = MockPlayerNetwork.inLevel(helper);
         p.setGameMode(GameType.SURVIVAL);
         try {
             p.setItemInHand(InteractionHand.MAIN_HAND, made(Items.DIAMOND_SWORD, "night", "attack_damage", 6));
-            level.setDayTime(6000);   // noon
+            com.moddingfromamod.mv.DayTime.set(level, 6000);   // noon
             StrongerWhen.apply(p);
             double noon = attack(p);
-            level.setDayTime(18000);  // midnight
+            com.moddingfromamod.mv.DayTime.set(level, 18000);  // midnight
             StrongerWhen.apply(p);
             double midnight = attack(p);
             helper.assertTrue(midnight == noon + 6,
@@ -73,12 +73,12 @@ public final class StrongerWhenGameTest {
             p.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
             StrongerWhen.apply(p);
             helper.assertTrue(attack(p) == noon, Component.literal("letting go of it must take the strength away: " + attack(p)));
-            level.setDayTime(6000);
+            com.moddingfromamod.mv.DayTime.set(level, 6000);
             p.setItemInHand(InteractionHand.MAIN_HAND, made(Items.DIAMOND_SWORD, "night", "attack_damage", 6));
             StrongerWhen.apply(p);
             helper.assertTrue(attack(p) == noon, Component.literal("morning must take it away again: " + attack(p)));
         } finally {
-            level.setDayTime(was);
+            com.moddingfromamod.mv.DayTime.set(level, was);
         }
         helper.succeed();
     }
@@ -90,15 +90,15 @@ public final class StrongerWhenGameTest {
         ServerPlayer p = MockPlayerNetwork.inLevel(helper);
         try {
             p.setItemInHand(InteractionHand.MAIN_HAND, made(Items.DIAMOND_SWORD, "thunder", "attack_damage", 10));
-            level.setWeatherParameters(6000, 0, false, false);
+            com.moddingfromamod.mv.DayTime.weather(level, 6000, 0, false, false);
             StrongerWhen.apply(p);
             double clear = attack(p);
-            level.setWeatherParameters(0, 6000, true, true);
+            com.moddingfromamod.mv.DayTime.weather(level, 0, 6000, true, true);
             StrongerWhen.apply(p);
             helper.assertTrue(attack(p) == clear + 10,
                     Component.literal("the storm sword hits " + clear + " in clear weather and " + attack(p) + " in a storm"));
         } finally {
-            level.setWeatherParameters(6000, 0, false, false);
+            com.moddingfromamod.mv.DayTime.weather(level, 6000, 0, false, false);
         }
         helper.succeed();
     }
@@ -140,7 +140,7 @@ public final class StrongerWhenGameTest {
     @GameTest(template = "empty_test", batch = "strongerwhen", timeoutTicks = 200)
     public static void makeItemHandsOutANightSword(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
-        long was = level.getDayTime();
+        long was = com.moddingfromamod.mv.DayTime.get(level);
         MockPlayerNetwork.clearStaleMocks(helper);
         ServerPlayer p = MockPlayerNetwork.inLevel(helper);
         String name = "Moon Blade " + level.getGameTime();
@@ -178,15 +178,15 @@ public final class StrongerWhenGameTest {
         try {
             p.getInventory().clearContent();
             p.setItemInHand(InteractionHand.MAIN_HAND, got);
-            level.setDayTime(6000);
+            com.moddingfromamod.mv.DayTime.set(level, 6000);
             StrongerWhen.apply(p);
             double noon = attack(p);
-            level.setDayTime(18000);
+            com.moddingfromamod.mv.DayTime.set(level, 18000);
             StrongerWhen.apply(p);
             helper.assertTrue(attack(p) == noon + 6,
                     Component.literal("make_item's night sword hits " + noon + " at noon and " + attack(p) + " at midnight"));
         } finally {
-            level.setDayTime(was);
+            com.moddingfromamod.mv.DayTime.set(level, was);
         }
         helper.succeed();
     }

@@ -95,7 +95,7 @@ public class PutAtGameTest {
             String fid = featureId(p.text());
             ArmorStand marker = null;
             for (Entity e : level.getEntities().getAll()) {
-                if (e instanceof ArmorStand a && a.getTags().contains(fid + "_here")) {
+                if (e instanceof ArmorStand a && a.entityTags().contains(fid + "_here")) {
                     marker = a;
                 }
             }
@@ -144,7 +144,7 @@ public class PutAtGameTest {
             helper.assertFalse(ran.get().isError(), Component.literal("run_command at failed: " + ran.get().text()));
             Entity cart = null;
             for (Entity e : level.getEntities().getAll()) {
-                if (e.getTags().contains("gt_putat_cart")) {
+                if (e.entityTags().contains("gt_putat_cart")) {
                     cart = e;
                 }
             }

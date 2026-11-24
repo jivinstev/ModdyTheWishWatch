@@ -165,7 +165,7 @@ final class StockHotbarProbe {
             return false;
         }
         for (int i = 0; i < 3; i++) {
-            if (!fired[i] && sp.getTags().contains(TAG + i)) {
+            if (!fired[i] && sp.entityTags().contains(TAG + i)) {
                 fired[i] = true;
                 mark.accept("fired-" + i, NAMES[i] + " made, " + ticks + " ticks after hud; cooldown now "
                         + sp.getCooldowns().getCooldownPercent(sp.getInventory().getItem(Math.max(slotOf(sp, RECIPES[i]), 0)), 0f));

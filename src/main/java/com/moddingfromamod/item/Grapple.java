@@ -38,7 +38,7 @@ public final class Grapple {
     @SubscribeEvent
     public static void onServerTick(ServerTickEvent.Post event) {
         for (ServerPlayer p : event.getServer().getPlayerList().getPlayers()) {
-            if (p.getTags().contains(TAG)) {
+            if (p.entityTags().contains(TAG)) {
                 p.removeTag(TAG);
                 pull(p);
             }

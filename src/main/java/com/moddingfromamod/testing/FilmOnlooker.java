@@ -131,7 +131,7 @@ public final class FilmOnlooker {
                     FilmCamera.where(), p.getCamera() != p, p.position());
             String ownTag = com.moddingfromamod.vanilla.DisplayRig.RIG_OWNER_PREFIX + creature.getUUID();
             var parts = creature.level().getEntities((Entity) null, creature.getBoundingBox().inflate(64),
-                    e -> e instanceof net.minecraft.world.entity.Display && e.getTags().contains(ownTag));
+                    e -> e instanceof net.minecraft.world.entity.Display && e.entityTags().contains(ownTag));
             double sx = 0, sz = 0;
             for (Entity e : parts) {
                 sx += e.getX();

@@ -368,8 +368,8 @@ public class CreatureResolverGameTest {
         ServerLevel level = helper.getLevel().getServer().overworld();
         List<Entity> doomed = new ArrayList<>();
         for (Entity e : level.getEntities().getAll()) {
-            if (e.getTags().contains(MINE)
-                    || e.getTags().contains(WishMobTags.forSpecies(ID))) {
+            if (e.entityTags().contains(MINE)
+                    || e.entityTags().contains(WishMobTags.forSpecies(ID))) {
                 doomed.add(e);
             }
         }
@@ -383,8 +383,8 @@ public class CreatureResolverGameTest {
         ServerLevel level = helper.getLevel().getServer().overworld();
         for (Entity e : level.getEntities().getAll()) {
             if (e instanceof LivingEntity l && e.isAlive()
-                    && e.getTags().contains(WishMobTags.forSpecies(ID))
-                    && e.getTags().contains(DisplayRig.RIG_TAG)) {
+                    && e.entityTags().contains(WishMobTags.forSpecies(ID))
+                    && e.entityTags().contains(DisplayRig.RIG_TAG)) {
                 return l;
             }
         }
@@ -395,7 +395,7 @@ public class CreatureResolverGameTest {
     private static int countMeaningful(ServerLevel level, Vec3 at, double r) {
         return level.getEntitiesOfClass(LivingEntity.class, new AABB(at, at).inflate(r),
                 e -> e.isAlive() && !(e instanceof Player)
-                        && !e.getTags().contains(HitProxies.PROXY_TAG)).size();
+                        && !e.entityTags().contains(HitProxies.PROXY_TAG)).size();
     }
 
     private static String section(String said) {

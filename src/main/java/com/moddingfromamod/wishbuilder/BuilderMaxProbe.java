@@ -113,7 +113,7 @@ public final class BuilderMaxProbe {
         }
         MinecraftServer server = event.getServer();
         ServerLevel level = server.overworld();
-        level.setDayTime(18_000);   // night: the zombies must not burn
+        com.moddingfromamod.mv.DayTime.set(level, 18_000);   // night: the zombies must not burn
         server.overworld().getGameRules().set(net.minecraft.world.level.gamerules.GameRules.ADVANCE_TIME,false, server);
         for (int cx = -2; cx <= 3; cx++) {
             for (int cz = -2; cz <= 3; cz++) {

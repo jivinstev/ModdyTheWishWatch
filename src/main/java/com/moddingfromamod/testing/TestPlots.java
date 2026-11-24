@@ -213,11 +213,11 @@ public final class TestPlots {
         }
 
         private static void load(ServerLevel level, BlockPos base, int radius) {
-            ChunkPos centre = new ChunkPos(base);
+            ChunkPos centre = ChunkPos.containing(base);
             for (int dx = -radius; dx <= radius; dx++) {
                 for (int dz = -radius; dz <= radius; dz++) {
-                    if (LOADED.add(ChunkPos.asLong(centre.x + dx, centre.z + dz))) {
-                        level.setChunkForced(centre.x + dx, centre.z + dz, true);
+                    if (LOADED.add(ChunkPos.pack(centre.x() + dx, centre.z() + dz))) {
+                        level.setChunkForced(centre.x() + dx, centre.z() + dz, true);
                     }
                 }
             }

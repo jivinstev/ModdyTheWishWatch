@@ -62,6 +62,6 @@ public abstract class BatRideMixin {
     }
 
     private static boolean carrier(Bat bat) {
-        return bat.getTags().contains(com.moddingfromamod.vanilla.DisplayRig.RIG_TAG);
+        return bat.entityTags().contains(com.moddingfromamod.vanilla.DisplayRig.RIG_TAG);
     }
 }

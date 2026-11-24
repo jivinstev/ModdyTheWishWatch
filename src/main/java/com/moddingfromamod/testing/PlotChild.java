@@ -100,9 +100,9 @@ public final class PlotChild {
     public static void holdChunksAt(GameTestHelper helper, Vec3... at) {
         ServerLevel level = helper.getLevel();
         for (Vec3 v : at) {
-            ChunkPos c = new ChunkPos(BlockPos.containing(v));
-            level.setChunkForced(c.x, c.z, true);
-            level.getChunk(c.x, c.z);
+            ChunkPos c = ChunkPos.containing(BlockPos.containing(v));
+            level.setChunkForced(c.x(), c.z(), true);
+            level.getChunk(c.x(), c.z());
         }
     }
 }

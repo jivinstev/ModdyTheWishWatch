@@ -136,7 +136,7 @@ public class LivingMobIsNotAPropGameTest {
         helper.onEachTick(() -> {
             if (finished.get() == null) {
                 for (Entity e : level.getEntities().getAll()) {
-                    if (e instanceof Creeper c && e.getTags().contains(TAG)) {
+                    if (e instanceof Creeper c && e.entityTags().contains(TAG)) {
                         seen.add(c);
                     }
                 }
@@ -207,7 +207,7 @@ public class LivingMobIsNotAPropGameTest {
         }
         int stands = 0;
         for (Entity e : level.getEntities().getAll()) {
-            if (e instanceof ArmorStand && e.getTags().contains(TAG) && e.isAlive()) {
+            if (e instanceof ArmorStand && e.entityTags().contains(TAG) && e.isAlive()) {
                 stands++;
             }
         }
@@ -264,7 +264,7 @@ public class LivingMobIsNotAPropGameTest {
         // Copied first: discarding while walking the live entity list hands back nulls.
         java.util.List<Entity> ours = new java.util.ArrayList<>();
         for (Entity e : level.getEntities().getAll()) {
-            if (e != null && e.getTags().contains(TAG)) {
+            if (e != null && e.entityTags().contains(TAG)) {
                 ours.add(e);
             }
         }

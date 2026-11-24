@@ -53,7 +53,7 @@ public record CarrierState(List<MobEffectInstance> effects, Component name, bool
         }
         effects.sort(java.util.Comparator.comparing(e -> e.getEffect().getRegisteredName()));
         Set<String> tags = new TreeSet<>();
-        for (String t : carrier.getTags()) {
+        for (String t : carrier.entityTags()) {
             if (!rigsOwn(t)) {
                 tags.add(t);
             }

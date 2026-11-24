@@ -134,8 +134,8 @@ public class AggroBehaviourGameTest {
 
         run(helper, effectCommands("mob"), impact);
 
-        helper.assertTrue(!noob.getTags().contains("mfam_aggro_noob"),
-                Component.literal("the working tag survived the function: " + noob.getTags()));
+        helper.assertTrue(!noob.entityTags().contains("mfam_aggro_noob"),
+                Component.literal("the working tag survived the function: " + noob.entityTags()));
         helper.succeed();
     }
 }

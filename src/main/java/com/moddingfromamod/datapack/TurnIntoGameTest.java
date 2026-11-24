@@ -544,7 +544,7 @@ public final class TurnIntoGameTest {
             SingleRecipeInput input = new SingleRecipeInput(new ItemStack(in));
             var r = recipes.getRecipeFor(RecipeType.SMELTING, input, level);
             String got = r.map(h -> BuiltInRegistries.ITEM.getKey(
-                    h.value().assemble(input, level.registryAccess()).getItem()).toString()).orElse("nothing");
+                    h.value().assemble(input).getItem()).toString()).orElse("nothing");
             if (!got.equals(row.getValue())) {
                 bad.append("\n  ").append(row.getKey()).append(": table ").append(row.getValue()).append(", furnace ").append(got);
             }

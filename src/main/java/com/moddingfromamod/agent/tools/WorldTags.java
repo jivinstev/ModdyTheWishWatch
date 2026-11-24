@@ -45,7 +45,7 @@ final class WorldTags {
             java.util.function.Supplier<String> look = () -> {
                 for (ServerLevel level : srv.getAllLevels()) {
                     for (Entity e : level.getEntities().getAll()) {
-                        if (e.getTags().contains(tag)) {
+                        if (e.entityTags().contains(tag)) {
                             return net.minecraft.world.entity.EntityType.getKey(e.getType())
                                     .toString();
                         }
@@ -80,7 +80,7 @@ final class WorldTags {
                 Set<String> seen = new LinkedHashSet<>();
                 for (ServerLevel level : srv.getAllLevels()) {
                     for (Entity e : level.getEntities().getAll()) {
-                        for (String t : e.getTags()) {
+                        for (String t : e.entityTags()) {
                             if (want.contains(t)) {
                                 seen.add(t);
                             }

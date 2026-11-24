@@ -595,7 +595,7 @@ public final class ClaimWorld {
                 if (com.moddingfromamod.mob.CreatureMatch.matches(seen, what)) {
                     return true;
                 }
-                for (String tag : e.getTags()) {
+                for (String tag : e.entityTags()) {
                     if (WishMobTags.isSpeciesTag(tag) && ClaimJudge.leading(
                             ClaimJudge.words(tag.substring(WishMobTags.PREFIX.length())), w)) {
                         return true;

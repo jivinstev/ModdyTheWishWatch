@@ -44,7 +44,7 @@ public final class RigProbe {
             return null;
         }
         for (var e : level.getEntities().getAll()) {
-            if (!(e instanceof LivingEntity live) || !e.getTags().contains(DisplayRig.RIG_TAG)) {
+            if (!(e instanceof LivingEntity live) || !e.entityTags().contains(DisplayRig.RIG_TAG)) {
                 continue;
             }
             var sp = DisplayRig.speciesOn(live);

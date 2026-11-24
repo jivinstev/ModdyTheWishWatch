@@ -80,7 +80,7 @@ public final class CallPets {
     @SubscribeEvent
     public static void onServerTick(ServerTickEvent.Post event) {
         for (ServerPlayer p : event.getServer().getPlayerList().getPlayers()) {
-            for (String tag : List.copyOf(p.getTags())) {
+            for (String tag : List.copyOf(p.entityTags())) {
                 if (tag.startsWith(TAG)) {
                     p.removeTag(tag);
                     call(p, tag.substring(TAG.length()));
@@ -108,8 +108,8 @@ public final class CallPets {
         }
         if (mine.isEmpty() && (kind.startsWith("creature_") || kind.startsWith("event_"))) {
             // Said, never silent: a horn that does nothing reads as a broken horn.
-            owner.displayClientMessage(net.minecraft.network.chat.Component.literal(
-                    "Nothing of yours heard the horn — it is too far away to hear it, or it is gone."), true);
+            owner.sendOverlayMessage(net.minecraft.network.chat.Component.literal(
+                    "Nothing of yours heard the horn — it is too far away to hear it, or it is gone."));
         }
         int n = 0;
         for (Entity pet : mine) {
@@ -149,7 +149,7 @@ public final class CallPets {
                     .equals(com.moddingfromamod.marshal.ArtifactOwner.baseOf(kind.substring("creature_".length())));
         }
         if (kind.startsWith("event_")) {
-            return m.getTags().contains(com.moddingfromamod.event.EventDirector.entityTag(kind.substring("event_".length())));
+            return m.entityTags().contains(com.moddingfromamod.event.EventDirector.entityTag(kind.substring("event_".length())));
         }
         return "any".equals(kind);
     }

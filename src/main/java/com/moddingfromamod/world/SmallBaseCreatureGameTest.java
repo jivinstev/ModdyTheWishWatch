@@ -236,7 +236,7 @@ public final class SmallBaseCreatureGameTest {
     private static String judge(GameTestHelper helper, ServerPlayer him, Bases bases, String tag, String[] inside,
                                 String[] fromOff, Throwable err) {
         List<net.minecraft.world.entity.animal.pig.Pig> pigs = helper.getLevel().getEntitiesOfClass(
-                net.minecraft.world.entity.animal.pig.Pig.class, him.getBoundingBox().inflate(48), p -> p.getTags().contains(tag));
+                net.minecraft.world.entity.animal.pig.Pig.class, him.getBoundingBox().inflate(48), p -> p.entityTags().contains(tag));
         String seen = pigs.stream().map(p -> p.blockPosition().toShortString() + "="
                 + (p.hasCustomName() ? p.getCustomName().getString() : "-")).toList().toString();
         pigs.forEach(net.minecraft.world.entity.Entity::discard);

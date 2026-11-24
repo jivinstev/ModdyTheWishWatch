@@ -40,11 +40,11 @@ public final class Tidy {
     public static void onServerTick(ServerTickEvent.Post event) {
         boolean look = event.getServer().getTickCount() % 20 == 0;
         for (ServerPlayer p : event.getServer().getPlayerList().getPlayers()) {
-            if (p.getTags().contains(SORT_TAG)) {
+            if (p.entityTags().contains(SORT_TAG)) {
                 p.removeTag(SORT_TAG);
                 sort(p);
             }
-            if (p.getTags().contains(JUNK_TAG)) {
+            if (p.entityTags().contains(JUNK_TAG)) {
                 p.removeTag(JUNK_TAG);
                 dropJunk(p);
             }

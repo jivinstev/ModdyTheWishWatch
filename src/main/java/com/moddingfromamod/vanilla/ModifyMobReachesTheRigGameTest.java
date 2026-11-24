@@ -224,7 +224,7 @@ public class ModifyMobReachesTheRigGameTest {
     private static LivingEntity carrierAt(ServerLevel level, Vec3 at) {
         for (LivingEntity e : level.getEntitiesOfClass(LivingEntity.class,
                 new AABB(at, at).inflate(24))) {
-            if (e.getTags().contains(DisplayRig.RIG_TAG)) {
+            if (e.entityTags().contains(DisplayRig.RIG_TAG)) {
                 return e;
             }
         }
@@ -243,7 +243,7 @@ public class ModifyMobReachesTheRigGameTest {
         Vec3 at = child.add(4, 0, 0);
         for (LivingEntity stale : overworld.getEntitiesOfClass(LivingEntity.class,
                 new AABB(at, at).inflate(64),
-                e -> e.getTags().contains(DisplayRig.RIG_TAG) || e instanceof WishMobEntity)) {
+                e -> e.entityTags().contains(DisplayRig.RIG_TAG) || e instanceof WishMobEntity)) {
             DisplayRig.reap(overworld, stale.getUUID());
             stale.discard();
         }

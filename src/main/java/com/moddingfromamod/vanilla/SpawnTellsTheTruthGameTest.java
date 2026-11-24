@@ -238,8 +238,8 @@ public class SpawnTellsTheTruthGameTest {
         List<LivingEntity> out = new ArrayList<>();
         for (Entity e : level.getEntities().getAll()) {
             if (e instanceof LivingEntity l && e.isAlive()
-                    && e.getTags().contains(DisplayRig.RIG_TAG)
-                    && e.getTags().contains(WishMobTags.forSpecies(id))) {
+                    && e.entityTags().contains(DisplayRig.RIG_TAG)
+                    && e.entityTags().contains(WishMobTags.forSpecies(id))) {
                 out.add(l);
             }
         }
@@ -250,7 +250,7 @@ public class SpawnTellsTheTruthGameTest {
         String owner = DisplayRig.RIG_OWNER_PREFIX + carrier.getUUID();
         int n = 0;
         for (Entity e : level.getEntities().getAll()) {
-            if (e instanceof Display && e.getTags().contains(owner) && !e.isRemoved()) {
+            if (e instanceof Display && e.entityTags().contains(owner) && !e.isRemoved()) {
                 n++;
             }
         }

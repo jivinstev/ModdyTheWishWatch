@@ -114,7 +114,7 @@ public final class RigPowers {
             }
             return;
         }
-        ServerBossEvent bar = BARS.computeIfAbsent(carrier.getUUID(), k -> new ServerBossEvent(
+        ServerBossEvent bar = BARS.computeIfAbsent(carrier.getUUID(), k -> new ServerBossEvent(java.util.UUID.randomUUID(),
                 Component.literal(sp.name()), BossEvent.BossBarColor.PURPLE,
                 BossEvent.BossBarOverlay.PROGRESS));
         // Its NAME as well: a reshape in place keeps the carrier, so a renamed boss keeps its bar.
@@ -141,7 +141,7 @@ public final class RigPowers {
      * bigger" showed his bar under the wish's while Moddy planned).
      */
     static boolean stillBeingWished(Mob carrier, Species sp) {
-        return WishShimmer.inProgress(sp.id()) || carrier.getTags().contains(WishShimmer.PREVIEW_TAG)
+        return WishShimmer.inProgress(sp.id()) || carrier.entityTags().contains(WishShimmer.PREVIEW_TAG)
                 || aboutOfALiveWish(sp.id());
     }
 

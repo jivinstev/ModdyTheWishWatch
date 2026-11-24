@@ -268,7 +268,7 @@ public final class OnBlockShapeGameTest {
                         seen[0], arrow.getZ() - feet.getZ(), arrow.getDeltaMovement().z,
                         arrow.getOwner() == p ? "him" : String.valueOf(arrow.getOwner() == null ? null : arrow.getOwner().getType()),
                         p.getZ() - feet.getZ(), p.isBlocking(), p.isUsingItem(), p.gameMode.getGameModeForPlayer(),
-                        p.getAbilities().invulnerable, p.getTags().contains(ReflectProjectiles.TAG), p.getHealth())
+                        p.getAbilities().invulnerable, p.entityTags().contains(ReflectProjectiles.TAG), p.getHealth())
                         + " arrow in " + helper.getLevel().getBlockState(arrow.blockPosition()).getBlock()
                         + "/" + helper.getLevel().getFluidState(arrow.blockPosition()).getType());
                 if (seen[0] == 1) {   // what stands in the arrow's path, z feet .. feet+5

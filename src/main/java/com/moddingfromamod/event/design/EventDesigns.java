@@ -264,7 +264,7 @@ public final class EventDesigns {
     /** Bank the day clock and stage whatever is due. Public so a GameTest can drive it. */
     public static void tickSchedules(MinecraftServer server) {
         Store s = store(server);
-        long now = server.overworld().getDayTime();
+        long now = com.moddingfromamod.mv.DayTime.get(server.overworld());
         long before = s.lastDayTime;
         s.lastDayTime = now;
         if (s.refused != null || s.schedules.isEmpty()) {

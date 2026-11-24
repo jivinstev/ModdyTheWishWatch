@@ -17,7 +17,7 @@ import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ChestMenu;
-import net.minecraft.world.inventory.ClickType;
+import net.minecraft.world.inventory.ContainerInput;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
@@ -184,13 +184,13 @@ public final class WishBagMenu extends ChestMenu {
     }
 
     @Override
-    public void clicked(int slotId, int button, ClickType type, Player player) {
+    public void clicked(int slotId, int button, ContainerInput type, Player player) {
         if (slotId >= WishBagPages.PER_PAGE && slotId < SIZE) {
             press(slotId);
             return;
         }
         boolean bagCell = slotId >= 0 && slotId < WishBagPages.PER_PAGE;
-        if (bagCell && type == ClickType.CLONE) {
+        if (bagCell && type == ContainerInput.CLONE) {
             refuse();
             return;
         }
@@ -207,15 +207,15 @@ public final class WishBagMenu extends ChestMenu {
      * What an ordinary item this click is trying to put in, or EMPTY — only so he can be TOLD;
      * the refusal itself is the slots' {@code mayPlace}, which vanilla honours on every path.
      */
-    private ItemStack wouldRefuse(int slotId, int button, ClickType type, Player player) {
+    private ItemStack wouldRefuse(int slotId, int button, ContainerInput type, Player player) {
         boolean bagCell = slotId >= 0 && slotId < WishBagPages.PER_PAGE;
         ItemStack candidate = ItemStack.EMPTY;
-        if (bagCell && type == ClickType.PICKUP) {
+        if (bagCell && type == ContainerInput.PICKUP) {
             candidate = getCarried();
-        } else if (bagCell && type == ClickType.SWAP) {
+        } else if (bagCell && type == ContainerInput.SWAP) {
             candidate = button == 40 ? player.getOffhandItem()
                     : button >= 0 && button < 9 ? player.getInventory().getItem(button) : ItemStack.EMPTY;
-        } else if (!bagCell && slotId >= SIZE && slotId < this.slots.size() && type == ClickType.QUICK_MOVE) {
+        } else if (!bagCell && slotId >= SIZE && slotId < this.slots.size() && type == ContainerInput.QUICK_MOVE) {
             candidate = this.slots.get(slotId).getItem();
         }
         return !candidate.isEmpty() && !WishedItems.isWished(candidate) && !isModdysOwn(candidate)

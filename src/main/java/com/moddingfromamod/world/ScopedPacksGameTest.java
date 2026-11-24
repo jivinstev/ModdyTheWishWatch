@@ -389,9 +389,9 @@ public final class ScopedPacksGameTest {
         ServerPlayer neighbour = MockPlayerNetwork.inLevel(helper, "mfam-neighbour");
         neighbour.teleportTo(helper.getLevel(), him.getX(), him.getY(), him.getZ() + 200, java.util.Set.of(), 0, 0, true);
         // Kept loaded from now on: a summon into a chunk nothing holds succeeds and makes nothing anyone can find.
-        net.minecraft.world.level.ChunkPos nextDoor = new net.minecraft.world.level.ChunkPos(
+        net.minecraft.world.level.ChunkPos nextDoor = net.minecraft.world.level.ChunkPos.containing(
                 new BlockPos(him.getBlockX() + 4, him.getBlockY(), him.getBlockZ() + 200));
-        helper.getLevel().setChunkForced(nextDoor.x, nextDoor.z, true);
+        helper.getLevel().setChunkForced(nextDoor.x(), nextDoor.z(), true);
         var server = helper.getLevel().getServer();
         long t = helper.getLevel().getGameTime();
         String pet = "wishmob_gt_rulepet_" + t;
@@ -451,7 +451,7 @@ public final class ScopedPacksGameTest {
                 BaseReach.hisCreatureTags = hookBefore;
                 StringBuilder said = new StringBuilder();
                 out.forEach((k, v) -> said.append(k).append('=').append(java.util.Arrays.toString(v)).append("; "));
-                helper.getLevel().setChunkForced(nextDoor.x, nextDoor.z, false);
+                helper.getLevel().setChunkForced(nextDoor.x(), nextDoor.z(), false);
                 helper.fail(Component.literal("the rules test ran out of time (last: " + last.get() + "): " + said));
             }
             last.set("waiting on the calls");
@@ -471,13 +471,13 @@ public final class ScopedPacksGameTest {
                         + " {NoAI:1b,Tags:[\"" + pet + "\"]}");
             }
             var on = helper.getLevel().getEntities((net.minecraft.world.entity.Entity) null, him.getBoundingBox().inflate(400),
-                    e -> e.getTags().contains("gt_on_" + t));
+                    e -> e.entityTags().contains("gt_on_" + t));
             var off = helper.getLevel().getEntities((net.minecraft.world.entity.Entity) null, him.getBoundingBox().inflate(400),
-                    e -> e.getTags().contains("gt_off_" + t));
-            last.set("on=" + on.size() + (on.isEmpty() ? "" : " tags " + on.get(0).getTags()) + " off=" + off.size()
+                    e -> e.entityTags().contains("gt_off_" + t));
+            last.set("on=" + on.size() + (on.isEmpty() ? "" : " tags " + on.get(0).entityTags()) + " off=" + off.size()
                     + " rules=" + com.moddingfromamod.rules.WorldRules.all(server).stream().map(r -> r.name()).toList()
                     + " err=" + com.moddingfromamod.rules.WorldRules.lastError("gt_island_" + t));
-            helper.assertTrue(!on.isEmpty() && on.get(0).getTags().contains(mark),
+            helper.assertTrue(!on.isEmpty() && on.get(0).entityTags().contains(mark),
                     Component.literal("the rule did not fire on his island"));
             // Both husks' firings are queued; give the queue 20 more ticks so "it did not fire next door" is not
             // judged a tick before it would have.
@@ -487,15 +487,15 @@ public final class ScopedPacksGameTest {
             }
             helper.assertTrue(now >= settledFrom.get() + 20, Component.literal("settling"));
             var hisPets = helper.getLevel().getEntities((net.minecraft.world.entity.Entity) null,
-                    him.getBoundingBox().inflate(20), e -> e.getTags().contains(pet));
+                    him.getBoundingBox().inflate(20), e -> e.entityTags().contains(pet));
             helper.assertTrue(!hisPets.isEmpty() && hisPets.get(0) instanceof net.minecraft.world.entity.LivingEntity le
                     && le.hasEffect(net.minecraft.world.effect.MobEffects.GLOWING),
                     Component.literal("the rule for his pets (who: tag=…) did not fire on his pet"));
             // It fired: everything this test set up goes NOW, before the assertions that could fail (no teardown).
             boolean offThere = !off.isEmpty();
-            boolean firedNext = offThere && off.get(0).getTags().contains(mark);
+            boolean firedNext = offThere && off.get(0).entityTags().contains(mark);
             org.slf4j.LoggerFactory.getLogger("gt-scoped").info("[gt] judged: {} offTags={} neighbourAt={} {}",
-                    last.get(), offThere ? off.get(0).getTags() : "-", neighbour.getX(), neighbour.getZ());
+                    last.get(), offThere ? off.get(0).entityTags() : "-", neighbour.getX(), neighbour.getZ());
             on.forEach(net.minecraft.world.entity.Entity::discard);
             hisPets.forEach(net.minecraft.world.entity.Entity::discard);
             off.forEach(net.minecraft.world.entity.Entity::discard);
@@ -508,7 +508,7 @@ public final class ScopedPacksGameTest {
             BaseReach.hisCreatureTags = hookBefore;
             MockPlayerNetwork.remove(him);
             MockPlayerNetwork.remove(neighbour);
-            helper.getLevel().setChunkForced(nextDoor.x, nextDoor.z, false);
+            helper.getLevel().setChunkForced(nextDoor.x(), nextDoor.z(), false);
             verdict.set(!offThere ? "the neighbour's husk was never there to judge"
                     : firedNext ? "the his-island rule fired on the NEIGHBOUR's island" : "");
             helper.assertTrue(verdict.get().isEmpty(), Component.literal(verdict.get()));

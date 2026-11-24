@@ -39,7 +39,7 @@ public abstract class RigTrackerCadenceMixin {
 
     @Inject(method = "sendChanges", at = @At("HEAD"), cancellable = true)
     private void moddingfromamod$rigBeat(CallbackInfo ci) {
-        if (!(entity instanceof Display) || !RigCadence.isRigAtom(entity.getTags())) {
+        if (!(entity instanceof Display) || !RigCadence.isRigAtom(entity.entityTags())) {
             return;
         }
         boolean dirty = entity.getEntityData().isDirty();

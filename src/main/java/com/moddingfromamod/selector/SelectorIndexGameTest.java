@@ -110,15 +110,15 @@ public class SelectorIndexGameTest {
             // the bypass: code that mutates the live set directly, never through addTag
             Entity direct = null;
             for (Entity e : helper.getLevel().getEntities().getAll()) {
-                if (e.getTags().contains(r.p() + "all") && !e.getTags().contains(r.p() + "a")) {
+                if (e.entityTags().contains(r.p() + "all") && !e.entityTags().contains(r.p() + "a")) {
                     direct = e;
                     break;
                 }
             }
             if (direct != null) {
-                direct.getTags().add(r.p() + "a");
-                direct.getTags().add(r.p() + "d");
-                direct.getTags().removeIf(t -> t.equals(r.p() + "all"));
+                direct.entityTags().add(r.p() + "a");
+                direct.entityTags().add(r.p() + "d");
+                direct.entityTags().removeIf(t -> t.equals(r.p() + "all"));
             }
             r.battery("getTags() mutated directly");
             r.run("kill @e[tag=$b,limit=3]");

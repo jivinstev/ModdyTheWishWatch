@@ -149,7 +149,7 @@ public class WishLibraryGameTest {
                     }
                     int before = menu.layout().page();
                     child.containerMenu.clicked(next.slot(), 0,
-                            net.minecraft.world.inventory.ClickType.PICKUP, child);
+                            net.minecraft.world.inventory.ContainerInput.PICKUP, child);
                     helper.assertTrue(child.containerMenu == menu,
                             Component.literal("'More wishes ▶' opened a NEW menu instead of re-laying this one"));
                     helper.assertTrue(menu.layout().page() == before + 1,
@@ -184,7 +184,7 @@ public class WishLibraryGameTest {
                     helper.assertTrue(back != null, Component.literal("a later page has no '◀ Back'"));
                     int before = menu.layout().page();
                     child.containerMenu.clicked(back.slot(), 0,
-                            net.minecraft.world.inventory.ClickType.PICKUP, child);
+                            net.minecraft.world.inventory.ContainerInput.PICKUP, child);
                     helper.assertTrue(child.containerMenu == menu,
                             Component.literal("'◀ Back' opened a NEW menu instead of re-laying this one"));
                     helper.assertTrue(menu.layout().page() == before - 1,
@@ -198,7 +198,7 @@ public class WishLibraryGameTest {
                 // newest wish instead, before and after.
                 var before = newestOf(server, child);
                 child.containerMenu.clicked(pick.slot(), 0,
-                        net.minecraft.world.inventory.ClickType.PICKUP, child);
+                        net.minecraft.world.inventory.ContainerInput.PICKUP, child);
                 var made = newestOf(server, child);
                 helper.assertTrue(made != null && (before == null
                                 || !made.id().equals(before.id())),

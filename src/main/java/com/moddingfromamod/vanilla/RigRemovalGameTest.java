@@ -55,12 +55,12 @@ public final class RigRemovalGameTest {
         Entity e = level.getEntity(carrier);
         long rigs = 0;
         for (Entity x : level.getEntities().getAll()) {
-            if (x.getTags().contains(DisplayRig.RIG_TAG)) {
+            if (x.entityTags().contains(DisplayRig.RIG_TAG)) {
                 rigs++;
             }
         }
         return "carrier " + (e == null ? "NOT IN LEVEL" : e.getType().toShortString()
-                + " removed=" + e.isRemoved() + " tags=" + e.getTags()
+                + " removed=" + e.isRemoved() + " tags=" + e.entityTags()
                 + " speciesOn=" + (DisplayRig.speciesOn(e) == null ? null : DisplayRig.speciesOn(e).id()))
                 + "; " + rigs + " entities carry the rig tag";
     }
@@ -110,8 +110,8 @@ public final class RigRemovalGameTest {
     public static void aRealKillTakesTheWholeRigWithIt(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
         BlockPos base = helper.absolutePos(new BlockPos(4, 1, 4)).offset(4608, 0, 0);
-        ChunkPos chunk = new ChunkPos(base);
-        level.setChunkForced(chunk.x, chunk.z, true);
+        ChunkPos chunk = ChunkPos.containing(base);
+        level.setChunkForced(chunk.x(), chunk.z(), true);
         String id = "gt_889_kill";
         UUID[] carrier = new UUID[1];
         helper.startSequence()
@@ -130,7 +130,7 @@ public final class RigRemovalGameTest {
                 .thenExecuteAfter(5, () -> helper.assertTrue(kill(level, id) > 0,
                         Component.literal("/kill found no creature wearing the species tag")))
                 .thenWaitUntil(() -> assertNothingLeft(helper, carrier[0], "after /kill"))
-                .thenExecute(() -> level.setChunkForced(chunk.x, chunk.z, false))
+                .thenExecute(() -> level.setChunkForced(chunk.x(), chunk.z(), false))
                 .thenSucceed();
     }
 
@@ -138,8 +138,8 @@ public final class RigRemovalGameTest {
     public static void removeCreatureRemovesARigCreatureAndAllOfIt(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
         BlockPos base = helper.absolutePos(new BlockPos(4, 1, 4)).offset(4864, 0, 0);
-        ChunkPos chunk = new ChunkPos(base);
-        level.setChunkForced(chunk.x, chunk.z, true);
+        ChunkPos chunk = ChunkPos.containing(base);
+        level.setChunkForced(chunk.x(), chunk.z(), true);
         String id = "gt_889_remove";
         UUID[] carrier = new UUID[1];
         AtomicReference<String> said = new AtomicReference<>();
@@ -166,7 +166,7 @@ public final class RigRemovalGameTest {
                         Component.literal("remove_creature did not find the rig creature standing there: " + said.get()
                                 + " | " + census(level, carrier[0]))))
                 .thenWaitUntil(() -> assertNothingLeft(helper, carrier[0], "after remove_creature"))
-                .thenExecute(() -> level.setChunkForced(chunk.x, chunk.z, false))
+                .thenExecute(() -> level.setChunkForced(chunk.x(), chunk.z(), false))
                 .thenSucceed();
     }
 
@@ -178,8 +178,8 @@ public final class RigRemovalGameTest {
     public static void aKillAfterTheChunkReloadsStillTakesTheWholeRig(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
         BlockPos base = helper.absolutePos(new BlockPos(4, 1, 4)).offset(5120, 0, 0);
-        ChunkPos chunk = new ChunkPos(base);
-        level.setChunkForced(chunk.x, chunk.z, true);
+        ChunkPos chunk = ChunkPos.containing(base);
+        level.setChunkForced(chunk.x(), chunk.z(), true);
         String id = "gt_889_reload";
         UUID[] carrier = new UUID[1];
         Mob[] first = new Mob[1];
@@ -196,20 +196,20 @@ public final class RigRemovalGameTest {
                     carrier[0] = rig.base().getUUID();
                     first[0] = rig.base();
                 })
-                .thenExecuteAfter(5, () -> level.setChunkForced(chunk.x, chunk.z, false))
+                .thenExecuteAfter(5, () -> level.setChunkForced(chunk.x(), chunk.z(), false))
                 .thenWaitUntil(() -> {
                     level.getChunkSource().tick(() -> true, false);
                     helper.assertTrue(first[0].isRemoved() && first[0].getRemovalReason()
                             == Entity.RemovalReason.UNLOADED_TO_CHUNK, Component.literal("the chunk has not unloaded yet"));
                 })
-                .thenExecute(() -> level.setChunkForced(chunk.x, chunk.z, true))
+                .thenExecute(() -> level.setChunkForced(chunk.x(), chunk.z(), true))
                 .thenWaitUntil(() -> helper.assertTrue(
                         VanillaRigAnimator.isDriving(level.getEntity(carrier[0])),
                         Component.literal("the creature came back from disk and was not adopted")))
                 .thenExecute(() -> helper.assertTrue(kill(level, id) > 0,
                         Component.literal("/kill found no creature wearing the species tag after the reload")))
                 .thenWaitUntil(() -> assertNothingLeft(helper, carrier[0], "after a reload and /kill"))
-                .thenExecute(() -> level.setChunkForced(chunk.x, chunk.z, false))
+                .thenExecute(() -> level.setChunkForced(chunk.x(), chunk.z(), false))
                 .thenSucceed();
     }
 }

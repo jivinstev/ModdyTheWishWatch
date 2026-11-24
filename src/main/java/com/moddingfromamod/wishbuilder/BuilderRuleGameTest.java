@@ -112,7 +112,7 @@ public final class BuilderRuleGameTest {
             }
             switch (when) {
                 case "jumps" -> BuilderAbilityGameTest.invoke(p, "jumpFromGround");
-                case "rain_stops" -> server.overworld().setWeatherParameters(0, 6000, true, false);
+                case "rain_stops" -> com.moddingfromamod.mv.DayTime.weather(server.overworld(), 0, 6000, true, false);
                 default -> { }
             }
             return null;
@@ -126,7 +126,7 @@ public final class BuilderRuleGameTest {
             }
             Thread.sleep(300);
             BuilderAbilityGameTest.onServer(server, () -> {
-                server.overworld().setWeatherParameters(6000, 0, false, false);
+                com.moddingfromamod.mv.DayTime.weather(server.overworld(), 6000, 0, false, false);
                 return null;
             }).get(10, TimeUnit.SECONDS);
         }

@@ -113,7 +113,7 @@ public final class InstinctGameTest {
         String tag = WishMobTags.forSpecies(id);
         List<Mob> out = new ArrayList<>();
         for (Entity e : helper.getLevel().getEntities((Entity) null, new AABB(around).inflate(48),
-                e -> e.getTags().contains(DisplayRig.RIG_TAG) && e.getTags().contains(tag))) {
+                e -> e.entityTags().contains(DisplayRig.RIG_TAG) && e.entityTags().contains(tag))) {
             if (e instanceof Mob m && m.isAlive()) {
                 out.add(m);
             }

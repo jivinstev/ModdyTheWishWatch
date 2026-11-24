@@ -22,7 +22,7 @@ public final class RigTalk {
     }
 
     public static boolean isTalking(Entity carrier) {
-        return carrier != null && carrier.getTags().contains(TAG);
+        return carrier != null && carrier.entityTags().contains(TAG);
     }
 
     /**

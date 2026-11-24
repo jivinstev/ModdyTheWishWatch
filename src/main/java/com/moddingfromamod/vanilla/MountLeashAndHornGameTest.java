@@ -149,8 +149,8 @@ public final class MountLeashAndHornGameTest {
         seq.thenWaitUntil(() -> {
             var all = helper.getLevel().getEntitiesOfClass(Mob.class,
                     new net.minecraft.world.phys.AABB(helper.absolutePos(BlockPos.ZERO)).inflate(48),
-                    e -> e.getTags().contains(DisplayRig.RIG_TAG)
-                            && e.getTags().contains(com.moddingfromamod.entity.WishMobTags.forSpecies(id)));
+                    e -> e.entityTags().contains(DisplayRig.RIG_TAG)
+                            && e.entityTags().contains(com.moddingfromamod.entity.WishMobTags.forSpecies(id)));
             helper.assertTrue(all.size() >= 2, Component.literal("waiting for two of them: " + all.size()));
             c[0] = all.get(0);
             c[1] = all.get(1);
@@ -167,8 +167,8 @@ public final class MountLeashAndHornGameTest {
                     Component.literal("the horn must say what it calls: '" + horn.getHoverName().getString() + "'"));
             kid.setItemInHand(InteractionHand.MAIN_HAND, horn);
             NeoForge.EVENT_BUS.post(new PlayerInteractEvent.RightClickItem(kid, InteractionHand.MAIN_HAND));
-            helper.assertTrue(kid.getTags().contains(CallPets.TAG + CreatureHorn.kindFor(sp)),
-                    Component.literal("blowing the horn did not call: " + kid.getTags()));
+            helper.assertTrue(kid.entityTags().contains(CallPets.TAG + CreatureHorn.kindFor(sp)),
+                    Component.literal("blowing the horn did not call: " + kid.entityTags()));
         });
         // The call puts it in a 1.5-block ring round him; a bat wandering near cannot pass this.
         seq.thenWaitUntil(() -> helper.assertTrue(c[0].distanceTo(kid) < 2.5,
@@ -320,13 +320,13 @@ public final class MountLeashAndHornGameTest {
             Species sp = SpeciesRegistry.get(id);
             kid.setItemInHand(InteractionHand.MAIN_HAND, CreatureHorn.make(kid, CreatureHorn.kindFor(sp), sp.name()));
             kid.teleportTo(c.getX() + 1.5, c.getY(), c.getZ());
-            kid.interactOn(c, InteractionHand.MAIN_HAND);
+            com.moddingfromamod.mv.Interact.on(kid, c, InteractionHand.MAIN_HAND);
             helper.assertTrue(com.moddingfromamod.mob.RideSeat.mountOf(kid) == c, Component.literal(
                     "a click with his dragon's horn in hand did not climb him on: he rides " + kid.getRootVehicle()));
             kid.stopRiding();
             // Something that does a thing to a creature stays that thing: a lead is not a ride.
             kid.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.LEAD));
-            kid.interactOn(c, InteractionHand.MAIN_HAND);
+            com.moddingfromamod.mv.Interact.on(kid, c, InteractionHand.MAIN_HAND);
             helper.assertTrue(com.moddingfromamod.mob.RideSeat.mountOf(kid) == null,
                     Component.literal("a click with a LEAD climbed him on"));
         });
@@ -337,7 +337,7 @@ public final class MountLeashAndHornGameTest {
     private static Mob near(GameTestHelper helper, String id, ServerPlayer kid) {
         String tag = com.moddingfromamod.entity.WishMobTags.forSpecies(id);
         for (Mob m : helper.getLevel().getEntitiesOfClass(Mob.class, kid.getBoundingBox().inflate(32),
-                e -> e.getTags().contains(DisplayRig.RIG_TAG) && e.getTags().contains(tag) && e.isAlive())) {
+                e -> e.entityTags().contains(DisplayRig.RIG_TAG) && e.entityTags().contains(tag) && e.isAlive())) {
             return m;
         }
         return null;

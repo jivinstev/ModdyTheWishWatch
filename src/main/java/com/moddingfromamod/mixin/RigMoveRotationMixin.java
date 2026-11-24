@@ -37,7 +37,7 @@ public abstract class RigMoveRotationMixin {
     private void moddingfromamod$rotationWithMove(CallbackInfo ci) {
         if (RigMoveRotation.ON && entity instanceof Display
                 && RigMoveRotation.moved(positionCodec.delta(entity.trackingPosition()).lengthSqr())
-                && RigMoveRotation.isRigAtom(entity.getTags())) {
+                && RigMoveRotation.isRigAtom(entity.entityTags())) {
             lastSentYRot = RigMoveRotation.staleYaw(Mth.packDegrees(entity.getYRot()));
         }
     }

@@ -109,11 +109,11 @@ public class RigFitGameTest {
                 CompoundTag tag = com.moddingfromamod.compat.EntityNbt.save(d);
                 var tf = com.mojang.math.Transformation.EXTENDED_CODEC
                         .parse(NbtOps.INSTANCE, tag.get("transformation")).result().orElseThrow();
-                var s = tf.getScale();
+                var s = tf.scale();
                 double v = Math.abs((double) s.x() * s.y() * s.z());
                 w += v;
-                x += v * tf.getTranslation().x();
-                z += v * tf.getTranslation().z();
+                x += v * tf.translation().x();
+                z += v * tf.translation().z();
             }
             double off = Math.hypot(x / w, z / w);
             helper.assertTrue(off < 1.0 / 16, Component.literal("the whale's middle is " + off
@@ -152,8 +152,8 @@ public class RigFitGameTest {
                 var tf = com.mojang.math.Transformation.EXTENDED_CODEC
                         .parse(NbtOps.INSTANCE, tag.get("transformation")).result().orElseThrow();
                 var want = RigTransform.placeAtom(adopted.groups().get(i), 1.5).translation();
-                helper.assertTrue(tf.getTranslation().distance(want) < 1e-3,
-                        Component.literal("display " + i + " kept its pre-#774 seat " + tf.getTranslation()
+                helper.assertTrue(tf.translation().distance(want) < 1e-3,
+                        Component.literal("display " + i + " kept its pre-#774 seat " + tf.translation()
                                 + " instead of " + want));
             }
             helper.succeed();

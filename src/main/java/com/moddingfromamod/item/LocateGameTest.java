@@ -106,7 +106,7 @@ public final class LocateGameTest {
                 helper.runAfterDelay(5, () -> poll[0].run());
                 return;
             }
-            helper.assertTrue(!p.getTags().contains(Locate.TAG + "plains"), Component.literal("the tag was never taken off"));
+            helper.assertTrue(!p.entityTags().contains(Locate.TAG + "plains"), Component.literal("the tag was never taken off"));
             helper.succeed();
         };
         helper.runAfterDelay(1, () -> poll[0].run());

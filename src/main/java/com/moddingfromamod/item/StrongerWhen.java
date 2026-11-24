@@ -94,9 +94,9 @@ public final class StrongerWhen {
      */
     static StrongerWhenRule.World world(ServerPlayer p) {
         Level l = p.level();
-        long t = Math.floorMod(l.getDayTime(), 24000L);
+        long t = Math.floorMod(com.moddingfromamod.mv.DayTime.get(l), 24000L);
         boolean night = l.dimensionType().hasSkyLight() && t >= 13000 && t < 23000;
-        return new StrongerWhenRule.World(night, l.getLevelData().isThundering(), l.getLevelData().isRaining(),
+        return new StrongerWhenRule.World(night, p.level().getWeatherData().isThundering(), p.level().getWeatherData().isRaining(),
                 p.getBlockY(), l.dimension() == Level.NETHER, p.isUnderWater());
     }
 }

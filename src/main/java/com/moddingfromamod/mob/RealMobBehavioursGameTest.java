@@ -114,7 +114,7 @@ public final class RealMobBehavioursGameTest {
         AtomicBoolean asked = new AtomicBoolean();
         helper.succeedWhen(() -> {
             List<LivingEntity> army = new ArrayList<>();
-            level.getEntities(EntityTypeTest.forClass(LivingEntity.class), e -> e.getTags().contains(tag), army);
+            level.getEntities(EntityTypeTest.forClass(LivingEntity.class), e -> e.entityTags().contains(tag), army);
             helper.assertTrue(army.size() == 12, Component.literal("waiting for the twelve: " + army.size() + " so far"));
             for (LivingEntity e : army) {
                 PetBehaviour pet = PetBehaviours.of(e);

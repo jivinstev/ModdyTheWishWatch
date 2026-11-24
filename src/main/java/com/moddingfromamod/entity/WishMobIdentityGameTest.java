@@ -48,10 +48,10 @@ public class WishMobIdentityGameTest {
         com.moddingfromamod.testing.SpeciesForTest.put(helper, species("gt_tag_beast", "Tag Beast"));
         WishMobEntity mob = spawn(helper, "gt_tag_beast");
 
-        helper.assertTrue(mob.getTags().contains("wishmob_gt_tag_beast"),
-                Component.literal("should carry its species tag, had: " + mob.getTags()));
-        helper.assertTrue(mob.getTags().contains(WishMobTags.ALL),
-                Component.literal("should also carry the generic wishmob tag, had: " + mob.getTags()));
+        helper.assertTrue(mob.entityTags().contains("wishmob_gt_tag_beast"),
+                Component.literal("should carry its species tag, had: " + mob.entityTags()));
+        helper.assertTrue(mob.entityTags().contains(WishMobTags.ALL),
+                Component.literal("should also carry the generic wishmob tag, had: " + mob.entityTags()));
         mob.discard();
         helper.succeed();
     }
@@ -82,9 +82,9 @@ public class WishMobIdentityGameTest {
             server.getCommands().performPrefixedCommand(
                     server.createCommandSourceStack().withSuppressedOutput(),
                     "tag " + WishMobTags.selector("gt_findme") + " add gt_selector_reached_me");
-            helper.assertTrue(body.getTags().contains("gt_selector_reached_me"),
+            helper.assertTrue(body.entityTags().contains("gt_selector_reached_me"),
                     Component.literal("the published selector must actually match the creature; tags were: "
-                            + body.getTags()));
+                            + body.entityTags()));
         });
     }
 
@@ -99,14 +99,14 @@ public class WishMobIdentityGameTest {
         WishMobEntity mob = spawn(helper, "gt_legacy");
 
         // Simulate the pre-fix state: an entity in the world with no identity tags at all.
-        for (String tag : new java.util.ArrayList<>(mob.getTags())) {
+        for (String tag : new java.util.ArrayList<>(mob.entityTags())) {
             mob.removeTag(tag);
         }
-        helper.assertTrue(mob.getTags().isEmpty(), Component.literal("the legacy state is genuinely untagged"));
+        helper.assertTrue(mob.entityTags().isEmpty(), Component.literal("the legacy state is genuinely untagged"));
 
         mob.applySpecies();   // exactly what readAdditionalSaveData does on world load
-        helper.assertTrue(mob.getTags().contains("wishmob_gt_legacy"),
-                Component.literal("loading an old creature must tag it, had: " + mob.getTags()));
+        helper.assertTrue(mob.entityTags().contains("wishmob_gt_legacy"),
+                Component.literal("loading an old creature must tag it, had: " + mob.entityTags()));
         mob.discard();
         helper.succeed();
     }
@@ -126,11 +126,11 @@ public class WishMobIdentityGameTest {
 
         mob.setSpeciesId("gt_after");
 
-        helper.assertTrue(mob.getTags().contains("wishmob_gt_after"), Component.literal("gains the new species tag"));
-        helper.assertTrue(!mob.getTags().contains("wishmob_gt_before"),
-                Component.literal("must drop the stale species tag, had: " + mob.getTags()));
-        helper.assertTrue(mob.getTags().contains("bwf"),
-                Component.literal("a datapack's own tag must survive, had: " + mob.getTags()));
+        helper.assertTrue(mob.entityTags().contains("wishmob_gt_after"), Component.literal("gains the new species tag"));
+        helper.assertTrue(!mob.entityTags().contains("wishmob_gt_before"),
+                Component.literal("must drop the stale species tag, had: " + mob.entityTags()));
+        helper.assertTrue(mob.entityTags().contains("bwf"),
+                Component.literal("a datapack's own tag must survive, had: " + mob.entityTags()));
         mob.discard();
         helper.succeed();
     }

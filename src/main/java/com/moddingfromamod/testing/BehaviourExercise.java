@@ -271,12 +271,12 @@ public final class BehaviourExercise {
         quietWorld(server(level), at);
         creature.teleportTo(centre.x, centre.y, centre.z);
         report.addProperty("creature", BuiltInRegistries.ENTITY_TYPE.getKey(creature.getType()).toString());
-        report.addProperty("creatureTags", String.join(",", creature.getTags()));
+        report.addProperty("creatureTags", String.join(",", creature.entityTags()));
         report.addProperty("creatureMaxHealth", creature.getMaxHealth());
         report.addProperty("creatureWidth", creature.getBbWidth());
         report.addProperty("creatureHeight", creature.getBbHeight());
         report.addProperty("creaturesTagged", level.getEntities(EntityTypeTestAll.INSTANCE,
-                e -> e.getTags().contains(WishMobTags.ALL)).size());
+                e -> e.entityTags().contains(WishMobTags.ALL)).size());
         ServerPlayer real = realChild(level.getServer());
         child = real != null ? real : standIn != null ? standIn : MockPlayerNetwork.asSurvival(
                 MockPlayerNetwork.inServer(level, wisherName, wisherId, false));
@@ -296,7 +296,7 @@ public final class BehaviourExercise {
             level.getServer().tickRateManager().setTickRate(20f / slowMotion());
         }
         LOGGER.info("{} exercising {} ({}) at {} for {} ticks", TAG, report.get("creature").getAsString(),
-                creature.getTags(), at.toShortString(), ExercisePlan.totalTicks());
+                creature.entityTags(), at.toShortString(), ExercisePlan.totalTicks());
     }
 
     public static void tick(MinecraftServer server) {
@@ -447,7 +447,7 @@ public final class BehaviourExercise {
                 if (!mounted && alive) {
                     child.teleportTo(c.x + creature.getBbWidth() / 2 + 0.8, c.y, c.z);
                     child.setYRot(0f);
-                    var r = child.interactOn(creature, InteractionHand.MAIN_HAND);
+                    var r = com.moddingfromamod.mv.Interact.on(child, creature, InteractionHand.MAIN_HAND);
                     note("climb on: " + r + ", mounted=" + (RideSeat.mountOf(child) == creature));
                 }
             }
@@ -753,14 +753,14 @@ public final class BehaviourExercise {
         if (tick % 2 == 0) {
             Vec3 c = creature != null ? creature.position() : centre;
             for (Entity e : level.getEntities((Entity) null, around(c, 40), x -> true)) {
-                if (known.add(e.getUUID()) && !e.getTags().contains(ENEMY_TAG) && !e.getTags().contains(FRIEND_TAG)
+                if (known.add(e.getUUID()) && !e.entityTags().contains(ENEMY_TAG) && !e.entityTags().contains(FRIEND_TAG)
                         && e != child && !isRigPart(e) && !FilmCamera.isCamera(e)) {   // the film's camera is not its doing
                     JsonObject o = new JsonObject();
                     o.addProperty("type", BuiltInRegistries.ENTITY_TYPE.getKey(e.getType()).toString());
                     o.addProperty("tick", tick);
                     o.addProperty("projectile", e instanceof Projectile);
                     o.addProperty("living", e instanceof LivingEntity);
-                    o.addProperty("wishmob", e.getTags().contains(WishMobTags.ALL));
+                    o.addProperty("wishmob", e.entityTags().contains(WishMobTags.ALL));
                     // How far from the creature it appeared: a bee leaving a hive 30 blocks off is
                     // not a helper it called (the staged runs counted three).
                     o.addProperty("distance", e.position().distanceTo(c));
@@ -814,7 +814,7 @@ public final class BehaviourExercise {
     /** The wished creature: the biggest carrier wearing the wish tag (its helpers are smaller). */
     static Mob findCreature(ServerLevel level) {
         Mob best = null;
-        for (Entity e : level.getEntities(EntityTypeTestAll.INSTANCE, e -> e.getTags().contains(WishMobTags.ALL)
+        for (Entity e : level.getEntities(EntityTypeTestAll.INSTANCE, e -> e.entityTags().contains(WishMobTags.ALL)
                 && e instanceof Mob && e.isAlive())) {
             Mob m = (Mob) e;
             if (best == null || m.getBbWidth() * m.getBbHeight() > best.getBbWidth() * best.getBbHeight()) {
@@ -838,14 +838,14 @@ public final class BehaviourExercise {
         rules.set(net.minecraft.world.level.gamerules.GameRules.SPAWN_MOBS,false, server);
         rules.set(net.minecraft.world.level.gamerules.GameRules.ADVANCE_TIME,false, server);
         rules.set(net.minecraft.world.level.gamerules.GameRules.ADVANCE_WEATHER,false, server);
-        level.setDayTime(6000);
-        level.setWeatherParameters(12000, 0, false, false);
+        com.moddingfromamod.mv.DayTime.set(level, 6000);
+        com.moddingfromamod.mv.DayTime.weather(level, 12000, 0, false, false);
         // Every other creature about, not only monsters: the second staged run's poison aura
         // poisoned a wild PIG, and its hurt squeals near the creature read as the creature's voice.
         for (Entity e : level.getEntities((Entity) null, around(Vec3.atCenterOf(at), 128),
                 x -> (x instanceof LivingEntity || x instanceof net.minecraft.world.entity.item.ItemEntity)
                         && !(x instanceof net.minecraft.world.entity.player.Player))) {
-            if (!e.getTags().contains(WishMobTags.ALL) && !isRigPart(e)) {
+            if (!e.entityTags().contains(WishMobTags.ALL) && !isRigPart(e)) {
                 e.discard();
             }
         }
@@ -1010,7 +1010,7 @@ public final class BehaviourExercise {
     }
 
     private static boolean ownedBy(Entity e) {
-        return creatureId != null && e.getTags().contains(
+        return creatureId != null && e.entityTags().contains(
                 com.moddingfromamod.vanilla.DisplayRig.RIG_OWNER_PREFIX + creatureId);
     }
 

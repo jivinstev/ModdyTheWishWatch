@@ -358,10 +358,10 @@ public class BuildSpotsGameTest {
 
     /** Force (or release) the 3x3 chunks round a spot: what a real player standing there holds loaded and ticking. */
     private static void holdAround(ServerLevel level, BlockPos at, boolean hold) {
-        net.minecraft.world.level.ChunkPos c = new net.minecraft.world.level.ChunkPos(at);
+        net.minecraft.world.level.ChunkPos c = net.minecraft.world.level.ChunkPos.containing(at);
         for (int dx = -1; dx <= 1; dx++) {
             for (int dz = -1; dz <= 1; dz++) {
-                level.setChunkForced(c.x + dx, c.z + dz, hold);
+                level.setChunkForced(c.x() + dx, c.z() + dz, hold);
             }
         }
     }
@@ -388,7 +388,7 @@ public class BuildSpotsGameTest {
         helper.succeedWhen(() -> {
             Entity stand = null;
             for (Entity e : level.getEntities().getAll()) {
-                if (e.getTags().contains("gt_spot_stand")) {
+                if (e.entityTags().contains("gt_spot_stand")) {
                     stand = e;
                 }
             }
@@ -596,8 +596,8 @@ public class BuildSpotsGameTest {
         List<LivingEntity> out = new ArrayList<>();
         for (Entity e : level.getEntities().getAll()) {
             if (e instanceof LivingEntity l && e.isAlive()
-                    && e.getTags().contains(DisplayRig.RIG_TAG)
-                    && e.getTags().contains(WishMobTags.forSpecies(id))) {
+                    && e.entityTags().contains(DisplayRig.RIG_TAG)
+                    && e.entityTags().contains(WishMobTags.forSpecies(id))) {
                 out.add(l);
             }
         }
@@ -607,9 +607,9 @@ public class BuildSpotsGameTest {
     private static String tagged(ServerLevel level, String id) {
         List<String> out = new ArrayList<>();
         for (Entity e : level.getEntities().getAll()) {
-            if (e.getTags().contains(WishMobTags.forSpecies(id))) {
+            if (e.entityTags().contains(WishMobTags.forSpecies(id))) {
                 out.add(e.getType().toShortString() + "@" + e.blockPosition().toShortString()
-                        + (e.isAlive() ? "" : " dead") + (e.getTags().contains(DisplayRig.RIG_TAG) ? " rig" : ""));
+                        + (e.isAlive() ? "" : " dead") + (e.entityTags().contains(DisplayRig.RIG_TAG) ? " rig" : ""));
             }
         }
         return out.toString();
