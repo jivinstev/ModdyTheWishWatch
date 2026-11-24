@@ -173,7 +173,7 @@
       "severity": "S3",
       "source": "review",
       "status": {
-        "1.21.11": "open"
+        "1.21.11": "fixed@5993cd9"
       },
       "title": "[upgrade-only, from 1.21.11] a datapack wished before 1.21.11 fails to load its reset function (old game-rule name)"
     }
