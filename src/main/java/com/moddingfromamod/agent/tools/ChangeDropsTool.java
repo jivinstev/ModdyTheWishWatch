@@ -232,7 +232,7 @@ public final class ChangeDropsTool implements McpTool {
      *
      * <p>From NeoForge 26.1 the {@code LootModifierManager} is a reload listener the server's resources hand out by key
      * ({@code managers().getListener(NeoForgeReloadListeners.LOOT_MODIFIERS_KEY)}, as NeoForge's own
-     * {@code CommonHooks.modifyLoot} reads it), so no reflection is needed. It still fails LOUDLY: no server, or no
+     * {@code CommonHooks.modifyLoot} reads it), so no reflection is needed. It is LOUD by design: no server, or no
      * manager, must go red in {@code ChangeDropsGameTest}, never quietly report every rule as "not loaded".
      */
     public static final class LiveLootModifiers {
