@@ -266,7 +266,7 @@ public final class MakeItemTool implements McpTool {
     static String freshClash(String minted) {
         // Only a wish this worker is BOUND to names an asker. AgentContext's single-live-run fallback would make any
         // unbound caller (a starter regeneration, a direct call) "the child" of whichever wish happens to be live,
-        // and fork a library starter into a stranger's copy (Gate B, StarterItemRegenGameTest, 2026-11-15).
+        // and fork a library starter into a stranger's copy (Gate B, StarterRegenGameTest, 2026-11-15).
         String worker = com.moddingfromamod.agent.AgentContext.workerId();
         var run = worker.isEmpty() ? null : com.moddingfromamod.marshal.Marshal.global().runForWorker(worker);
         String asker = run == null || run.playerId() == null ? "" : run.playerId().toString();

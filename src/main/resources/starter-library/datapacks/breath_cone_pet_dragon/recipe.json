@@ -1,0 +1,27 @@
+{
+  "recipe": "starter-pack",
+  "v": 1,
+  "id": "breath_cone_pet_dragon",
+  "calls": [
+    {
+      "tool": "apply_effect",
+      "args": {
+        "effect": "breath_cone",
+        "tag": "pet_dragon",
+        "params": {
+          "COMMAND": "damage @s 4 minecraft:on_fire",
+          "TARGET": "mobs",
+          "PARTICLE": "minecraft:flame",
+          "SOUND": "minecraft:entity.ender_dragon.growl",
+          "REACH": 5,
+          "DENSITY": 25,
+          "BREATH_SECONDS": 2,
+          "EVERY_SECONDS": 6
+        }
+      }
+    }
+  ],
+  "compiler": "521e75eacb968528454fefd8e6914602c0fc9187",
+  "date": "2026-11-24",
+  "note": "Backfilled on 2026-11-24: parameters read back out of the shipped tick.mcfunction against effects/breath_cone.cbs (a burst of 40 ticks every 120, flame to 5 blocks at density 25, the dragon growl, 'damage @s 4 minecraft:on_fire' on everything but players). The compiler and date are the ones this recipe was checked against, not the original grant's, which were not kept."
+}

@@ -1,0 +1,26 @@
+{
+  "recipe": "starter-pack",
+  "v": 1,
+  "id": "lightning_sword_lightning",
+  "calls": [
+    {
+      "tool": "make_item",
+      "args": {
+        "name": "Lightning Sword",
+        "base_item": "minecraft:diamond_sword",
+        "shape": "on_hit",
+        "count": 1,
+        "effect": "lightning",
+        "params": {
+          "STRIKES": "1"
+        },
+        "icon": "sword",
+        "colour": "yellow",
+        "from_scratch": true
+      }
+    }
+  ],
+  "compiler": "521e75eacb968528454fefd8e6914602c0fc9187",
+  "date": "2026-11-24",
+  "note": "Backfilled on 2026-11-24 from items/lightning_sword_lightning/item.json and icon.json, the design this pack was made from; the compiler and date are the ones this recipe was checked against, not the original grant's, which were not kept."
+}

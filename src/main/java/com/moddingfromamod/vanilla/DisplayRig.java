@@ -96,7 +96,8 @@ public final class DisplayRig {
     private Entity nameplate;
     private final List<RigPlan.Group> groups;
     private final double scale;
-    private final RigBase.Choice choice;
+    /** The carrier the plan chose; changed only by {@link #fitSeatToBack}. */
+    private RigBase.Choice choice;
     /** The rig's drawn top at rest, in blocks over the carrier's feet; 0 for no atoms. */
     private final double drawnTop;
     /** invisible mobs over the parts the carrier's box cannot cover. Never displays. */
@@ -273,6 +274,37 @@ public final class DisplayRig {
         proxies.addAll(HitProxies.spawn(level, base, proxyPlan, yaw));
         // a rideable creature's horse-like stays UNTAMED. Measured through Geyser (Gate BG
         // ride_button_rideable_pocket): tamed, it offers "Saddle" — not Ride — to any hand holding something.
+    }
+
+    /**
+     * <b>Bring the carrier down to the creature's back when it would seat a rider above it</b>.
+     * A creature that was rideable when it was made has a carrier fitted under its back (the plan's
+     * {@code seatCap}); one made rideable later keeps the carrier fitted to its whole body, and a
+     * flier's bat is sized over its head and wings, so its rider floated over the creature. Climbing
+     * on calls this first ({@code RideSeat.mount}): the same carrier, resized as a rideable
+     * creature's would have been ({@link HitProxyPlan#fitUnderBack}), with proxies over what it then
+     * leaves out. The new size is the carrier's own scale, so a stock client seats him from it.
+     *
+     * @param carrierSeat where the carrier now seats a rider, over its feet
+     * @param back        the top of the creature's back over the carrier's feet
+     * @return whether the carrier was resized
+     */
+    public boolean fitSeatToBack(ServerLevel level, double carrierSeat, double back) {
+        if (base == null || !base.isAlive()) {
+            return false;
+        }
+        String id = BuiltInRegistries.ENTITY_TYPE.getKey(base.getType()).getPath();
+        List<RigFit.Atom> atoms = RigFit.atoms(groups, scale);
+        HitProxyPlan.Plan plan = HitProxyPlan.fitUnderBack(atoms, candidates(level), id, carrierSeat, back);
+        var attr = base.getAttribute(Attributes.SCALE);
+        if (plan == null || attr == null) {
+            return false;
+        }
+        attr.setBaseValue(plan.core().scale());
+        base.refreshDimensions();   // or the box it collides with stays the old size (spawn's note)
+        choice = plan.core();
+        takeProxies(level, plan, base.yBodyRot);
+        return true;
     }
 
     /** Keep the proxies over their parts; {@link RigDriver#follow} calls this every tick. */
