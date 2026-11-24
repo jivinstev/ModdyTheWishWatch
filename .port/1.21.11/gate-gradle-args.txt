@@ -1,0 +1,5 @@
+# Extra Gradle arguments for this version's Port CI gate runs (MMVU ci-gates.py --port-ci reads this file; one
+# option a line). Gate B runs our `ci` GameTest shard, not every shard: the kit stops a Gate B run after a fixed 1500 s
+# and our whole suite takes 22-32 min, so a whole-suite Gate B was stopped by the clock and reported as a "crash"
+# quoting a deliberate test fixture's ERROR. The full tier (`-Pshard=ci,default`) runs by hand, once per release.
+-Pshard=ci
