@@ -421,9 +421,9 @@ public final class VanillaLegsClientTest {
     private static void buildStage(ServerLevel level) {
         var server = level.getServer();
         var gr = server.overworld().getGameRules();
-        gr.getRule(net.minecraft.world.level.gamerules.GameRules.ADVANCE_TIME).set(false, server);
-        gr.getRule(net.minecraft.world.level.gamerules.GameRules.ADVANCE_WEATHER).set(false, server);
-        gr.getRule(net.minecraft.world.level.gamerules.GameRules.SPAWN_MOBS).set(false, server);
+        gr.set(net.minecraft.world.level.gamerules.GameRules.ADVANCE_TIME,false, server);
+        gr.set(net.minecraft.world.level.gamerules.GameRules.ADVANCE_WEATHER,false, server);
+        gr.set(net.minecraft.world.level.gamerules.GameRules.SPAWN_MOBS,false, server);
         level.setDayTime(6000L);
         level.setWeatherParameters(6000, 0, false, false);
         // A checkerboard: a planted foot stays on its square while the body passes over it.

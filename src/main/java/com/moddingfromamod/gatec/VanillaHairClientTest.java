@@ -442,10 +442,8 @@ public final class VanillaHairClientTest {
                 level.setDayTime(6000L);
                 level.setWeatherParameters(6000, 0, false, false);
             }
-            server.overworld().getGameRules().getRule(net.minecraft.world.level.gamerules.GameRules.ADVANCE_TIME)
-                    .set(false, server);
-            server.overworld().getGameRules().getRule(net.minecraft.world.level.gamerules.GameRules.ADVANCE_WEATHER)
-                    .set(false, server);
+            server.overworld().getGameRules().set(net.minecraft.world.level.gamerules.GameRules.ADVANCE_TIME,false, server);
+            server.overworld().getGameRules().set(net.minecraft.world.level.gamerules.GameRules.ADVANCE_WEATHER,false, server);
         });
     }
 

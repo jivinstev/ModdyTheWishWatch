@@ -550,9 +550,9 @@ public final class VanillaLocomotionClientTest {
 
     private static void buildStage(ServerLevel level) {
         var gr = level.getServer().overworld().getGameRules();
-        gr.getRule(net.minecraft.world.level.gamerules.GameRules.ADVANCE_TIME).set(false, level.getServer());
-        gr.getRule(net.minecraft.world.level.gamerules.GameRules.ADVANCE_WEATHER).set(false, level.getServer());
-        gr.getRule(net.minecraft.world.level.gamerules.GameRules.SPAWN_MOBS).set(false, level.getServer());
+        gr.set(net.minecraft.world.level.gamerules.GameRules.ADVANCE_TIME,false, level.getServer());
+        gr.set(net.minecraft.world.level.gamerules.GameRules.ADVANCE_WEATHER,false, level.getServer());
+        gr.set(net.minecraft.world.level.gamerules.GameRules.SPAWN_MOBS,false, level.getServer());
         level.setDayTime(6000L);
         level.setWeatherParameters(6000, 0, false, false);
         var floor = Blocks.WHITE_CONCRETE.defaultBlockState();

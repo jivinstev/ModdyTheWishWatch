@@ -260,10 +260,8 @@ public final class VanillaStageClientTest {
                 srv.execute(() -> {
                     for (ServerLevel l : srv.getAllLevels()) {
                         l.setDayTime(6000L);
-                        l.getGameRules().getRule(net.minecraft.world.level.gamerules.GameRules.ADVANCE_TIME)
-                                .set(false, srv);
-                        l.getGameRules().getRule(
-                                net.minecraft.world.level.gamerules.GameRules.ADVANCE_WEATHER).set(false, srv);
+                        l.getGameRules().set(net.minecraft.world.level.gamerules.GameRules.ADVANCE_TIME,false, srv);
+                        l.getGameRules().set(net.minecraft.world.level.gamerules.GameRules.ADVANCE_WEATHER,false, srv);
                         l.setWeatherParameters(6000, 0, false, false);
                     }
                 });

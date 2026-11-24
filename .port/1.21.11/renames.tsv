@@ -11,10 +11,10 @@ re:\.hasPermissions\(\s*3\s*\)	.permissions().hasPermission(net.minecraft.server
 re:\.hasPermissions\(\s*4\s*\)	.permissions().hasPermission(net.minecraft.server.permissions.Permissions.COMMANDS_OWNER)
 re:(?<![\w$])hasImpulse\b	needsSync
 re:([\w$]+)\.playNotifySound\(	com.moddingfromamod.mv.NotifySound.play(\1, 
-re:\.getRule\(((?:net\.minecraft\.world\.level\.gamerules\.)?GameRules\.\w+)\)\.set\(	.set(\1, 
-re:\.getRule\(((?:net\.minecraft\.world\.level\.gamerules\.)?GameRules\.\w+)\)\.get\(\)	.get(\1)
-re:\.getBoolean\(((?:net\.minecraft\.world\.level\.gamerules\.)?GameRules\.\w+)\)	.get(\1)
-re:\.getInt\(((?:net\.minecraft\.world\.level\.gamerules\.)?GameRules\.\w+)\)	.get(\1)
+re:\.getRule\(\s*((?:net\.minecraft\.world\.level\.(?:gamerules\.)?)?GameRules\.\w+)\)\s*\.set\(	.set(\1, 
+re:\.getRule\(\s*((?:net\.minecraft\.world\.level\.(?:gamerules\.)?)?GameRules\.\w+)\)\s*\.get\(\)	.get(\1)
+re:\.getBoolean\(\s*((?:net\.minecraft\.world\.level\.(?:gamerules\.)?)?GameRules\.\w+)\)	.get(\1)
+re:\.getInt\(\s*((?:net\.minecraft\.world\.level\.(?:gamerules\.)?)?GameRules\.\w+)\)	.get(\1)
 re:(\bserver|\.getServer\(\))\.getGameRules\(\)	\1.overworld().getGameRules()
 re:\.key\(\)\.location\(\)	.key().identifier()
 re:\b(Level\.(?:OVERWORLD|NETHER|END))\.location\(\)	\1.identifier()
