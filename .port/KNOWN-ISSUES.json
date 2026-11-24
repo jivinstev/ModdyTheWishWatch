@@ -1,0 +1,156 @@
+{
+  "issues": [
+    {
+      "files": [
+        "src/main/java/com/moddingfromamod/builder/BuildPlan.java",
+        "src/main/java/com/moddingfromamod/builder/BuildRegistry.java"
+      ],
+      "id": "KI-U1",
+      "lowest": "1.21.10",
+      "notes": "Tag: upgrade-only. (a) The read-time remap (96881f8) is reverted; minecraft:chain reads as an unknown block. Data: <world>/wishes/buildings.json, each child's shelf, library-copy build.json. Repro: save a building with a chain on 1.21.8, open the world on 1.21.10, rebuild or place it from the shelf. How to rebuild (a working start: commit 96881f8 for the read-time wiring and marker, .port/1.21.10/upgrade-remap-wip.patch for the journal, single-id and newer-marker parts): a versioned table (compat/BlockRenames ROWS (from, to, since)) applied when a record is read; an \"mc\" marker on every stored record, an unmarked record counting as 1.21.8; the file rewritten only on its next save; never a record with an older marker written over a newer file (a newer one is read-only for that run).",
+      "override": null,
+      "rubric": {
+        "failure": "functional",
+        "reach": "feature",
+        "visibility": "rare",
+        "workaround": true
+      },
+      "severity": "S3",
+      "source": "review",
+      "status": {
+        "1.21.10": "open"
+      },
+      "title": "[upgrade-only] A 1.21.8 building plan (world or shelf) names minecraft:chain"
+    },
+    {
+      "files": [
+        "src/main/java/com/moddingfromamod/builder/BuildGroundJournal.java"
+      ],
+      "id": "KI-U2",
+      "lowest": "1.21.10",
+      "notes": "Tag: upgrade-only. NbtUtils.readBlockState(blocks,c) at BuildGroundJournal.java:86 reads unknown minecraft:chain as air; no DataFixer runs on mod SavedData. Data: world build-ground journal. Repro: on 1.21.8 build over a chain, open on 1.21.10, undo the building. How to rebuild (a working start: commit 96881f8 for the read-time wiring and marker, .port/1.21.10/upgrade-remap-wip.patch for the journal, single-id and newer-marker parts): a versioned table (compat/BlockRenames ROWS (from, to, since)) applied when a record is read; an \"mc\" marker on every stored record, an unmarked record counting as 1.21.8; the file rewritten only on its next save; never a record with an older marker written over a newer file (a newer one is read-only for that run).",
+      "override": null,
+      "rubric": {
+        "failure": "functional",
+        "reach": "feature",
+        "visibility": "rare",
+        "workaround": true
+      },
+      "severity": "S3",
+      "source": "review",
+      "status": {
+        "1.21.10": "open"
+      },
+      "title": "[upgrade-only] Undoing a 1.21.8 building's ground puts air where a chain was"
+    },
+    {
+      "files": [
+        "src/main/java/com/moddingfromamod/datapack/DatapackDialect.java",
+        "src/main/java/com/moddingfromamod/wish/CommandDialect.java"
+      ],
+      "id": "KI-U3",
+      "lowest": "1.21.10",
+      "notes": "Tag: upgrade-only. CommandDialect.correct (and so DatapackDialect.correctFunction, run on every install) fixes attributes, model data, sounds and components but has no id rename. A 1.21.8-compiled function with setblock/give/fill ... chain is refused at pack load, and a learned template's command fails at replay. Data: <world>/wishes/wish-datapacks/*.zip, library datapacks, learned templates. Repro: on 1.21.8 learn a template 'give @s minecraft:chain', open on 1.21.10, press it.",
+      "override": null,
+      "rubric": {
+        "failure": "functional",
+        "reach": "feature",
+        "visibility": "rare",
+        "workaround": true
+      },
+      "severity": "S3",
+      "source": "review",
+      "status": {
+        "1.21.10": "open"
+      },
+      "title": "[upgrade-only] A stored datapack or learned template naming minecraft:chain stops working"
+    },
+    {
+      "files": [
+        "src/main/java/com/moddingfromamod/agent/tools/ChangeDropsTool.java"
+      ],
+      "id": "KI-U4",
+      "lowest": "1.21.10",
+      "notes": "Tag: upgrade-only. The change_drops pack is written straight into <world>/datapacks (ChangeDropsTool.java:146,214), not in DatapackStore, so the boot retarget (DatapackStore.installAllIntoWorld) skips it. Vanilla 1.21.10 reads a bare pack_format 81 as range 81.0 (PackFormat.validate), TOO_OLD (PackCompatibility.forVersion), but still loads it (MinecraftServer.configurePackRepository ignores compatibility): /datapack list shows '(incompatible)'. A rule giving minecraft:chain fails. Repro: change_drops on 1.21.8, open on 1.21.10, /datapack list. Rewritten on the next change_drops.",
+      "override": null,
+      "rubric": {
+        "failure": "functional",
+        "reach": "feature",
+        "visibility": "rare",
+        "workaround": true
+      },
+      "severity": "S3",
+      "source": "review",
+      "status": {
+        "1.21.10": "open"
+      },
+      "title": "[upgrade-only] The world's drops pack stays at pack_format 81 and is listed as incompatible"
+    },
+    {
+      "files": [
+        "src/main/java/com/moddingfromamod/bag/WishBagStore.java"
+      ],
+      "id": "KI-U5",
+      "lowest": "1.21.10",
+      "notes": "Tag: upgrade-only. WishBagStore.java:94 decodes with ItemStack.CODEC and no DataFixer; minecraft:chain fails and the entry is kept in the file but not shown (undecodable, warned). Data: the player's Wish Bag file. Repro: put a chain in the bag on 1.21.8, open on 1.21.10.",
+      "override": null,
+      "rubric": {
+        "failure": "functional",
+        "reach": "feature",
+        "visibility": "rare",
+        "workaround": true
+      },
+      "severity": "S3",
+      "source": "review",
+      "status": {
+        "1.21.10": "open"
+      },
+      "title": "[upgrade-only] A chain in a 1.21.8 Wish Bag is hidden on 1.21.10"
+    },
+    {
+      "files": [
+        "src/main/java/com/moddingfromamod/event/EventDirector.java",
+        "src/main/java/com/moddingfromamod/item/ItemSpecStore.java",
+        "src/main/java/com/moddingfromamod/rules/WorldRules.java"
+      ],
+      "id": "KI-U6",
+      "lowest": "1.21.10",
+      "notes": "Tag: upgrade-only. (c) Single-id fields: a world rule's near_block never matches, an item spec's turn_into fails, and a staged event's journal (EventDirector.java:139, NbtUtils.readBlockState) restores air. Data: the world's rules file, staged-event saved data, item specs (ItemSpecStore). Repro: on 1.21.8 set a near_block=minecraft:chain rule / a turn_into chain item / an event over a chain; open on 1.21.10 and trigger, use, or undo it. How to rebuild (a working start: commit 96881f8 for the read-time wiring and marker, .port/1.21.10/upgrade-remap-wip.patch for the journal, single-id and newer-marker parts): a versioned table (compat/BlockRenames ROWS (from, to, since)) applied when a record is read; an \"mc\" marker on every stored record, an unmarked record counting as 1.21.8; the file rewritten only on its next save; never a record with an older marker written over a newer file (a newer one is read-only for that run).",
+      "override": null,
+      "rubric": {
+        "failure": "functional",
+        "reach": "feature",
+        "visibility": "rare",
+        "workaround": true
+      },
+      "severity": "S3",
+      "source": "review",
+      "status": {
+        "1.21.10": "open"
+      },
+      "title": "[upgrade-only] minecraft:chain in a 1.21.8 world rule, event design or item spec names a block 1.21.10 lacks"
+    },
+    {
+      "files": [
+        "src/main/java/com/moddingfromamod/store/WishStoreFile.java"
+      ],
+      "id": "KI-U7",
+      "lowest": "1.21.10",
+      "notes": "Tag: upgrade-only. (d) Building plans, the ground journal, world rules, event designs, item specs, the Wish Bag and learned templates are written with no mc version, so no later migration (this rename or any future one) can tell which version wrote a record, and a record is never safe to remap twice. Data: every store above. Repro: save any record on 1.21.8 and on 1.21.10 and diff: neither names its version. How to rebuild (a working start: commit 96881f8 for the read-time wiring and marker, .port/1.21.10/upgrade-remap-wip.patch for the journal, single-id and newer-marker parts): a versioned table (compat/BlockRenames ROWS (from, to, since)) applied when a record is read; an \"mc\" marker on every stored record, an unmarked record counting as 1.21.8; the file rewritten only on its next save; never a record with an older marker written over a newer file (a newer one is read-only for that run).",
+      "override": null,
+      "rubric": {
+        "failure": "functional",
+        "reach": "feature",
+        "visibility": "rare",
+        "workaround": true
+      },
+      "severity": "S3",
+      "source": "review",
+      "status": {
+        "1.21.10": "open"
+      },
+      "title": "[upgrade-only] Stored records carry no Minecraft-version marker"
+    }
+  ],
+  "schema": 1
+}
