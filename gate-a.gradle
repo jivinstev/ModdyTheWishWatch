@@ -83,28 +83,29 @@ tasks.register('gateABudget') {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// GATE A DOES NOT NEED MINECRAFT'S ASSETS. Unwire NeoGradle's `testJunit` from `check`.
+// GATE A DOES NOT NEED MINECRAFT'S ASSETS. Keep any `testJunit` out of `check`.
 //
-// NeoGradle registers `testJunit` — a JUnit run that boots inside a Minecraft runtime — and wires
+// NeoGradle registered `testJunit` — a JUnit run that boots inside a Minecraft runtime — and wired
 // it into `check`. This project has never used it: every unit test here is deliberately hermetic
-// (see "GATE A IS HERMETIC" below), so `testJunit` reports **NO-SOURCE** and runs zero tests.
+// (see "GATE A IS HERMETIC" below), so `testJunit` reported **NO-SOURCE** and ran zero tests.
 //
-// It is not free, though. It is the ONLY thing that pulls `...DownloadAssets` + `ExtractNatives`
-// into the task graph, and on a cold container that download is **239 s of a 344 s `./gradlew
+// It was not free, though. It was the ONLY thing that pulled `...DownloadAssets` + `ExtractNatives`
+// into the task graph, and on a cold container that download was **239 s of a 344 s `./gradlew
 // build`** — 69% of Gate A, spent fetching client textures and sounds so that a test task with no
-// tests can not-run. Measured 2026-09-01; `./gradlew check --dry-run` shows the edge.
+// tests could not-run. Measured 2026-09-01; `./gradlew check --dry-run` showed the edge.
 //
-// So `check` no longer depends on it. Nothing is lost: `testJunit` still exists and still runs on
-// demand (`./gradlew testJunit`), and Gate C/D still download assets when they actually boot a
-// client, which is when a client genuinely needs them.
+// ModDevGradle (the build plugin since the MDG migration) registers no `testJunit`: a unit test that
+// boots Minecraft is MDG's `neoForge.unitTest { enable() }`, which this build does not turn on, and
+// MDG downloads assets only for a run that boots a client (Gate C/D), when a client genuinely needs
+// them. The unwiring below is kept, a no-op today, so a plugin that brings the task back cannot put
+// the download back into Gate A unnoticed.
 //
-// ⚠ IF YOU EVER ADD A UNIT TEST THAT MUST BOOT MINECRAFT, it belongs in `testJunit` — and you must
-// wire this back up, or it will silently never run. That is exactly the "green board that measured
-// nothing" failure this repo keeps paying for, so `gateAWiring` below fails the build if the task
-// stops being empty.
+// ⚠ IF YOU EVER ADD A UNIT TEST THAT MUST BOOT MINECRAFT, it needs its own task that `check` runs —
+// or it will silently never run. That is exactly the "green board that measured nothing" failure
+// this repo keeps paying for, so `gateAWiring` below fails the build if a `testJunit` gains tests.
 // ─────────────────────────────────────────────────────────────────────────────
-// projectsEvaluated, NOT a plain configure block: NeoGradle adds this edge after our
-// configuration runs, so removing it earlier removes nothing and silently leaves the download in
+// projectsEvaluated, NOT a plain configure block: NeoGradle added this edge after our
+// configuration ran, so removing it earlier removed nothing and silently left the download in
 // place (measured — the first attempt at this looked correct and changed the graph not at all).
 gradle.projectsEvaluated {
     tasks.named('check').configure {
@@ -121,7 +122,7 @@ tasks.register('gateAWiring') {
         if (t != null && t.enabled && !t.candidateClassFiles.isEmpty()) {
             throw new GradleException(
                 "testJunit now has test classes, but it was unwired from `check` because it was "
-              + "empty (see the comment above it in build.gradle). Those tests are NOT running. "
+              + "empty (see the comment above it in gate-a.gradle). Those tests are NOT running. "
               + "Either re-wire it into `check` and accept the asset download, or move the tests "
               + "into src/test (hermetic) where Gate A already runs them.")
         }

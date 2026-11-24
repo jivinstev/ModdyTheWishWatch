@@ -90,11 +90,11 @@ class HotbarBadgeTest {
         }
     }
 
-    /** The client jar of the pinned Minecraft, as NeoGradle caches it; READ only, never committed. */
+    /** The client jar of the pinned Minecraft, as the build writes it (build.gradle's additionalMinecraftArtifacts); READ only, never committed. */
     static Path clientJar() {
         String override = System.getenv("MODDY_CLIENT_JAR");   // another cache, or a path that is not there (the skip)
         return Path.of(override != null && !override.isBlank() ? override
-                : ".gradle/caches/minecraft/versions/1.21.8/client.jar");
+                : "build/minecraft/client-1.21.8.jar");
     }
 
     @Test
