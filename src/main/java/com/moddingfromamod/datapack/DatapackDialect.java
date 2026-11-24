@@ -242,9 +242,17 @@ public final class DatapackDialect {
      * nothing the next time its pack is installed — and a grow or impulse pack compiled
      * given its victims' tag ({@link VictimTagFix}), so it stops looking at every entity each tick; and
      * an on_step or on_land pack compiled has its reach counted from the creature's side
-     * ({@link ReachFromBodyFix}).
+     * ({@link ReachFromBodyFix}); and a game rule a newer Minecraft renamed takes its new id
+     * ({@link com.moddingfromamod.compat.GameRuleRenames}).
      */
     public static String correctFunction(String text, List<String> notes) {
+        // a game rule a newer Minecraft renamed (1.21.11: the compiler's own maxCommandChainLength boilerplate in every
+        // pack wished before it), or the whole function fails to load
+        String renamed = com.moddingfromamod.compat.GameRuleRenames.correct(text, com.moddingfromamod.compat.Target.MINECRAFT);
+        if (!renamed.equals(text)) {
+            notes.add("game rules renamed for " + com.moddingfromamod.compat.Target.MINECRAFT);
+            text = renamed;
+        }
         AttributeIds.Fixed fixed = CommandDialect.correct(text);
         notes.addAll(fixed.notes());
         return ReachFromBodyFix.fix(VictimTagFix.fix(ImpulseTelegraphFix.fix(fixed.command(), notes), notes), notes,
