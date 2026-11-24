@@ -192,7 +192,8 @@ def definition(cases, look, ns):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--look', choices=sorted(LOOKS), default='corner')
-    ap.add_argument('--client-jar', default=str(ROOT / '.gradle/caches/minecraft/versions/1.21.8/client.jar'))
+    # written by every build (build.gradle's additionalMinecraftArtifacts)
+    ap.add_argument('--client-jar', default=str(ROOT / 'build/minecraft/client-1.21.8.jar'))
     ap.add_argument('--preview', help='write the look\'s layers here instead of into the mod')
     a = ap.parse_args()
 

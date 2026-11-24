@@ -348,7 +348,8 @@ public final class MockPlayerNetwork {
 
     private static ServerPlayer inLevel(net.minecraft.gametest.framework.GameTestHelper helper,
             boolean withChannels, String name, java.util.UUID id) {
-        ServerPlayer player = place(helper.getLevel(), withChannels, name, id, helper.testInfo);
+        ServerPlayer player = place(helper.getLevel(), withChannels, name, id, helper.testInfo,
+                net.minecraft.core.BlockPos.containing(PlotChild.spot(helper)));
         retireWhenItsOwnTestEnds(helper, player);
         return player;
     }
@@ -363,7 +364,7 @@ public final class MockPlayerNetwork {
      */
     public static ServerPlayer inServer(net.minecraft.server.level.ServerLevel level, String name,
             java.util.UUID id, boolean withChannels) {
-        return place(level, withChannels, name, id, null);
+        return place(level, withChannels, name, id, null, null);
     }
 
     /**
@@ -391,12 +392,35 @@ public final class MockPlayerNetwork {
         }
     }
 
+    /**
+     * Join a mock. A GameTest's mock ({@code landing} set) lands IN ITS OWN TEST'S PLOT, at {@link PlotChild#spot},
+     * never at world spawn: a test keeps only its own structure loaded, and from 1.21.9 nothing keeps world spawn
+     * loaded at all. A mock with no saved data is put where {@code adjustSpawnLocation} says, so that is what is
+     * answered, once, for his first placement; a later portal or respawn asks vanilla as usual. A stand-in outside
+     * any GameTest ({@code landing} null) joins at world spawn as a real player would.
+     *
+     * <p>A plot used to be avoided on purpose: a mock left idle there drew other tests' "for the first player"
+     * actions into the grid. A mock now leaves the world the moment its own test ends ({@link #retireWhenItsOwnTestEnds}),
+     * and a test that sets the shared acting child names its own batch ({@code ActingChildBatchTest}), so the only
+     * tests that can see him are the ones running beside his own.
+     */
     private static ServerPlayer place(net.minecraft.server.level.ServerLevel level, boolean withChannels,
-            String name, java.util.UUID id, net.minecraft.gametest.framework.GameTestInfo owner) {
+            String name, java.util.UUID id, net.minecraft.gametest.framework.GameTestInfo owner,
+            net.minecraft.core.BlockPos landing) {
         var cookie = net.minecraft.server.network.CommonListenerCookie.createInitial(
                 new com.mojang.authlib.GameProfile(id, name), false);
         ServerPlayer player = new ServerPlayer(level.getServer(), level,
                 cookie.gameProfile(), cookie.clientInformation()) {
+            private net.minecraft.core.BlockPos landOnce = landing;
+
+            @Override
+            public net.minecraft.core.BlockPos adjustSpawnLocation(net.minecraft.server.level.ServerLevel at,
+                    net.minecraft.core.BlockPos spawn) {
+                net.minecraft.core.BlockPos here = landOnce;
+                landOnce = null;
+                return here != null ? here : super.adjustSpawnLocation(at, spawn);
+            }
+
             @Override
             public boolean isSpectator() {
                 return false;
@@ -434,10 +458,7 @@ public final class MockPlayerNetwork {
         if (withChannels) {
             ChannelAttributes.setPayloadSetup(connection, new NetworkPayloadSetup(EVERY_PROTOCOL));
         }
-        if (owner != null) {
-            holdTheSpawn(level.getServer());
-        }
-        entitiesLoadedWhereHeLands(level.getServer());
+        entitiesLoadedWhereHeLands(level.getServer(), landing);
         level.getServer().getPlayerList().placeNewPlayer(connection, player, cookie);
         return player;
     }
@@ -446,7 +467,7 @@ public final class MockPlayerNetwork {
     private static volatile java.lang.reflect.Method processPendingLoads;
 
     /**
-     * <b>: the entities round the held spawn are LOADED before {@code placeNewPlayer} waits for them, so its wait
+     * <b>: the entities round where he lands are LOADED before {@code placeNewPlayer} waits for them, so its wait
      * returns at once and can never hang.</b>
      *
      * <p>{@code placeNewPlayer} ends in {@code ServerLevel.waitForChunkAndEntities}: a {@code managedBlock} on the
@@ -456,20 +477,23 @@ public final class MockPlayerNetwork {
      * ({@code haveTime()}: the clock is before the next tick's deadline). A GameTest server ticks as fast as it can, so
      * it is nearly always behind its deadline and never has time: the promotion never runs, the entities are never
      * asked for, and the wait never ends. No tick comes, so no {@code timeoutTicks} fires. Measured: the first mock of
-     * a run, placed the moment {@link #holdTheSpawn} forced the spawn's chunks, hung there (2026-11-20, run 11 of a
+     * a run, placed the moment the harness (then) forced the spawn's chunks, hung there (2026-11-20, run 11 of a
      * loop); a returning mock placed on its old island hung on every run.
      *
      * <p>So the harness does the same wait itself, with the one thing vanilla's lacks: it runs the chunk source's tasks
      * too. Bounded by wall clock (a tick count cannot bound a blocked Server thread); past it, the test that placed the
      * mock FAILS naming the chunks, rather than the run sitting silent. Server thread only (a mock is placed from a
-     * test body or a tick); a no-op once the spawn's entities are loaded, which is every call after the first.
+     * test body or a tick). A GameTest mock lands in his test's plot, whose chunks the framework forces, so the 5x5
+     * round him is inside their loaded ring and the wait is short; a mock outside any test lands at world spawn.
      */
-    private static void entitiesLoadedWhereHeLands(net.minecraft.server.MinecraftServer server) {
+    private static void entitiesLoadedWhereHeLands(net.minecraft.server.MinecraftServer server,
+            net.minecraft.core.BlockPos landing) {
         if (!server.isSameThread()) {
             return;
         }
         net.minecraft.server.level.ServerLevel overworld = server.overworld();
-        net.minecraft.world.level.ChunkPos c = new net.minecraft.world.level.ChunkPos(overworld.getSharedSpawnPos());
+        net.minecraft.world.level.ChunkPos c = new net.minecraft.world.level.ChunkPos(
+                landing != null ? landing : overworld.getSharedSpawnPos());
         java.util.List<net.minecraft.world.level.ChunkPos> want = new java.util.ArrayList<>();
         for (int dx = -2; dx <= 2; dx++) {
             for (int dz = -2; dz <= 2; dz++) {
@@ -492,7 +516,7 @@ public final class MockPlayerNetwork {
         } catch (ReflectiveOperationException e) {
             throw new IllegalStateException("MockPlayerNetwork: ServerLevel.entityManager changed shape — " + e, e);
         }
-        // The wait's own ticket, the one vanilla adds: the 3x3 round the spawn, and the held 5x5 is already forced.
+        // The 3x3 vanilla's wait asks for, and the ring round it: all inside the plot's forced chunks' loaded ring.
         want.forEach(p -> overworld.getChunk(p.x, p.z));
         long deadline = System.nanoTime() + 120_000_000_000L;
         server.managedBlock(() -> {
@@ -507,7 +531,7 @@ public final class MockPlayerNetwork {
             for (net.minecraft.world.level.ChunkPos p : want) {
                 if (!overworld.areEntitiesLoaded(p.toLong())) {
                     if (System.nanoTime() > deadline) {
-                        throw new IllegalStateException("MockPlayerNetwork: the spawn's entities at " + p
+                        throw new IllegalStateException("MockPlayerNetwork: the entities where he lands, at " + p
                                 + " did not load in 120 s of wall clock; placing a mock now would block the Server"
                                 + " thread for ever in placeNewPlayer (#2604)");
                     }
@@ -518,75 +542,37 @@ public final class MockPlayerNetwork {
         });
     }
 
-    /** The server whose spawn {@link #holdTheSpawn} already holds. */
-    private static volatile net.minecraft.server.MinecraftServer spawnHeldFor;
-
-    /**
-     * <b>: keep the chunks a mock is placed in loaded for the whole run, so placing one cannot hang.</b>
-     *
-     * <p>A mock has no saved data, so {@code placeNewPlayer} snaps it to WORLD SPAWN and then blocks the server
-     * thread in {@code ServerLevel.waitForChunkAndEntities} until the chunks and entities there are loaded — a
-     * {@code managedBlock} that no GameTest timeout can interrupt, behind a ticket ({@code TicketType.UNKNOWN})
-     * that EXPIRES. A GameTest world does not keep its spawn loaded, and once (the nightly regression,
-     * 2026-11-11) that wait never ended: 80 minutes, then the build's timeout. Forcing the 5x5 chunks round the
-     * spawn (a forced ticket never expires; the player's ±10-block spawn radius plus the wait's one-chunk ring)
-     * and loading them HERE, synchronously, once per server, leaves the wait nothing to wait for.
-     *
-     * <p>Why not land the mock on its own plot instead (tried first): a mock is "the child" to every OTHER test
-     * that acts in front of the first player online, and a mock left idle on its plot drew those actions into
-     * the test grid — a treehouse went up between a replay test's mock and the hall it was looking at.
-     * At the spawn, far from every plot, an idle mock draws nothing anywhere a test looks.
-     */
-    private static void holdTheSpawn(net.minecraft.server.MinecraftServer server) {
-        if (spawnHeldFor == server) {
-            return;
-        }
-        net.minecraft.server.level.ServerLevel overworld = server.overworld();
-        net.minecraft.world.level.ChunkPos c = new net.minecraft.world.level.ChunkPos(overworld.getSharedSpawnPos());
-        for (int dx = -2; dx <= 2; dx++) {
-            for (int dz = -2; dz <= 2; dz++) {
-                overworld.setChunkForced(c.x + dx, c.z + dz, true);
-                overworld.getChunk(c.x + dx, c.z + dz);
-            }
-        }
-        spawnHeldFor = server;
-    }
-
     /**
      * <b>Refuse to run a test whose premise is "nobody is online", when somebody is.</b>
      *
-     * <p>Several GameTests spawn their subject at WORLD SPAWN, because the tools resolve "the
-     * child" as the first player in the list and <em>with nobody online that means world spawn</em>.
-     * That is a claim about the whole server, and a test that creates no player cannot make it
-     * true: any mock belonging to any other test silently becomes the child.
+     * <p>Several GameTests stand their subject in front of a STAND-IN child ({@link PlotChild#standHere}),
+     * because the tools resolve "the child" as the first player in the list and <em>only with nobody
+     * online is that the stand-in</em>. That is a claim about the whole server, and a test that creates
+     * no player cannot make it true: any mock belonging to any other test silently becomes the child.
+     * (Before the stand-in, the same premise meant world spawn.)
      *
      * <p>What it looked like before this existed: <i>"No mobs within 24 blocks of the child"</i>,
      * about a plot with a mob standing in it. True, about the wrong child, and mentioning no
      * player — so it reads as a defect in the tool, or in the reader's own branch. Two spikes
      * independently spent a control run on it before either filed an issue.
      *
-     * <p>So it fails here instead, naming the player, where it is, and how far that is from world
-     * spawn. Measured with the leak deliberately restored: <i>'mfam-mock' at
-     * BlockPos{x=752260, y=-58, z=-8031905}, 8067056 blocks from world spawn</i>. This makes the
+     * <p>So it fails here instead, naming the player, where it is, and how far that is from this
+     * test's plot. Measured with the leak deliberately restored (then from world spawn): <i>'mfam-mock'
+     * at BlockPos{x=752260, y=-58, z=-8031905}, 8067056 blocks from world spawn</i>. This makes the
      * tests no more robust — they still cannot run with a stray mock about — but it turns a
      * distance into a cause, which is the difference between one line and a control run.
      *
-     * <p>Lives here rather than in either test because there are <b>two</b> files with this
-     * premise and its own helper for it ({@code ModifyMobGameTest.spawnAtWorldSpawn} and
-     * {@code MobIdentityGameTest.arrive}), and the second was found only because the first one's
-     * fix left it still failing. A third would otherwise write a third copy.
+     * <p>Called by {@link PlotChild#standHere}, the one way such a test stands its child, so a new
+     * test with this premise cannot forget it.
      */
     public static void requireNobodyIsOnline(
             net.minecraft.gametest.framework.GameTestHelper helper) {
-        net.minecraft.server.level.ServerLevel overworld =
-                helper.getLevel().getServer().overworld();
-        net.minecraft.world.phys.Vec3 spawn = net.minecraft.world.phys.Vec3
-                .atBottomCenterOf(overworld.getSharedSpawnPos());
+        net.minecraft.world.phys.Vec3 plot = PlotChild.spot(helper);
         for (ServerPlayer p : helper.getLevel().getServer().getPlayerList().getPlayers()) {
-            helper.fail(Component.literal("a player is online, so 'the child' is not world spawn and this test "
-                    + "cannot run: '" + p.getGameProfile().getName() + "' at "
-                    + p.blockPosition() + ", " + (int) p.position().distanceTo(spawn)
-                    + " blocks from world spawn. If that name is '" + MOCK_NAME + "' it is another "
+            helper.fail(Component.literal("a player is online, so 'the child' is not this test's stand-in and "
+                    + "this test cannot run: '" + p.getGameProfile().getName() + "' at "
+                    + p.blockPosition() + ", " + (int) p.position().distanceTo(plot)
+                    + " blocks from this test's plot. If that name is '" + MOCK_NAME + "' it is another "
                     + "test's mock that outlived it — see MockPlayerNetwork, not the tool."));
         }
     }
@@ -804,8 +790,8 @@ public final class MockPlayerNetwork {
     }
 
     /**
-     * <b>: a mock leaves no saved player file behind, so the next mock with its UUID is placed at the held
-     * spawn like any other and placing it cannot hang.</b>
+     * <b>: a mock leaves no saved player file behind, so the next mock with its UUID lands in its own test's
+     * plot like any other and placing it cannot hang.</b>
      *
      * <p>{@code PlayerList.remove} SAVES the player ({@code playerdata/<uuid>.dat}). A test that brings the same
      * child back ({@code IslandReclaimGameTest}: he leaves, his island rests, he comes back) then had vanilla load
@@ -814,8 +800,8 @@ public final class MockPlayerNetwork {
      * runs the chunk source's tasks only while the server "has time" ({@code MinecraftServer.haveTime}), and a
      * GameTest server ticks as fast as it can, so it never has: the wait never ended, no tick came, the test's
      * {@code timeoutTicks} could not fire and Gate B sat silent until something killed it (77 min, 2026-11-20).
-     * {@link #holdTheSpawn} keeps the spawn's chunks and entities loaded for exactly this reason; this keeps every
-     * mock going THERE. Deterministic: it hung on every run, at every commit tried.
+     * A mock lands in his test's own plot, which the framework keeps loaded, for exactly this reason; this keeps
+     * every mock going THERE. Deterministic: it hung on every run, at every commit tried.
      */
     private static void forgetSavedData(net.minecraft.server.MinecraftServer server, java.util.UUID id) {
         if (server == null) {

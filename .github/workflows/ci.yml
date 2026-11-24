@@ -116,13 +116,13 @@ jobs:
           distribution: temurin
           java-version: '21'
       - &gradle-cache
+        # ModDevGradle's NeoForm runtime keeps the Minecraft decompile in ~/.gradle/caches/neoformruntime.
         name: Cache Gradle and the NeoForm decompile
         uses: actions/cache@v6
         with:
           path: |
             ~/.gradle/caches
             ~/.gradle/wrapper
-            build/neoForm
           key: gradle-${{ runner.os }}-${{ hashFiles('gradle.properties', 'build.gradle', 'versions/*.properties', 'gradle/wrapper/gradle-wrapper.properties') }}
       - &ply
         name: The datapack compiler's Python dependency
