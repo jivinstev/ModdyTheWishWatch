@@ -632,7 +632,7 @@ public final class RigVeilGameTest {
     /**
      * <b>The reveal hands each part back at its exact position, not its block's corner</b> (#59).
      *
-     * <p>{@code new ClientboundAddEntityPacket(e, 0, e.blockPosition())} is the hanging-entity
+     * <p>The add packet's {@code (entity, data, blockPos)} form is the hanging-entity
      * constructor: it writes {@code blockPos.getX/Y/Z}, so a display released that way lands up to
      * a block off on each axis and stays there on a stock client until a move or teleport corrects
      * it, which a creature holding still never sends. The rig is aimed at a fractional spot so a
