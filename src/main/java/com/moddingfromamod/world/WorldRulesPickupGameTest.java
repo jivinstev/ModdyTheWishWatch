@@ -328,4 +328,83 @@ public class WorldRulesPickupGameTest {
             helper.assertTrue(r2.text().contains(second.get().wish().text()), Component.literal("the agent got it: " + r2.text()));
         });
     }
+
+    // ── the rule's words pass the sweep when said (#43): a line that no longer passes is replaced ──
+
+    /** The same world, its why carrying a made-up word the bundled lexicon does not know, so the file loads. */
+    static final String CLOSED_RULES_ODD_WORD = CLOSED_RULES.replace("so the sun rises and sets for everyone together",
+            "so the zorblaxian sun rises for everyone together");
+
+    /**
+     * The file loaded with the lexicon of the day; then an operator's override adds a term its words now trip. The
+     * refusal at pickup is still made, and what he reads is the fixed line, not the file's words: the line is swept
+     * when it is said ({@code WishFeedback.worldRule}), not only when the file was read.
+     */
+    @GameTest(template = "empty_test", batch = "worldrules_swept", timeoutTicks = 600)
+    public static void aRuleLineTheLexiconNowFlagsIsReplacedWhenSaid(GameTestHelper helper) {
+        WorldRules.Parsed parsed = WorldRules.parse(CLOSED_RULES_ODD_WORD, "closed");
+        helper.assertTrue(parsed.ok(), Component.literal("the file loads with the bundled lexicon: " + parsed.errors()));
+        Path override = net.neoforged.fml.loading.FMLPaths.GAMEDIR.get()
+                .resolve(com.moddingfromamod.safety.SafetyLexicon.OVERRIDE_DIR)
+                .resolve(com.moddingfromamod.safety.SafetyLexicon.FILE_NAME);
+        String before;
+        try {
+            before = Files.isRegularFile(override) ? Files.readString(override, StandardCharsets.UTF_8) : null;
+            String bundled;
+            try (var in = com.moddingfromamod.safety.SafetyLexicon.class.getResourceAsStream(
+                    "/safety/" + com.moddingfromamod.safety.SafetyLexicon.FILE_NAME)) {
+                bundled = in == null ? "" : new String(in.readAllBytes(), StandardCharsets.UTF_8);
+            }
+            Files.createDirectories(override.getParent());
+            Files.writeString(override, (before != null ? before : bundled) + "\nVIOLENCE\tzorblaxian\tOTHER\n",
+                    StandardCharsets.UTF_8);
+        } catch (Exception e) {
+            throw new IllegalStateException("could not write the lexicon override", e);
+        }
+        com.moddingfromamod.safety.SafetyLexicon.reload();
+        Runnable restore = () -> {
+            try {
+                if (before == null) {
+                    Files.deleteIfExists(override);
+                } else {
+                    Files.writeString(override, before, StandardCharsets.UTF_8);
+                }
+            } catch (Exception ignored) {
+                // the next reload reads whatever is there
+            }
+            com.moddingfromamod.safety.SafetyLexicon.reload();
+        };
+        helper.testInfo.addListener(new GameTestListener() {
+            @Override public void testStructureLoaded(GameTestInfo info) {
+            }
+
+            @Override public void testPassed(GameTestInfo info, GameTestRunner runner) {
+                restore.run();
+            }
+
+            @Override public void testFailed(GameTestInfo info, GameTestRunner runner) {
+                restore.run();
+            }
+
+            @Override public void testAddedForRerun(GameTestInfo a, GameTestInfo b, GameTestRunner r) {
+                restore.run();
+            }
+        });
+        Wishing w = begin(helper, "daytime forever", parsed.rules(),
+                verdict(WorldRulesVerdict.Kind.WORLD_WIDE, "", WorldEffect.TIME));
+        AtomicReference<Throwable> blew = new AtomicReference<>();
+        AtomicReference<ToolResult> out = await(w.queue(), blew);
+        helper.succeedWhen(() -> {
+            helper.assertTrue(blew.get() == null, Component.literal("await_wish threw: " + blew.get()));
+            ToolResult r = out.get();
+            helper.assertTrue(r != null, Component.literal("await_wish has not returned yet"));
+            helper.assertTrue(r.isError() && r.text().contains("declined by this world's rules"),
+                    Component.literal("the world's rule still refuses it: " + r.text()));
+            String said = chat(w);
+            helper.assertTrue(said.contains(com.moddingfromamod.wish.WishFeedback.WORLD_RULE_FALLBACK),
+                    Component.literal("the fixed line is said in place of the flagged one: " + said));
+            helper.assertFalse(said.contains("zorblaxian"),
+                    Component.literal("the flagged word reached his chat: " + said));
+        });
+    }
 }

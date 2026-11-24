@@ -195,6 +195,37 @@ public final class WishFeedback {
     }
 
     /**
+     * A wish with no agent (a Builder or Apprentice make, a replayed wish) that one of this world's rules refused: he
+     * reads that rule and its why ({@code WorldRulesWords.madeRefused}), once, in place of "(some bits didn't work)",
+     * so he can tell an aim he can fix from a failure he cannot. The rule's words come from the world's rules file, so
+     * the line passes the text sweep his chat lines pass first; one that does not is not said, and he gets
+     * {@link #partial} with {@code otherwise} instead.
+     */
+    public static void refusedByWorld(ServerPlayer player, String line, String otherwise, String wishId) {
+        if (!sweeps(line, wishId)) {
+            partial(player, otherwise);
+            return;
+        }
+        tell(player, Component.literal("✨ " + line).setStyle(Style.EMPTY.withColor(ChatFormatting.GOLD)));
+        player.playNotifySound(SoundEvents.NOTE_BLOCK_BELL.value(), SoundSource.PLAYERS, 0.5f, 0.8f);
+    }
+
+    /** Does a line he is about to read pass the text sweep (safety L0) every child-visible argument passes? */
+    static boolean sweeps(String line, String wishId) {
+        if (line == null || line.isBlank()) {
+            return false;
+        }
+        com.google.gson.JsonObject a = new com.google.gson.JsonObject();
+        a.addProperty("message", line);
+        try {
+            return !com.moddingfromamod.safety.SafetyTextSweep.sweep("notify_player", a,
+                    wishId == null ? "" : wishId).refuses();
+        } catch (RuntimeException e) {
+            return false;                  // a line that could not be swept is not said
+        }
+    }
+
+    /**
      * The watch can't do this one on its own, so it has gone to the agent.
      *
      * <p>This used to say "I don't know how to do that one yet", which was true when escalation
@@ -409,13 +440,23 @@ public final class WishFeedback {
                 Component.literal(message).setStyle(Style.EMPTY.withColor(ChatFormatting.GOLD)));
     }
 
+    /**
+     * What a world's rules did to his wish, on the Magician path: a refusal, a split or a clamp
+     * ({@code WorldRulesWords}), carrying the rules file's own words and the grader's suggestion. Swept as his chat
+     * lines are ({@link #sweeps}): the file was checked against the lexicon when it loaded, but the lexicon can change
+     * after (an operator's override), and a line that no longer passes is replaced by {@link #WORLD_RULE_FALLBACK}.
+     */
     public static void worldRule(ServerPlayer player, String message) {
         if (message == null || message.isBlank()) {
             return;
         }
+        String said = sweeps(message, "") ? message : WORLD_RULE_FALLBACK;
         tell(player,
-                Component.literal(message).setStyle(Style.EMPTY.withColor(ChatFormatting.AQUA)));
+                Component.literal(said).setStyle(Style.EMPTY.withColor(ChatFormatting.AQUA)));
     }
+
+    /** Said in place of a world-rules line that did not pass the sweep: fixed words, nothing from a file. */
+    public static final String WORLD_RULE_FALLBACK = "✨ That wish can't work on this world. Try a different wish!";
 
     /**
      * What will be made instead, said <b>before</b> the agent starts.

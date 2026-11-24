@@ -43,6 +43,22 @@ public final class WorldRulesWords {
                 + " — the whole-world version works in " + rules.workshop() + ".";
     }
 
+    /**
+     * A make with no agent (a Builder or Apprentice make, a replayed wish) that a world rule refused, said in place of
+     * "didn't work this time": the rule and its why from the rules file, and what he can do. A rule about where the
+     * wish was aimed asks him to aim it at his own place; a rule about what it would change says where it works.
+     *
+     * @param subject what was refused, as the sentence's subject ("Your Cozy House", "That wish")
+     */
+    public static String madeRefused(String subject, WorldRefusal why) {
+        String what = subject == null || subject.isBlank() ? "That wish" : subject.strip();
+        if (why.aboutPlace()) {
+            return what + " can't go there: " + ruleWords(why.rule()) + ". Aim it at your own " + why.noun()
+                    + " and wish again!";
+        }
+        return what + " can't work on this world: " + ruleWords(why.rule()) + ". It works in " + why.workshop() + "!";
+    }
+
     /** "time is the same for every island — so the sun rises for everyone together" */
     static String ruleWords(WorldRule rule) {
         if (rule == null) {
@@ -66,6 +82,12 @@ public final class WorldRulesWords {
         String[] words = t.split("\\s+", 3);
         boolean namePair = words.length > 1 && words[1].length() > 1
                 && Character.isUpperCase(words[1].charAt(0)) && Character.isLowerCase(words[1].charAt(1));
+        // "A wish stays …" is an ordinary first word too, though only one letter long ("I" is not).
+        boolean article = t.startsWith("A ") && words.length > 1 && !words[1].isEmpty()
+                && Character.isLowerCase(words[1].charAt(0));
+        if (article) {
+            return "a" + t.substring(1);
+        }
         if (t.length() > 1 && Character.isUpperCase(t.charAt(0)) && Character.isLowerCase(t.charAt(1))
                 && !namePair && !t.startsWith("Moddy")) {
             return Character.toLowerCase(t.charAt(0)) + t.substring(1);
