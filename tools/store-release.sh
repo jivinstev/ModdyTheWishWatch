@@ -48,6 +48,7 @@ toml = z.read("META-INF/neoforge.mods.toml").decode()
 configs = re.findall(r'^config *= *"([^"]+)"', toml, re.M)
 bad += ["neoforge.mods.toml names the mixin config %s" % c for c in configs if "private" in c or "gametest" in c]
 bad += ["the jar carries the GameTest-only mixin config %s" % n for n in names if n.endswith(".gametest.mixins.json")]
+bad += ["the jar carries the GameTest-only world preset %s" % n for n in names if n == "data/minecraft/worldgen/world_preset/flat_all_dimensions.json"]
 if any(n.startswith("com/moddingfromamod/testing/") for n in names):
     bad.append("the jar carries the test harness (com/moddingfromamod/testing/), the GameTest mixins among it")
 listed = set()

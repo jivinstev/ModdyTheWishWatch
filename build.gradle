@@ -753,11 +753,19 @@ apply from: 'gate-a.gradle'
 // and the GameTest harness's test-only mixin config (its classes are under testing/, above).
 // The real-client tests (gatec: Gate C, the rig films) are dev-run code too: a client run loads them from the
 // build's classes, and a jar never carries them.
+// THE GAMETEST WORLD. 26.3's GameTestServer builds its world from the world preset minecraft:flat_all_dimensions (a
+// desert of sandstone); up to 26.2 it built minecraft:flat (grass on plains), which the GameTests that dig, transform,
+// flood and locate were written against. The dev runs read this override of flat_all_dimensions (26.2's flat preset,
+// byte for byte) from the mod's resources, so Gate B stands on the ground it always did. It changes nothing a player
+// plays (no world a player makes uses that preset) and it never ships: SHIP_EXCLUDES and NEVER_SHIP below, and
+// GameTestWorldPresetTest (Gate A).
+def GAMETEST_WORLD_PRESET = 'data/minecraft/worldgen/world_preset/flat_all_dimensions.json'
 def SHIP_EXCLUDES = ['corpus/**', 'com/moddingfromamod/test/**', 'com/moddingfromamod/testing/**', 'com/moddingfromamod/gatec/**',
-                     '**/?*GameTest.class', '**/?*GameTest$*.class', '**/*.gametest.mixins.json']
+                     '**/?*GameTest.class', '**/?*GameTest$*.class', '**/*.gametest.mixins.json',
+                     GAMETEST_WORLD_PRESET]
 // What must never be in a shipped jar, wherever a future move puts it. Checked on the built jar's
 // entry names (nested jarJar libraries are opaque entries under META-INF/jarjar/ and never match).
-def NEVER_SHIP = ~/(^|.*\/)[^\/]+\.gametest\.mixins\.json$|^corpus\/.*|(^|.*\/)(real-wishes|safety-wishes|real-tool-calls)[^\/]*\.jsonl$|^com\/moddingfromamod\/(test|testing|gatec)\/.*|.*\/[^\/]+GameTest(\$[^\/]*)?\.class$/
+def NEVER_SHIP = ~/(^|.*\/)[^\/]+\.gametest\.mixins\.json$|^data\/minecraft\/worldgen\/world_preset\/flat_all_dimensions\.json$|^corpus\/.*|(^|.*\/)(real-wishes|safety-wishes|real-tool-calls)[^\/]*\.jsonl$|^com\/moddingfromamod\/(test|testing|gatec)\/.*|.*\/[^\/]+GameTest(\$[^\/]*)?\.class$/
 // a shipped class may name only mod classes the jar carries. A reference to one left out (the harness, a
 // GameTest, or, in the public cut, a private class) is a NoClassDefFoundError waiting for the line that runs it.
 // A deliberate exception would be a dev-only driver reached only behind seam/TestHarness.present(), listed here. There
