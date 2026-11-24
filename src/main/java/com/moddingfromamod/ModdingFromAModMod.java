@@ -163,6 +163,9 @@ public class ModdingFromAModMod {
         NeoForge.EVENT_BUS.register(com.moddingfromamod.mob.WishSummonCommand.class);
         NeoForge.EVENT_BUS.register(com.moddingfromamod.datapack.WishDatapackCommand.class);
         NeoForge.EVENT_BUS.register(com.moddingfromamod.builder.Builder.class);
+        // 1.21.9 removed spawn chunks: an action that falls back to the world spawn holds a short
+        // ticket there, refreshed and let go from the server tick. See place/SpawnHold.
+        NeoForge.EVENT_BUS.register(com.moddingfromamod.place.SpawnHold.class);
         NeoForge.EVENT_BUS.register(com.moddingfromamod.wish.WishExecutor.class);
         NeoForge.EVENT_BUS.register(com.moddingfromamod.wish.ServedFanfare.class);
         NeoForge.EVENT_BUS.register(com.moddingfromamod.agent.AgentBridge.class);

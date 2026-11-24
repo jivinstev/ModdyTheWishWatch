@@ -460,6 +460,14 @@ public final class RunCommandTool implements McpTool {
                             + " wish touches only the child who made it — the shared world is"
                             + " still everyone's.)");
                 }
+                // NOBODY AND NO AIMED SPOT: the batch runs at the world spawn, which 1.21.9+ no
+                // longer keeps loaded. Hold it for the batch (and the agent's next call), or a
+                // summon there succeeds and is never found. A child's own spot needs no hold.
+                var spawnHold = player == null && aimed == null
+                        ? com.moddingfromamod.place.SpawnHold.open(level,
+                                net.minecraft.core.BlockPos.containing(where),
+                                com.moddingfromamod.place.SpawnHoldPlan.Followup.AGENT)
+                        : null;
                 // ONE SPAWN SCOPE FOR THE WHOLE BATCH, so twenty `summon creeper` lines
                 // meet one wave and the agent is told once, at the end, what the wand held back.
                 boolean scoped = com.moddingfromamod.mob.SpawnScope.open(WishExecutor.wishKeyOrNone(),
@@ -543,6 +551,9 @@ public final class RunCommandTool implements McpTool {
                             spawnedNow, toRun);
                     if (!tidy.isEmpty()) {
                         lines.add(tidy.strip());
+                    }
+                    if (spawnHold != null) {
+                        spawnHold.close();
                     }
                 }
             });

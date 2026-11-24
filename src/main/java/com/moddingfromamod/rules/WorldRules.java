@@ -97,7 +97,15 @@ public final class WorldRules {
     /** Bone meal applied per firing of a `grow`, so grass does not become a flower carpet at once. */
     static final int GROW_PER_FIRING = 6;
 
-    private record Firing(WorldRule rule, ServerLevel level, Entity subject, Vec3 pos, Entity cause) {
+    /**
+     * One queued firing. {@code atSpawn}: it fires at the world spawn because nobody is online, and
+     * 1.21.9+ no longer keeps the spawn loaded, so it is carried out under a {@code SpawnHold}.
+     */
+    private record Firing(WorldRule rule, ServerLevel level, Entity subject, Vec3 pos, Entity cause,
+                          boolean atSpawn) {
+        Firing(WorldRule rule, ServerLevel level, Entity subject, Vec3 pos, Entity cause) {
+            this(rule, level, subject, pos, cause, false);
+        }
     }
 
     private static volatile List<WorldRule> live = List.of();
@@ -246,6 +254,11 @@ public final class WorldRules {
     }
 
     private static void fire(WorldRule r, ServerLevel level, Entity subject, Vec3 pos, Entity cause) {
+        fire(r, level, subject, pos, cause, false);
+    }
+
+    private static void fire(WorldRule r, ServerLevel level, Entity subject, Vec3 pos, Entity cause,
+                             boolean atSpawn) {
         if (r.block() != null && r.when() != WorldRule.When.NEAR_BLOCK && subject != null) {
             BlockPos under = BlockPos.containing(subject.position().x, subject.position().y - 0.2,
                     subject.position().z);
@@ -260,7 +273,7 @@ public final class WorldRules {
         if (r.chance() < 1 && level.getRandom().nextDouble() >= r.chance()) {
             return;
         }
-        QUEUE.add(new Firing(r, level, subject, pos, cause));
+        QUEUE.add(new Firing(r, level, subject, pos, cause, atSpawn));
     }
 
     private static void fireAll(WorldRule.When when, ServerLevel level, Entity subject, Vec3 pos,
@@ -468,7 +481,7 @@ public final class WorldRules {
             ServerLevel over = server.overworld();
             Vec3 at = players.isEmpty() ? Vec3.atCenterOf(over.getLevelData().getRespawnData().pos())
                     : players.get(0).position();
-            fire(r, over, null, at, null);
+            fire(r, over, null, at, null, players.isEmpty());
             return;
         }
         if (WorldRule.PLAYER.equals(r.who())) {
@@ -522,7 +535,15 @@ public final class WorldRules {
             for (int n = 0; n < BUDGET && !QUEUE.isEmpty(); n++) {
                 Firing f = QUEUE.poll();
                 try {
-                    carryOut(server, f);
+                    // AT THE SPAWN WITH NOBODY ONLINE: held for the firing only. Nobody is there to
+                    // look afterwards, so it is let go at the next tick, and what it made is saved
+                    // with its chunk instead of left in one nothing loaded.
+                    com.moddingfromamod.place.SpawnHold.during(f.atSpawn(), f.level(),
+                            BlockPos.containing(f.pos()), com.moddingfromamod.place.SpawnHoldPlan.Followup.NONE,
+                            () -> {
+                                carryOut(server, f);
+                                return null;
+                            });
                 } catch (RuntimeException ex) {
                     LAST_ERROR.put(f.rule().name(), ex.toString());
                     LOGGER.warn("[rules] '{}' failed: {}", f.rule().name(), ex.toString());

@@ -30,8 +30,10 @@ import java.util.OptionalInt;
  * <h2>Only ABSOLUTE coordinates</h2>
  *
  * <p>Relative ({@code ~}) and local ({@code ^}) coordinates are resolved against the command's own
- * source, which is the child, who is by definition standing in a loaded chunk. So they are returned
- * as absent rather than parsed: there is nothing to fix and no reason to touch the world.
+ * source, which is the child, who is by definition standing in a loaded chunk — or, with nobody to
+ * stand beside, the world spawn, which the caller holds with {@code place.SpawnHold} since 1.21.9
+ * stopped keeping it loaded. So they are returned as absent rather than parsed: there is nothing to
+ * fix and no reason to touch the world.
  */
 public final class SummonTarget {
 

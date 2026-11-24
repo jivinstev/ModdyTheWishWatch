@@ -245,8 +245,13 @@ public final class WishExecutor {
         // missing is that anybody said so. The agent read "Ran, OK", could not address what it had
         // made, and summoned a second zombie and then a third for a child who asked for one.
         //
-        // Only for an ABSOLUTE target: ~ and ^ resolve against the child, who is standing in a
-        // loaded chunk by definition.
+        // Only for an ABSOLUTE target: ~ and ^ resolve against the command's origin, which is the
+        // child, standing in a chunk he keeps loaded, or — with nobody to stand beside — the world
+        // spawn, which 1.21.9+ no longer keeps loaded. Every caller that falls back to the spawn
+        // holds it for the action with place/SpawnHold, which waits until the chunk can take an
+        // entity before the command runs: that is the repair for the one case this note once
+        // called unrepairable (a ticket "processed on the next chunk-manager tick").
+        // An absolute target elsewhere is still only reported.
         // a learned button must not get round the world's clamp (a forever power, a big gift, a pile of
         // XP replayed on a clamped world). One PRESS is one ledger: its commands run in one tick, so the key is the
         // presser and the tick.
