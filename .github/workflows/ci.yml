@@ -1,6 +1,6 @@
 # Moddy the Wish Watch: continuous integration.
 #
-# Five jobs:
+# Six jobs:
 #   changes          what the pull request touches. A PR whose files are ALL in paths no build or test reads
 #                    (tools/client-validation/: the scripted client checks of a released jar; .github/port-publish/:
 #                    the store page text) runs the scan only; Gate A and Gate B are skipped. Any other file, this
@@ -9,10 +9,15 @@
 #                    and tokens, a child's-data file by its name, and the structural markers of server-side work
 #                    that does not belong in this single-player mod; then tools/secret-scan.py over every file and
 #                    every commit in the history (the credential shapes of tools/secret_patterns.py). It prints nothing it matched.
+#                    Also the hermetic test of tools/refresh-cbscript-bundle.sh (a fixture repo, no network).
 #   gate-a           compile, the unit tests, the mod jar and its checks (./gradlew build).
 #   gate-b-ci        a headless game server running the `ci` shard: one GameTest per wish class, MCP, two wishes at
 #                    once. Every pull request and every push to main.
 #   gate-b-tier      the whole default tier (`ci,default`). Pushes to main only: it is the long one.
+#   rig-films        Gate C's rig films (tools/gate-c-rig.sh: a real client under Xvfb filming each creature take, a
+#                    failed film re-run once, FLAKY red). Only on a pull request that touches what they measure
+#                    (`tools/rig-films.py --needed`: the atom rig, the films, the sculpt tool, the creature lesson, the
+#                    starter species), or by hand (Run workflow, rig_films). ~35-50 minutes, so never on every PR.
 #
 # Pull requests run it (every pull request to main gets the leak scan, Gate A and the ci shard: what a PR merges on).
 # Pushes to main do not, for now: the repo has little Actions quota, so the default tier runs only when started by hand
@@ -29,6 +34,11 @@ on:
   # push:
   #   branches: [main]
   workflow_dispatch:
+    inputs:
+      rig_films:
+        description: "Also run the rig films (Gate C, ~35-50 minutes)"
+        type: boolean
+        default: false
 
 concurrency:
   group: ci-${{ github.event.pull_request.number || github.ref }}
@@ -44,6 +54,7 @@ jobs:
     timeout-minutes: 5
     outputs:
       code: ${{ steps.classify.outputs.code }}
+      rig: ${{ steps.classify.outputs.rig }}
     steps:
       - uses: actions/checkout@v7
         with:
@@ -52,9 +63,20 @@ jobs:
         env:
           BASE: ${{ github.event.pull_request.base.sha }}
         run: |
-          if [ "${{ github.event_name }}" != "pull_request" ]; then echo "code=true" >> "$GITHUB_OUTPUT"; exit 0; fi
+          if [ "${{ github.event_name }}" != "pull_request" ]; then
+            echo "code=true" >> "$GITHUB_OUTPUT"
+            echo "rig=${{ inputs.rig_films == true }}" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
           files="$(git diff --name-only "$BASE...HEAD")"
           printf '%s\n' "$files"
+          # The rig films are required when the change touches what they measure (tools/rig-films.py --needed).
+          # shellcheck disable=SC2086
+          if [ "$(python3 tools/rig-films.py --paths $files)" = "rig-films" ]; then
+            echo "rig=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "rig=false" >> "$GITHUB_OUTPUT"
+          fi
           # Paths no build, unit test or game test reads. Keep this list short and literal.
           other="$(printf '%s\n' "$files" | grep -v -E '^(tools/client-validation/|\.github/port-publish/)' | grep -v '^$' || true)"
           if [ -z "$other" ]; then
@@ -81,6 +103,8 @@ jobs:
           git fetch --quiet --unshallow || true
           python3 tools/secret-scan.py --tree
           python3 tools/secret-scan.py --history
+      - name: The compiler bundle's refresh tool still builds, records and refuses
+        run: python3 tools/test-refresh-cbscript-bundle.py
 
   gate-a:
     name: Gate A (build and unit tests)
@@ -108,6 +132,11 @@ jobs:
         run: python3 -m pip install --break-system-packages ply
       - name: ./gradlew build
         run: ./gradlew build --console=plain
+      - name: The rig films' rules (which films, when; the part-drift check can still go red)
+        run: |
+          python3 tools/rig-films.py --self-test
+          python3 tools/rig-films.py --check
+          python3 tools/test-rig-drift.py
       - name: Test reports
         if: failure()
         uses: actions/upload-artifact@v5
@@ -157,3 +186,31 @@ jobs:
       - *gradle-cache
       - *ply
       - *gameTests
+
+  rig-films:
+    name: Gate C (the rig films)
+    needs: changes
+    if: needs.changes.outputs.rig == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '21'
+      - *gradle-cache
+      - *ply
+      - name: A virtual display and software OpenGL
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq xvfb libgl1-mesa-dri mesa-utils
+      - name: Every rig film the scoreboard names
+        run: |
+          python3 tools/rig-films.py --check
+          ./tools/gate-c-rig.sh
+      - name: Film logs and frames
+        if: always()
+        uses: actions/upload-artifact@v5
+        with:
+          name: rig-films
+          path: /tmp/moddingfromamod-gate-c-rig/
+          retention-days: 7

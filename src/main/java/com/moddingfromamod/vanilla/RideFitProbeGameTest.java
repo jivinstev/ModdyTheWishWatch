@@ -209,6 +209,50 @@ public final class RideFitProbeGameTest {
     }
 
     /**
+     * <b>A flier made rideable after it was made seats him on its back too</b>. Its bat was planned
+     * for a creature nobody rides, so it is fitted to the whole body, head and wings included, and
+     * seated him over the pet dragon's back (2.06 against 1.20). Climbing on brings the bat down to
+     * the back ({@code RideSeat.fitCarrier}), through the real click.
+     */
+    @GameTest(template = "empty_test", batch = "ride_fit_later", timeoutTicks = 20 * 120)
+    public static void aFlierMadeRideableLaterSeatsHimOnItsBack(GameTestHelper helper) {
+        ServerPlayer kid = MockPlayerNetwork.inLevel(helper, "mfam-ride-later");
+        String id = "ridelater_dragon";
+        GameTestSequence seq = helper.startSequence();
+        seq.thenExecute(() -> {
+            try {
+                com.moddingfromamod.testing.SpeciesForTest.put(helper,
+                        species(id, "starter:pet_dragon", "flies").withDesignedBehaviour(false, null));
+            } catch (Exception e) {
+                helper.fail(Component.literal("could not plant " + id + ": " + e));
+            }
+            wish(helper, id);
+        });
+        seq.thenWaitUntil(() -> helper.assertTrue(carrier(helper, id) != null
+                && VanillaRigAnimator.rigOf(carrier(helper, id)) != null, Component.literal("no rig yet")));
+        seq.thenExecute(() -> {
+            Mob c = carrier(helper, id);
+            helper.assertTrue(com.moddingfromamod.mob.RideSeat.flies(c),
+                    Component.literal("a flying creature should ride a flying carrier, not a " + c.getType()));
+            DisplayRig rig = VanillaRigAnimator.rigOf(c);
+            double back = RigFit.backTop(RigFit.atoms(rig.groups(), rig.scale()), DisplayRig.BACK_COLUMN);
+            double was = c.getScale();
+            double wasSeat = com.moddingfromamod.mob.RideSeat.carrierSeat(c, kid);
+            com.moddingfromamod.mob.PetBehaviours.apply(c,
+                    new com.moddingfromamod.mob.PetBehaviour(null, null, true, null, null, null), null);
+            List<String> bad = new ArrayList<>();
+            String row = measure(helper, kid, id, "dragon_later", bad);
+            System.out.println(String.format(java.util.Locale.ROOT, "RIDE-FIT-LATER: back %.3f, bat x%.3f seated "
+                    + "him at %.3f (gap %+.3f) before he climbed on; then: %s", back, was, wasSeat, wasSeat - back, row));
+            helper.assertTrue(HitProxyPlan.seatsAboveBack(wasSeat, back), Component.literal(String.format(
+                    "the test needs a bat planned over the back: x%.3f seats at %.3f, back %.3f", was, wasSeat, back)));
+            helper.assertTrue(bad.isEmpty(), Component.literal(String.join("; ", bad)));
+            helper.assertTrue(c.getScale() < was, Component.literal("the bat was not brought down to its back"));
+            clear(helper, id, kid);
+        }).thenSucceed();
+    }
+
+    /**
      * <b>Logging off while riding leaves the creature where it was</b>: vanilla would save the
      * carrier into his player file and take it out of the world, leaving its display parts behind.
      * Through the real {@code PlayerList.remove}.
