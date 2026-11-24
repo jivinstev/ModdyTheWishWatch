@@ -1,0 +1,27 @@
+{
+  "issues": [
+    {
+      "confidence": "suspected",
+      "files": [
+        "src/main/java/com/moddingfromamod/datapack/DatapackDialect.java"
+      ],
+      "id": "KI-1",
+      "lowest": "1.21.11",
+      "notes": "upgrade-only. What breaks: every CBScript pack a player wished before 1.21.11 has 'gamerule maxCommandChainLength 1000000000' in its reset function (the compiler's boilerplate). 1.21.11 replaced the camelCase game-rule names with registry ids (Mojang's GameRuleRegistryFix: max_command_sequence_length), so that line is an unknown command, and one unparseable line fails the whole function to load: the pack's state is not reset/initialised. Stored data: the installed wished packs in a world's datapacks folder and the mod's own pack store (DatapackStore). New packs compiled on 1.21.11 (moddy-cbscript mc/1.21.11) are not affected. Workaround: wish the power again on 1.21.11 (recompiles the pack). A fix would be a versioned rename on install (DatapackDialect.correctFunction), deliberately not built (owner: no upgrade-only work). Unverified: found by reading the 1.21.11 command tree and the compiler's output; not yet reproduced in a world upgraded from 1.21.10. Verify by: on 1.21.10, wish a power (any CBScript pack), save; open the world on the 1.21.11 jar; /reload and check the server log for the pack's reset function failing to parse at 'gamerule maxCommandChainLength'.",
+      "override": null,
+      "rubric": {
+        "failure": "functional",
+        "reach": "feature",
+        "visibility": "rare",
+        "workaround": true
+      },
+      "severity": "S3",
+      "source": "review",
+      "status": {
+        "1.21.11": "open"
+      },
+      "title": "Upgrade-only (1.21.11): a datapack wished before 1.21.11 fails to load its reset function (old game-rule name)"
+    }
+  ],
+  "schema": 1
+}
