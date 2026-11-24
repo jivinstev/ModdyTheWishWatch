@@ -120,4 +120,13 @@ class WishHotbarPlanTest {
         assertEquals(-1, WishHotbarPlan.shownRest(false, 0, core), "ready: the game's own cooldown is left alone");
         assertEquals(-1, WishHotbarPlan.shownRest(false, -1, core), "no answer: left alone, never a fresh second");
     }
+
+    @Test
+    void aHotbarProxyAsksAboutAReplayOfItsRecipe() {
+        java.util.UUID him = java.util.UUID.randomUUID();
+        WishAsk ask = WishAsk.replay(him, "fire_sword");
+        assertEquals(new WishAsk(him, WishSource.PRESET, "fire_sword", WishAsk.Magic.REPLAY), ask);
+        assertEquals("", WishAsk.of(him, WishSource.TYPED).recipe(), "no recipe is the empty id, never null");
+        assertEquals("", WishAsk.of(him, WishSource.TYPED).withRecipe(null).recipe());
+    }
 }

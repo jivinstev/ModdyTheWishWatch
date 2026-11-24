@@ -425,7 +425,7 @@ public final class WishHotbar {
     /** The world's charge's {@link WishCharge#restLeft} for this wish, or -1 when it does not say (or throws). */
     static int restLeft(ServerPlayer player, String recipe) {
         try {
-            return WishCharge.get().restLeft(player, recipe);
+            return WishCharge.get().restLeft(WishAsk.replay(player.getUUID(), recipe));
         } catch (RuntimeException e) {
             return -1;   // a world's fault never stops his hotbar: the core's own rest stands
         }

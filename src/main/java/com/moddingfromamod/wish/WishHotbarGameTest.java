@@ -300,6 +300,7 @@ public final class WishHotbarGameTest {
         static final int REST = 200;
         final java.util.Map<String, Long> until = new java.util.HashMap<>();
         final String refused;
+        final List<WishAsk> asked = new ArrayList<>();
         long now;
 
         TenSecondRest(String refused) {
@@ -326,11 +327,12 @@ public final class WishHotbarGameTest {
         }
 
         @Override
-        public int restLeft(ServerPlayer player, String recipeId) {
-            if (recipeId.equals(refused)) {
+        public int restLeft(WishAsk ask) {
+            asked.add(ask);
+            if (ask.recipe().equals(refused)) {
                 return 0;
             }
-            return (int) Math.max(0, until.getOrDefault(key(player, recipeId), 0L) - now);
+            return (int) Math.max(0, until.getOrDefault(ask.player() + "/" + ask.recipe(), 0L) - now);
         }
     }
 
@@ -480,6 +482,36 @@ public final class WishHotbarGameTest {
             left = ticksLeft(reborn, back, 1000);
             check(helper, left == TenSecondRest.REST - 30, "knocked out 30 ticks into a ten-second rest, the sweep has "
                     + left + " ticks left, not " + (TenSecondRest.REST - 30));
+            charge.now += left;
+
+            // LOGGED IN, AND ANOTHER DIMENSION: a body or a client with no cooldown of its own resumes the time left.
+            // The handlers themselves are called (posting the events would run every other mod's login handler on a
+            // mock player); what they share with the fire path is the real charge and the real ItemCooldowns.
+            for (String arm : List.of("login", "dimension")) {
+                WishService.forget(reborn);
+                use = WishHotbar.use(reborn, back);
+                check(helper, use.outcome() == WishService.Outcome.FULFILLING, arm + ": the rest starts: " + use);
+                pass(reborn, charge, 40);
+                reborn.getCooldowns().removeCooldown(WishHotbar.group(strong));   // what a logout or new client loses
+                if (arm.equals("login")) {
+                    WishHotbar.onLogin(new net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedInEvent(reborn));
+                } else {
+                    WishHotbar.onChangedDimension(new net.neoforged.neoforge.event.entity.player.PlayerEvent
+                            .PlayerChangedDimensionEvent(reborn, net.minecraft.world.level.Level.OVERWORLD,
+                                    net.minecraft.world.level.Level.NETHER));
+                }
+                left = ticksLeft(reborn, back, 1000);
+                check(helper, left == TenSecondRest.REST - 40, arm + " 40 ticks into a ten-second rest: the sweep has "
+                        + left + " ticks left, not " + (TenSecondRest.REST - 40));
+                charge.now += left;
+            }
+
+            // WHAT THE CHARGE WAS ASKED: one shape, the wish's recipe, a replay from a preset.
+            check(helper, !charge.asked.isEmpty() && charge.asked.stream().allMatch(a ->
+                            a.source() == WishSource.PRESET && a.magic() == WishAsk.Magic.REPLAY
+                            && (a.recipe().equals(strong) || a.recipe().equals(nope))
+                            && (a.player().equals(p.getUUID()) || a.player().equals(reborn.getUUID()))),
+                    "the charge was asked about something other than his replay: " + charge.asked);
         });
         helper.succeed();
     }

@@ -76,8 +76,8 @@ public final class HotbarRestClientTest {
         }
 
         @Override
-        public int restLeft(ServerPlayer player, String recipeId) {
-            return Math.max(0, until.getOrDefault(recipeId, 0) - server.getTickCount());
+        public int restLeft(com.moddingfromamod.wish.WishAsk ask) {
+            return Math.max(0, until.getOrDefault(ask.recipe(), 0) - server.getTickCount());
         }
     }
 

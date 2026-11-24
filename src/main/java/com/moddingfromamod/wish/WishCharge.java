@@ -144,16 +144,17 @@ public interface WishCharge {
     // ── rest: how long a hotbar wish waits ──────────────────────────────────────────────────────
 
     /**
-     * How many ticks this wish ({@code recipeId}, the id {@code /moddy again} takes) still rests for this player,
-     * counted from now; {@code 0} when it is ready; {@code -1} (the default) when this charge does not say. Only a
-     * query: the charge keeps its own rest, and still refuses a fire through its other hooks.
+     * How many ticks this wish ({@link WishAsk#recipe}, the id {@code /moddy again} takes) still rests for
+     * {@link WishAsk#player}, counted from now; {@code 0} when it is ready; {@code -1} (the default) when this charge
+     * does not say. <b>A query with no side effects</b>: answering must never start, restart or change a rest (the core
+     * asks it again whenever it likes). The charge keeps its own rest, and still refuses a fire through its other hooks.
      *
      * <p>Asked by the hotbar ({@code WishHotbar}) right after each fire of a proxy, whatever came of it, and the proxy's
      * cooldown sweep is set to the answer ({@code -1} keeps the core's one second); and whenever a proxy is put into
      * his inventory (added, given back after a knock-out, at login, after a respawn or a change of dimension), where an
      * answer above {@code 0} puts the sweep back at what is left. Server thread.
      */
-    default int restLeft(ServerPlayer player, String recipeId) {
+    default int restLeft(WishAsk ask) {
         return -1;
     }
 
