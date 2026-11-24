@@ -59,8 +59,8 @@ Moddy is made for children. Everything a player reads or types goes through the 
 ./gradlew runClient                                 # play it in a development client
 ```
 
-- **Gate A** is `./gradlew build`. `gate-a.gradle` also defines a public-only compile and test (`compilePublicJava`,
-  `publicTest`); they switch themselves off when there is no split file, so here the build is the plain one.
+- **Gate A** is `./gradlew build`: compile, every unit test (`gate-a.gradle` configures the `test` task: one retry of a
+  failed test, recorded, and the ambient API keys removed so a test that needs one fails here rather than in CI).
 - **Gate B** boots a headless dedicated server and runs every `@GameTest` in the chosen shards. `-Pshard` takes a
   comma-separated list (`ci`, `default`, or `all`); `-Pgametests=ClassA,ClassB` runs only those classes. Gate B needs
   Python 3 with `ply` (`pip install ply`) for the datapack compiler; without it every datapack test fails with a
