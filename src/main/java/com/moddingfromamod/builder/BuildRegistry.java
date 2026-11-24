@@ -125,7 +125,14 @@ public final class BuildRegistry {
                 if (!el.isJsonObject()) {
                     continue;
                 }
-                BuildPlan plan = BuildPlan.fromJson(el.getAsJsonObject());
+                BuildPlan plan;
+                try {
+                    plan = BuildPlan.fromStored(el.getAsJsonObject());
+                } catch (IllegalArgumentException e) {
+                    // kept on disk: a record this server never read is in neither merge side, so a save keeps it
+                    LOGGER.error("a saved building was not read: {}", e.getMessage());
+                    continue;
+                }
                 if (plan != null) {
                     PLANS.put(plan.id(), plan);
                     TIMES.read(plan.id(), el.getAsJsonObject());
@@ -588,7 +595,7 @@ public final class BuildRegistry {
             JsonElement root = JsonParser.parseString(
                     Files.readString(f, StandardCharsets.UTF_8));
             BuildPlan plan = root != null && root.isJsonObject()
-                    ? BuildPlan.fromJson(root.getAsJsonObject()) : null;
+                    ? BuildPlan.fromStored(root.getAsJsonObject()) : null;
             if (plan == null) {
                 LOGGER.warn("library building '{}' at {} is not a readable plan", id, f);
             }
@@ -644,7 +651,7 @@ public final class BuildRegistry {
         JsonObject root = new JsonObject();
         JsonArray arr = new JsonArray();
         for (BuildPlan plan : PLANS.values()) {
-            arr.add(BuildPlacements.stamp(TIMES.stamp(plan.id(), plan.toJson()),
+            arr.add(BuildPlacements.stamp(TIMES.stamp(plan.id(), plan.toStoredJson()),
                     PLACED_ROWS.getOrDefault(plan.id(), Map.of()), world, placementHere(plan.id())));
         }
         root.add("buildings", arr);
