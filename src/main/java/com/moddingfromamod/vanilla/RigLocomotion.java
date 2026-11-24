@@ -66,6 +66,12 @@ public final class RigLocomotion {
     public static final float FLAP_DEGREES = 38f;
     /** The middle of the beat, above level: a bird's wings spend more of a beat up than down. */
     public static final float FLAP_LIFT = 8f;
+    /**
+     * Degrees an UPRIGHT wing ({@link RigAnatomy.Wing#upright}) is laid over in flight, trailing
+     * edge back, about its attachment edge, before it beats. A little short of flat, so the leading
+     * edge stays a touch higher than the trailing one, the way a wing meets the air.
+     */
+    public static final float LAY_FLAT_DEGREES = 85f;
     /** A grounded wing's twitch — the chicken rule, nowhere near a beat. */
     public static final float REST_WING_DEGREES = 2.5f;
     public static final int REST_WING_TICKS = 60;
@@ -379,6 +385,22 @@ public final class RigLocomotion {
             float u = (float) ((FLAP_LIFT + FLAP_DEGREES * (1f + 0.12f * wing.rank())
                     * Math.sin(beat - lag)) * fly
                     + REST_WING_DEGREES * Math.sin(still - lag) * (1f - fly));
+            if (wing.upright() && fly > 0) {
+                // An upright panel turned about Z swings within its own plane, edge first: it
+                // slices the air. Laid flat first (X is applied before Z), the same turn about Z
+                // pushes the air down. Both turn about the attachment edge, blended in from the
+                // old hinge with the weight so nothing jumps at take-off; on the ground (fly = 0)
+                // this branch is not taken and the wing moves exactly as before.
+                float[] h = wing.hinge();
+                float[] at = wing.attach();
+                float[] pivot = {h[0] + (at[0] - h[0]) * fly, h[1] + (at[1] - h[1]) * fly,
+                        h[2] + (at[2] - h[2]) * fly};
+                Move m = move(moves, wing.bone(), pivot);
+                m.rot[0] += pitch(a, -LAY_FLAT_DEGREES * fly);
+                m.rot[2] += wing.side() * u;
+                m.keep = Math.min(m.keep, 1f - fly);
+                continue;
+            }
             Move m = move(moves, wing.bone(), wing.hinge());
             m.rot[2] += wing.side() * u;
             m.keep = Math.min(m.keep, 1f - fly);
