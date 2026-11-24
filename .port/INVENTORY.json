@@ -1,0 +1,2231 @@
+{
+ "generated_by": "tools/layer-inventory.py build",
+ "base": "1.21.1",
+ "src_tree": "84af3bd1ad18f425a3001c9ff23db166a9d406b1",
+ "counts": {
+  "mixin": 32,
+  "injection": 34,
+  "overwrite": 0,
+  "event": 243,
+  "render-class": 0,
+  "render-use": 2,
+  "registry": 5,
+  "shader": 0,
+  "shader-uniform": 0,
+  "shader-sampler": 0
+ },
+ "items": [
+  {
+   "id": "main:com/moddingfromamod/ModdingFromAModMod.java#event:addListener handler register",
+   "set": "main",
+   "file": "com/moddingfromamod/ModdingFromAModMod.java",
+   "kind": "event",
+   "key": "addListener handler register"
+  },
+  {
+   "id": "main:com/moddingfromamod/ModdingFromAModMod.java#event:addListener handler onCommonSetup",
+   "set": "main",
+   "file": "com/moddingfromamod/ModdingFromAModMod.java",
+   "kind": "event",
+   "key": "addListener handler onCommonSetup"
+  },
+  {
+   "id": "main:com/moddingfromamod/agent/AgentBridge.java#event:@SubscribeEvent ServerStartedEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/agent/AgentBridge.java",
+   "kind": "event",
+   "key": "@SubscribeEvent ServerStartedEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/agent/AgentBridge.java#event:@SubscribeEvent ServerStoppingEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/agent/AgentBridge.java",
+   "kind": "event",
+   "key": "@SubscribeEvent ServerStoppingEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/agent/HeadlessWishProbe.java#event:@SubscribeEvent ServerTickEvent.Post",
+   "set": "main",
+   "file": "com/moddingfromamod/agent/HeadlessWishProbe.java",
+   "kind": "event",
+   "key": "@SubscribeEvent ServerTickEvent.Post"
+  },
+  {
+   "id": "main:com/moddingfromamod/agent/StagedPetStage.java#event:@SubscribeEvent ServerTickEvent.Post",
+   "set": "main",
+   "file": "com/moddingfromamod/agent/StagedPetStage.java",
+   "kind": "event",
+   "key": "@SubscribeEvent ServerTickEvent.Post"
+  },
+  {
+   "id": "main:com/moddingfromamod/agent/WishAgent.java#event:@SubscribeEvent ServerStartedEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/agent/WishAgent.java",
+   "kind": "event",
+   "key": "@SubscribeEvent ServerStartedEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/agent/WishAgent.java#event:@SubscribeEvent ServerStoppingEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/agent/WishAgent.java",
+   "kind": "event",
+   "key": "@SubscribeEvent ServerStoppingEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/agent/WishAgent.java#event:@SubscribeEvent net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedInEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/agent/WishAgent.java",
+   "kind": "event",
+   "key": "@SubscribeEvent net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedInEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/bag/WishBagService.java#event:@SubscribeEvent PlayerEvent.PlayerLoggedOutEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/bag/WishBagService.java",
+   "kind": "event",
+   "key": "@SubscribeEvent PlayerEvent.PlayerLoggedOutEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/bag/WishBagService.java#event:@SubscribeEvent ServerStoppingEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/bag/WishBagService.java",
+   "kind": "event",
+   "key": "@SubscribeEvent ServerStoppingEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/bag/WishBagService.java#event:@SubscribeEvent ServerTickEvent.Post",
+   "set": "main",
+   "file": "com/moddingfromamod/bag/WishBagService.java",
+   "kind": "event",
+   "key": "@SubscribeEvent ServerTickEvent.Post"
+  },
+  {
+   "id": "main:com/moddingfromamod/builder/BuildCommand.java#event:@SubscribeEvent RegisterCommandsEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/builder/BuildCommand.java",
+   "kind": "event",
+   "key": "@SubscribeEvent RegisterCommandsEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/builder/Builder.java#event:@SubscribeEvent ServerStoppingEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/builder/Builder.java",
+   "kind": "event",
+   "key": "@SubscribeEvent ServerStoppingEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/builder/Builder.java#event:@SubscribeEvent ServerTickEvent.Post",
+   "set": "main",
+   "file": "com/moddingfromamod/builder/Builder.java",
+   "kind": "event",
+   "key": "@SubscribeEvent ServerTickEvent.Post"
+  },
+  {
+   "id": "main:com/moddingfromamod/chat/ChatGuard.java#event:@SubscribeEvent CommandEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/chat/ChatGuard.java",
+   "kind": "event",
+   "key": "@SubscribeEvent CommandEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/chat/ChatGuard.java#event:@SubscribeEvent ServerChatEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/chat/ChatGuard.java",
+   "kind": "event",
+   "key": "@SubscribeEvent ServerChatEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/chat/ChatGuard.java#event:@SubscribeEvent ServerStoppingEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/chat/ChatGuard.java",
+   "kind": "event",
+   "key": "@SubscribeEvent ServerStoppingEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/config/ServerSettings.java#event:@SubscribeEvent ServerAboutToStartEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/config/ServerSettings.java",
+   "kind": "event",
+   "key": "@SubscribeEvent ServerAboutToStartEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/config/ServerSettings.java#event:@SubscribeEvent ServerStoppedEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/config/ServerSettings.java",
+   "kind": "event",
+   "key": "@SubscribeEvent ServerStoppedEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/config/ServerSettings.java#event:@SubscribeEvent net.neoforged.neoforge.event.server.ServerStartedEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/config/ServerSettings.java",
+   "kind": "event",
+   "key": "@SubscribeEvent net.neoforged.neoforge.event.server.ServerStartedEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/datapack/AddDropModifier.java#event:@SubscribeEvent RegisterEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/datapack/AddDropModifier.java",
+   "kind": "event",
+   "key": "@SubscribeEvent RegisterEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/datapack/PackCostMeter.java#event:@SubscribeEvent EntityJoinLevelEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/datapack/PackCostMeter.java",
+   "kind": "event",
+   "key": "@SubscribeEvent EntityJoinLevelEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/datapack/PackCostMeter.java#event:@SubscribeEvent ServerStartedEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/datapack/PackCostMeter.java",
+   "kind": "event",
+   "key": "@SubscribeEvent ServerStartedEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/datapack/PackCostMeter.java#event:@SubscribeEvent ServerStoppedEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/datapack/PackCostMeter.java",
+   "kind": "event",
+   "key": "@SubscribeEvent ServerStoppedEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/datapack/PackCostMeter.java#event:@SubscribeEvent ServerTickEvent.Post",
+   "set": "main",
+   "file": "com/moddingfromamod/datapack/PackCostMeter.java",
+   "kind": "event",
+   "key": "@SubscribeEvent ServerTickEvent.Post"
+  },
+  {
+   "id": "main:com/moddingfromamod/datapack/PackCostMeter.java#event:@SubscribeEvent ServerTickEvent.Pre",
+   "set": "main",
+   "file": "com/moddingfromamod/datapack/PackCostMeter.java",
+   "kind": "event",
+   "key": "@SubscribeEvent ServerTickEvent.Pre"
+  },
+  {
+   "id": "main:com/moddingfromamod/datapack/PendingPressTicker.java#event:@SubscribeEvent ServerTickEvent.Post",
+   "set": "main",
+   "file": "com/moddingfromamod/datapack/PendingPressTicker.java",
+   "kind": "event",
+   "key": "@SubscribeEvent ServerTickEvent.Post"
+  },
+  {
+   "id": "main:com/moddingfromamod/datapack/QuarantineGameTest.java#render-use:RenderType.INTEGER",
+   "set": "main",
+   "file": "com/moddingfromamod/datapack/QuarantineGameTest.java",
+   "kind": "render-use",
+   "key": "RenderType.INTEGER"
+  },
+  {
+   "id": "main:com/moddingfromamod/datapack/WishDatapackCommand.java#event:@SubscribeEvent RegisterCommandsEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/datapack/WishDatapackCommand.java",
+   "kind": "event",
+   "key": "@SubscribeEvent RegisterCommandsEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/entity/ModEntities.java#event:addListener EntityAttributeCreationEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/entity/ModEntities.java",
+   "kind": "event",
+   "key": "addListener EntityAttributeCreationEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/entity/ModEntities.java#registry:registry ENTITY_TYPE",
+   "set": "main",
+   "file": "com/moddingfromamod/entity/ModEntities.java",
+   "kind": "registry",
+   "key": "registry ENTITY_TYPE"
+  },
+  {
+   "id": "main:com/moddingfromamod/event/EventDirector.java#event:@SubscribeEvent ServerTickEvent.Post",
+   "set": "main",
+   "file": "com/moddingfromamod/event/EventDirector.java",
+   "kind": "event",
+   "key": "@SubscribeEvent ServerTickEvent.Post"
+  },
+  {
+   "id": "main:com/moddingfromamod/event/catching/Effects.java#event:@SubscribeEvent LivingFallEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/event/catching/Effects.java",
+   "kind": "event",
+   "key": "@SubscribeEvent LivingFallEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/event/design/EventCommand.java#event:@SubscribeEvent RegisterCommandsEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/event/design/EventCommand.java",
+   "kind": "event",
+   "key": "@SubscribeEvent RegisterCommandsEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/event/design/EventDesigns.java#event:@SubscribeEvent ServerTickEvent.Post",
+   "set": "main",
+   "file": "com/moddingfromamod/event/design/EventDesigns.java",
+   "kind": "event",
+   "key": "@SubscribeEvent ServerTickEvent.Post"
+  },
+  {
+   "id": "main:com/moddingfromamod/film/FilmPathPlayer.java#event:@SubscribeEvent ServerTickEvent.Post",
+   "set": "main",
+   "file": "com/moddingfromamod/film/FilmPathPlayer.java",
+   "kind": "event",
+   "key": "@SubscribeEvent ServerTickEvent.Post"
+  },
+  {
+   "id": "main:com/moddingfromamod/health/WishSweeper.java#event:@SubscribeEvent ServerStartedEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/health/WishSweeper.java",
+   "kind": "event",
+   "key": "@SubscribeEvent ServerStartedEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/health/WishSweeper.java#event:@SubscribeEvent ServerStoppingEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/health/WishSweeper.java",
+   "kind": "event",
+   "key": "@SubscribeEvent ServerStoppingEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/item/CakeBites.java#event:@SubscribeEvent PlayerInteractEvent.RightClickBlock",
+   "set": "main",
+   "file": "com/moddingfromamod/item/CakeBites.java",
+   "kind": "event",
+   "key": "@SubscribeEvent PlayerInteractEvent.RightClickBlock"
+  },
+  {
+   "id": "main:com/moddingfromamod/item/CallPets.java#event:@SubscribeEvent ServerTickEvent.Post",
+   "set": "main",
+   "file": "com/moddingfromamod/item/CallPets.java",
+   "kind": "event",
+   "key": "@SubscribeEvent ServerTickEvent.Post"
+  },
+  {
+   "id": "main:com/moddingfromamod/item/CreatureHorn.java#event:@SubscribeEvent PlayerInteractEvent.RightClickItem",
+   "set": "main",
+   "file": "com/moddingfromamod/item/CreatureHorn.java",
+   "kind": "event",
+   "key": "@SubscribeEvent PlayerInteractEvent.RightClickItem"
+  },
+  {
+   "id": "main:com/moddingfromamod/item/CustomCatch.java#event:@SubscribeEvent ItemFishedEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/item/CustomCatch.java",
+   "kind": "event",
+   "key": "@SubscribeEvent ItemFishedEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/item/EatSpeed.java#event:@SubscribeEvent LivingEntityUseItemEvent.Start",
+   "set": "main",
+   "file": "com/moddingfromamod/item/EatSpeed.java",
+   "kind": "event",
+   "key": "@SubscribeEvent LivingEntityUseItemEvent.Start"
+  },
+  {
+   "id": "main:com/moddingfromamod/item/GoHome.java#event:@SubscribeEvent EntityTeleportEvent.EnderPearl",
+   "set": "main",
+   "file": "com/moddingfromamod/item/GoHome.java",
+   "kind": "event",
+   "key": "@SubscribeEvent EntityTeleportEvent.EnderPearl"
+  },
+  {
+   "id": "main:com/moddingfromamod/item/GoHome.java#event:@SubscribeEvent ServerTickEvent.Post",
+   "set": "main",
+   "file": "com/moddingfromamod/item/GoHome.java",
+   "kind": "event",
+   "key": "@SubscribeEvent ServerTickEvent.Post"
+  },
+  {
+   "id": "main:com/moddingfromamod/item/Grapple.java#event:@SubscribeEvent LivingFallEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/item/Grapple.java",
+   "kind": "event",
+   "key": "@SubscribeEvent LivingFallEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/item/Grapple.java#event:@SubscribeEvent ServerTickEvent.Post",
+   "set": "main",
+   "file": "com/moddingfromamod/item/Grapple.java",
+   "kind": "event",
+   "key": "@SubscribeEvent ServerTickEvent.Post"
+  },
+  {
+   "id": "main:com/moddingfromamod/item/Grapple.java#event:@SubscribeEvent net.neoforged.neoforge.event.entity.player.PlayerInteractEvent.RightClickItem",
+   "set": "main",
+   "file": "com/moddingfromamod/item/Grapple.java",
+   "kind": "event",
+   "key": "@SubscribeEvent net.neoforged.neoforge.event.entity.player.PlayerInteractEvent.RightClickItem"
+  },
+  {
+   "id": "main:com/moddingfromamod/item/Locate.java#event:@SubscribeEvent ServerTickEvent.Post",
+   "set": "main",
+   "file": "com/moddingfromamod/item/Locate.java",
+   "kind": "event",
+   "key": "@SubscribeEvent ServerTickEvent.Post"
+  },
+  {
+   "id": "main:com/moddingfromamod/item/MineArea.java#event:@SubscribeEvent BlockEvent.BreakEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/item/MineArea.java",
+   "kind": "event",
+   "key": "@SubscribeEvent BlockEvent.BreakEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/item/MineArea.java#event:@SubscribeEvent ServerTickEvent.Post",
+   "set": "main",
+   "file": "com/moddingfromamod/item/MineArea.java",
+   "kind": "event",
+   "key": "@SubscribeEvent ServerTickEvent.Post"
+  },
+  {
+   "id": "main:com/moddingfromamod/item/ModItems.java#event:addListener BuildCreativeModeTabContentsEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/item/ModItems.java",
+   "kind": "event",
+   "key": "addListener BuildCreativeModeTabContentsEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/item/ModItems.java#registry:registry ITEM",
+   "set": "main",
+   "file": "com/moddingfromamod/item/ModItems.java",
+   "kind": "registry",
+   "key": "registry ITEM"
+  },
+  {
+   "id": "main:com/moddingfromamod/item/OneKindBag.java#event:@SubscribeEvent ItemStackedOnOtherEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/item/OneKindBag.java",
+   "kind": "event",
+   "key": "@SubscribeEvent ItemStackedOnOtherEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/item/OverlayBackfill.java#event:@SubscribeEvent PlayerEvent.PlayerLoggedInEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/item/OverlayBackfill.java",
+   "kind": "event",
+   "key": "@SubscribeEvent PlayerEvent.PlayerLoggedInEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/item/PolishGlintService.java#event:@SubscribeEvent PlayerContainerEvent.Open",
+   "set": "main",
+   "file": "com/moddingfromamod/item/PolishGlintService.java",
+   "kind": "event",
+   "key": "@SubscribeEvent PlayerContainerEvent.Open"
+  },
+  {
+   "id": "main:com/moddingfromamod/item/PolishGlintService.java#event:@SubscribeEvent PlayerEvent.PlayerLoggedInEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/item/PolishGlintService.java",
+   "kind": "event",
+   "key": "@SubscribeEvent PlayerEvent.PlayerLoggedInEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/item/PolishGlintService.java#event:@SubscribeEvent ServerTickEvent.Post",
+   "set": "main",
+   "file": "com/moddingfromamod/item/PolishGlintService.java",
+   "kind": "event",
+   "key": "@SubscribeEvent ServerTickEvent.Post"
+  },
+  {
+   "id": "main:com/moddingfromamod/item/PropertyRides.java#event:@SubscribeEvent EntityJoinLevelEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/item/PropertyRides.java",
+   "kind": "event",
+   "key": "@SubscribeEvent EntityJoinLevelEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/item/PropertyRides.java#event:@SubscribeEvent LivingEntityUseItemEvent.Finish",
+   "set": "main",
+   "file": "com/moddingfromamod/item/PropertyRides.java",
+   "kind": "event",
+   "key": "@SubscribeEvent LivingEntityUseItemEvent.Finish"
+  },
+  {
+   "id": "main:com/moddingfromamod/item/PropertyRides.java#event:@SubscribeEvent PlayerInteractEvent.RightClickBlock",
+   "set": "main",
+   "file": "com/moddingfromamod/item/PropertyRides.java",
+   "kind": "event",
+   "key": "@SubscribeEvent PlayerInteractEvent.RightClickBlock"
+  },
+  {
+   "id": "main:com/moddingfromamod/item/PropertyRides.java#event:@SubscribeEvent PlayerInteractEvent.RightClickItem",
+   "set": "main",
+   "file": "com/moddingfromamod/item/PropertyRides.java",
+   "kind": "event",
+   "key": "@SubscribeEvent PlayerInteractEvent.RightClickItem"
+  },
+  {
+   "id": "main:com/moddingfromamod/item/PropertyRides.java#event:@SubscribeEvent ServerTickEvent.Post",
+   "set": "main",
+   "file": "com/moddingfromamod/item/PropertyRides.java",
+   "kind": "event",
+   "key": "@SubscribeEvent ServerTickEvent.Post"
+  },
+  {
+   "id": "main:com/moddingfromamod/item/Reveal.java#event:@SubscribeEvent EntityJoinLevelEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/item/Reveal.java",
+   "kind": "event",
+   "key": "@SubscribeEvent EntityJoinLevelEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/item/Reveal.java#event:@SubscribeEvent ServerTickEvent.Post",
+   "set": "main",
+   "file": "com/moddingfromamod/item/Reveal.java",
+   "kind": "event",
+   "key": "@SubscribeEvent ServerTickEvent.Post"
+  },
+  {
+   "id": "main:com/moddingfromamod/item/StrongerWhen.java#event:@SubscribeEvent ServerTickEvent.Post",
+   "set": "main",
+   "file": "com/moddingfromamod/item/StrongerWhen.java",
+   "kind": "event",
+   "key": "@SubscribeEvent ServerTickEvent.Post"
+  },
+  {
+   "id": "main:com/moddingfromamod/item/Tidy.java#event:@SubscribeEvent ServerTickEvent.Post",
+   "set": "main",
+   "file": "com/moddingfromamod/item/Tidy.java",
+   "kind": "event",
+   "key": "@SubscribeEvent ServerTickEvent.Post"
+  },
+  {
+   "id": "main:com/moddingfromamod/item/Trail.java#event:@SubscribeEvent ServerTickEvent.Post",
+   "set": "main",
+   "file": "com/moddingfromamod/item/Trail.java",
+   "kind": "event",
+   "key": "@SubscribeEvent ServerTickEvent.Post"
+  },
+  {
+   "id": "main:com/moddingfromamod/item/VanillaCarrierAbilities.java#event:@SubscribeEvent PlayerInteractEvent.EntityInteract",
+   "set": "main",
+   "file": "com/moddingfromamod/item/VanillaCarrierAbilities.java",
+   "kind": "event",
+   "key": "@SubscribeEvent PlayerInteractEvent.EntityInteract"
+  },
+  {
+   "id": "main:com/moddingfromamod/item/VanillaCarrierAbilities.java#event:@SubscribeEvent PlayerInteractEvent.EntityInteractSpecific",
+   "set": "main",
+   "file": "com/moddingfromamod/item/VanillaCarrierAbilities.java",
+   "kind": "event",
+   "key": "@SubscribeEvent PlayerInteractEvent.EntityInteractSpecific"
+  },
+  {
+   "id": "main:com/moddingfromamod/item/VanillaCarrierAbilities.java#event:@SubscribeEvent PlayerInteractEvent.RightClickBlock",
+   "set": "main",
+   "file": "com/moddingfromamod/item/VanillaCarrierAbilities.java",
+   "kind": "event",
+   "key": "@SubscribeEvent PlayerInteractEvent.RightClickBlock"
+  },
+  {
+   "id": "main:com/moddingfromamod/item/VanillaCarrierAbilities.java#event:@SubscribeEvent PlayerInteractEvent.RightClickItem",
+   "set": "main",
+   "file": "com/moddingfromamod/item/VanillaCarrierAbilities.java",
+   "kind": "event",
+   "key": "@SubscribeEvent PlayerInteractEvent.RightClickItem"
+  },
+  {
+   "id": "main:com/moddingfromamod/item/VanillaCarrierAbilities.java#event:@SubscribeEvent net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedOutEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/item/VanillaCarrierAbilities.java",
+   "kind": "event",
+   "key": "@SubscribeEvent net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedOutEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/item/VanillaCarrierAbilities.java#event:@SubscribeEvent net.neoforged.neoforge.event.tick.ServerTickEvent.Post",
+   "set": "main",
+   "file": "com/moddingfromamod/item/VanillaCarrierAbilities.java",
+   "kind": "event",
+   "key": "@SubscribeEvent net.neoforged.neoforge.event.tick.ServerTickEvent.Post"
+  },
+  {
+   "id": "main:com/moddingfromamod/item/WishBoltGuard.java#event:@SubscribeEvent EntityStruckByLightningEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/item/WishBoltGuard.java",
+   "kind": "event",
+   "key": "@SubscribeEvent EntityStruckByLightningEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/item/WishBoltGuard.java#event:@SubscribeEvent ServerTickEvent.Post",
+   "set": "main",
+   "file": "com/moddingfromamod/item/WishBoltGuard.java",
+   "kind": "event",
+   "key": "@SubscribeEvent ServerTickEvent.Post"
+  },
+  {
+   "id": "main:com/moddingfromamod/item/WishMeleeHit.java#event:@SubscribeEvent AttackEntityEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/item/WishMeleeHit.java",
+   "kind": "event",
+   "key": "@SubscribeEvent AttackEntityEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/item/WishShapeEvents.java#event:@SubscribeEvent BlockEvent.BreakEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/item/WishShapeEvents.java",
+   "kind": "event",
+   "key": "@SubscribeEvent BlockEvent.BreakEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/item/WishShapeEvents.java#event:@SubscribeEvent EntityJoinLevelEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/item/WishShapeEvents.java",
+   "kind": "event",
+   "key": "@SubscribeEvent EntityJoinLevelEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/item/WishShapeEvents.java#event:@SubscribeEvent net.neoforged.neoforge.event.entity.living.LivingEntityUseItemEvent.Finish",
+   "set": "main",
+   "file": "com/moddingfromamod/item/WishShapeEvents.java",
+   "kind": "event",
+   "key": "@SubscribeEvent net.neoforged.neoforge.event.entity.living.LivingEntityUseItemEvent.Finish"
+  },
+  {
+   "id": "main:com/moddingfromamod/item/WishShapeEvents.java#event:@SubscribeEvent net.neoforged.neoforge.event.entity.living.LivingEntityUseItemEvent.Stop",
+   "set": "main",
+   "file": "com/moddingfromamod/item/WishShapeEvents.java",
+   "kind": "event",
+   "key": "@SubscribeEvent net.neoforged.neoforge.event.entity.living.LivingEntityUseItemEvent.Stop"
+  },
+  {
+   "id": "main:com/moddingfromamod/item/WishShapeEvents.java#event:@SubscribeEvent net.neoforged.neoforge.event.entity.living.LivingShieldBlockEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/item/WishShapeEvents.java",
+   "kind": "event",
+   "key": "@SubscribeEvent net.neoforged.neoforge.event.entity.living.LivingShieldBlockEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/item/WishShapeEvents.java#event:@SubscribeEvent net.neoforged.neoforge.event.entity.player.PlayerInteractEvent.RightClickItem",
+   "set": "main",
+   "file": "com/moddingfromamod/item/WishShapeEvents.java",
+   "kind": "event",
+   "key": "@SubscribeEvent net.neoforged.neoforge.event.entity.player.PlayerInteractEvent.RightClickItem"
+  },
+  {
+   "id": "main:com/moddingfromamod/item/WishShapeEvents.java#event:@SubscribeEvent net.neoforged.neoforge.event.tick.ServerTickEvent.Post",
+   "set": "main",
+   "file": "com/moddingfromamod/item/WishShapeEvents.java",
+   "kind": "event",
+   "key": "@SubscribeEvent net.neoforged.neoforge.event.tick.ServerTickEvent.Post"
+  },
+  {
+   "id": "main:com/moddingfromamod/item/WishThrowImpact.java#event:@SubscribeEvent ProjectileImpactEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/item/WishThrowImpact.java",
+   "kind": "event",
+   "key": "@SubscribeEvent ProjectileImpactEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/item/delivery/WishDelivery.java#event:@SubscribeEvent ItemEntityPickupEvent.Pre",
+   "set": "main",
+   "file": "com/moddingfromamod/item/delivery/WishDelivery.java",
+   "kind": "event",
+   "key": "@SubscribeEvent ItemEntityPickupEvent.Pre"
+  },
+  {
+   "id": "main:com/moddingfromamod/item/delivery/WishDelivery.java#event:@SubscribeEvent ServerStoppingEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/item/delivery/WishDelivery.java",
+   "kind": "event",
+   "key": "@SubscribeEvent ServerStoppingEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/item/delivery/WishDelivery.java#event:@SubscribeEvent ServerTickEvent.Post",
+   "set": "main",
+   "file": "com/moddingfromamod/item/delivery/WishDelivery.java",
+   "kind": "event",
+   "key": "@SubscribeEvent ServerTickEvent.Post"
+  },
+  {
+   "id": "main:com/moddingfromamod/lite/FlyStage.java#event:@SubscribeEvent ServerTickEvent.Post",
+   "set": "main",
+   "file": "com/moddingfromamod/lite/FlyStage.java",
+   "kind": "event",
+   "key": "@SubscribeEvent ServerTickEvent.Post"
+  },
+  {
+   "id": "main:com/moddingfromamod/lite/LiteProbe.java#event:@SubscribeEvent PlayerEvent.PlayerLoggedInEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/lite/LiteProbe.java",
+   "kind": "event",
+   "key": "@SubscribeEvent PlayerEvent.PlayerLoggedInEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/lite/LiteProbe.java#event:@SubscribeEvent ServerStartedEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/lite/LiteProbe.java",
+   "kind": "event",
+   "key": "@SubscribeEvent ServerStartedEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/lite/LiteProbe.java#event:@SubscribeEvent ServerTickEvent.Post",
+   "set": "main",
+   "file": "com/moddingfromamod/lite/LiteProbe.java",
+   "kind": "event",
+   "key": "@SubscribeEvent ServerTickEvent.Post"
+  },
+  {
+   "id": "main:com/moddingfromamod/lite/StockIconProbe.java#event:@SubscribeEvent PlayerEvent.PlayerLoggedInEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/lite/StockIconProbe.java",
+   "kind": "event",
+   "key": "@SubscribeEvent PlayerEvent.PlayerLoggedInEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/lite/StockIconProbe.java#event:@SubscribeEvent ServerTickEvent.Post",
+   "set": "main",
+   "file": "com/moddingfromamod/lite/StockIconProbe.java",
+   "kind": "event",
+   "key": "@SubscribeEvent ServerTickEvent.Post"
+  },
+  {
+   "id": "main:com/moddingfromamod/lite/StockRideStage.java#event:@SubscribeEvent LivingShieldBlockEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/lite/StockRideStage.java",
+   "kind": "event",
+   "key": "@SubscribeEvent LivingShieldBlockEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/lite/StockRideStage.java#event:@SubscribeEvent ServerTickEvent.Post",
+   "set": "main",
+   "file": "com/moddingfromamod/lite/StockRideStage.java",
+   "kind": "event",
+   "key": "@SubscribeEvent ServerTickEvent.Post"
+  },
+  {
+   "id": "main:com/moddingfromamod/lite/StockWalkStage.java#event:@SubscribeEvent ServerTickEvent.Pre",
+   "set": "main",
+   "file": "com/moddingfromamod/lite/StockWalkStage.java",
+   "kind": "event",
+   "key": "@SubscribeEvent ServerTickEvent.Pre"
+  },
+  {
+   "id": "main:com/moddingfromamod/lite/WatchPinStage.java#event:@SubscribeEvent ServerTickEvent.Post",
+   "set": "main",
+   "file": "com/moddingfromamod/lite/WatchPinStage.java",
+   "kind": "event",
+   "key": "@SubscribeEvent ServerTickEvent.Post"
+  },
+  {
+   "id": "main:com/moddingfromamod/lite/WatchPinStage.java#event:@SubscribeEvent net.neoforged.neoforge.event.entity.EntityJoinLevelEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/lite/WatchPinStage.java",
+   "kind": "event",
+   "key": "@SubscribeEvent net.neoforged.neoforge.event.entity.EntityJoinLevelEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/lite/WatchPinStage.java#event:@SubscribeEvent net.neoforged.neoforge.event.entity.living.LivingEntityUseItemEvent.Start",
+   "set": "main",
+   "file": "com/moddingfromamod/lite/WatchPinStage.java",
+   "kind": "event",
+   "key": "@SubscribeEvent net.neoforged.neoforge.event.entity.living.LivingEntityUseItemEvent.Start"
+  },
+  {
+   "id": "main:com/moddingfromamod/mixin/AnvilNameMixin.java#injection:@Inject method=setItemName @At(value=\"HEAD\")",
+   "set": "main",
+   "file": "com/moddingfromamod/mixin/AnvilNameMixin.java",
+   "kind": "injection",
+   "key": "@Inject method=setItemName @At(value=\"HEAD\")"
+  },
+  {
+   "id": "main:com/moddingfromamod/mixin/AnvilNameMixin.java#mixin:@Mixin AnvilMenu",
+   "set": "main",
+   "file": "com/moddingfromamod/mixin/AnvilNameMixin.java",
+   "kind": "mixin",
+   "key": "@Mixin AnvilMenu"
+  },
+  {
+   "id": "main:com/moddingfromamod/mixin/BatRideMixin.java#injection:@Inject method=customServerAiStep @At(value=\"HEAD\")",
+   "set": "main",
+   "file": "com/moddingfromamod/mixin/BatRideMixin.java",
+   "kind": "injection",
+   "key": "@Inject method=customServerAiStep @At(value=\"HEAD\")"
+  },
+  {
+   "id": "main:com/moddingfromamod/mixin/BatRideMixin.java#injection:@Inject method=setResting @At(value=\"HEAD\")",
+   "set": "main",
+   "file": "com/moddingfromamod/mixin/BatRideMixin.java",
+   "kind": "injection",
+   "key": "@Inject method=setResting @At(value=\"HEAD\")"
+  },
+  {
+   "id": "main:com/moddingfromamod/mixin/BatRideMixin.java#injection:@Inject method=tick @At(value=\"HEAD\")",
+   "set": "main",
+   "file": "com/moddingfromamod/mixin/BatRideMixin.java",
+   "kind": "injection",
+   "key": "@Inject method=tick @At(value=\"HEAD\")"
+  },
+  {
+   "id": "main:com/moddingfromamod/mixin/BatRideMixin.java#mixin:@Mixin Bat",
+   "set": "main",
+   "file": "com/moddingfromamod/mixin/BatRideMixin.java",
+   "kind": "mixin",
+   "key": "@Mixin Bat"
+  },
+  {
+   "id": "main:com/moddingfromamod/mixin/BookTextMixin.java#injection:@Inject method=signBook @At(value=\"HEAD\")",
+   "set": "main",
+   "file": "com/moddingfromamod/mixin/BookTextMixin.java",
+   "kind": "injection",
+   "key": "@Inject method=signBook @At(value=\"HEAD\")"
+  },
+  {
+   "id": "main:com/moddingfromamod/mixin/BookTextMixin.java#injection:@Inject method=updateBookContents @At(value=\"HEAD\")",
+   "set": "main",
+   "file": "com/moddingfromamod/mixin/BookTextMixin.java",
+   "kind": "injection",
+   "key": "@Inject method=updateBookContents @At(value=\"HEAD\")"
+  },
+  {
+   "id": "main:com/moddingfromamod/mixin/BookTextMixin.java#mixin:@Mixin ServerGamePacketListenerImpl",
+   "set": "main",
+   "file": "com/moddingfromamod/mixin/BookTextMixin.java",
+   "kind": "mixin",
+   "key": "@Mixin ServerGamePacketListenerImpl"
+  },
+  {
+   "id": "main:com/moddingfromamod/mixin/CarrierGlowFlagMixin.java#injection:@Inject method=setSharedFlag @At(value=\"HEAD\")",
+   "set": "main",
+   "file": "com/moddingfromamod/mixin/CarrierGlowFlagMixin.java",
+   "kind": "injection",
+   "key": "@Inject method=setSharedFlag @At(value=\"HEAD\")"
+  },
+  {
+   "id": "main:com/moddingfromamod/mixin/CarrierGlowFlagMixin.java#mixin:@Mixin Entity",
+   "set": "main",
+   "file": "com/moddingfromamod/mixin/CarrierGlowFlagMixin.java",
+   "kind": "mixin",
+   "key": "@Mixin Entity"
+  },
+  {
+   "id": "main:com/moddingfromamod/mixin/DisplayLightInvoker.java#mixin:@Mixin Display",
+   "set": "main",
+   "file": "com/moddingfromamod/mixin/DisplayLightInvoker.java",
+   "kind": "mixin",
+   "key": "@Mixin Display"
+  },
+  {
+   "id": "main:com/moddingfromamod/mixin/DisplayPoseInvoker.java#mixin:@Mixin Display",
+   "set": "main",
+   "file": "com/moddingfromamod/mixin/DisplayPoseInvoker.java",
+   "kind": "mixin",
+   "key": "@Mixin Display"
+  },
+  {
+   "id": "main:com/moddingfromamod/mixin/EntityLookupIndexMixin.java#injection:@Inject method=add @At(value=\"TAIL\")",
+   "set": "main",
+   "file": "com/moddingfromamod/mixin/EntityLookupIndexMixin.java",
+   "kind": "injection",
+   "key": "@Inject method=add @At(value=\"TAIL\")"
+  },
+  {
+   "id": "main:com/moddingfromamod/mixin/EntityLookupIndexMixin.java#injection:@Inject method=remove @At(value=\"TAIL\")",
+   "set": "main",
+   "file": "com/moddingfromamod/mixin/EntityLookupIndexMixin.java",
+   "kind": "injection",
+   "key": "@Inject method=remove @At(value=\"TAIL\")"
+  },
+  {
+   "id": "main:com/moddingfromamod/mixin/EntityLookupIndexMixin.java#mixin:@Mixin EntityLookup",
+   "set": "main",
+   "file": "com/moddingfromamod/mixin/EntityLookupIndexMixin.java",
+   "kind": "mixin",
+   "key": "@Mixin EntityLookup"
+  },
+  {
+   "id": "main:com/moddingfromamod/mixin/EntityTagSetMixin.java#injection:@Inject method=<init> @At(value=\"RETURN\")",
+   "set": "main",
+   "file": "com/moddingfromamod/mixin/EntityTagSetMixin.java",
+   "kind": "injection",
+   "key": "@Inject method=<init> @At(value=\"RETURN\")"
+  },
+  {
+   "id": "main:com/moddingfromamod/mixin/EntityTagSetMixin.java#mixin:@Mixin Entity",
+   "set": "main",
+   "file": "com/moddingfromamod/mixin/EntityTagSetMixin.java",
+   "kind": "mixin",
+   "key": "@Mixin Entity"
+  },
+  {
+   "id": "main:com/moddingfromamod/mixin/ExecutionContextHardStopMixin.java#injection:@Inject method=incrementCost @At(value=\"TAIL\")",
+   "set": "main",
+   "file": "com/moddingfromamod/mixin/ExecutionContextHardStopMixin.java",
+   "kind": "injection",
+   "key": "@Inject method=incrementCost @At(value=\"TAIL\")"
+  },
+  {
+   "id": "main:com/moddingfromamod/mixin/ExecutionContextHardStopMixin.java#mixin:@Mixin ExecutionContext",
+   "set": "main",
+   "file": "com/moddingfromamod/mixin/ExecutionContextHardStopMixin.java",
+   "kind": "mixin",
+   "key": "@Mixin ExecutionContext"
+  },
+  {
+   "id": "main:com/moddingfromamod/mixin/FunctionNoiseMixin.java#injection:@Inject method=execute @At(value=\"HEAD\")",
+   "set": "main",
+   "file": "com/moddingfromamod/mixin/FunctionNoiseMixin.java",
+   "kind": "injection",
+   "key": "@Inject method=execute @At(value=\"HEAD\")"
+  },
+  {
+   "id": "main:com/moddingfromamod/mixin/FunctionNoiseMixin.java#injection:@Inject method=execute @At(value=\"RETURN\")",
+   "set": "main",
+   "file": "com/moddingfromamod/mixin/FunctionNoiseMixin.java",
+   "kind": "injection",
+   "key": "@Inject method=execute @At(value=\"RETURN\")"
+  },
+  {
+   "id": "main:com/moddingfromamod/mixin/FunctionNoiseMixin.java#injection:@Inject method=tick @At(value=\"HEAD\")",
+   "set": "main",
+   "file": "com/moddingfromamod/mixin/FunctionNoiseMixin.java",
+   "kind": "injection",
+   "key": "@Inject method=tick @At(value=\"HEAD\")"
+  },
+  {
+   "id": "main:com/moddingfromamod/mixin/FunctionNoiseMixin.java#mixin:@Mixin ServerFunctionManager",
+   "set": "main",
+   "file": "com/moddingfromamod/mixin/FunctionNoiseMixin.java",
+   "kind": "mixin",
+   "key": "@Mixin ServerFunctionManager"
+  },
+  {
+   "id": "main:com/moddingfromamod/mixin/FunctionSpawnScopeMixin.java#injection:@Inject method=execute,tick @At(value=\"HEAD\")",
+   "set": "main",
+   "file": "com/moddingfromamod/mixin/FunctionSpawnScopeMixin.java",
+   "kind": "injection",
+   "key": "@Inject method=execute,tick @At(value=\"HEAD\")"
+  },
+  {
+   "id": "main:com/moddingfromamod/mixin/FunctionSpawnScopeMixin.java#injection:@Inject method=execute,tick @At(value=\"RETURN\")",
+   "set": "main",
+   "file": "com/moddingfromamod/mixin/FunctionSpawnScopeMixin.java",
+   "kind": "injection",
+   "key": "@Inject method=execute,tick @At(value=\"RETURN\")"
+  },
+  {
+   "id": "main:com/moddingfromamod/mixin/FunctionSpawnScopeMixin.java#mixin:@Mixin ServerFunctionManager",
+   "set": "main",
+   "file": "com/moddingfromamod/mixin/FunctionSpawnScopeMixin.java",
+   "kind": "mixin",
+   "key": "@Mixin ServerFunctionManager"
+  },
+  {
+   "id": "main:com/moddingfromamod/mixin/GiveCommandMixin.java#mixin:@Mixin GiveCommand",
+   "set": "main",
+   "file": "com/moddingfromamod/mixin/GiveCommandMixin.java",
+   "kind": "mixin",
+   "key": "@Mixin GiveCommand"
+  },
+  {
+   "id": "main:com/moddingfromamod/mixin/GiveCommandMixin.java#injection:@WrapOperation method=giveItem @At(value=\"INVOKE\",target=\"Lnet/minecraft/world/entity/player/Inventory;add(Lnet/minecraft/world/item/ItemStack;)Z\")",
+   "set": "main",
+   "file": "com/moddingfromamod/mixin/GiveCommandMixin.java",
+   "kind": "injection",
+   "key": "@WrapOperation method=giveItem @At(value=\"INVOKE\",target=\"Lnet/minecraft/world/entity/player/Inventory;add(Lnet/minecraft/world/item/ItemStack;)Z\")"
+  },
+  {
+   "id": "main:com/moddingfromamod/mixin/ItemCombinerMenuAccessor.java#mixin:@Mixin ItemCombinerMenu",
+   "set": "main",
+   "file": "com/moddingfromamod/mixin/ItemCombinerMenuAccessor.java",
+   "kind": "mixin",
+   "key": "@Mixin ItemCombinerMenu"
+  },
+  {
+   "id": "main:com/moddingfromamod/mixin/ItemDisplayItemInvoker.java#mixin:@Mixin Display.ItemDisplay",
+   "set": "main",
+   "file": "com/moddingfromamod/mixin/ItemDisplayItemInvoker.java",
+   "kind": "mixin",
+   "key": "@Mixin Display.ItemDisplay"
+  },
+  {
+   "id": "main:com/moddingfromamod/mixin/ItemDisplayLookKeys.java#mixin:@Mixin Display.ItemDisplay",
+   "set": "main",
+   "file": "com/moddingfromamod/mixin/ItemDisplayLookKeys.java",
+   "kind": "mixin",
+   "key": "@Mixin Display.ItemDisplay"
+  },
+  {
+   "id": "main:com/moddingfromamod/mixin/LevelEntityGetterAdapterAccessor.java#mixin:@Mixin LevelEntityGetterAdapter",
+   "set": "main",
+   "file": "com/moddingfromamod/mixin/LevelEntityGetterAdapterAccessor.java",
+   "kind": "mixin",
+   "key": "@Mixin LevelEntityGetterAdapter"
+  },
+  {
+   "id": "main:com/moddingfromamod/mixin/ParticleNoiseMixin.java#injection:@Inject method=sendParticles @At(value=\"HEAD\")",
+   "set": "main",
+   "file": "com/moddingfromamod/mixin/ParticleNoiseMixin.java",
+   "kind": "injection",
+   "key": "@Inject method=sendParticles @At(value=\"HEAD\")"
+  },
+  {
+   "id": "main:com/moddingfromamod/mixin/ParticleNoiseMixin.java#mixin:@Mixin ParticleCommand",
+   "set": "main",
+   "file": "com/moddingfromamod/mixin/ParticleNoiseMixin.java",
+   "kind": "mixin",
+   "key": "@Mixin ParticleCommand"
+  },
+  {
+   "id": "main:com/moddingfromamod/mixin/PlaySoundNoiseMixin.java#injection:@Inject method=playSound @At(value=\"HEAD\")",
+   "set": "main",
+   "file": "com/moddingfromamod/mixin/PlaySoundNoiseMixin.java",
+   "kind": "injection",
+   "key": "@Inject method=playSound @At(value=\"HEAD\")"
+  },
+  {
+   "id": "main:com/moddingfromamod/mixin/PlaySoundNoiseMixin.java#mixin:@Mixin PlaySoundCommand",
+   "set": "main",
+   "file": "com/moddingfromamod/mixin/PlaySoundNoiseMixin.java",
+   "kind": "mixin",
+   "key": "@Mixin PlaySoundCommand"
+  },
+  {
+   "id": "main:com/moddingfromamod/mixin/ProjectileHitInvoker.java#mixin:@Mixin Projectile",
+   "set": "main",
+   "file": "com/moddingfromamod/mixin/ProjectileHitInvoker.java",
+   "kind": "mixin",
+   "key": "@Mixin Projectile"
+  },
+  {
+   "id": "main:com/moddingfromamod/mixin/ProxyProjectileMixin.java#injection:@Inject method=canHitEntity @At(value=\"HEAD\")",
+   "set": "main",
+   "file": "com/moddingfromamod/mixin/ProxyProjectileMixin.java",
+   "kind": "injection",
+   "key": "@Inject method=canHitEntity @At(value=\"HEAD\")"
+  },
+  {
+   "id": "main:com/moddingfromamod/mixin/ProxyProjectileMixin.java#mixin:@Mixin Projectile",
+   "set": "main",
+   "file": "com/moddingfromamod/mixin/ProxyProjectileMixin.java",
+   "kind": "mixin",
+   "key": "@Mixin Projectile"
+  },
+  {
+   "id": "main:com/moddingfromamod/mixin/RigBundleBroadcastMixin.java#injection:@Inject method=broadcast(Lnet/minecraft/network/protocol/Packet;)V @At(value=\"HEAD\")",
+   "set": "main",
+   "file": "com/moddingfromamod/mixin/RigBundleBroadcastMixin.java",
+   "kind": "injection",
+   "key": "@Inject method=broadcast(Lnet/minecraft/network/protocol/Packet;)V @At(value=\"HEAD\")"
+  },
+  {
+   "id": "main:com/moddingfromamod/mixin/RigBundleBroadcastMixin.java#mixin:@Mixin net.minecraft.server.level.ChunkMap$TrackedEntity",
+   "set": "main",
+   "file": "com/moddingfromamod/mixin/RigBundleBroadcastMixin.java",
+   "kind": "mixin",
+   "key": "@Mixin net.minecraft.server.level.ChunkMap$TrackedEntity"
+  },
+  {
+   "id": "main:com/moddingfromamod/mixin/RigBundleTickMixin.java#injection:@Inject method=tick()V @At(value=\"HEAD\")",
+   "set": "main",
+   "file": "com/moddingfromamod/mixin/RigBundleTickMixin.java",
+   "kind": "injection",
+   "key": "@Inject method=tick()V @At(value=\"HEAD\")"
+  },
+  {
+   "id": "main:com/moddingfromamod/mixin/RigBundleTickMixin.java#injection:@Inject method=tick()V @At(value=\"RETURN\")",
+   "set": "main",
+   "file": "com/moddingfromamod/mixin/RigBundleTickMixin.java",
+   "kind": "injection",
+   "key": "@Inject method=tick()V @At(value=\"RETURN\")"
+  },
+  {
+   "id": "main:com/moddingfromamod/mixin/RigBundleTickMixin.java#mixin:@Mixin ChunkMap",
+   "set": "main",
+   "file": "com/moddingfromamod/mixin/RigBundleTickMixin.java",
+   "kind": "mixin",
+   "key": "@Mixin ChunkMap"
+  },
+  {
+   "id": "main:com/moddingfromamod/mixin/RigDisplayEaseMixin.java#injection:@Inject method=onSyncedDataUpdated @At(value=\"TAIL\")",
+   "set": "main",
+   "file": "com/moddingfromamod/mixin/RigDisplayEaseMixin.java",
+   "kind": "injection",
+   "key": "@Inject method=onSyncedDataUpdated @At(value=\"TAIL\")"
+  },
+  {
+   "id": "main:com/moddingfromamod/mixin/RigDisplayEaseMixin.java#mixin:@Mixin Display",
+   "set": "main",
+   "file": "com/moddingfromamod/mixin/RigDisplayEaseMixin.java",
+   "kind": "mixin",
+   "key": "@Mixin Display"
+  },
+  {
+   "id": "main:com/moddingfromamod/mixin/RigMoveRotationMixin.java#injection:@Inject method=sendChanges @At(value=\"HEAD\")",
+   "set": "main",
+   "file": "com/moddingfromamod/mixin/RigMoveRotationMixin.java",
+   "kind": "injection",
+   "key": "@Inject method=sendChanges @At(value=\"HEAD\")"
+  },
+  {
+   "id": "main:com/moddingfromamod/mixin/RigMoveRotationMixin.java#mixin:@Mixin ServerEntity",
+   "set": "main",
+   "file": "com/moddingfromamod/mixin/RigMoveRotationMixin.java",
+   "kind": "mixin",
+   "key": "@Mixin ServerEntity"
+  },
+  {
+   "id": "main:com/moddingfromamod/mixin/RigTrackerCadenceMixin.java#injection:@Inject method=sendChanges @At(value=\"HEAD\")",
+   "set": "main",
+   "file": "com/moddingfromamod/mixin/RigTrackerCadenceMixin.java",
+   "kind": "injection",
+   "key": "@Inject method=sendChanges @At(value=\"HEAD\")"
+  },
+  {
+   "id": "main:com/moddingfromamod/mixin/RigTrackerCadenceMixin.java#mixin:@Mixin ServerEntity",
+   "set": "main",
+   "file": "com/moddingfromamod/mixin/RigTrackerCadenceMixin.java",
+   "kind": "mixin",
+   "key": "@Mixin ServerEntity"
+  },
+  {
+   "id": "main:com/moddingfromamod/mixin/RigWalkAnimationMixin.java#injection:@Inject method=aiStep @At(value=\"TAIL\")",
+   "set": "main",
+   "file": "com/moddingfromamod/mixin/RigWalkAnimationMixin.java",
+   "kind": "injection",
+   "key": "@Inject method=aiStep @At(value=\"TAIL\")"
+  },
+  {
+   "id": "main:com/moddingfromamod/mixin/RigWalkAnimationMixin.java#mixin:@Mixin LivingEntity",
+   "set": "main",
+   "file": "com/moddingfromamod/mixin/RigWalkAnimationMixin.java",
+   "kind": "mixin",
+   "key": "@Mixin LivingEntity"
+  },
+  {
+   "id": "main:com/moddingfromamod/mixin/SelectorIndexMixin.java#mixin:@Mixin EntitySelector",
+   "set": "main",
+   "file": "com/moddingfromamod/mixin/SelectorIndexMixin.java",
+   "kind": "mixin",
+   "key": "@Mixin EntitySelector"
+  },
+  {
+   "id": "main:com/moddingfromamod/mixin/SelectorParserTagsMixin.java#injection:@Inject method=parse @At(value=\"HEAD\")",
+   "set": "main",
+   "file": "com/moddingfromamod/mixin/SelectorParserTagsMixin.java",
+   "kind": "injection",
+   "key": "@Inject method=parse @At(value=\"HEAD\")"
+  },
+  {
+   "id": "main:com/moddingfromamod/mixin/SelectorParserTagsMixin.java#injection:@Inject method=parse @At(value=\"RETURN\")",
+   "set": "main",
+   "file": "com/moddingfromamod/mixin/SelectorParserTagsMixin.java",
+   "kind": "injection",
+   "key": "@Inject method=parse @At(value=\"RETURN\")"
+  },
+  {
+   "id": "main:com/moddingfromamod/mixin/SelectorParserTagsMixin.java#mixin:@Mixin EntitySelectorParser",
+   "set": "main",
+   "file": "com/moddingfromamod/mixin/SelectorParserTagsMixin.java",
+   "kind": "mixin",
+   "key": "@Mixin EntitySelectorParser"
+  },
+  {
+   "id": "main:com/moddingfromamod/mixin/SignTextMixin.java#injection:@Inject method=updateSignText @At(value=\"HEAD\")",
+   "set": "main",
+   "file": "com/moddingfromamod/mixin/SignTextMixin.java",
+   "kind": "injection",
+   "key": "@Inject method=updateSignText @At(value=\"HEAD\")"
+  },
+  {
+   "id": "main:com/moddingfromamod/mixin/SignTextMixin.java#mixin:@Mixin SignBlockEntity",
+   "set": "main",
+   "file": "com/moddingfromamod/mixin/SignTextMixin.java",
+   "kind": "mixin",
+   "key": "@Mixin SignBlockEntity"
+  },
+  {
+   "id": "main:com/moddingfromamod/mob/PetBehaviours.java#event:@SubscribeEvent EntityJoinLevelEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/mob/PetBehaviours.java",
+   "kind": "event",
+   "key": "@SubscribeEvent EntityJoinLevelEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/mob/PetBehaviours.java#event:@SubscribeEvent EntityLeaveLevelEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/mob/PetBehaviours.java",
+   "kind": "event",
+   "key": "@SubscribeEvent EntityLeaveLevelEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/mob/PetBehaviours.java#event:@SubscribeEvent LivingChangeTargetEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/mob/PetBehaviours.java",
+   "kind": "event",
+   "key": "@SubscribeEvent LivingChangeTargetEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/mob/PetBehaviours.java#event:@SubscribeEvent PlayerInteractEvent.EntityInteract",
+   "set": "main",
+   "file": "com/moddingfromamod/mob/PetBehaviours.java",
+   "kind": "event",
+   "key": "@SubscribeEvent PlayerInteractEvent.EntityInteract"
+  },
+  {
+   "id": "main:com/moddingfromamod/mob/PetBehaviours.java#event:@SubscribeEvent ServerTickEvent.Post",
+   "set": "main",
+   "file": "com/moddingfromamod/mob/PetBehaviours.java",
+   "kind": "event",
+   "key": "@SubscribeEvent ServerTickEvent.Post"
+  },
+  {
+   "id": "main:com/moddingfromamod/mob/PrimedTntLimit.java#event:@SubscribeEvent EntityJoinLevelEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/mob/PrimedTntLimit.java",
+   "kind": "event",
+   "key": "@SubscribeEvent EntityJoinLevelEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/mob/PrimedTntLimit.java#event:@SubscribeEvent EntityLeaveLevelEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/mob/PrimedTntLimit.java",
+   "kind": "event",
+   "key": "@SubscribeEvent EntityLeaveLevelEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/mob/RealMobBehaviours.java#event:@SubscribeEvent EntityJoinLevelEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/mob/RealMobBehaviours.java",
+   "kind": "event",
+   "key": "@SubscribeEvent EntityJoinLevelEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/mob/RealMobBehaviours.java#event:@SubscribeEvent EntityLeaveLevelEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/mob/RealMobBehaviours.java",
+   "kind": "event",
+   "key": "@SubscribeEvent EntityLeaveLevelEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/mob/RealMobBehaviours.java#event:@SubscribeEvent ServerTickEvent.Post",
+   "set": "main",
+   "file": "com/moddingfromamod/mob/RealMobBehaviours.java",
+   "kind": "event",
+   "key": "@SubscribeEvent ServerTickEvent.Post"
+  },
+  {
+   "id": "main:com/moddingfromamod/mob/RideSeat.java#event:@SubscribeEvent EntityJoinLevelEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/mob/RideSeat.java",
+   "kind": "event",
+   "key": "@SubscribeEvent EntityJoinLevelEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/mob/RideSeat.java#event:@SubscribeEvent EntityMountEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/mob/RideSeat.java",
+   "kind": "event",
+   "key": "@SubscribeEvent EntityMountEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/mob/RideSeat.java#event:@SubscribeEvent ServerTickEvent.Post",
+   "set": "main",
+   "file": "com/moddingfromamod/mob/RideSeat.java",
+   "kind": "event",
+   "key": "@SubscribeEvent ServerTickEvent.Post"
+  },
+  {
+   "id": "main:com/moddingfromamod/mob/RideSeat.java#event:@SubscribeEvent net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedOutEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/mob/RideSeat.java",
+   "kind": "event",
+   "key": "@SubscribeEvent net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedOutEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/mob/RideSeat.java#event:@SubscribeEvent net.neoforged.neoforge.event.entity.player.PlayerInteractEvent.RightClickItem",
+   "set": "main",
+   "file": "com/moddingfromamod/mob/RideSeat.java",
+   "kind": "event",
+   "key": "@SubscribeEvent net.neoforged.neoforge.event.entity.player.PlayerInteractEvent.RightClickItem"
+  },
+  {
+   "id": "main:com/moddingfromamod/mob/SpawnPerfProbe.java#event:@SubscribeEvent ServerStartedEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/mob/SpawnPerfProbe.java",
+   "kind": "event",
+   "key": "@SubscribeEvent ServerStartedEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/mob/SpawnPerfProbe.java#event:@SubscribeEvent ServerTickEvent.Post",
+   "set": "main",
+   "file": "com/moddingfromamod/mob/SpawnPerfProbe.java",
+   "kind": "event",
+   "key": "@SubscribeEvent ServerTickEvent.Post"
+  },
+  {
+   "id": "main:com/moddingfromamod/mob/SpawnPerfProbe.java#event:@SubscribeEvent ServerTickEvent.Pre",
+   "set": "main",
+   "file": "com/moddingfromamod/mob/SpawnPerfProbe.java",
+   "kind": "event",
+   "key": "@SubscribeEvent ServerTickEvent.Pre"
+  },
+  {
+   "id": "main:com/moddingfromamod/mob/WishMobLimit.java#event:@SubscribeEvent EntityJoinLevelEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/mob/WishMobLimit.java",
+   "kind": "event",
+   "key": "@SubscribeEvent EntityJoinLevelEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/mob/WishMobLimit.java#event:@SubscribeEvent EntityLeaveLevelEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/mob/WishMobLimit.java",
+   "kind": "event",
+   "key": "@SubscribeEvent EntityLeaveLevelEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/mob/WishSummonCommand.java#event:@SubscribeEvent RegisterCommandsEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/mob/WishSummonCommand.java",
+   "kind": "event",
+   "key": "@SubscribeEvent RegisterCommandsEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/net/Deployment.java#event:@SubscribeEvent ServerStartedEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/net/Deployment.java",
+   "kind": "event",
+   "key": "@SubscribeEvent ServerStartedEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/net/JoinHelp.java#event:@SubscribeEvent ServerStartedEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/net/JoinHelp.java",
+   "kind": "event",
+   "key": "@SubscribeEvent ServerStartedEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/paint/ModPaint.java#event:addListener BuildCreativeModeTabContentsEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/paint/ModPaint.java",
+   "kind": "event",
+   "key": "addListener BuildCreativeModeTabContentsEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/paint/ModPaint.java#registry:registry BLOCK",
+   "set": "main",
+   "file": "com/moddingfromamod/paint/ModPaint.java",
+   "kind": "registry",
+   "key": "registry BLOCK"
+  },
+  {
+   "id": "main:com/moddingfromamod/paint/ModPaint.java#registry:registry ITEM",
+   "set": "main",
+   "file": "com/moddingfromamod/paint/ModPaint.java",
+   "kind": "registry",
+   "key": "registry ITEM"
+  },
+  {
+   "id": "main:com/moddingfromamod/paint/ModPaint.java#registry:registry BLOCK_ENTITY_TYPE",
+   "set": "main",
+   "file": "com/moddingfromamod/paint/ModPaint.java",
+   "kind": "registry",
+   "key": "registry BLOCK_ENTITY_TYPE"
+  },
+  {
+   "id": "main:com/moddingfromamod/paint/PaintCommand.java#event:@SubscribeEvent RegisterCommandsEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/paint/PaintCommand.java",
+   "kind": "event",
+   "key": "@SubscribeEvent RegisterCommandsEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/paint/PictureCommand.java#event:@SubscribeEvent RegisterCommandsEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/paint/PictureCommand.java",
+   "kind": "event",
+   "key": "@SubscribeEvent RegisterCommandsEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/perf/ChunkPaceLog.java#event:@SubscribeEvent PlayerEvent.PlayerLoggedInEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/perf/ChunkPaceLog.java",
+   "kind": "event",
+   "key": "@SubscribeEvent PlayerEvent.PlayerLoggedInEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/perf/ChunkPaceLog.java#event:@SubscribeEvent PlayerEvent.PlayerLoggedOutEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/perf/ChunkPaceLog.java",
+   "kind": "event",
+   "key": "@SubscribeEvent PlayerEvent.PlayerLoggedOutEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/perf/TickTimer.java#event:@SubscribeEvent ServerTickEvent.Post",
+   "set": "main",
+   "file": "com/moddingfromamod/perf/TickTimer.java",
+   "kind": "event",
+   "key": "@SubscribeEvent ServerTickEvent.Post"
+  },
+  {
+   "id": "main:com/moddingfromamod/perf/TickTimer.java#event:@SubscribeEvent ServerTickEvent.Pre",
+   "set": "main",
+   "file": "com/moddingfromamod/perf/TickTimer.java",
+   "kind": "event",
+   "key": "@SubscribeEvent ServerTickEvent.Pre"
+  },
+  {
+   "id": "main:com/moddingfromamod/player/NeverDie.java#event:@SubscribeEvent LivingDeathEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/player/NeverDie.java",
+   "kind": "event",
+   "key": "@SubscribeEvent LivingDeathEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/player/PowerTimers.java#event:@SubscribeEvent ServerTickEvent.Post",
+   "set": "main",
+   "file": "com/moddingfromamod/player/PowerTimers.java",
+   "kind": "event",
+   "key": "@SubscribeEvent ServerTickEvent.Post"
+  },
+  {
+   "id": "main:com/moddingfromamod/player/SurviveDeath.java#event:@SubscribeEvent LivingDeathEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/player/SurviveDeath.java",
+   "kind": "event",
+   "key": "@SubscribeEvent LivingDeathEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/player/SurviveDeath.java#event:@SubscribeEvent PlayerEvent.Clone",
+   "set": "main",
+   "file": "com/moddingfromamod/player/SurviveDeath.java",
+   "kind": "event",
+   "key": "@SubscribeEvent PlayerEvent.Clone"
+  },
+  {
+   "id": "main:com/moddingfromamod/rules/WorldRules.java#event:@SubscribeEvent EntityJoinLevelEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/rules/WorldRules.java",
+   "kind": "event",
+   "key": "@SubscribeEvent EntityJoinLevelEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/rules/WorldRules.java#event:@SubscribeEvent ExplosionEvent.Detonate",
+   "set": "main",
+   "file": "com/moddingfromamod/rules/WorldRules.java",
+   "kind": "event",
+   "key": "@SubscribeEvent ExplosionEvent.Detonate"
+  },
+  {
+   "id": "main:com/moddingfromamod/rules/WorldRules.java#event:@SubscribeEvent ItemFishedEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/rules/WorldRules.java",
+   "kind": "event",
+   "key": "@SubscribeEvent ItemFishedEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/rules/WorldRules.java#event:@SubscribeEvent LivingDeathEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/rules/WorldRules.java",
+   "kind": "event",
+   "key": "@SubscribeEvent LivingDeathEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/rules/WorldRules.java#event:@SubscribeEvent LivingEvent.LivingJumpEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/rules/WorldRules.java",
+   "kind": "event",
+   "key": "@SubscribeEvent LivingEvent.LivingJumpEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/rules/WorldRules.java#event:@SubscribeEvent LivingFallEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/rules/WorldRules.java",
+   "kind": "event",
+   "key": "@SubscribeEvent LivingFallEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/rules/WorldRules.java#event:@SubscribeEvent ProjectileImpactEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/rules/WorldRules.java",
+   "kind": "event",
+   "key": "@SubscribeEvent ProjectileImpactEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/rules/WorldRules.java#event:@SubscribeEvent ServerStoppedEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/rules/WorldRules.java",
+   "kind": "event",
+   "key": "@SubscribeEvent ServerStoppedEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/rules/WorldRules.java#event:@SubscribeEvent ServerTickEvent.Post",
+   "set": "main",
+   "file": "com/moddingfromamod/rules/WorldRules.java",
+   "kind": "event",
+   "key": "@SubscribeEvent ServerTickEvent.Post"
+  },
+  {
+   "id": "main:com/moddingfromamod/runtime/WishMobCommands.java#event:@SubscribeEvent RegisterCommandsEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/runtime/WishMobCommands.java",
+   "kind": "event",
+   "key": "@SubscribeEvent RegisterCommandsEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/testing/MockPlayerNetwork.java#event:addListener net.neoforged.neoforge.event.tick.ServerTickEvent.Post",
+   "set": "main",
+   "file": "com/moddingfromamod/testing/MockPlayerNetwork.java",
+   "kind": "event",
+   "key": "addListener net.neoforged.neoforge.event.tick.ServerTickEvent.Post"
+  },
+  {
+   "id": "main:com/moddingfromamod/testing/StarterShow.java#event:@SubscribeEvent ServerTickEvent.Post",
+   "set": "main",
+   "file": "com/moddingfromamod/testing/StarterShow.java",
+   "kind": "event",
+   "key": "@SubscribeEvent ServerTickEvent.Post"
+  },
+  {
+   "id": "main:com/moddingfromamod/testing/gt/GameTestAdapter.java#event:addListener RegisterEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/testing/gt/GameTestAdapter.java",
+   "kind": "event",
+   "key": "addListener RegisterEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/testing/gt/GameTestAdapter.java#event:addListener RegisterGameTestsEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/testing/gt/GameTestAdapter.java",
+   "kind": "event",
+   "key": "addListener RegisterGameTestsEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/testing/mixin/GameTestCrashGuardMixin.java#mixin:@Mixin GameTestInfo",
+   "set": "main",
+   "file": "com/moddingfromamod/testing/mixin/GameTestCrashGuardMixin.java",
+   "kind": "mixin",
+   "key": "@Mixin GameTestInfo"
+  },
+  {
+   "id": "main:com/moddingfromamod/testing/mixin/GameTestWallClockMixin.java#injection:@Inject method=startTest @At(value=\"HEAD\")",
+   "set": "main",
+   "file": "com/moddingfromamod/testing/mixin/GameTestWallClockMixin.java",
+   "kind": "injection",
+   "key": "@Inject method=startTest @At(value=\"HEAD\")"
+  },
+  {
+   "id": "main:com/moddingfromamod/testing/mixin/GameTestWallClockMixin.java#mixin:@Mixin GameTestInfo",
+   "set": "main",
+   "file": "com/moddingfromamod/testing/mixin/GameTestWallClockMixin.java",
+   "kind": "mixin",
+   "key": "@Mixin GameTestInfo"
+  },
+  {
+   "id": "main:com/moddingfromamod/testing/mixin/GameTestWallClockMixin.java#injection:@ModifyExpressionValue method=tickInternal @At(value=\"FIELD\",target=\"Lnet/minecraft/gametest/framework/GameTestInfo;timeoutTicks:I\")",
+   "set": "main",
+   "file": "com/moddingfromamod/testing/mixin/GameTestWallClockMixin.java",
+   "kind": "injection",
+   "key": "@ModifyExpressionValue method=tickInternal @At(value=\"FIELD\",target=\"Lnet/minecraft/gametest/framework/GameTestInfo;timeoutTicks:I\")"
+  },
+  {
+   "id": "main:com/moddingfromamod/testing/mixin/SoundSentMixin.java#injection:@Inject method=send(Lnet/minecraft/network/protocol/Packet;Lio/netty/channel/ChannelFutureListener;)V @At(value=\"HEAD\")",
+   "set": "main",
+   "file": "com/moddingfromamod/testing/mixin/SoundSentMixin.java",
+   "kind": "injection",
+   "key": "@Inject method=send(Lnet/minecraft/network/protocol/Packet;Lio/netty/channel/ChannelFutureListener;)V @At(value=\"HEAD\")"
+  },
+  {
+   "id": "main:com/moddingfromamod/testing/mixin/SoundSentMixin.java#mixin:@Mixin ServerCommonPacketListenerImpl",
+   "set": "main",
+   "file": "com/moddingfromamod/testing/mixin/SoundSentMixin.java",
+   "kind": "mixin",
+   "key": "@Mixin ServerCommonPacketListenerImpl"
+  },
+  {
+   "id": "main:com/moddingfromamod/vanilla/AdoptPerfProbe.java#event:@SubscribeEvent ServerStartedEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/vanilla/AdoptPerfProbe.java",
+   "kind": "event",
+   "key": "@SubscribeEvent ServerStartedEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/vanilla/AdoptPerfProbe.java#event:@SubscribeEvent ServerTickEvent.Post",
+   "set": "main",
+   "file": "com/moddingfromamod/vanilla/AdoptPerfProbe.java",
+   "kind": "event",
+   "key": "@SubscribeEvent ServerTickEvent.Post"
+  },
+  {
+   "id": "main:com/moddingfromamod/vanilla/AdoptPerfProbe.java#event:@SubscribeEvent ServerTickEvent.Pre",
+   "set": "main",
+   "file": "com/moddingfromamod/vanilla/AdoptPerfProbe.java",
+   "kind": "event",
+   "key": "@SubscribeEvent ServerTickEvent.Pre"
+  },
+  {
+   "id": "main:com/moddingfromamod/vanilla/AdoptPerfProbe.java#event:addListener EntityTickEvent.Pre",
+   "set": "main",
+   "file": "com/moddingfromamod/vanilla/AdoptPerfProbe.java",
+   "kind": "event",
+   "key": "addListener EntityTickEvent.Pre"
+  },
+  {
+   "id": "main:com/moddingfromamod/vanilla/AdoptPerfProbe.java#event:addListener EntityTickEvent.Post",
+   "set": "main",
+   "file": "com/moddingfromamod/vanilla/AdoptPerfProbe.java",
+   "kind": "event",
+   "key": "addListener EntityTickEvent.Post"
+  },
+  {
+   "id": "main:com/moddingfromamod/vanilla/AdoptPerfProbe.java#event:addListener ServerTickEvent.Post",
+   "set": "main",
+   "file": "com/moddingfromamod/vanilla/AdoptPerfProbe.java",
+   "kind": "event",
+   "key": "addListener ServerTickEvent.Post"
+  },
+  {
+   "id": "main:com/moddingfromamod/vanilla/HitProxies.java#event:@SubscribeEvent AttackEntityEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/vanilla/HitProxies.java",
+   "kind": "event",
+   "key": "@SubscribeEvent AttackEntityEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/vanilla/HitProxies.java#event:@SubscribeEvent EntityJoinLevelEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/vanilla/HitProxies.java",
+   "kind": "event",
+   "key": "@SubscribeEvent EntityJoinLevelEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/vanilla/HitProxies.java#event:@SubscribeEvent PlayerInteractEvent.EntityInteract",
+   "set": "main",
+   "file": "com/moddingfromamod/vanilla/HitProxies.java",
+   "kind": "event",
+   "key": "@SubscribeEvent PlayerInteractEvent.EntityInteract"
+  },
+  {
+   "id": "main:com/moddingfromamod/vanilla/HitProxies.java#event:@SubscribeEvent ProjectileImpactEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/vanilla/HitProxies.java",
+   "kind": "event",
+   "key": "@SubscribeEvent ProjectileImpactEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/vanilla/ItemPackService.java#event:@SubscribeEvent PlayerEvent.PlayerLoggedInEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/vanilla/ItemPackService.java",
+   "kind": "event",
+   "key": "@SubscribeEvent PlayerEvent.PlayerLoggedInEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/vanilla/ItemPackService.java#event:@SubscribeEvent ServerStartedEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/vanilla/ItemPackService.java",
+   "kind": "event",
+   "key": "@SubscribeEvent ServerStartedEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/vanilla/ItemPackService.java#event:@SubscribeEvent ServerStoppingEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/vanilla/ItemPackService.java",
+   "kind": "event",
+   "key": "@SubscribeEvent ServerStoppingEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/vanilla/RigFacing.java#event:@SubscribeEvent EntityTickEvent.Post",
+   "set": "main",
+   "file": "com/moddingfromamod/vanilla/RigFacing.java",
+   "kind": "event",
+   "key": "@SubscribeEvent EntityTickEvent.Post"
+  },
+  {
+   "id": "main:com/moddingfromamod/vanilla/RigImmunities.java#event:@SubscribeEvent LivingIncomingDamageEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/vanilla/RigImmunities.java",
+   "kind": "event",
+   "key": "@SubscribeEvent LivingIncomingDamageEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/vanilla/RigImmunities.java#event:@SubscribeEvent MobEffectEvent.Applicable",
+   "set": "main",
+   "file": "com/moddingfromamod/vanilla/RigImmunities.java",
+   "kind": "event",
+   "key": "@SubscribeEvent MobEffectEvent.Applicable"
+  },
+  {
+   "id": "main:com/moddingfromamod/vanilla/RigInstincts.java#event:@SubscribeEvent LivingDamageEvent.Post",
+   "set": "main",
+   "file": "com/moddingfromamod/vanilla/RigInstincts.java",
+   "kind": "event",
+   "key": "@SubscribeEvent LivingDamageEvent.Post"
+  },
+  {
+   "id": "main:com/moddingfromamod/vanilla/RigPerfProbe.java#event:@SubscribeEvent ServerStartedEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/vanilla/RigPerfProbe.java",
+   "kind": "event",
+   "key": "@SubscribeEvent ServerStartedEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/vanilla/RigPerfProbe.java#event:@SubscribeEvent ServerTickEvent.Post",
+   "set": "main",
+   "file": "com/moddingfromamod/vanilla/RigPerfProbe.java",
+   "kind": "event",
+   "key": "@SubscribeEvent ServerTickEvent.Post"
+  },
+  {
+   "id": "main:com/moddingfromamod/vanilla/RigPerfProbe.java#event:@SubscribeEvent ServerTickEvent.Pre",
+   "set": "main",
+   "file": "com/moddingfromamod/vanilla/RigPerfProbe.java",
+   "kind": "event",
+   "key": "@SubscribeEvent ServerTickEvent.Pre"
+  },
+  {
+   "id": "main:com/moddingfromamod/vanilla/RigPowers.java#event:@SubscribeEvent LivingDeathEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/vanilla/RigPowers.java",
+   "kind": "event",
+   "key": "@SubscribeEvent LivingDeathEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/vanilla/RigTransformation.java#event:@SubscribeEvent ServerStoppingEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/vanilla/RigTransformation.java",
+   "kind": "event",
+   "key": "@SubscribeEvent ServerStoppingEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/vanilla/RigTransformation.java#event:@SubscribeEvent ServerTickEvent.Post",
+   "set": "main",
+   "file": "com/moddingfromamod/vanilla/RigTransformation.java",
+   "kind": "event",
+   "key": "@SubscribeEvent ServerTickEvent.Post"
+  },
+  {
+   "id": "main:com/moddingfromamod/vanilla/RigVeilService.java#event:@SubscribeEvent ServerStoppingEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/vanilla/RigVeilService.java",
+   "kind": "event",
+   "key": "@SubscribeEvent ServerStoppingEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/vanilla/RigVeilService.java#event:@SubscribeEvent ServerTickEvent.Post",
+   "set": "main",
+   "file": "com/moddingfromamod/vanilla/RigVeilService.java",
+   "kind": "event",
+   "key": "@SubscribeEvent ServerTickEvent.Post"
+  },
+  {
+   "id": "main:com/moddingfromamod/vanilla/RigVeilService.java#event:@SubscribeEvent net.neoforged.neoforge.event.entity.EntityJoinLevelEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/vanilla/RigVeilService.java",
+   "kind": "event",
+   "key": "@SubscribeEvent net.neoforged.neoforge.event.entity.EntityJoinLevelEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/vanilla/RigVoice.java#event:@SubscribeEvent LivingDamageEvent.Post",
+   "set": "main",
+   "file": "com/moddingfromamod/vanilla/RigVoice.java",
+   "kind": "event",
+   "key": "@SubscribeEvent LivingDamageEvent.Post"
+  },
+  {
+   "id": "main:com/moddingfromamod/vanilla/RigVoice.java#event:@SubscribeEvent LivingDeathEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/vanilla/RigVoice.java",
+   "kind": "event",
+   "key": "@SubscribeEvent LivingDeathEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/vanilla/StuckRescue.java#event:@SubscribeEvent LivingIncomingDamageEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/vanilla/StuckRescue.java",
+   "kind": "event",
+   "key": "@SubscribeEvent LivingIncomingDamageEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/vanilla/VanillaRigAnimator.java#event:@SubscribeEvent ServerTickEvent.Post",
+   "set": "main",
+   "file": "com/moddingfromamod/vanilla/VanillaRigAnimator.java",
+   "kind": "event",
+   "key": "@SubscribeEvent ServerTickEvent.Post"
+  },
+  {
+   "id": "main:com/moddingfromamod/vanilla/VanillaRigAnimator.java#event:@SubscribeEvent net.neoforged.neoforge.event.entity.EntityJoinLevelEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/vanilla/VanillaRigAnimator.java",
+   "kind": "event",
+   "key": "@SubscribeEvent net.neoforged.neoforge.event.entity.EntityJoinLevelEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/vanilla/VanillaRigBridge.java#event:@SubscribeEvent EntityJoinLevelEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/vanilla/VanillaRigBridge.java",
+   "kind": "event",
+   "key": "@SubscribeEvent EntityJoinLevelEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/vanilla/VanillaRigBridge.java#event:@SubscribeEvent EntityLeaveLevelEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/vanilla/VanillaRigBridge.java",
+   "kind": "event",
+   "key": "@SubscribeEvent EntityLeaveLevelEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/vanilla/WishShimmer.java#event:@SubscribeEvent ServerStoppingEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/vanilla/WishShimmer.java",
+   "kind": "event",
+   "key": "@SubscribeEvent ServerStoppingEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/vanilla/WishShimmer.java#event:@SubscribeEvent ServerTickEvent.Post",
+   "set": "main",
+   "file": "com/moddingfromamod/vanilla/WishShimmer.java",
+   "kind": "event",
+   "key": "@SubscribeEvent ServerTickEvent.Post"
+  },
+  {
+   "id": "main:com/moddingfromamod/wish/CameraPresence.java#event:@SubscribeEvent ServerTickEvent.Post",
+   "set": "main",
+   "file": "com/moddingfromamod/wish/CameraPresence.java",
+   "kind": "event",
+   "key": "@SubscribeEvent ServerTickEvent.Post"
+  },
+  {
+   "id": "main:com/moddingfromamod/wish/CameraSupervisor.java#event:@SubscribeEvent ServerStoppingEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/wish/CameraSupervisor.java",
+   "kind": "event",
+   "key": "@SubscribeEvent ServerStoppingEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/wish/CameraSupervisor.java#event:@SubscribeEvent ServerTickEvent.Post",
+   "set": "main",
+   "file": "com/moddingfromamod/wish/CameraSupervisor.java",
+   "kind": "event",
+   "key": "@SubscribeEvent ServerTickEvent.Post"
+  },
+  {
+   "id": "main:com/moddingfromamod/wish/CrafterService.java#event:@SubscribeEvent AdvancementEvent.AdvancementEarnEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/wish/CrafterService.java",
+   "kind": "event",
+   "key": "@SubscribeEvent AdvancementEvent.AdvancementEarnEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/wish/CrafterService.java#event:@SubscribeEvent PlayerEvent.PlayerLoggedInEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/wish/CrafterService.java",
+   "kind": "event",
+   "key": "@SubscribeEvent PlayerEvent.PlayerLoggedInEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/wish/CrafterService.java#event:@SubscribeEvent PlayerEvent.PlayerLoggedOutEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/wish/CrafterService.java",
+   "kind": "event",
+   "key": "@SubscribeEvent PlayerEvent.PlayerLoggedOutEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/wish/CrafterService.java#event:@SubscribeEvent ServerTickEvent.Post",
+   "set": "main",
+   "file": "com/moddingfromamod/wish/CrafterService.java",
+   "kind": "event",
+   "key": "@SubscribeEvent ServerTickEvent.Post"
+  },
+  {
+   "id": "main:com/moddingfromamod/wish/PoolProbe.java#event:@SubscribeEvent ServerTickEvent.Post",
+   "set": "main",
+   "file": "com/moddingfromamod/wish/PoolProbe.java",
+   "kind": "event",
+   "key": "@SubscribeEvent ServerTickEvent.Post"
+  },
+  {
+   "id": "main:com/moddingfromamod/wish/ServedFanfare.java#event:@SubscribeEvent ServerTickEvent.Post",
+   "set": "main",
+   "file": "com/moddingfromamod/wish/ServedFanfare.java",
+   "kind": "event",
+   "key": "@SubscribeEvent ServerTickEvent.Post"
+  },
+  {
+   "id": "main:com/moddingfromamod/wish/SightProbe.java#event:@SubscribeEvent ServerTickEvent.Post",
+   "set": "main",
+   "file": "com/moddingfromamod/wish/SightProbe.java",
+   "kind": "event",
+   "key": "@SubscribeEvent ServerTickEvent.Post"
+  },
+  {
+   "id": "main:com/moddingfromamod/wish/VanillaWatchItem.java#event:@SubscribeEvent net.neoforged.neoforge.event.entity.player.PlayerEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/wish/VanillaWatchItem.java",
+   "kind": "event",
+   "key": "@SubscribeEvent net.neoforged.neoforge.event.entity.player.PlayerEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/wish/VanillaWatchItem.java#event:@SubscribeEvent net.neoforged.neoforge.event.tick.ServerTickEvent.Post",
+   "set": "main",
+   "file": "com/moddingfromamod/wish/VanillaWatchItem.java",
+   "kind": "event",
+   "key": "@SubscribeEvent net.neoforged.neoforge.event.tick.ServerTickEvent.Post"
+  },
+  {
+   "id": "main:com/moddingfromamod/wish/WatchPinService.java#event:@SubscribeEvent EntityJoinLevelEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/wish/WatchPinService.java",
+   "kind": "event",
+   "key": "@SubscribeEvent EntityJoinLevelEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/wish/WatchPinService.java#event:@SubscribeEvent ItemTossEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/wish/WatchPinService.java",
+   "kind": "event",
+   "key": "@SubscribeEvent ItemTossEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/wish/WatchPinService.java#event:@SubscribeEvent LivingDropsEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/wish/WatchPinService.java",
+   "kind": "event",
+   "key": "@SubscribeEvent LivingDropsEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/wish/WatchPinService.java#event:@SubscribeEvent PlayerContainerEvent.Close",
+   "set": "main",
+   "file": "com/moddingfromamod/wish/WatchPinService.java",
+   "kind": "event",
+   "key": "@SubscribeEvent PlayerContainerEvent.Close"
+  },
+  {
+   "id": "main:com/moddingfromamod/wish/WatchPinService.java#event:@SubscribeEvent ServerTickEvent.Post",
+   "set": "main",
+   "file": "com/moddingfromamod/wish/WatchPinService.java",
+   "kind": "event",
+   "key": "@SubscribeEvent ServerTickEvent.Post"
+  },
+  {
+   "id": "main:com/moddingfromamod/wish/WatchSnapshot.java#event:@SubscribeEvent PlayerEvent.PlayerLoggedInEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/wish/WatchSnapshot.java",
+   "kind": "event",
+   "key": "@SubscribeEvent PlayerEvent.PlayerLoggedInEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/wish/WatchSnapshot.java#event:@SubscribeEvent PlayerEvent.PlayerLoggedOutEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/wish/WatchSnapshot.java",
+   "kind": "event",
+   "key": "@SubscribeEvent PlayerEvent.PlayerLoggedOutEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/wish/WatchSnapshot.java#event:@SubscribeEvent ServerTickEvent.Post",
+   "set": "main",
+   "file": "com/moddingfromamod/wish/WatchSnapshot.java",
+   "kind": "event",
+   "key": "@SubscribeEvent ServerTickEvent.Post"
+  },
+  {
+   "id": "main:com/moddingfromamod/wish/WishCapture.java#event:@SubscribeEvent LivingDeathEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/wish/WishCapture.java",
+   "kind": "event",
+   "key": "@SubscribeEvent LivingDeathEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/wish/WishCapture.java#event:@SubscribeEvent PlayerEvent.PlayerLoggedOutEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/wish/WishCapture.java",
+   "kind": "event",
+   "key": "@SubscribeEvent PlayerEvent.PlayerLoggedOutEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/wish/WishCapture.java#event:@SubscribeEvent ServerTickEvent.Post",
+   "set": "main",
+   "file": "com/moddingfromamod/wish/WishCapture.java",
+   "kind": "event",
+   "key": "@SubscribeEvent ServerTickEvent.Post"
+  },
+  {
+   "id": "main:com/moddingfromamod/wish/WishCommands.java#event:@SubscribeEvent RegisterCommandsEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/wish/WishCommands.java",
+   "kind": "event",
+   "key": "@SubscribeEvent RegisterCommandsEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/wish/WishCommands.java#event:@SubscribeEvent ServerStoppingEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/wish/WishCommands.java",
+   "kind": "event",
+   "key": "@SubscribeEvent ServerStoppingEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/wish/WishExecutor.java#event:@SubscribeEvent ServerTickEvent.Post",
+   "set": "main",
+   "file": "com/moddingfromamod/wish/WishExecutor.java",
+   "kind": "event",
+   "key": "@SubscribeEvent ServerTickEvent.Post"
+  },
+  {
+   "id": "main:com/moddingfromamod/wish/WishHotbar.java#event:@SubscribeEvent ItemTossEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/wish/WishHotbar.java",
+   "kind": "event",
+   "key": "@SubscribeEvent ItemTossEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/wish/WishHotbar.java#event:@SubscribeEvent LivingDeathEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/wish/WishHotbar.java",
+   "kind": "event",
+   "key": "@SubscribeEvent LivingDeathEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/wish/WishHotbar.java#event:@SubscribeEvent LivingDropsEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/wish/WishHotbar.java",
+   "kind": "event",
+   "key": "@SubscribeEvent LivingDropsEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/wish/WishHotbar.java#event:@SubscribeEvent PlayerEvent.Clone",
+   "set": "main",
+   "file": "com/moddingfromamod/wish/WishHotbar.java",
+   "kind": "event",
+   "key": "@SubscribeEvent PlayerEvent.Clone"
+  },
+  {
+   "id": "main:com/moddingfromamod/wish/WishHotbar.java#event:@SubscribeEvent PlayerInteractEvent.RightClickBlock",
+   "set": "main",
+   "file": "com/moddingfromamod/wish/WishHotbar.java",
+   "kind": "event",
+   "key": "@SubscribeEvent PlayerInteractEvent.RightClickBlock"
+  },
+  {
+   "id": "main:com/moddingfromamod/wish/WishHotbar.java#event:@SubscribeEvent PlayerInteractEvent.RightClickItem",
+   "set": "main",
+   "file": "com/moddingfromamod/wish/WishHotbar.java",
+   "kind": "event",
+   "key": "@SubscribeEvent PlayerInteractEvent.RightClickItem"
+  },
+  {
+   "id": "main:com/moddingfromamod/wish/WishMoves.java#event:@SubscribeEvent EntityTeleportEvent.SpreadPlayersCommand",
+   "set": "main",
+   "file": "com/moddingfromamod/wish/WishMoves.java",
+   "kind": "event",
+   "key": "@SubscribeEvent EntityTeleportEvent.SpreadPlayersCommand"
+  },
+  {
+   "id": "main:com/moddingfromamod/wish/WishMoves.java#event:@SubscribeEvent EntityTeleportEvent.TeleportCommand",
+   "set": "main",
+   "file": "com/moddingfromamod/wish/WishMoves.java",
+   "kind": "event",
+   "key": "@SubscribeEvent EntityTeleportEvent.TeleportCommand"
+  },
+  {
+   "id": "main:com/moddingfromamod/wish/WishProgress.java#event:@SubscribeEvent ServerTickEvent.Post",
+   "set": "main",
+   "file": "com/moddingfromamod/wish/WishProgress.java",
+   "kind": "event",
+   "key": "@SubscribeEvent ServerTickEvent.Post"
+  },
+  {
+   "id": "main:com/moddingfromamod/wish/reveal/FxVeil.java#event:@SubscribeEvent ServerTickEvent.Post",
+   "set": "main",
+   "file": "com/moddingfromamod/wish/reveal/FxVeil.java",
+   "kind": "event",
+   "key": "@SubscribeEvent ServerTickEvent.Post"
+  },
+  {
+   "id": "main:com/moddingfromamod/wish/reveal/Reveals.java#event:@SubscribeEvent ServerTickEvent.Post",
+   "set": "main",
+   "file": "com/moddingfromamod/wish/reveal/Reveals.java",
+   "kind": "event",
+   "key": "@SubscribeEvent ServerTickEvent.Post"
+  },
+  {
+   "id": "main:com/moddingfromamod/wish/reveal/WishOrbs.java#event:@SubscribeEvent EntityJoinLevelEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/wish/reveal/WishOrbs.java",
+   "kind": "event",
+   "key": "@SubscribeEvent EntityJoinLevelEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/wish/reveal/WishOrbs.java#event:@SubscribeEvent ServerStartedEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/wish/reveal/WishOrbs.java",
+   "kind": "event",
+   "key": "@SubscribeEvent ServerStartedEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/wish/reveal/WishOrbs.java#event:@SubscribeEvent ServerTickEvent.Post",
+   "set": "main",
+   "file": "com/moddingfromamod/wish/reveal/WishOrbs.java",
+   "kind": "event",
+   "key": "@SubscribeEvent ServerTickEvent.Post"
+  },
+  {
+   "id": "main:com/moddingfromamod/wishbuilder/BuilderMaxProbe.java#event:@SubscribeEvent ServerStartedEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/wishbuilder/BuilderMaxProbe.java",
+   "kind": "event",
+   "key": "@SubscribeEvent ServerStartedEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/wishbuilder/BuilderMaxProbe.java#event:@SubscribeEvent ServerTickEvent.Post",
+   "set": "main",
+   "file": "com/moddingfromamod/wishbuilder/BuilderMaxProbe.java",
+   "kind": "event",
+   "key": "@SubscribeEvent ServerTickEvent.Post"
+  },
+  {
+   "id": "main:com/moddingfromamod/wishbuilder/BuilderMaxProbe.java#event:@SubscribeEvent ServerTickEvent.Pre",
+   "set": "main",
+   "file": "com/moddingfromamod/wishbuilder/BuilderMaxProbe.java",
+   "kind": "event",
+   "key": "@SubscribeEvent ServerTickEvent.Pre"
+  },
+  {
+   "id": "main:com/moddingfromamod/world/DatapackDefaults.java#render-use:RenderType.INTEGER",
+   "set": "main",
+   "file": "com/moddingfromamod/world/DatapackDefaults.java",
+   "kind": "render-use",
+   "key": "RenderType.INTEGER"
+  },
+  {
+   "id": "main:com/moddingfromamod/world/JoinIntroService.java#event:@SubscribeEvent PlayerEvent.PlayerLoggedInEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/world/JoinIntroService.java",
+   "kind": "event",
+   "key": "@SubscribeEvent PlayerEvent.PlayerLoggedInEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/world/JoinIntroService.java#event:@SubscribeEvent PlayerEvent.PlayerLoggedOutEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/world/JoinIntroService.java",
+   "kind": "event",
+   "key": "@SubscribeEvent PlayerEvent.PlayerLoggedOutEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/world/JoinIntroService.java#event:@SubscribeEvent ServerStartedEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/world/JoinIntroService.java",
+   "kind": "event",
+   "key": "@SubscribeEvent ServerStartedEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/world/JoinIntroService.java#event:@SubscribeEvent ServerStoppedEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/world/JoinIntroService.java",
+   "kind": "event",
+   "key": "@SubscribeEvent ServerStoppedEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/world/JoinIntroService.java#event:@SubscribeEvent ServerTickEvent.Post",
+   "set": "main",
+   "file": "com/moddingfromamod/world/JoinIntroService.java",
+   "kind": "event",
+   "key": "@SubscribeEvent ServerTickEvent.Post"
+  },
+  {
+   "id": "main:com/moddingfromamod/world/PeopleGuard.java#event:@SubscribeEvent LivingIncomingDamageEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/world/PeopleGuard.java",
+   "kind": "event",
+   "key": "@SubscribeEvent LivingIncomingDamageEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/world/PlayerVisits.java#event:@SubscribeEvent EntityTeleportEvent.TeleportCommand",
+   "set": "main",
+   "file": "com/moddingfromamod/world/PlayerVisits.java",
+   "kind": "event",
+   "key": "@SubscribeEvent EntityTeleportEvent.TeleportCommand"
+  },
+  {
+   "id": "main:com/moddingfromamod/world/PlayerVisits.java#event:@SubscribeEvent PlayerEvent.PlayerLoggedInEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/world/PlayerVisits.java",
+   "kind": "event",
+   "key": "@SubscribeEvent PlayerEvent.PlayerLoggedInEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/world/PlayerVisits.java#event:@SubscribeEvent PlayerEvent.PlayerLoggedOutEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/world/PlayerVisits.java",
+   "kind": "event",
+   "key": "@SubscribeEvent PlayerEvent.PlayerLoggedOutEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/world/RespawnGuard.java#event:@SubscribeEvent LivingDeathEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/world/RespawnGuard.java",
+   "kind": "event",
+   "key": "@SubscribeEvent LivingDeathEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/world/RespawnGuard.java#event:@SubscribeEvent PlayerEvent.PlayerLoggedOutEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/world/RespawnGuard.java",
+   "kind": "event",
+   "key": "@SubscribeEvent PlayerEvent.PlayerLoggedOutEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/world/StandalonePackService.java#event:@SubscribeEvent ServerTickEvent.Post",
+   "set": "main",
+   "file": "com/moddingfromamod/world/StandalonePackService.java",
+   "kind": "event",
+   "key": "@SubscribeEvent ServerTickEvent.Post"
+  },
+  {
+   "id": "main:com/moddingfromamod/world/WorldModuleHost.java#event:@SubscribeEvent PlayerEvent.PlayerLoggedInEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/world/WorldModuleHost.java",
+   "kind": "event",
+   "key": "@SubscribeEvent PlayerEvent.PlayerLoggedInEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/world/WorldModuleHost.java#event:@SubscribeEvent PlayerEvent.PlayerLoggedOutEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/world/WorldModuleHost.java",
+   "kind": "event",
+   "key": "@SubscribeEvent PlayerEvent.PlayerLoggedOutEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/world/WorldModuleHost.java#event:@SubscribeEvent PlayerEvent.PlayerRespawnEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/world/WorldModuleHost.java",
+   "kind": "event",
+   "key": "@SubscribeEvent PlayerEvent.PlayerRespawnEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/world/WorldModuleHost.java#event:@SubscribeEvent ServerStartedEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/world/WorldModuleHost.java",
+   "kind": "event",
+   "key": "@SubscribeEvent ServerStartedEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/world/WorldModuleHost.java#event:@SubscribeEvent ServerStoppedEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/world/WorldModuleHost.java",
+   "kind": "event",
+   "key": "@SubscribeEvent ServerStoppedEvent"
+  },
+  {
+   "id": "main:com/moddingfromamod/world/WorldModuleHost.java#event:@SubscribeEvent ServerTickEvent.Post",
+   "set": "main",
+   "file": "com/moddingfromamod/world/WorldModuleHost.java",
+   "kind": "event",
+   "key": "@SubscribeEvent ServerTickEvent.Post"
+  },
+  {
+   "id": "main:com/moddingfromamod/world/WorldModuleHost.java#event:@SubscribeEvent net.neoforged.neoforge.event.entity.player.PlayerRespawnPositionEvent",
+   "set": "main",
+   "file": "com/moddingfromamod/world/WorldModuleHost.java",
+   "kind": "event",
+   "key": "@SubscribeEvent net.neoforged.neoforge.event.entity.player.PlayerRespawnPositionEvent"
+  },
+  {
+   "id": "test:com/moddingfromamod/MixinTableTest.java#injection:@WrapOperation method= ",
+   "set": "test",
+   "file": "com/moddingfromamod/MixinTableTest.java",
+   "kind": "injection",
+   "key": "@WrapOperation method= "
+  }
+ ]
+}
