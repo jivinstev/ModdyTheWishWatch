@@ -141,6 +141,22 @@ public interface WishCharge {
     default void waiveIfEmpty(ServerPlayer player, UUID wishId) {
     }
 
+    // ── rest: how long a hotbar wish waits ──────────────────────────────────────────────────────
+
+    /**
+     * How many ticks this wish ({@code recipeId}, the id {@code /moddy again} takes) still rests for this player,
+     * counted from now; {@code 0} when it is ready; {@code -1} (the default) when this charge does not say. Only a
+     * query: the charge keeps its own rest, and still refuses a fire through its other hooks.
+     *
+     * <p>Asked by the hotbar ({@code WishHotbar}) right after each fire of a proxy, whatever came of it, and the proxy's
+     * cooldown sweep is set to the answer ({@code -1} keeps the core's one second); and whenever a proxy is put into
+     * his inventory (added, given back after a knock-out, at login, after a respawn or a change of dimension), where an
+     * answer above {@code 0} puts the sweep back at what is left. Server thread.
+     */
+    default int restLeft(ServerPlayer player, String recipeId) {
+        return -1;
+    }
+
     // ── charge ──────────────────────────────────────────────────────────────────────────────────
 
     /** At the agent's pickup, after the safety and world-rules gates. */

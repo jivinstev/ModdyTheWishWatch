@@ -100,4 +100,24 @@ class WishHotbarPlanTest {
         // only an armour slot is free: armour is not where a wish goes
         assertEquals(List.of(-1), WishHotbarPlan.restore(full(37), List.of(1)));
     }
+
+    @Test
+    void afterAFireTheSweepIsTheRestTheChargeNamesElseOneSecond() {
+        int core = 20;
+        assertEquals(200, WishHotbarPlan.shownRest(true, 200, core), "a fire it allowed: the rest it names");
+        assertEquals(140, WishHotbarPlan.shownRest(true, 140, core), "refused while resting: the time left, not fresh");
+        assertEquals(0, WishHotbarPlan.shownRest(true, 0, core), "refused for another reason, ready: no sweep");
+        assertEquals(core, WishHotbarPlan.shownRest(true, -1, core), "a charge that does not say: the one second");
+        assertEquals(core, WishHotbarPlan.shownRest(true, -7, core), "any negative is 'does not say'");
+        assertEquals(WishHotbarPlan.MAX_REST_TICKS, WishHotbarPlan.shownRest(true, Integer.MAX_VALUE, core),
+                "a huge answer is capped, so the game's clock never overflows");
+    }
+
+    @Test
+    void givenAgainOnlyARestTheChargeNamesIsPutBack() {
+        int core = 20;
+        assertEquals(130, WishHotbarPlan.shownRest(false, 130, core), "re-added mid-rest: what is left");
+        assertEquals(-1, WishHotbarPlan.shownRest(false, 0, core), "ready: the game's own cooldown is left alone");
+        assertEquals(-1, WishHotbarPlan.shownRest(false, -1, core), "no answer: left alone, never a fresh second");
+    }
 }

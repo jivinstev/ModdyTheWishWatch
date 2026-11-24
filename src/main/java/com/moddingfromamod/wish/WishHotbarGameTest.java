@@ -7,6 +7,7 @@ import java.util.UUID;
 import com.moddingfromamod.ModdingFromAModMod;
 import com.moddingfromamod.marshal.WatchIcons;
 import com.moddingfromamod.marshal.WatchPanel;
+import com.moddingfromamod.plugin.Plugins;
 import com.moddingfromamod.safety.SafetyGrader;
 import com.moddingfromamod.safety.SafetyVerdict;
 import com.moddingfromamod.testing.MockPlayerNetwork;
@@ -286,5 +287,200 @@ public final class WishHotbarGameTest {
     @GameTest(template = "empty_test", batch = "wishhotbar_death_keep", timeoutTicks = 100)
     public static void knockedOutWithKeepInventoryKeepsExactlyOneOfEach(GameTestHelper helper) {
         knockedOut(helper, "mfam-hotbar-keep", true);
+    }
+
+    // ── the world's rest ───────────────────────────────────────────────────────────────────
+
+    /**
+     * A world's charge that rests a wish for ten seconds after a fire it allows, on a clock the test moves, and always
+     * refuses one wish for a reason that is not a rest. It keys its rest by the wish's words, which for a plain recipe
+     * are the recipe id ({@code WishCommands.again}).
+     */
+    static final class TenSecondRest implements WishCharge {
+        static final int REST = 200;
+        final java.util.Map<String, Long> until = new java.util.HashMap<>();
+        final String refused;
+        long now;
+
+        TenSecondRest(String refused) {
+            this.refused = refused;
+        }
+
+        private String key(ServerPlayer p, String wish) {
+            return p.getStringUUID() + "/" + wish;
+        }
+
+        @Override
+        public boolean refusesAtSubmit(ServerPlayer player, boolean distress, String text, boolean recipe) {
+            if (text.equals(refused)) {
+                player.sendSystemMessage(Component.literal("Not here."));
+                return true;
+            }
+            long end = until.getOrDefault(key(player, text), 0L);
+            if (end > now) {
+                player.sendSystemMessage(Component.literal("Still resting."));
+                return true;
+            }
+            until.put(key(player, text), now + REST);
+            return false;
+        }
+
+        @Override
+        public int restLeft(ServerPlayer player, String recipeId) {
+            if (recipeId.equals(refused)) {
+                return 0;
+            }
+            return (int) Math.max(0, until.getOrDefault(key(player, recipeId), 0L) - now);
+        }
+    }
+
+    /** Ticks this proxy's vanilla cooldown has left, read off the game's own {@code ItemCooldowns} by ticking it on. */
+    private static int ticksLeft(ServerPlayer p, ItemStack proxy, int atMost) {
+        // A copy would be better, but ItemCooldowns has no reader of the end tick: tick the real one and count. A
+        // GameTest body runs inside one server tick, so nothing else ticks it meanwhile. Only ever the last read of a
+        // rest in this test, since it uses the rest up.
+        var cd = p.getCooldowns();
+        int n = 0;
+        while (cd.isOnCooldown(proxy) && n <= atMost) {
+            cd.tick();
+            n++;
+        }
+        return n;
+    }
+
+    /** Move the world's clock and the game's cooldowns on by the same ticks. */
+    private static void pass(ServerPlayer p, TenSecondRest charge, int ticks) {
+        for (int i = 0; i < ticks; i++) {
+            p.getCooldowns().tick();
+        }
+        charge.now += ticks;
+    }
+
+    @GameTest(template = "empty_test", batch = "wishhotbar_rest", timeoutTicks = 200)
+    public static void theSweepShowsTheRestTheWorldsChargeNames(GameTestHelper helper) {
+        MockPlayerNetwork.clearStaleMocks(helper);
+        ServerPlayer p = MockPlayerNetwork.inLevel(helper);
+        BlockPos at = helper.absolutePos(new BlockPos(1, 2, 1));
+        p.setPos(at.getX() + 0.5, at.getY(), at.getZ() + 0.5);
+        var server = helper.getLevel().getServer();
+        SafetyGrader.forTest(t -> SafetyVerdict.fine(SafetyVerdict.Provenance.HAIKU));
+
+        String tag = UUID.randomUUID().toString().substring(0, 6);
+        String strong = "gt15_rest_" + tag;
+        String free = "gt15_free_" + tag;
+        String nope = "gt15_nope_" + tag;
+        List<String> had = LearnedTemplates.savedJsonForTest();
+        List<String> with = new ArrayList<>(had);
+        for (String r : List.of(strong, free, nope)) {
+            with.add("{\"id\":\"" + r + "\",\"all\":[\"" + r.replace("_", "") + "\"],\"ownerId\":\""
+                    + p.getStringUUID() + "\",\"commands\":[\"say a resting wish\"]}");
+        }
+        LearnedTemplates.restoreForTest(with, server);
+        TenSecondRest charge = new TenSecondRest(nope);
+        ServerPlayer[] rebornHolder = new ServerPlayer[1];
+        MockPlayerNetwork.afterTest(helper, () -> {
+            if (rebornHolder[0] != null && rebornHolder[0] != p) {
+                MockPlayerNetwork.remove(rebornHolder[0]);
+            }
+            Plugins.shared().replaceForTest(WishCharge.class, null);
+            SafetyGrader.forTest(null);
+            LearnedTemplates.restoreForTest(had, server);
+            MockPlayerNetwork.remove(p);
+        });
+
+        MockPlayerNetwork.withoutChannels(p, () -> {
+            var inv = p.getInventory();
+            inv.clearContent();
+
+            // NO CHARGE: the one second, as before.
+            Plugins.shared().replaceForTest(WishCharge.class, null);
+            check(helper, WishCharge.get() == WishCharge.NONE, "a charge is in force here, so the default is not tested");
+            ItemStack plain = WishHotbar.proxy(cell("Free " + tag, free), p.getUUID());
+            WishHotbar.Use use = WishHotbar.use(p, plain);
+            check(helper, use.outcome() == WishService.Outcome.FULFILLING, "with no charge the wish is made: " + use);
+            int left = ticksLeft(p, plain, 1000);
+            check(helper, left == WishHotbar.REST_TICKS, "with no charge the rest is one second, not " + left + " ticks");
+
+            // A FIRE IT ALLOWS: the sweep shows the ten seconds it names.
+            Plugins.shared().replaceForTest(WishCharge.class, charge);
+            WishHotbar.add(p, cell("Strong " + tag, strong));
+            ItemStack proxy = null;
+            for (int i = 0; i < inv.getContainerSize(); i++) {
+                proxy = strong.equals(WishHotbar.recipeOf(inv.getItem(i))) ? inv.getItem(i) : proxy;
+            }
+            check(helper, proxy != null, "the wish did not go on his hotbar");
+            check(helper, !p.getCooldowns().isOnCooldown(proxy), "a wish that never fired is ready when added");
+            use = WishHotbar.use(p, proxy);
+            check(helper, use.outcome() == WishService.Outcome.FULFILLING, "the charge allows the first fire: " + use);
+            check(helper, p.getCooldowns().isOnCooldown(proxy), "the proxy rests after the fire");
+            pass(p, charge, TenSecondRest.REST - 1);
+            check(helper, p.getCooldowns().isOnCooldown(proxy),
+                    "one tick before the world's ten seconds are up, the sweep has already finished");
+
+            // A CLICK WHILE THE SWEEP RUNS: nothing is made and the rest is not restarted.
+            check(helper, WishHotbar.use(p, proxy).used() == WishHotbar.Used.RESTING, "a resting proxy makes nothing");
+            pass(p, charge, 1);
+            check(helper, !p.getCooldowns().isOnCooldown(proxy), "the sweep outlasted the world's ten seconds");
+
+            // A FIRE IT REFUSES BECAUSE IT IS STILL RESTING shows the time LEFT, not a fresh ten seconds: here the
+            // game's sweep was lost (fired from My wishes, a new client) while the world's rest ran on.
+            WishService.forget(p);   // ten seconds have passed for the world: the limiter's double-click guard is not under test
+            use = WishHotbar.use(p, proxy);
+            check(helper, use.outcome() == WishService.Outcome.FULFILLING, "the second rest starts: " + use);
+            pass(p, charge, 60);
+            p.getCooldowns().removeCooldown(WishHotbar.group(strong));
+            use = WishHotbar.use(p, proxy);
+            check(helper, use.outcome() == WishService.Outcome.BANK_EMPTY, "the charge refuses a resting wish: " + use);
+            left = ticksLeft(p, proxy, 1000);
+            check(helper, left == TenSecondRest.REST - 60, "refused 60 ticks into a ten-second rest, the sweep has "
+                    + left + " ticks left, not " + (TenSecondRest.REST - 60));
+            charge.now += left;   // the world's clock catches up with the ticks counted
+
+            WishService.forget(p);   // ten seconds have passed for the world: the limiter's double-click guard is not under test
+            use = WishHotbar.use(p, proxy);
+            check(helper, use.outcome() == WishService.Outcome.FULFILLING, "the third rest starts: " + use);
+            pass(p, charge, 70);
+
+            // TAKEN OFF AND ADDED AGAIN: the rest is neither dodged nor lost, even with the game's own sweep gone.
+            WishHotbar.remove(p, strong);
+            p.getCooldowns().removeCooldown(WishHotbar.group(strong));
+            WishHotbar.add(p, cell("Strong " + tag, strong));
+            ItemStack again = null;
+            for (int i = 0; i < inv.getContainerSize(); i++) {
+                again = strong.equals(WishHotbar.recipeOf(inv.getItem(i))) ? inv.getItem(i) : again;
+            }
+            check(helper, again != null, "the wish did not go back on his hotbar");
+            left = ticksLeft(p, again, 1000);
+            check(helper, left == TenSecondRest.REST - 70, "re-added 70 ticks into a ten-second rest, the sweep has "
+                    + left + " ticks left, not " + (TenSecondRest.REST - 70));
+            charge.now += left;
+
+            // A FIRE IT REFUSES FOR ANOTHER REASON: no long sweep (the charge says it is ready).
+            ItemStack refused = WishHotbar.proxy(cell("Nope " + tag, nope), p.getUUID());
+            use = WishHotbar.use(p, refused);
+            check(helper, use.outcome() == WishService.Outcome.BANK_EMPTY, "the charge refuses this wish: " + use);
+            check(helper, !p.getCooldowns().isOnCooldown(refused), "a wish refused for another reason shows a sweep");
+
+            // KNOCKED OUT MID-REST: the new body has no cooldowns of its own, and the wish comes back still resting.
+            WishService.forget(p);
+            use = WishHotbar.use(p, again);
+            check(helper, use.outcome() == WishService.Outcome.FULFILLING, "the fourth rest starts: " + use);
+            pass(p, charge, 30);
+            ServerPlayer survivor = MockPlayerNetwork.asSurvival(p);
+            survivor.die(survivor.damageSources().generic());
+            ServerPlayer reborn = server.getPlayerList().respawn(survivor, false, Entity.RemovalReason.KILLED);
+            rebornHolder[0] = reborn;
+            check(helper, reborn != survivor, "respawn returned the same body, so nothing was tested");
+            ItemStack back = null;
+            for (int i = 0; i < reborn.getInventory().getContainerSize(); i++) {
+                back = strong.equals(WishHotbar.recipeOf(reborn.getInventory().getItem(i)))
+                        ? reborn.getInventory().getItem(i) : back;
+            }
+            check(helper, back != null, "the wish did not come back after the knock-out");
+            left = ticksLeft(reborn, back, 1000);
+            check(helper, left == TenSecondRest.REST - 30, "knocked out 30 ticks into a ten-second rest, the sweep has "
+                    + left + " ticks left, not " + (TenSecondRest.REST - 30));
+        });
+        helper.succeed();
     }
 }
