@@ -486,7 +486,7 @@ public final class VanillaLightClientTest {
     private static final Map<String, int[]> SERVER_LIGHT = new java.util.concurrent.ConcurrentHashMap<>();
 
     private static String camera(Minecraft mc) {
-        var p = mc.gameRenderer.getMainCamera().position();
+        var p = mc.gameRenderer.mainCamera().position();
         return String.format(Locale.ROOT, "%.2f %.2f %.2f", p.x, p.y, p.z);
     }
 
@@ -695,7 +695,7 @@ public final class VanillaLightClientTest {
             });
         }
         mc.options.hideGui = true;
-        mc.setScreen(null);
+        mc.gui.setScreen(null);
         double feet = s.footY() + FEET_UP;
         double z = STAGE_Z - STANDOFF;
         float pitch = 6f;
@@ -711,7 +711,7 @@ public final class VanillaLightClientTest {
     }
 
     private static int[][] grab(Minecraft mc, String name) {
-        try (var img = Screenshots.take(mc.getMainRenderTarget())) {
+        try (var img = Screenshots.take(mc.gameRenderer.mainRenderTarget())) {
             int w = img.getWidth();
             int h = img.getHeight();
             int[][] px = new int[h][w];

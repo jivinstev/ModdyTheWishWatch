@@ -245,7 +245,7 @@ public final class VanillaLegsClientTest {
         if (t != null) {
             // The server's FilmCamera has the view; the player stays where he was put.
             mc.options.hideGui = true;
-            mc.setScreen(null);
+            mc.gui.setScreen(null);
             return;
         }
         double sx = START_X;
@@ -263,7 +263,7 @@ public final class VanillaLegsClientTest {
         double cy = FOOT_Y + o[1] - 1.62;
         double cz = sz + o[2];
         mc.options.hideGui = true;
-        mc.setScreen(null);
+        mc.gui.setScreen(null);
         mc.player.getAbilities().flying = true;
         mc.player.setDeltaMovement(net.minecraft.world.phys.Vec3.ZERO);
         double[] prev = lastCam == null ? new double[]{cx, cy, cz} : lastCam;

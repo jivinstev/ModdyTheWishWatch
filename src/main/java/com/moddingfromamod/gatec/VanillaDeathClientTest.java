@@ -595,7 +595,7 @@ public final class VanillaDeathClientTest {
             return;
         }
         mc.options.hideGui = true;
-        mc.setScreen(null);
+        mc.gui.setScreen(null);
         mc.player.setPos(CAM_X, CAM_Y, CAM_Z);
         mc.player.setYRot(0f);
         mc.player.setXRot(CAM_PITCH);
@@ -742,7 +742,7 @@ public final class VanillaDeathClientTest {
             failLater = "a frame was captured with " + mc.getOverlay().getClass().getSimpleName()
                     + " still on screen";
         }
-        try (var img = Screenshots.take(mc.getMainRenderTarget())) {
+        try (var img = Screenshots.take(mc.gameRenderer.mainRenderTarget())) {
             int w = img.getWidth();
             int h = img.getHeight();
             int[][] px = new int[h][w];

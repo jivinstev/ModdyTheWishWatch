@@ -388,7 +388,7 @@ public final class VanillaStageClientTest {
             return;
         }
         mc.options.hideGui = true;
-        mc.setScreen(null);
+        mc.gui.setScreen(null);
         Vec3 foot = stage();
         double aimY = foot.y + camAimY;
         float pitch = (float) -Math.toDegrees(
@@ -451,7 +451,7 @@ public final class VanillaStageClientTest {
     }
 
     private static int[][] grab(Minecraft mc, String label) {
-        try (var img = Screenshots.take(mc.getMainRenderTarget())) {
+        try (var img = Screenshots.take(mc.gameRenderer.mainRenderTarget())) {
             int w = img.getWidth();
             int h = img.getHeight();
             int[][] px = new int[h][w];

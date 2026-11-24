@@ -474,7 +474,7 @@ public final class VanillaPitchClientTest {
             return;
         }
         mc.options.hideGui = true;
-        mc.setScreen(null);
+        mc.gui.setScreen(null);
         double eye = EYES + camDy;
         double feet = eye - mc.player.getEyeHeight();
         // Aim the camera at the creature's eyes, so the head stays centred as the camera moves.
@@ -539,7 +539,7 @@ public final class VanillaPitchClientTest {
     }
 
     private static int[][] grab(Minecraft mc, String name) {
-        try (var img = Screenshots.take(mc.getMainRenderTarget())) {
+        try (var img = Screenshots.take(mc.gameRenderer.mainRenderTarget())) {
             int w = img.getWidth();
             int h = img.getHeight();
             int[][] px = new int[h][w];

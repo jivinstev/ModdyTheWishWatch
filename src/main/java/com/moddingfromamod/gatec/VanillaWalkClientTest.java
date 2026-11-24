@@ -698,7 +698,7 @@ public final class VanillaWalkClientTest {
             return;
         }
         mc.options.hideGui = true;
-        mc.setScreen(null);
+        mc.gui.setScreen(null);
         mc.player.setPos(CAM_X, CAM_Y, CAM_Z);
         mc.player.setYRot(0f);
         mc.player.setXRot(6f);

@@ -536,7 +536,7 @@ public final class VanillaClipsClientTest {
             return;
         }
         mc.options.hideGui = true;
-        mc.setScreen(null);
+        mc.gui.setScreen(null);
         if (CAM_FOV > 0 && mc.options.fov().get() != CAM_FOV) {
             mc.options.fov().set(CAM_FOV);
         }
@@ -580,7 +580,7 @@ public final class VanillaClipsClientTest {
             failLater = "a frame was captured with " + mc.getOverlay().getClass().getSimpleName()
                     + " still on screen";
         }
-        try (var img = Screenshots.take(mc.getMainRenderTarget())) {
+        try (var img = Screenshots.take(mc.gameRenderer.mainRenderTarget())) {
             int w = img.getWidth();
             int h = img.getHeight();
             int[][] px = new int[h][w];

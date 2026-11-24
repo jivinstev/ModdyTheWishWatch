@@ -1003,7 +1003,7 @@ public final class VanillaStateClientTest {
             failLater = "a frame was captured with " + mc.getOverlay().getClass().getSimpleName()
                     + " still on screen -- every pixel number in this run is measuring that";
         }
-        try (var img = Screenshots.take(mc.getMainRenderTarget())) {
+        try (var img = Screenshots.take(mc.gameRenderer.mainRenderTarget())) {
             int w = img.getWidth();
             int h = img.getHeight();
             int[][] px = new int[h][w];
@@ -1380,7 +1380,7 @@ public final class VanillaStateClientTest {
         // head, nowhere near either.
         mc.options.hideGui = phase != Phase.STATES
                 || State.values()[Math.min(stateIndex, State.values().length - 1)] != State.NAMED;
-        mc.setScreen(null);
+        mc.gui.setScreen(null);
         double x = CAM_X;
         double y = CAM_Y;
         double z = CAM_Z;

@@ -117,7 +117,7 @@ public final class ClientHarness {
         if (mc.screen instanceof AccessibilityOnboardingScreen) {
             mc.options.onboardAccessibility = false;
             mc.options.save();
-            mc.setScreen(new TitleScreen());
+            mc.gui.setScreen(new TitleScreen());
             return false;
         }
         if (!(mc.screen instanceof TitleScreen) || ticks < TITLE_SETTLE) {
@@ -342,10 +342,10 @@ public final class ClientHarness {
                         + "— the photograph is of a menu";
         try {
             if (!keepView) {
-                mc.setScreen(null);
+                mc.gui.setScreen(null);
                 mc.options.hideGui = true;   // backstop only; must already be set, see class javadoc
             }
-            var img = Screenshots.take(mc.getMainRenderTarget());
+            var img = Screenshots.take(mc.gameRenderer.mainRenderTarget());
             try {
                 Files.createDirectories(sigDir);
                 img.writeToFile(sigDir.resolve(name));

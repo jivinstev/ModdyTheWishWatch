@@ -992,7 +992,7 @@ public final class VanillaLocomotionClientTest {
             return;
         }
         mc.options.hideGui = true;
-        mc.setScreen(null);
+        mc.gui.setScreen(null);
         mc.player.getAbilities().flying = true;
         mc.player.setPos(c[0], c[1], c[2]);
         mc.player.setDeltaMovement(Vec3.ZERO);
@@ -1036,7 +1036,7 @@ public final class VanillaLocomotionClientTest {
         if (mc.getOverlay() != null) {
             return null;
         }
-        try (var img = Screenshots.take(mc.getMainRenderTarget())) {
+        try (var img = Screenshots.take(mc.gameRenderer.mainRenderTarget())) {
             int w = img.getWidth();
             int h = img.getHeight();
             int[][] px = new int[h / 2][w / 2];
