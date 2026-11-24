@@ -422,6 +422,21 @@ public record BuildPlan(String id, String name, List<BuildShape> shapes, String 
         return plan.isValid() ? plan : null;
     }
 
+    /**
+     * A plan read back from a STORE (a saved building, a library {@code build.json}): its block ids upgraded for the
+     * Minecraft this build runs ({@link com.moddingfromamod.compat.BlockRenames}, by the record's {@code mc} marker),
+     * then parsed as {@link #fromJson} does. Throws {@link IllegalArgumentException} when the marker is not a version.
+     * Arguments a tool was handed are not stored and go through {@link #fromJson}.
+     */
+    public static BuildPlan fromStored(JsonObject o) {
+        return fromJson(com.moddingfromamod.compat.BlockRenames.plan(o, com.moddingfromamod.compat.Target.MINECRAFT));
+    }
+
+    /** {@link #toJson} with the marker a store writes: the Minecraft version this plan's block ids are spelled for. */
+    public JsonObject toStoredJson() {
+        return com.moddingfromamod.compat.BlockRenames.stamp(toJson(), com.moddingfromamod.compat.Target.MINECRAFT);
+    }
+
     public JsonObject toJson() {
         JsonObject o = new JsonObject();
         o.addProperty("id", id);

@@ -1,0 +1,183 @@
+{
+ "store": "buildings",
+ "v": 1,
+ "buildings": [
+  {
+   "id": "stone_well",
+   "name": "Your Stone Well",
+   "shapes": [
+    {
+     "block": "minecraft:cobblestone",
+     "depth": 5,
+     "dx": -2,
+     "dy": 0,
+     "dz": -2,
+     "height": 2,
+     "hollow": true,
+     "kind": "box",
+     "name": "ring",
+     "width": 5
+    },
+    {
+     "block": "minecraft:stone_bricks",
+     "depth": 5,
+     "dx": -2,
+     "dy": -1,
+     "dz": -2,
+     "height": 1,
+     "hollow": false,
+     "kind": "box",
+     "name": "floor",
+     "width": 5
+    },
+    {
+     "block": "minecraft:water",
+     "depth": 3,
+     "dx": -1,
+     "dy": 0,
+     "dz": -1,
+     "height": 1,
+     "hollow": false,
+     "kind": "box",
+     "name": "water",
+     "width": 3
+    },
+    {
+     "block": "minecraft:oak_fence",
+     "depth": 1,
+     "dx": -2,
+     "dy": 2,
+     "dz": -2,
+     "height": 2,
+     "hollow": false,
+     "kind": "box",
+     "name": "post_a",
+     "width": 1
+    },
+    {
+     "block": "minecraft:oak_fence",
+     "depth": 1,
+     "dx": 2,
+     "dy": 2,
+     "dz": -2,
+     "height": 2,
+     "hollow": false,
+     "kind": "box",
+     "name": "post_b",
+     "width": 1
+    },
+    {
+     "block": "minecraft:oak_fence",
+     "depth": 1,
+     "dx": -2,
+     "dy": 2,
+     "dz": 2,
+     "height": 2,
+     "hollow": false,
+     "kind": "box",
+     "name": "post_c",
+     "width": 1
+    },
+    {
+     "block": "minecraft:oak_fence",
+     "depth": 1,
+     "dx": 2,
+     "dy": 2,
+     "dz": 2,
+     "height": 2,
+     "hollow": false,
+     "kind": "box",
+     "name": "post_d",
+     "width": 1
+    },
+    {
+     "block": "minecraft:spruce_planks",
+     "depth": 7,
+     "dx": -3,
+     "dy": 4,
+     "dz": -3,
+     "height": 3,
+     "hollow": false,
+     "kind": "pyramid",
+     "name": "roof",
+     "width": 7
+    },
+    {
+     "block": "minecraft:chain",
+     "depth": 1,
+     "dx": 0,
+     "dy": 2,
+     "dz": 0,
+     "height": 4,
+     "hollow": false,
+     "kind": "box",
+     "name": "bucket_rope",
+     "width": 1
+    },
+    {
+     "block": "minecraft:spruce_planks",
+     "depth": 1,
+     "dx": 0,
+     "dy": 6,
+     "dz": 0,
+     "height": 1,
+     "hollow": false,
+     "kind": "box",
+     "name": "bucket_beam",
+     "width": 1
+    }
+   ]
+  },
+  {
+   "id": "tire_swing",
+   "name": "Tire Swing",
+   "shapes": [
+    {
+     "kind": "box",
+     "dx": 0,
+     "dy": 0,
+     "dz": 0,
+     "width": 1,
+     "height": 5,
+     "depth": 1,
+     "block": "minecraft:oak_log",
+     "hollow": false
+    },
+    {
+     "kind": "box",
+     "dx": 0,
+     "dy": 4,
+     "dz": 0,
+     "width": 4,
+     "height": 1,
+     "depth": 1,
+     "block": "minecraft:stripped_oak_log[axis=x]",
+     "hollow": false
+    },
+    {
+     "kind": "box",
+     "dx": 3,
+     "dy": 1,
+     "dz": 0,
+     "width": 1,
+     "height": 3,
+     "depth": 1,
+     "block": "chain[axis=y]",
+     "hollow": false,
+     "name": "rope"
+    },
+    {
+     "kind": "box",
+     "dx": 3,
+     "dy": 0,
+     "dz": 0,
+     "width": 1,
+     "height": 1,
+     "depth": 1,
+     "block": "minecraft:black_wool",
+     "hollow": false
+    }
+   ]
+  }
+ ]
+}
