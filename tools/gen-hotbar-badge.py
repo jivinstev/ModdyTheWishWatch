@@ -199,7 +199,8 @@ def target_mc():
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--look', choices=sorted(LOOKS), default='corner')
-    ap.add_argument('--client-jar', default=str(ROOT / '.gradle/caches/minecraft/versions' / target_mc() / 'client.jar'))
+    # written by every build (build.gradle's additionalMinecraftArtifacts)
+    ap.add_argument('--client-jar', default=str(ROOT / 'build/minecraft' / ('client-' + target_mc() + '.jar')))
     ap.add_argument('--preview', help='write the look\'s layers here instead of into the mod')
     a = ap.parse_args()
 
