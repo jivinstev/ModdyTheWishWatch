@@ -712,7 +712,7 @@ public class VanillaCarrierAbilityGameTest {
             // box, and a GameTest plot is reused by later batches: a dropped item or a mob an earlier test left in
             // this cell turned this red on a slow runner (#40), with a message about the shipped path. Clear the
             // cell, and say what was there if something still blocks it.
-            AABB cell = EntityType.ARMOR_STAND.getDimensions().makeBoundingBox(Vec3.atBottomCenterOf(floor.above()));
+            AABB cell = EntityTypes.ARMOR_STAND.getDimensions().makeBoundingBox(Vec3.atBottomCenterOf(floor.above()));
             level.getEntities((net.minecraft.world.entity.Entity) null, cell, e -> !(e instanceof ServerPlayer))
                     .forEach(e -> e.discard());
             List<String> blockers = level.getEntities((net.minecraft.world.entity.Entity) null, cell, e -> true)
