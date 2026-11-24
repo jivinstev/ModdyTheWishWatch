@@ -97,17 +97,35 @@ public final class Rewish {
         return com.moddingfromamod.marshal.LocalOnly.during(() -> tryAnswerLocally(p, text, source, hint));
     }
 
-    private static boolean tryAnswerLocally(ServerPlayer p, String text, WishSource source, WishRoute.Hint hint) {
+    /**
+     * Would {@link #tryAnswer} take these words (a SURE change it does at once, or a CLOSE one it offers)? The same
+     * reading with nothing done, said or logged: what the core asks before it asks the world's charge, so the charge is
+     * told the words will be answered locally. A SURE answer that finds no instant way still passes them on; the core
+     * then asks the charge again.
+     */
+    public static boolean wouldRead(ServerPlayer p, String text, WishSource source, WishRoute.Hint hint) {
+        return com.moddingfromamod.marshal.LocalOnly.during(() -> {
+            Reading r = reading(p, text, source, hint);
+            return r != null && on() && (r.answer().band() == RewishReader.Band.SURE
+                    || r.answer().band() == RewishReader.Band.CLOSE);
+        });
+    }
+
+    /** His words read against his things, with what the reading needed; null when they are never read here. */
+    private record Reading(boolean crafter, BuilderSettings settings, List<Mine> mine, RewishReader.Answer answer) {
+    }
+
+    private static Reading reading(ServerPlayer p, String text, WishSource source, WishRoute.Hint hint) {
         if (p == null || source != WishSource.TYPED || hint == WishRoute.Hint.MAGICIAN || WishIntent.isQuestion(text)) {
-            return false;   // a press, a preset, a question, or "the Magician, please": never read here
+            return null;   // a press, a preset, a question, or "the Magician, please": never read here
         }
         boolean crafter = CrafterService.isCrafter(p);
         if (!on() && !crafter) {
-            return false;
+            return null;
         }
         BuilderSettings settings = BuilderSettings.forPlayer(p.getUUID());
         if (!settings.enabled()) {
-            return false;
+            return null;
         }
         List<Mine> mine = his(p);
         List<RewishReader.Thing> things = new ArrayList<>();
@@ -119,7 +137,18 @@ public final class Rewish {
         for (var pr : com.moddingfromamod.library.WishLibrary.asPresets()) {
             starters.add(pr.templateId());
         }
-        RewishReader.Answer a = reader(settings.allow()).read(text, things, starters, last);
+        return new Reading(crafter, settings, mine, reader(settings.allow()).read(text, things, starters, last));
+    }
+
+    private static boolean tryAnswerLocally(ServerPlayer p, String text, WishSource source, WishRoute.Hint hint) {
+        Reading r = reading(p, text, source, hint);
+        if (r == null) {
+            return false;
+        }
+        boolean crafter = r.crafter();
+        BuilderSettings settings = r.settings();
+        List<Mine> mine = r.mine();
+        RewishReader.Answer a = r.answer();
         String outcome = !on() ? "passed"
                 : a.band() == RewishReader.Band.SURE ? act(p, text, settings, a, mine)
                 : a.band() == RewishReader.Band.CLOSE ? offer(p, text, settings, a, mine, crafter) : "passed";
@@ -370,7 +399,7 @@ public final class Rewish {
     static String why(BuilderMake.Result r) {
         return switch (r.outcome()) {
             case BUSY -> "Your last change is still on its way. Wish it again in a moment!";
-            case BANK_EMPTY -> "Your wish bank is empty. It fills up again soon.";
+            case BANK_EMPTY -> r.detail();
             default -> "The Builder couldn't change that this time.";
         };
     }

@@ -708,9 +708,22 @@ public class VanillaCarrierAbilityGameTest {
             helper.assertTrue(anchors.get().isEmpty(),
                     Component.literal("arm B placed an anchor for a plain item with no place tag"));
 
+            // THE CELL MUST BE EMPTY. WishItemActions.useOn refuses (FAIL) when ANY entity stands in the anchor's
+            // box, and a GameTest plot is reused by later batches: a dropped item or a mob an earlier test left in
+            // this cell turned this red on a slow runner (#40), with a message about the shipped path. Clear the
+            // cell, and say what was there if something still blocks it.
+            AABB cell = EntityType.ARMOR_STAND.getDimensions().makeBoundingBox(Vec3.atBottomCenterOf(floor.above()));
+            level.getEntities((net.minecraft.world.entity.Entity) null, cell, e -> !(e instanceof ServerPlayer))
+                    .forEach(e -> e.discard());
+            List<String> blockers = level.getEntities((net.minecraft.world.entity.Entity) null, cell, e -> true)
+                    .stream().map(e -> e.getType().toShortString() + "@" + e.blockPosition().toShortString()).toList();
+            helper.assertTrue(blockers.isEmpty(),
+                    Component.literal("the anchor's cell is not empty, so useOn would refuse: " + blockers));
+
             rightClickBlock(p, modItem(), floor);
             helper.assertTrue(anchors.get().size() == 1,
-                    Component.literal("arm A stopped placing an untagged anchor for a plain item. That is probably "
+                    Component.literal("arm A stopped placing an untagged anchor for a plain item (found "
+                            + anchors.get().size() + "). That is probably "
                             + "an improvement, but it is a CHANGE to the shipped path and this "
                             + "spike is not allowed to make one — re-read the extraction in "
                             + "WishItemActions.useOn before changing this assertion"));
