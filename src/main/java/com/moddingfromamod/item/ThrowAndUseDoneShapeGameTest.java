@@ -133,12 +133,12 @@ public final class ThrowAndUseDoneShapeGameTest {
 
     @GameTest(template = "empty_test", batch = "throwland_snowball", timeoutTicks = 900)
     public static void aWishedSnowballIsThrownAsItselfAndTheWishIsWhereItLands(GameTestHelper helper) {
-        throwIt(helper, "minecraft:snowball", net.minecraft.world.entity.projectile.Snowball.class, "Glow Snowball");
+        throwIt(helper, "minecraft:snowball", net.minecraft.world.entity.projectile.throwableitemprojectile.Snowball.class, "Glow Snowball");
     }
 
     @GameTest(template = "empty_test", batch = "throwland_pearl", timeoutTicks = 900)
     public static void aWishedPearlIsThrownAsItselfAndTheWishIsWhereItLands(GameTestHelper helper) {
-        throwIt(helper, "minecraft:ender_pearl", net.minecraft.world.entity.projectile.ThrownEnderpearl.class,
+        throwIt(helper, "minecraft:ender_pearl", net.minecraft.world.entity.projectile.throwableitemprojectile.ThrownEnderpearl.class,
                 "Glow Pearl");
     }
 
@@ -147,7 +147,7 @@ public final class ThrowAndUseDoneShapeGameTest {
         // A wind charge carries no item of its own once thrown, so the wish is matched to the
         // click that threw it (WishShapeEvents).
         throwIt(helper, "minecraft:wind_charge",
-                net.minecraft.world.entity.projectile.windcharge.WindCharge.class, "Glow Charge");
+                net.minecraft.world.entity.projectile.hurtingprojectile.windcharge.WindCharge.class, "Glow Charge");
     }
 
     /** A horn is blown the way it always is, and the wish happens when he lets go. */

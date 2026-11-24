@@ -121,7 +121,7 @@ public final class Effects {
         if (e instanceof net.minecraft.world.entity.TamableAnimal t && t.isTame()) {
             return true;
         }
-        if (e instanceof net.minecraft.world.entity.animal.horse.AbstractHorse h && h.isTamed()) {
+        if (e instanceof net.minecraft.world.entity.animal.equine.AbstractHorse h && h.isTamed()) {
             return true;
         }
         return e.getPersistentData().contains(com.moddingfromamod.mob.PetBehaviours.OWNER)

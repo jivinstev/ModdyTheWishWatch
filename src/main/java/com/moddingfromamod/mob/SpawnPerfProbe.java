@@ -85,7 +85,7 @@ public final class SpawnPerfProbe {
         }
         ServerLevel level = event.getServer().overworld();
         level.setDayTime(18_000);
-        event.getServer().getGameRules().getRule(net.minecraft.world.level.GameRules.RULE_DAYLIGHT)
+        event.getServer().getGameRules().getRule(net.minecraft.world.level.gamerules.GameRules.RULE_DAYLIGHT)
                 .set(false, event.getServer());
         // a mob a block and a half square in the pen; a creeper a block apart on the slab
         side = MODE.equals("pen") ? Math.max(8, (int) Math.ceil(Math.sqrt(N * 2.25)))

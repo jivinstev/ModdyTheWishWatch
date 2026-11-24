@@ -3,7 +3,7 @@ package com.moddingfromamod.wish;
 import net.minecraft.network.chat.Component;
 import com.moddingfromamod.testing.gt.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
-import net.minecraft.world.level.GameRules;
+import net.minecraft.world.level.gamerules.GameRules;
 import com.moddingfromamod.testing.gt.GameTestHolder;
 
 /**

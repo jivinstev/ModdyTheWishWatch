@@ -210,7 +210,7 @@ public final class RigAbilities {
     public static final String THROW_TAG = "mfam_rig_throw";
 
     /** A ball thrown by this creature, not yet in the world. */
-    public static net.minecraft.world.entity.projectile.Snowball throwBall(ServerLevel level, Mob carrier) {
+    public static net.minecraft.world.entity.projectile.throwableitemprojectile.Snowball throwBall(ServerLevel level, Mob carrier) {
         var ball = com.moddingfromamod.compat.Projectiles.snowball(level, carrier);
         ball.addTag(THROW_TAG);
         // What it throws: the snowball is drawn as the species' item, so "it throws fireballs"
@@ -238,7 +238,7 @@ public final class RigAbilities {
      */
     @net.neoforged.bus.api.SubscribeEvent
     public static void onThrowTicks(net.neoforged.neoforge.event.tick.EntityTickEvent.Post event) {
-        if (!(event.getEntity() instanceof net.minecraft.world.entity.projectile.Snowball ball)
+        if (!(event.getEntity() instanceof net.minecraft.world.entity.projectile.throwableitemprojectile.Snowball ball)
                 || !(ball.level() instanceof ServerLevel level) || !ball.getTags().contains(THROW_TAG)
                 || ball.isRemoved()) {
             return;

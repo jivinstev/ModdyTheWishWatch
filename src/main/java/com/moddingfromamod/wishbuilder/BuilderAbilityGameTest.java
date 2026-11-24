@@ -158,7 +158,7 @@ public final class BuilderAbilityGameTest {
         var level = helper.getLevel();
         var server = level.getServer();
         long dayWas = level.getDayTime();
-        var cycle = level.getGameRules().getRule(net.minecraft.world.level.GameRules.RULE_DAYLIGHT);
+        var cycle = level.getGameRules().getRule(net.minecraft.world.level.gamerules.GameRules.RULE_DAYLIGHT);
         boolean cycleWas = cycle.get();
         cycle.set(false, server);
         level.setDayTime(18000);   // midnight: no sunburn to keep the zombie alight
@@ -172,13 +172,13 @@ public final class BuilderAbilityGameTest {
         com.moddingfromamod.testing.MockPlayerNetwork.actingChildFor(helper, p);
         Case bow = madeUp(BuilderItemPowers.stock("bow"), BuilderItemPowers.power("lightning"));
         String[] atFirstLook = {null};
-        net.minecraft.world.entity.monster.Zombie[] target = {null};
+        net.minecraft.world.entity.monster.zombie.Zombie[] target = {null};
         int[] usedAt = {Integer.MAX_VALUE};
         Case staged = new Case(bow.id(), bow.spec(), bow.name(), c -> {
             Supplier<String> proof = bow.use().apply(c);
             usedAt[0] = server.getTickCount();
             // The arrow is loosed but has not landed: the zombie it flies at outlives the bolt and the fire.
-            var z = level.getEntitiesOfClass(net.minecraft.world.entity.monster.Zombie.class,
+            var z = level.getEntitiesOfClass(net.minecraft.world.entity.monster.zombie.Zombie.class,
                     c.p().getBoundingBox().inflate(10)).stream().findFirst().orElse(null);
             target[0] = z;
             if (z != null) {
@@ -552,7 +552,7 @@ public final class BuilderAbilityGameTest {
                 + "\",\"power\":\"" + w.id() + "\",\"strength\":\"2\"}}";
         return new Case("made up: " + name + " (" + shape + ")", spec, finds, c -> {
             var level = c.helper().getLevel();
-            net.minecraft.world.entity.monster.Zombie[] z = {null};
+            net.minecraft.world.entity.monster.zombie.Zombie[] z = {null};
             Vec3 from = c.p().position();
             BlockPos[] mined = {null};
             int[] had = {0};
@@ -754,7 +754,7 @@ public final class BuilderAbilityGameTest {
                         return "put down, and no " + look.label() + " block stands";
                     }
                     before[0] = d.id().equals("chickens")
-                            ? level.getEntitiesOfClass(net.minecraft.world.entity.animal.Chicken.class,
+                            ? level.getEntitiesOfClass(net.minecraft.world.entity.animal.chicken.Chicken.class,
                                     new net.minecraft.world.phys.AABB(at[0]).inflate(6)).size()
                             : around(c.helper(), at[0]);
                 }
@@ -771,7 +771,7 @@ public final class BuilderAbilityGameTest {
                 }
                 return switch (d.id()) {
                     case "lucky" -> around(c.helper(), at[0]) > before[0] ? null : "broken, and nothing came out";
-                    case "chickens" -> level.getEntitiesOfClass(net.minecraft.world.entity.animal.Chicken.class,
+                    case "chickens" -> level.getEntitiesOfClass(net.minecraft.world.entity.animal.chicken.Chicken.class,
                             new net.minecraft.world.phys.AABB(at[0]).inflate(6)).size() > before[0] ? null : "no chicken popped out";
                     case "heal" -> p.hasEffect(net.minecraft.world.effect.MobEffects.REGENERATION) || p.getHealth() > 10 ? null
                             : "no healing on him";
@@ -793,7 +793,7 @@ public final class BuilderAbilityGameTest {
     }
 
     /** A still zombie {@code ahead} blocks south of him (he faces south). */
-    static net.minecraft.world.entity.monster.Zombie zombie(Ctx c, int ahead) {
+    static net.minecraft.world.entity.monster.zombie.Zombie zombie(Ctx c, int ahead) {
         var z = EntityType.ZOMBIE.create(c.helper().getLevel(), net.minecraft.world.entity.EntitySpawnReason.COMMAND);
         z.setNoAi(true);
         z.setPos(c.p().getX(), c.p().getY(), c.p().getZ() + ahead);

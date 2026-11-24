@@ -114,7 +114,7 @@ public final class BuilderMaxProbe {
         MinecraftServer server = event.getServer();
         ServerLevel level = server.overworld();
         level.setDayTime(18_000);   // night: the zombies must not burn
-        server.getGameRules().getRule(net.minecraft.world.level.GameRules.RULE_DAYLIGHT).set(false, server);
+        server.getGameRules().getRule(net.minecraft.world.level.gamerules.GameRules.RULE_DAYLIGHT).set(false, server);
         for (int cx = -2; cx <= 3; cx++) {
             for (int cz = -2; cz <= 3; cz++) {
                 level.setChunkForced(cx, cz, true);

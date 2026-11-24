@@ -4,7 +4,7 @@ import com.moddingfromamod.ModdingFromAModMod;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.entity.projectile.AbstractArrow;
+import net.minecraft.world.entity.projectile.arrow.AbstractArrow;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -54,7 +54,7 @@ public final class WishShapeEvents {
     static ItemStack weaponOf(AbstractArrow arrow) {
         ItemStack w = arrow.getWeaponItem();
         if ((w == null || w.isEmpty())
-                && arrow instanceof net.minecraft.world.entity.projectile.ThrownTrident trident) {
+                && arrow instanceof net.minecraft.world.entity.projectile.arrow.ThrownTrident trident) {
             w = trident.getPickupItemStackOrigin();
         }
         return w == null ? ItemStack.EMPTY : w;
@@ -91,7 +91,7 @@ public final class WishShapeEvents {
             return;
         }
         String fn = "";
-        if (p instanceof net.minecraft.world.entity.projectile.ThrowableItemProjectile t) {
+        if (p instanceof net.minecraft.world.entity.projectile.throwableitemprojectile.ThrowableItemProjectile t) {
             fn = WishItem.landFunction(t.getItem());
         } else if (p instanceof AbstractArrow a) {
             fn = WishItem.landFunction(weaponOf(a));

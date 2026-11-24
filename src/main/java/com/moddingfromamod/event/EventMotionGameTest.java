@@ -584,7 +584,7 @@ public final class EventMotionGameTest {
         boolean[] undone = {false};
         String tag = EventDirector.entityTag(hens);
         java.util.function.IntSupplier henCount = () -> level.getEntitiesOfClass(
-                net.minecraft.world.entity.animal.Chicken.class,
+                net.minecraft.world.entity.animal.chicken.Chicken.class,
                 new net.minecraft.world.phys.AABB(c).inflate(20, 40, 20), x -> x.getTags().contains(tag)).size();
         helper.succeedWhen(() -> {
             if (!undone[0]) {

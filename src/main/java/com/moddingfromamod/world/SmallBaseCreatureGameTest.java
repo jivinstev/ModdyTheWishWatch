@@ -235,8 +235,8 @@ public final class SmallBaseCreatureGameTest {
     /** "" when the search changed only the pig on his base and the call from off it was refused; else what went wrong. */
     private static String judge(GameTestHelper helper, ServerPlayer him, Bases bases, String tag, String[] inside,
                                 String[] fromOff, Throwable err) {
-        List<net.minecraft.world.entity.animal.Pig> pigs = helper.getLevel().getEntitiesOfClass(
-                net.minecraft.world.entity.animal.Pig.class, him.getBoundingBox().inflate(48), p -> p.getTags().contains(tag));
+        List<net.minecraft.world.entity.animal.pig.Pig> pigs = helper.getLevel().getEntitiesOfClass(
+                net.minecraft.world.entity.animal.pig.Pig.class, him.getBoundingBox().inflate(48), p -> p.getTags().contains(tag));
         String seen = pigs.stream().map(p -> p.blockPosition().toShortString() + "="
                 + (p.hasCustomName() ? p.getCustomName().getString() : "-")).toList().toString();
         pigs.forEach(net.minecraft.world.entity.Entity::discard);

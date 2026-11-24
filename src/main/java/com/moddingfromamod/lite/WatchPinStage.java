@@ -20,7 +20,7 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.level.GameRules;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.ChestBlockEntity;
@@ -186,7 +186,7 @@ public final class WatchPinStage {
     private static net.minecraft.world.phys.Vec3 walkFrom;
     private static double walkSpeed = -1;
     /** The horse a horse row put in front of him, discarded when the next row is staged. */
-    private static net.minecraft.world.entity.animal.horse.Horse stagedHorse;
+    private static net.minecraft.world.entity.animal.equine.Horse stagedHorse;
     /** Every menu the window saw open, in order (the panel, the wish prompt, ...). */
     private static final java.util.LinkedHashSet<String> menusSeen = new java.util.LinkedHashSet<>();
     private static int selectedOther;

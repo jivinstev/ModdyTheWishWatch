@@ -14,7 +14,7 @@ import net.minecraft.gametest.framework.GameTestAssertException;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.entity.projectile.AbstractArrow;
+import net.minecraft.world.entity.projectile.arrow.AbstractArrow;
 import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -173,19 +173,19 @@ public final class PropertyRideGameTest {
     @GameTest(template = "empty_test", batch = "proprides_fireball_bow", timeoutTicks = 400)
     public static void aBowThatShootsFireballsLoosesAFireball(GameTestHelper helper) {
         loosesInsteadOfAnArrow(helper, "minecraft:bow", "fireball",
-                net.minecraft.world.entity.projectile.SmallFireball.class);
+                net.minecraft.world.entity.projectile.hurtingprojectile.SmallFireball.class);
     }
 
     @GameTest(template = "empty_test", batch = "proprides_egg_bow", timeoutTicks = 400)
     public static void aBowThatShootsEggsLoosesAnEgg(GameTestHelper helper) {
         loosesInsteadOfAnArrow(helper, "minecraft:bow", "egg",
-                net.minecraft.world.entity.projectile.ThrownEgg.class);
+                net.minecraft.world.entity.projectile.throwableitemprojectile.ThrownEgg.class);
     }
 
     @GameTest(template = "empty_test", batch = "proprides_snow_crossbow", timeoutTicks = 400)
     public static void aCrossbowThatShootsSnowballsLoosesASnowball(GameTestHelper helper) {
         loosesInsteadOfAnArrow(helper, "minecraft:crossbow", "snowball",
-                net.minecraft.world.entity.projectile.Snowball.class);
+                net.minecraft.world.entity.projectile.throwableitemprojectile.Snowball.class);
     }
 
     /** The control: a plain bow still shoots an arrow (the hook must not touch what a wish did not make). */

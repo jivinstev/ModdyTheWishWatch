@@ -18,8 +18,8 @@ import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.animal.Cow;
-import net.minecraft.world.entity.monster.Husk;
+import net.minecraft.world.entity.animal.cow.Cow;
+import net.minecraft.world.entity.monster.zombie.Husk;
 import com.moddingfromamod.testing.gt.GameTestHolder;
 
 /**

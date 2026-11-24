@@ -14,8 +14,8 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.Mob;
-import net.minecraft.world.entity.monster.Husk;
-import net.minecraft.world.entity.projectile.Snowball;
+import net.minecraft.world.entity.monster.zombie.Husk;
+import net.minecraft.world.entity.projectile.throwableitemprojectile.Snowball;
 import net.minecraft.world.phys.AABB;
 import com.moddingfromamod.testing.gt.GameTestHolder;
 

@@ -104,7 +104,7 @@ public final class ArrowAndMineShapeGameTest {
         helper.succeedWhen(() -> {
             if (!glowstoneNear(helper, wall.north(), 1)) {
                 throw GameTestCompat.assertion("no glowstone where the arrow hit the wall; arrows="
-                                + helper.getLevel().getEntitiesOfClass(net.minecraft.world.entity.projectile.AbstractArrow.class,
+                                + helper.getLevel().getEntitiesOfClass(net.minecraft.world.entity.projectile.arrow.AbstractArrow.class,
                                         new net.minecraft.world.phys.AABB(feet).inflate(12)).stream()
                                         .map(a -> a.position() + " fn=" + a.getPersistentData().getStringOr(WishThrowImpact.HIT_FN, "")
                                                 + " weapon=" + WishShapeEvents.weaponOf(a))
@@ -146,7 +146,7 @@ public final class ArrowAndMineShapeGameTest {
         helper.succeedWhen(() -> {
             if (!glowstoneNear(helper, wall.north(), 1)) {
                 throw GameTestCompat.assertion("no glowstone where the trident hit the wall; tridents="
-                                + helper.getLevel().getEntitiesOfClass(net.minecraft.world.entity.projectile.ThrownTrident.class,
+                                + helper.getLevel().getEntitiesOfClass(net.minecraft.world.entity.projectile.arrow.ThrownTrident.class,
                                         new net.minecraft.world.phys.AABB(feet).inflate(12)).stream()
                                         .map(a -> a.position() + " fn=" + a.getPersistentData().getStringOr(WishThrowImpact.HIT_FN, "")
                                                 + " weapon=" + WishShapeEvents.weaponOf(a).get(

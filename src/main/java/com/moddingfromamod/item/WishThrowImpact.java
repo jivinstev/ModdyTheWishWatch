@@ -88,7 +88,7 @@ public final class WishThrowImpact {
         // where it landed ("place") found stone. Nudged a hair out of the face it hit, into the air
         // in front. Arrows only: the thrown shape's own geometry is unchanged.
         // A real throwable's landing wish (on_throw_land) has the same geometry, and asks.
-        if ((projectile instanceof net.minecraft.world.entity.projectile.AbstractArrow
+        if ((projectile instanceof net.minecraft.world.entity.projectile.arrow.AbstractArrow
                 || projectile.getPersistentData().getBooleanOr(NUDGE, false))
                 && event.getRayTraceResult() instanceof net.minecraft.world.phys.BlockHitResult hit) {
             var d = hit.getDirection();
@@ -109,7 +109,7 @@ public final class WishThrowImpact {
         server.getFunctions().get(id).ifPresent(f -> server.getFunctions().execute(f, source));
         // AN ARROW STICKS AROUND: it can hit again as it settles, and a piercing one hits
         // several things. The wish happens once, where it first landed — a snowball is gone anyway.
-        if (projectile instanceof net.minecraft.world.entity.projectile.AbstractArrow) {
+        if (projectile instanceof net.minecraft.world.entity.projectile.arrow.AbstractArrow) {
             projectile.getPersistentData().remove(HIT_FN);
         }
     }

@@ -141,7 +141,7 @@ public final class GameTestAdapter {
                         new TestEnvironmentDefinition.AllOf(still.contains(k)
                                 ? List.of(Holder.direct(new TestEnvironmentDefinition.SetGameRules(List.of(), List.of(
                                         TestEnvironmentDefinition.SetGameRules.entry(
-                                                net.minecraft.world.level.GameRules.RULE_RANDOMTICKING, 0)))))
+                                                net.minecraft.world.level.gamerules.GameRules.RULE_RANDOMTICKING, 0)))))
                                 : List.of())));
                 Identifier id = Identifier.fromNamespaceAndPath(f.ns(), f.id());
                 TestData<Holder<TestEnvironmentDefinition>> data = new TestData<>(env,

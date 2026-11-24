@@ -4,7 +4,7 @@ import net.minecraft.network.chat.Component;
 import java.util.List;
 
 import com.moddingfromamod.ModdingFromAModMod;
-import net.minecraft.advancements.critereon.ItemPredicate;
+import net.minecraft.advancements.criterion.ItemPredicate;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
@@ -17,7 +17,7 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.decoration.ArmorStand;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.projectile.ThrownSplashPotion;
+import net.minecraft.world.entity.projectile.throwableitemprojectile.ThrownSplashPotion;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.CustomData;
@@ -197,7 +197,7 @@ public class VanillaCarrierBehaviourGameTest {
         CompoundTag want = new CompoundTag();
         want.putString(WishItem.ON_USE, "wish:pour_coffee");
         ItemPredicate predicate = ItemPredicate.Builder.item()
-                .withComponents(net.minecraft.advancements.critereon.DataComponentMatchers.Builder.components()
+                .withComponents(net.minecraft.advancements.criterion.DataComponentMatchers.Builder.components()
                         .exact(net.minecraft.core.component.DataComponentExactPredicate.builder()
                                 .expect(DataComponents.CUSTOM_DATA, CustomData.of(want))
                                 .build())

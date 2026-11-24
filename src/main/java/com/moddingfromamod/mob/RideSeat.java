@@ -135,7 +135,7 @@ public final class RideSeat {
         // VanillaRideProbeGameTest: every one of them "NO"), so one he was told he can ride is his:
         // tamed to him the first time he climbs on. Not saddled -- a saddle hands the steering to his
         // client, and every other mount is steered by PetBehaviours.steer, the same for all of them.
-        if (mob instanceof net.minecraft.world.entity.animal.horse.AbstractHorse horse && !horse.isTamed()) {
+        if (mob instanceof net.minecraft.world.entity.animal.equine.AbstractHorse horse && !horse.isTamed()) {
             horse.tameWithName(player);
         }
         double lift = lift(mob, player);
@@ -252,7 +252,7 @@ public final class RideSeat {
      * mule, camel, skeleton or zombie horse (2026-10-12).
      */
     public static boolean vanillaMount(Entity m) {
-        return m instanceof net.minecraft.world.entity.animal.horse.AbstractHorse h
+        return m instanceof net.minecraft.world.entity.animal.equine.AbstractHorse h
                 && h.isTamed() && h.isSaddled() && !h.isBaby();
     }
 

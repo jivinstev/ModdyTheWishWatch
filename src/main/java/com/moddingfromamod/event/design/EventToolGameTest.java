@@ -242,7 +242,7 @@ public final class EventToolGameTest {
         BlockPos aim = EventBuild.ground(level, lane.getX(), lane.getZ());
         BlockPos his = EventBuild.ground(level, lane.getX() + 30, lane.getZ());
         child.teleportTo(his.getX() + 0.5, his.getY() + 1, his.getZ() + 0.5);
-        var own = new net.minecraft.world.entity.animal.horse.Horse(net.minecraft.world.entity.EntityType.HORSE, level);
+        var own = new net.minecraft.world.entity.animal.equine.Horse(net.minecraft.world.entity.EntityType.HORSE, level);
         own.snapTo(aim.getX() + 0.5, aim.getY() + 1, aim.getZ() + 0.5, 0, 0);
         own.setPersistenceRequired();
         level.addFreshEntity(own);
@@ -272,12 +272,12 @@ public final class EventToolGameTest {
                 // timeout then did to eighteen other tests). The aim and he are 30 blocks apart, so a
                 // centre is unambiguous however far a crowd has strolled.
                 var wide = new net.minecraft.world.phys.AABB(aim).inflate(64);
-                var herdNow = level.getEntitiesOfClass(net.minecraft.world.entity.animal.horse.Horse.class, wide,
+                var herdNow = level.getEntitiesOfClass(net.minecraft.world.entity.animal.equine.Horse.class, wide,
                         h -> h.getTags().contains(EventDirector.entityTag(ids[0])));
                 helper.assertTrue(herdNow.size() == 10, Component.literal("ten horses came: " + herdNow.size()));
                 helper.assertTrue(own.isAlive() && !own.getTags().contains(EventDirector.entityTag(ids[0])),
                         Component.literal("his own horse is not one of the herd"));
-                var kittens = level.getEntitiesOfClass(net.minecraft.world.entity.animal.Cat.class, wide,
+                var kittens = level.getEntitiesOfClass(net.minecraft.world.entity.animal.feline.Cat.class, wide,
                         c -> c.getTags().contains(EventDirector.entityTag(ids[1])));
                 helper.assertTrue(kittens.size() == 6, Component.literal("six cats came: " + kittens.size()));
                 helper.assertTrue(kittens.stream().allMatch(c -> c.isBaby()), Component.literal("kittens, as asked"));
@@ -301,11 +301,11 @@ public final class EventToolGameTest {
             helper.assertTrue(removed.get() != null, Component.literal("waiting for remove_event"));
             helper.assertTrue(!removed.get().contains("ERROR"), Component.literal("remove_event took them: " + removed.get()));
             var wideNow = new net.minecraft.world.phys.AABB(aim).inflate(64);
-            int herdLeft = level.getEntitiesOfClass(net.minecraft.world.entity.animal.horse.Horse.class, wideNow,
+            int herdLeft = level.getEntitiesOfClass(net.minecraft.world.entity.animal.equine.Horse.class, wideNow,
                     h -> h.getTags().contains(EventDirector.entityTag(ids[0]))).size();
             helper.assertTrue(herdLeft == 0 && own.isAlive(), Component.literal("one undo took the herd and left his horse: "
                     + herdLeft + " of the herd left, his " + (own.isAlive() ? "alive" : "GONE")));
-            helper.assertTrue(level.getEntitiesOfClass(net.minecraft.world.entity.animal.Cat.class, wideNow,
+            helper.assertTrue(level.getEntitiesOfClass(net.minecraft.world.entity.animal.feline.Cat.class, wideNow,
                     c -> c.getTags().contains(EventDirector.entityTag(ids[1]))).isEmpty(), Component.literal("and the cats"));
             own.discard();
             MockPlayerNetwork.remove(child);

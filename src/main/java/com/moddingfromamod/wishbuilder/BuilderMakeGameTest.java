@@ -86,10 +86,10 @@ public final class BuilderMakeGameTest {
         // blocks of the next batch's child on the same ground, and BuilderFarmAnimalsGameTest counted one as his.
         java.util.Set<java.util.UUID> cowsBefore = new java.util.HashSet<>();
         net.minecraft.world.phys.AABB round = new net.minecraft.world.phys.AABB(at).inflate(128);
-        helper.getLevel().getEntitiesOfClass(net.minecraft.world.entity.animal.Cow.class, round)
+        helper.getLevel().getEntitiesOfClass(net.minecraft.world.entity.animal.cow.Cow.class, round)
                 .forEach(c -> cowsBefore.add(c.getUUID()));
         com.moddingfromamod.testing.MockPlayerNetwork.afterTest(helper, () -> helper.getLevel()
-                .getEntitiesOfClass(net.minecraft.world.entity.animal.Cow.class, round, c -> !cowsBefore.contains(c.getUUID()))
+                .getEntitiesOfClass(net.minecraft.world.entity.animal.cow.Cow.class, round, c -> !cowsBefore.contains(c.getUUID()))
                 .forEach(net.minecraft.world.entity.Entity::discard));
         var who = BuilderMake.Who.of(child);
         List<String> verdicts = java.util.Collections.synchronizedList(new ArrayList<>());

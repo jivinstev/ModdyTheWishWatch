@@ -318,7 +318,7 @@ public final class MagicBlockGameTest {
                     boolean present = !helper.getLevel().getEntitiesOfClass(ItemEntity.class, round,
                             e -> e.getItem().is(Items.DIAMOND)).isEmpty();
                     boolean surprise = !helper.getLevel().getEntitiesOfClass(
-                            net.minecraft.world.entity.animal.Chicken.class, round).isEmpty();
+                            net.minecraft.world.entity.animal.chicken.Chicken.class, round).isEmpty();
                     if (!present && !surprise) {
                         throw GameTestCompat.assertion("breaking it produced neither a present nor a surprise");
                     }
@@ -330,7 +330,7 @@ public final class MagicBlockGameTest {
                     helper.assertTrue(!anchorsLeft(helper, id, body),
                             Component.literal("a used-up block's anchor is still there, so it could go off again"));
                     helper.getLevel().getEntitiesOfClass(ItemEntity.class, round).forEach(e -> e.discard());
-                    helper.getLevel().getEntitiesOfClass(net.minecraft.world.entity.animal.Chicken.class,
+                    helper.getLevel().getEntitiesOfClass(net.minecraft.world.entity.animal.chicken.Chicken.class,
                             round).forEach(e -> e.discard());
                 })
                 .thenSucceed();
