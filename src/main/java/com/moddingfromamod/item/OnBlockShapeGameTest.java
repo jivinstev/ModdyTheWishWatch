@@ -98,13 +98,11 @@ public final class OnBlockShapeGameTest {
         p.invulnerableTime = 0;
         // The two targets protect a new player differently: 1.21.4 until his client says it has
         // LOADED (a mock never does), 1.21.1 for a spawn timer. Whichever this Minecraft has.
+        // 1.21.11 moved "his client has loaded" to the connection (ServerGamePacketListenerImpl.markClientLoaded)
         boolean done = false;
-        try {
-            java.lang.reflect.Method m = ServerPlayer.class.getMethod("setClientLoaded", boolean.class);
-            m.invoke(p, true);
+        if (p.connection != null) {
+            p.connection.markClientLoaded();
             done = true;
-        } catch (ReflectiveOperationException ignored) {
-            // not 1.21.4
         }
         try {
             java.lang.reflect.Field f = ServerPlayer.class.getDeclaredField("spawnInvulnerableTime");

@@ -348,13 +348,7 @@ public final class TriggerCorpusMatrixGameTest {
                 f.setAccessible(true);
                 f.setInt(p, p.getUseItem().getUseDuration(p) - 20);
                 p.invulnerableTime = 0;
-                try {
-                    ServerPlayer.class.getMethod("setClientLoaded", boolean.class).invoke(p, true);
-                } catch (ReflectiveOperationException ignored) {
-                    var t = ServerPlayer.class.getDeclaredField("spawnInvulnerableTime");
-                    t.setAccessible(true);
-                    t.setInt(p, 0);
-                }
+                p.connection.markClientLoaded();   // 1.21.11: the client-loaded flag is the connection's
             } catch (ReflectiveOperationException e) {
                 throw GameTestCompat.assertion("cannot step the raise: " + e);
             }
