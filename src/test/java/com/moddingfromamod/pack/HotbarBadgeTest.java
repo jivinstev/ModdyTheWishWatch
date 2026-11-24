@@ -94,7 +94,7 @@ class HotbarBadgeTest {
     static Path clientJar() {
         String override = System.getenv("MODDY_CLIENT_JAR");   // another cache, or a path that is not there (the skip)
         return Path.of(override != null && !override.isBlank() ? override
-                : "build/minecraft/client-1.21.8.jar");
+                : "build/minecraft/client-" + com.moddingfromamod.compat.Target.MINECRAFT + ".jar");
     }
 
     @Test
