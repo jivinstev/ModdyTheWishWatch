@@ -176,7 +176,7 @@ public final class BuildGrounding {
     static boolean light(String block) {
         String b = base(block);
         return b.endsWith("lantern") || b.equals("glowstone") || b.equals("shroomlight") || b.endsWith("froglight")
-                || b.equals("redstone_lamp") || b.equals("end_rod") || b.equals("chain") || b.endsWith("candle");
+                || b.equals("redstone_lamp") || b.equals("end_rod") || b.equals("iron_chain") || b.endsWith("candle");
     }
 
     /** A stem, post, trunk or column the fix may extend straight down to what is under it. */
@@ -184,7 +184,7 @@ public final class BuildGrounding {
         String b = base(block);
         return b.endsWith("_stem") || b.endsWith("_log") || b.endsWith("_wood") || b.endsWith("_hyphae")
                 || (b.endsWith("_fence") && !b.endsWith("_gate")) || b.endsWith("_wall") || b.contains("pillar")
-                || b.equals("chain") || b.endsWith("_bars") || b.equals("bamboo_block");
+                || b.equals("iron_chain") || b.endsWith("_bars") || b.equals("bamboo_block");
     }
 
     private static String base(String block) {
@@ -362,7 +362,7 @@ public final class BuildGrounding {
             if (above || beside) {
                 int last = above ? top + up - 1 : top + up;
                 for (int y = top + 1; y <= last; y++) {
-                    w.put(ComposedPlan.key(x, y, z), "minecraft:chain");
+                    w.put(ComposedPlan.key(x, y, z), "minecraft:iron_chain");
                 }
                 for (long k : f.cells()) {
                     String b = w.get(k);

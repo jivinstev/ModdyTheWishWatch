@@ -68,7 +68,8 @@ class WishFeedbackSaidTest {
     @Test
     void submitOpensTheScopeAfterTheWishExistsAndAlwaysClosesIt() throws IOException {
         String src = Files.readString(Path.of("src/main/java/com/moddingfromamod/wish/WishService.java"));
-        int made = src.indexOf("Wish wish = WishBook.get(player.getServer()).add(Wish.create(");
+        // 1.21.9 removed Entity.getServer(); WishService reaches the server through serverOf(player).
+        int made = src.indexOf("Wish wish = WishBook.get(serverOf(player)).add(Wish.create(");
         int scoped = src.indexOf("WishFeedback.about(wish.shortId());");
         org.junit.jupiter.api.Assertions.assertTrue(made > 0 && scoped > made, "about() after the wish is minted");
         org.junit.jupiter.api.Assertions.assertTrue(src.contains("} finally {\n            WishFeedback.aboutNone();"),

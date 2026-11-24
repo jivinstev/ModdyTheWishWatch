@@ -121,7 +121,7 @@ class BuildGroundingTest {
         BuildGrounding.Fixed fx = BuildGrounding.compute(p);
         assertTrue(fx.after().clean(), fx.toString());
         var w = standing(p, fx);
-        assertEquals("minecraft:chain", w.get(ComposedPlan.key(3, 3, 3)));
+        assertEquals("minecraft:iron_chain", w.get(ComposedPlan.key(3, 3, 3)));
         assertEquals("minecraft:lantern[hanging=true]", w.get(ComposedPlan.key(3, 2, 3)));
         assertEquals(2, fx.cells().size(), "the chain and the lantern turned to hang: " + fx.cells());
         assertTrue(fx.actions().get(0).startsWith("hung the lantern"), fx.actions().toString());

@@ -41,7 +41,7 @@ public final class BuildConnect {
             return self.endsWith("_fence");
         }
         if (o.endsWith("_slab") || o.endsWith("_stairs") || o.endsWith("_door") || o.endsWith("_trapdoor") || o.endsWith("_carpet")
-                || o.endsWith("_leaves") || o.equals("ladder") || o.equals("chain") || o.endsWith("lantern") || o.endsWith("torch")
+                || o.endsWith("_leaves") || o.equals("ladder") || o.equals("iron_chain") || o.endsWith("lantern") || o.endsWith("torch")
                 || o.endsWith("_bed") || o.endsWith("_sign") || o.endsWith("_banner") || o.equals("water") || o.equals("lava")
                 || o.endsWith("_wall")) {
             return false;

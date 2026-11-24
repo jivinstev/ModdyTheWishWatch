@@ -279,7 +279,7 @@
    "width": 7
   },
   {
-   "block": "minecraft:chain",
+   "block": "minecraft:iron_chain",
    "depth": 1,
    "dx": 10,
    "dy": 2,
@@ -315,7 +315,7 @@
    "width": 1
   },
   {
-   "block": "minecraft:chain",
+   "block": "minecraft:iron_chain",
    "depth": 1,
    "dx": 12,
    "dy": 2,

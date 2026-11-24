@@ -1,3 +1,6 @@
 # 1.21.10: from<TAB>to (plain type, member:, re:) -- see prepare-sources.py
 p.getGameProfile().getName()	p.getGameProfile().name()
 p.getServer()	p.level().getServer()
+# 1.21.9 renamed the block and item minecraft:chain to minecraft:iron_chain (DataFixers: "Rename chain to iron_chain", schema 4541); applied to the shipped presets as well
+re:"minecraft:chain"	"minecraft:iron_chain"
+re:equals\("chain"\)	equals("iron_chain")
