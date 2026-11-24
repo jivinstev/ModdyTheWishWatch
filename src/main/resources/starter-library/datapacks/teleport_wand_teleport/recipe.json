@@ -1,0 +1,25 @@
+{
+  "recipe": "starter-pack",
+  "v": 1,
+  "id": "teleport_wand_teleport",
+  "calls": [
+    {
+      "tool": "make_item",
+      "args": {
+        "name": "Teleport Wand",
+        "shape": "held",
+        "count": 1,
+        "effect": "teleport",
+        "params": {
+          "SAFE": "yes"
+        },
+        "icon": "wand",
+        "colour": "purple",
+        "from_scratch": true
+      }
+    }
+  ],
+  "compiler": "521e75eacb968528454fefd8e6914602c0fc9187",
+  "date": "2026-11-24",
+  "note": "Backfilled on 2026-11-24 from items/teleport_wand_teleport/item.json and icon.json, the design this pack was made from; the compiler and date are the ones this recipe was checked against, not the original grant's, which were not kept."
+}
