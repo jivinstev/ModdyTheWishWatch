@@ -125,10 +125,14 @@ class MixinTableTest {
     void theTestConfigIsNotShipped() throws IOException {
         String toml = Files.readString(RESOURCES.resolve("META-INF/neoforge.mods.toml"));
         assertTrue(!toml.contains("gametest.mixins"), "neoforge.mods.toml must not register the GameTest-only mixins; "
-                + "build.gradle's dev runs pass --fml.mixinConfig instead");
+                + "build.gradle appends them to the dev runs' processed copy instead");
         String gradle = Files.readString(Path.of("build.gradle"));
-        assertTrue(gradle.contains("'--fml.mixinConfig', \"gametest/${project.mod_id}.gametest.mixins.json\""),
-                "build.gradle's runs must register the GameTest-only mixins, or Gate B runs without them");
+        // FML 10 (NeoForge 21.9+) has no --fml.mixinConfig: a config applies only when a mod file's toml declares it,
+        // so processResources declares it in the dev copy and the jar blanks those lines (and its check refuses them).
+        assertTrue(gradle.contains("config=\\\"gametest/${mod_id}.gametest.mixins.json\\\" ${DEV_MIXINS_MARK}"),
+                "build.gradle's processResources must declare the GameTest-only mixins for the dev runs, or Gate B runs without them");
+        assertTrue(gradle.contains("filter { String line -> line.endsWith(DEV_MIXINS_MARK) ? '' : line }"),
+                "the jar must strip the dev runs' declaration of the GameTest-only mixins");
         assertTrue(gradle.contains("'**/*.gametest.mixins.json'"), "the jar must leave the GameTest-only config out (SHIP_EXCLUDES)");
     }
 }

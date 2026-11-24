@@ -137,12 +137,13 @@ runs {
                 .dir(project.hasProperty('rundir') ? project.property('rundir').toString() : name)
         modSources.add(project.mod_id.toString(), project.sourceSets.main)
         // the GameTest harness's own mixins (testing/mixin: one test's crash fails that test, a timeout is also
-        // wall-clock) are a TEST-ONLY config, registered on every dev run by FML's --fml.mixinConfig and never in
-        // neoforge.mods.toml. The jar leaves the config and the classes out (SHIP_EXCLUDES, checked by NEVER_SHIP),
-        // so a player's game and a store jar never carry them; Gate B (runGameTestServer) always does.
-        // It sits in gametest/, below the resources root: a mixin-config check that reads top-level configs and counts
-        // only neoforge.mods.toml declarations (the Port CI kit's) would take this dev-run config for one that never loads.
-        arguments.addAll '--fml.mixinConfig', "gametest/${project.mod_id}.gametest.mixins.json".toString()
+        // wall-clock) are a TEST-ONLY config. FML 10 (NeoForge 21.9+) has no --fml.mixinConfig: it applies only the
+        // configs a mod file's neoforge.mods.toml declares. So processResources appends the declaration to the dev
+        // copy every run reads (DEV_MIXINS_MARK, below), and the jar strips it again; the jar also leaves the config and
+        // the classes out (SHIP_EXCLUDES, checked by NEVER_SHIP), so a player's game and a store jar never carry them;
+        // Gate B (runGameTestServer) always does. The config sits in gametest/, below the resources root, and the source
+        // neoforge.mods.toml never names it: a check that reads that file as written (the Port CI kit's) counts only
+        // the configs a jar declares.
     }
 
     client {
@@ -786,6 +787,10 @@ tasks.named('jarJar') {
         def leaked = []
         new java.util.zip.ZipFile(jarFile).withCloseable { z ->
             z.entries().each { e -> if (!e.directory && e.name ==~ NEVER_SHIP) leaked << e.name }
+            def toml = z.getEntry('META-INF/neoforge.mods.toml')
+            if (toml != null && z.getInputStream(toml).getText('UTF-8').contains('.gametest.mixins.json')) {
+                leaked << 'META-INF/neoforge.mods.toml (it declares the GameTest mixin config)'
+            }
         }
         // and no nested library carries native debug data (StripNativeDebugInfo took it out before nesting)
         new java.util.zip.ZipFile(jarFile).withCloseable { z ->
@@ -871,6 +876,24 @@ ext.modsTomlProperties = { boolean ignored = false ->
         def replaceProperties = modsTomlProperties()
         inputs.properties replaceProperties
         filesMatching(['META-INF/neoforge.mods.toml']) { expand replaceProperties }
+    }
+}
+// The dev runs' declaration of the GameTest harness's mixin config (see the runs block): appended to the processed
+// neoforge.mods.toml that every dev run reads, each line marked, and blanked again by the jar (below), whose finished
+// toml the jar check refuses if it still names the config.
+def DEV_MIXINS_MARK = '# dev runs only: the jar strips this line'
+tasks.named('processResources') {
+    inputs.property 'devMixins', DEV_MIXINS_MARK
+    doLast {
+        def toml = new File(destinationDir, 'META-INF/neoforge.mods.toml')
+        if (toml.isFile()) {
+            toml << "\n[[mixins]] ${DEV_MIXINS_MARK}\nconfig=\"gametest/${mod_id}.gametest.mixins.json\" ${DEV_MIXINS_MARK}\n"
+        }
+    }
+}
+tasks.named('jar') {
+    filesMatching('META-INF/neoforge.mods.toml') {
+        filter { String line -> line.endsWith(DEV_MIXINS_MARK) ? '' : line }
     }
 }
 

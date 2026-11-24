@@ -9,7 +9,7 @@ row here, a row naming a mixin no config lists, and a row whose config column is
 | config | registered by | applied in |
 |---|---|---|
 | `moddingfromamod.mixins.json` | `neoforge.mods.toml` (`[[mixins]]`) | every game the mod is installed in: a single-player world's integrated server, and its client |
-| `moddingfromamod.gametest.mixins.json` | FML's `--fml.mixinConfig` on the dev runs (`build.gradle`, `runs.configureEach`); never `neoforge.mods.toml` | development runs only: Gate B's `runGameTestServer`, `runClient`, `runServer`. The jar leaves the config and its classes (`com/moddingfromamod/testing/`) out, and its build fails if either is there (`NEVER_SHIP`) |
+| `moddingfromamod.gametest.mixins.json` | declared in the dev runs' processed `neoforge.mods.toml` (`build.gradle`'s `processResources` appends it; FML 10 has no `--fml.mixinConfig`) and stripped from the jar's; never in the source `neoforge.mods.toml` | development runs only: Gate B's `runGameTestServer`, `runClient`, `runServer`. The jar leaves the config and its classes (`com/moddingfromamod/testing/`) out, and its build fails if either is there (`NEVER_SHIP`) |
 
 A build may register further configs of its own beside these; the public jar has exactly the first one.
 
