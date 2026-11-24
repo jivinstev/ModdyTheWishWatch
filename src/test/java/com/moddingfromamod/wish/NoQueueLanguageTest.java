@@ -72,6 +72,8 @@ class NoQueueLanguageTest {
             "src/main/java/com/moddingfromamod/bag/WishBagItem.java",
             "src/main/java/com/moddingfromamod/item/delivery/WishDelivery.java",
             "src/main/java/com/moddingfromamod/item/delivery/DeliveryWords.java",
+            // A world's rules, said to him: a refusal, a split, a clamp, and a make with no agent a rule refused.
+            "src/main/java/com/moddingfromamod/world/WorldRulesWords.java",
             // THE AGENT'S OWN VOICES. Each of these puts words in his chat — the plan, the
             // conjure message, the one celebration, the verdict, a narration line — and none was
             // swept, so the list above covered the watch's sentences and missed the agent's.

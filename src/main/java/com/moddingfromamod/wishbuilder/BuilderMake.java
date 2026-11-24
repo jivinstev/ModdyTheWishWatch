@@ -278,7 +278,7 @@ public final class BuilderMake {
                         + calls.stream().map(BuilderLowering.Call::tool).toList(),
                 wishId -> { },
                 ok -> ok ? "✪ Your " + name + " is changed! The rest is just as the Magician made it."
-                        : "The Builder couldn't change your " + name + " this time.",
+                        : "The Builder couldn't change your " + name + " this time.", "The change to your " + name,
                 (wishId, ok, free) -> { });
     }
 
@@ -325,7 +325,7 @@ public final class BuilderMake {
                         + calls.stream().map(BuilderLowering.Call::tool).toList(),
                 wishId -> { },
                 ok -> ok ? "✪ Your " + name + " is changed! The rest is just as the Magician made it."
-                        : "The Builder couldn't change your " + name + " this time.",
+                        : "The Builder couldn't change your " + name + " this time.", "The change to your " + name,
                 (wishId, ok, free) -> { });
     }
 
@@ -343,7 +343,7 @@ public final class BuilderMake {
                         + calls.stream().map(BuilderLowering.Call::tool).toList(),
                 wishId -> { },
                 ok -> ok ? "✪ Your " + name + " is changed! The rest is just as the Magician made it."
-                        : "The Builder couldn't change your " + name + " this time.",
+                        : "The Builder couldn't change your " + name + " this time.", "The change to your " + name,
                 (wishId, ok, free) -> { });
     }
 
@@ -426,7 +426,7 @@ public final class BuilderMake {
         final String madeId = newId;
         return execute(server, person, calls, protocol, charge, card, textOf(spec), newId, editOf, apprentice,
                 spec.toJson().toString(), wishId -> remember(who, wishId, spec),
-                ok -> ok ? BuilderWords.ready(spec) : BuilderWords.failed(spec),
+                ok -> ok ? BuilderWords.ready(spec) : BuilderWords.failed(spec), BuilderWords.subject(spec),
                 (wishId, ok, free) -> {
                     if (ok) {
                         keep(who, madeId, BuilderLowering.refOf(calls, madeId), spec, wishId);
@@ -450,7 +450,8 @@ public final class BuilderMake {
                                                      McpProtocol protocol, boolean charge, boolean card, String text,
                                                      String newId, String editOf, boolean apprentice, String logged,
                                                      java.util.function.Consumer<UUID> remembered,
-                                                     java.util.function.Function<Boolean, String> says, Settle after) {
+                                                     java.util.function.Function<Boolean, String> says, String subject,
+                                                     Settle after) {
         UUID who = person.id();
         final List<BuilderLowering.Call> toRun = card ? calls
                 : calls.stream().filter(c -> !"finish_building".equals(c.tool())).toList();
@@ -573,6 +574,9 @@ public final class BuilderMake {
             }
             final boolean ok = !failed;
             final String refusal = firstRefusal;
+            // WHICH RULE REFUSED IT, as data (McpProtocol's reach rule records it on the run): with no agent to explain
+            // the refusal, he is told that rule and its why in place of "didn't work this time".
+            final com.moddingfromamod.world.WorldRefusal byRule = ok ? null : run.worldRefusal();
             server.execute(() -> {
                 try {
                     String say = says.apply(ok);   //
@@ -588,6 +592,10 @@ public final class BuilderMake {
                     if (p != null) {
                         if (ok) {
                             WishFeedback.granted(p, say);
+                        } else if (byRule != null) {
+                            WishFeedback.refusedByWorld(p,
+                                    com.moddingfromamod.world.WorldRulesWords.madeRefused(subject, byRule), say,
+                                    wish.shortId());
                         } else {
                             WishFeedback.partial(p, say);
                         }
