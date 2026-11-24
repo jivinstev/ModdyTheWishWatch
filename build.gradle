@@ -140,9 +140,9 @@ neoForge {
 
 neoForge.runs {
     configureEach {
-        // ONNX Runtime is a plain library, not a mod: it must be put on each RUN's classpath by name. Under MDG that is
-        // the `additionalRuntimeClasspath` configuration (in `dependencies` below), which every run's legacy classpath
-        // extends. `implementation` alone compiles and then fails at run time with NoClassDefFoundError; so does jarJar alone.
+        // ONNX Runtime is a plain library, not a mod. From Minecraft 1.21.9 (FML 10) a dev run's JVM classpath is the
+        // source set's runtime classpath (no legacyClassPath, and MDG refuses `additionalRuntimeClasspath`), so the
+        // `implementation` declaration in `dependencies` below puts it on every run; jarJar alone would not.
         systemProperty 'forge.logging.markers', 'REGISTRIES'
         systemProperty 'forge.logging.console.level', 'debug'
         // MDG writes the run's log4j2 config itself, with this as the root level (INFO by default); DEBUG keeps the console
@@ -564,8 +564,8 @@ abstract class StripNativeDebugInfo implements TransformAction<org.gradle.api.ar
 }
 
 dependencies {
-    // ONNX Runtime on every dev run's classpath (the `runs` comment above; NeoGradle's per-run `runtime`).
-    additionalRuntimeClasspath "com.microsoft.onnxruntime:onnxruntime:1.32.0"
+    // ONNX Runtime on every dev run's classpath: from Minecraft 1.21.9 (FML 10) MDG runs on the plain runtime classpath and
+    // has no `additionalRuntimeClasspath` (it refuses one), so the `implementation` declaration below is what puts it there.
 
     // GeckoLib (optional — flip uses_geckolib=true in gradle.properties).
     // Compiled against AND bundled via JarJar, so the shipped jar runs without the
@@ -605,8 +605,8 @@ dependencies {
     }
 
     // The Apprentice's trained layer: ONNX Runtime's Java package runs the frozen sentence model on the
-    // server. A JNI library, MIT; its natives are inside its jar (resources apprentice/onnxruntime.NOTICE.txt). Three declarations are
-    // needed and each one alone fails differently: this one compiles, `additionalRuntimeClasspath` above puts it on a dev
+    // server. A JNI library, MIT; its natives are inside its jar (resources apprentice/onnxruntime.NOTICE.txt). Two declarations are
+    // needed and each one alone fails differently: this one compiles and (FML 10) puts it on a dev
     // run's classpath, and jarJar ships it inside our jar (it needs a version RANGE or the metadata task refuses it).
     implementation "com.microsoft.onnxruntime:onnxruntime:1.32.0"
     jarJar("com.microsoft.onnxruntime:onnxruntime") {
