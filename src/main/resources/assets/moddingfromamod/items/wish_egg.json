@@ -1,6 +1,16 @@
 {
   "model": {
     "type": "minecraft:model",
-    "model": "moddingfromamod:item/wish_egg"
+    "model": "moddingfromamod:item/wish_egg",
+    "tints": [
+      {
+        "type": "minecraft:constant",
+        "value": -8766248
+      },
+      {
+        "type": "minecraft:constant",
+        "value": -2054104
+      }
+    ]
   }
 }

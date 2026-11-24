@@ -36,8 +36,11 @@ import com.moddingfromamod.testing.gt.GameTestHolder;
  * deliberately refuses to be called from the server thread (it would deadlock) — and a
  * {@code @GameTest} body runs on exactly that thread.
  *
- * <p>The mobs are spawned at <b>world spawn</b>, not inside the test box, because {@code modify_mob}
- * works relative to the child — and with nobody online that means world spawn.
+ * <p>{@code modify_mob} works relative to the child, so a test that stands a mob up first stands a
+ * child in its own plot ({@code PlotChild.standHere}) and the mob beside him, inside the plot. It used
+ * to be world spawn, where the child is with nobody online, and nothing keeps world spawn loaded from
+ * 1.21.9: the mob was unloaded under the test. The stand-in is one shared slot, so each of those tests
+ * names a batch of its own.
  */
 @GameTestHolder(ModdingFromAModMod.MODID)
 public class ModifyMobGameTest {
@@ -85,9 +88,9 @@ public class ModifyMobGameTest {
     }
 
     /** "Make it bigger!" on a real mob: the SCALE attribute lands, and the hitbox grows with it. */
-    @GameTest(template = "empty_test", timeoutTicks = 300)
+    @GameTest(template = "empty_test", timeoutTicks = 300, batch = "modifymob_sheep")
     public static void modifyMobResizesARealMob(GameTestHelper helper) {
-        LivingEntity sheep = spawnAtWorldSpawn(helper, EntityType.SHEEP);
+        LivingEntity sheep = besideTheChild(helper, EntityType.SHEEP);
         float widthBefore = sheep.getBbWidth();
 
         AtomicReference<ToolResult> reply = new AtomicReference<>();
@@ -114,9 +117,9 @@ public class ModifyMobGameTest {
      * repainted, so colour is delivered as a glow outline — which means the entity must end up
      * both glowing AND on a team carrying the right colour. Miss either half and it stays white.
      */
-    @GameTest(template = "empty_test", timeoutTicks = 300)
+    @GameTest(template = "empty_test", timeoutTicks = 300, batch = "modifymob_cow")
     public static void modifyMobGlowsInAColour(GameTestHelper helper) {
-        LivingEntity cow = spawnAtWorldSpawn(helper, EntityType.COW);
+        LivingEntity cow = besideTheChild(helper, EntityType.COW);
 
         AtomicReference<ToolResult> reply = new AtomicReference<>();
         offThread(() -> reply.set(new ModifyMobTool().call(
@@ -149,15 +152,15 @@ public class ModifyMobGameTest {
      * is testing: sharing one would recreate the bug between these two tests.
      *
      * <p><b>Verified to fail</b> with {@code StaleHandles.forgetEvery} removed from
-     * {@code spawnAtWorldSpawn} — it reports the GONE message, which is the original failure.
+     * {@code besideTheChild} — it reports the GONE message, which is the original failure.
      */
-    @GameTest(template = "empty_test", timeoutTicks = 300)
+    @GameTest(template = "empty_test", timeoutTicks = 300, batch = "modifymob_pig")
     public static void aDeadHandleFromAnotherTestDoesNotHijackThisOne(GameTestHelper helper) {
         // A pig that no longer exists, already TARGETED: precisely what a finished test leaves in
         // the shared registry. No entity with this id has ever been in the world.
         EntityHandles.global().targeted(UUID.randomUUID(), "minecraft:pig", null);
 
-        LivingEntity pig = spawnAtWorldSpawn(helper, EntityType.PIG);
+        LivingEntity pig = besideTheChild(helper, EntityType.PIG);
 
         AtomicReference<ToolResult> reply = new AtomicReference<>();
         offThread(() -> reply.set(new ModifyMobTool().call(
@@ -179,9 +182,9 @@ public class ModifyMobGameTest {
      * A miss must explain itself. Returning a bare "not found" sends the agent round a retry loop
      * with the same wrong word, which the child experiences as nothing happening.
      */
-    @GameTest(template = "empty_test", timeoutTicks = 300)
+    @GameTest(template = "empty_test", timeoutTicks = 300, batch = "modifymob_chicken")
     public static void anUnmatchedTargetExplainsWhatIsNearby(GameTestHelper helper) {
-        spawnAtWorldSpawn(helper, EntityType.CHICKEN);
+        besideTheChild(helper, EntityType.CHICKEN);
 
         AtomicReference<ToolResult> reply = new AtomicReference<>();
         offThread(() -> reply.set(new ModifyMobTool().call(
@@ -211,14 +214,15 @@ public class ModifyMobGameTest {
 
     // ===================== helpers =====================
 
-    private static LivingEntity spawnAtWorldSpawn(GameTestHelper helper, EntityType<?> type) {
-        com.moddingfromamod.testing.MockPlayerNetwork.requireNobodyIsOnline(helper);
+    /** Stand the child in this test's plot and a mob of {@code type} three blocks in front of him. */
+    private static LivingEntity besideTheChild(GameTestHelper helper, EntityType<?> type) {
+        Vec3 child = com.moddingfromamod.testing.PlotChild.standHere(helper);
         ServerLevel overworld = helper.getLevel().getServer().overworld();
-        Vec3 at = Vec3.atBottomCenterOf(overworld.getSharedSpawnPos());
-        // Arrive clean, the same discipline MobIdentityGameTest keeps: world spawn is
-        // outside every test plot and is therefore never reset, so a failed earlier test leaves its
-        // animal standing here — and, worse, leaves a TARGETED handle for this species that
-        // modify_mob will resolve in preference to the one we are about to spawn.
+        Vec3 at = child.add(3, 0, 0);
+        // Arrive clean, the same discipline MobIdentityGameTest keeps: a GameTest world is reused
+        // between runs and between batches, so a failed earlier test can leave its animal standing
+        // near here — and, worse, leaves a TARGETED handle for this species that modify_mob will
+        // resolve in preference to the one we are about to spawn.
         for (LivingEntity stale : overworld.getEntitiesOfClass(LivingEntity.class,
                 new AABB(at, at).inflate(64), e -> e.getType() == type)) {
             stale.discard();

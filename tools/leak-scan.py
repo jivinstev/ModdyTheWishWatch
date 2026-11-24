@@ -7,7 +7,7 @@
                                                      # else ~/.moddy/forbidden.txt, else built-in rules only)
     python3 tools/leak-scan.py --show                # print what matched (default: masked)
     python3 tools/leak-scan.py PATH...               # scan just these files
-    python3 tools/leak-scan.py --dir DIR             # every file under DIR (a materialised public tree, the mirror)
+    python3 tools/leak-scan.py --dir DIR             # every file under DIR (e.g. a tree a release is built from)
     python3 tools/leak-scan.py --commits REV...      # what these commits ADD: added lines, file names, messages and
                                                      # author/committer (git rev-list REV..., e.g. TIP --not --remotes);
                                                      # the public clone's pre-push hook (tools/public-hooks/)

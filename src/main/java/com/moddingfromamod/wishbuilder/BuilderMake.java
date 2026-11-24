@@ -166,6 +166,25 @@ public final class BuilderMake {
         }
     }
 
+    /**
+     * What the world's charge is told about a Builder make: {@code BUILDER}, or {@code APPRENTICE} for one an Apprentice
+     * tile pressed; its {@code Builder: …} words; and, for an edit, the recipe id of the kept make it changes.
+     */
+    static com.moddingfromamod.wish.WishAsk askOf(UUID who, String text, String editOf, boolean apprentice) {
+        return com.moddingfromamod.wish.WishAsk.of(who, WishSource.BUILDER, apprentice
+                        ? com.moddingfromamod.wish.WishAsk.Magic.APPRENTICE : com.moddingfromamod.wish.WishAsk.Magic.BUILDER)
+                .withText(text).withRecipe(editOf == null ? "" : BuilderAgain.recipeId(editOf));
+    }
+
+    /** A Builder change on a thing the Magician made, asked of the world's charge: the refusal to return, or null. */
+    private static CompletableFuture<Result> refusedChange(ServerPlayer player, String text) {
+        var refusal = com.moddingfromamod.wish.ChargeGate.ask(
+                com.moddingfromamod.wish.WishAsk.of(player.getUUID(), WishSource.BUILDER,
+                        com.moddingfromamod.wish.WishAsk.Magic.BUILDER).withText(text),
+                com.moddingfromamod.wish.ChargeRefusal.Where.MAKE);
+        return refusal.refused() ? done(Outcome.BANK_EMPTY, null, "", refusal.line()) : null;
+    }
+
     /** Make {@code spec} for {@code player}, charged half a wish. Call on the server thread. */
     public static CompletableFuture<Result> make(ServerPlayer player, BuilderSpec spec, BuilderAllowlist allow) {
         return make(player, spec, allow, null);
@@ -188,8 +207,12 @@ public final class BuilderMake {
                                                  String editOf, boolean apprentice) {
         String text = textOf(spec);
         boolean free = editOf != null && FreeEdit.isFree(player.getUUID(), editOf);
-        if (!free && com.moddingfromamod.wish.WishCharge.get().refusesAtSubmit(player, false, text, true)) {
-            return done(Outcome.BANK_EMPTY, null, "", "the wish bank is empty");
+        if (!free) {
+            var refusal = com.moddingfromamod.wish.ChargeGate.ask(askOf(player.getUUID(), text, editOf, apprentice),
+                    com.moddingfromamod.wish.ChargeRefusal.Where.MAKE);
+            if (refusal.refused()) {
+                return done(Outcome.BANK_EMPTY, null, "", refusal.line());
+            }
         }
         return runCapped(player.getServer(), Who.of(player), allow == null ? spec : allow.capped(spec), allow, protocol(),
                 true, takeCard, editOf, apprentice);
@@ -259,8 +282,9 @@ public final class BuilderMake {
         if (calls.isEmpty()) {
             return done(Outcome.REFUSED, null, "", "nothing was changed");
         }
-        if (com.moddingfromamod.wish.WishCharge.get().refusesAtSubmit(player, false, magicianText(thing), true)) {
-            return done(Outcome.BANK_EMPTY, null, "", "the wish bank is empty");
+        var refusal = refusedChange(player, magicianText(thing));
+        if (refusal != null) {
+            return refusal;
         }
         return magicianRun(player.getServer(), Who.of(player), thing, calls, protocol(), true, takeCard);
     }
@@ -273,12 +297,12 @@ public final class BuilderMake {
             return done(Outcome.REFUSED, null, "", "nothing was changed");
         }
         String name = thing.name().isEmpty() ? "creature" : thing.name();
-        return execute(server, person, calls, protocol, charge, card, magicianText(thing), thing.id(), thing.id(), false,
+        return execute(server, person, calls, protocol, charge, card, magicianText(thing), thing.id(), thing.id(), false, "",
                 "a Builder change on the Magician's '" + thing.id() + "': "
                         + calls.stream().map(BuilderLowering.Call::tool).toList(),
                 wishId -> { },
                 ok -> ok ? "✪ Your " + name + " is changed! The rest is just as the Magician made it."
-                        : "The Builder couldn't change your " + name + " this time.",
+                        : "The Builder couldn't change your " + name + " this time.", "The change to your " + name,
                 (wishId, ok, free) -> { });
     }
 
@@ -292,8 +316,9 @@ public final class BuilderMake {
             return done(Outcome.REFUSED, null, "", "nothing was changed");
         }
         String text = "Builder: change " + (thing.name().isEmpty() ? thing.id() : thing.name()) + " (building, the Magician's)";
-        if (com.moddingfromamod.wish.WishCharge.get().refusesAtSubmit(player, false, text, true)) {
-            return done(Outcome.BANK_EMPTY, null, "", "the wish bank is empty");
+        var refusal = refusedChange(player, text);
+        if (refusal != null) {
+            return refusal;
         }
         return magicianBuildingRun(player.getServer(), Who.of(player), thing, calls, protocol(), true, takeCard);
     }
@@ -305,8 +330,9 @@ public final class BuilderMake {
             return done(Outcome.REFUSED, null, "", "nothing was changed");
         }
         String text = "Builder: change " + (thing.name().isEmpty() ? thing.id() : thing.name()) + " (item, the Magician's)";
-        if (com.moddingfromamod.wish.WishCharge.get().refusesAtSubmit(player, false, text, true)) {
-            return done(Outcome.BANK_EMPTY, null, "", "the wish bank is empty");
+        var refusal = refusedChange(player, text);
+        if (refusal != null) {
+            return refusal;
         }
         return magicianItemRun(player.getServer(), Who.of(player), thing, calls, protocol(), true, takeCard);
     }
@@ -320,12 +346,12 @@ public final class BuilderMake {
         }
         String name = thing.name().isEmpty() ? "item" : thing.name();
         return execute(server, person, calls, protocol, charge, card,
-                "Builder: change " + name + " (item, the Magician's)", thing.id(), thing.id(), false,
+                "Builder: change " + name + " (item, the Magician's)", thing.id(), thing.id(), false, "",
                 "a Builder change on the Magician's '" + thing.id() + "': "
                         + calls.stream().map(BuilderLowering.Call::tool).toList(),
                 wishId -> { },
                 ok -> ok ? "✪ Your " + name + " is changed! The rest is just as the Magician made it."
-                        : "The Builder couldn't change your " + name + " this time.",
+                        : "The Builder couldn't change your " + name + " this time.", "The change to your " + name,
                 (wishId, ok, free) -> { });
     }
 
@@ -338,12 +364,12 @@ public final class BuilderMake {
         }
         String name = thing.name().isEmpty() ? "building" : thing.name();
         return execute(server, person, calls, protocol, charge, card,
-                "Builder: change " + name + " (building, the Magician's)", thing.id(), thing.id(), false,
+                "Builder: change " + name + " (building, the Magician's)", thing.id(), thing.id(), false, "",
                 "a Builder change on the Magician's '" + thing.id() + "': "
                         + calls.stream().map(BuilderLowering.Call::tool).toList(),
                 wishId -> { },
                 ok -> ok ? "✪ Your " + name + " is changed! The rest is just as the Magician made it."
-                        : "The Builder couldn't change your " + name + " this time.",
+                        : "The Builder couldn't change your " + name + " this time.", "The change to your " + name,
                 (wishId, ok, free) -> { });
     }
 
@@ -425,8 +451,8 @@ public final class BuilderMake {
         }
         final String madeId = newId;
         return execute(server, person, calls, protocol, charge, card, textOf(spec), newId, editOf, apprentice,
-                spec.toJson().toString(), wishId -> remember(who, wishId, spec),
-                ok -> ok ? BuilderWords.ready(spec) : BuilderWords.failed(spec),
+                editOf == null ? "" : BuilderAgain.recipeId(editOf), spec.toJson().toString(), wishId -> remember(who, wishId, spec),
+                ok -> ok ? BuilderWords.ready(spec) : BuilderWords.failed(spec), BuilderWords.subject(spec),
                 (wishId, ok, free) -> {
                     if (ok) {
                         keep(who, madeId, BuilderLowering.refOf(calls, madeId), spec, wishId);
@@ -448,9 +474,11 @@ public final class BuilderMake {
      */
     private static CompletableFuture<Result> execute(MinecraftServer server, Who person, List<BuilderLowering.Call> calls,
                                                      McpProtocol protocol, boolean charge, boolean card, String text,
-                                                     String newId, String editOf, boolean apprentice, String logged,
+                                                     String newId, String editOf, boolean apprentice, String recipe,
+                                                     String logged,
                                                      java.util.function.Consumer<UUID> remembered,
-                                                     java.util.function.Function<Boolean, String> says, Settle after) {
+                                                     java.util.function.Function<Boolean, String> says, String subject,
+                                                     Settle after) {
         UUID who = person.id();
         final List<BuilderLowering.Call> toRun = card ? calls
                 : calls.stream().filter(c -> !"finish_building".equals(c.tool())).toList();
@@ -474,12 +502,15 @@ public final class BuilderMake {
             LOGGER.info("builder make {} for {}: the free change of {} (the last Apprentice make)", wish.shortId(), person.name(), editOf);
         }
         if (charge && !free) {
-            var paid = com.moddingfromamod.wish.WishCharge.get().charge(who, wish.id(), false);
+            var ask = com.moddingfromamod.wish.WishAsk.of(who, WishSource.BUILDER, apprentice
+                            ? com.moddingfromamod.wish.WishAsk.Magic.APPRENTICE : com.moddingfromamod.wish.WishAsk.Magic.BUILDER)
+                    .withText(text).withRecipe(recipe);
+            var paid = com.moddingfromamod.wish.WishCharge.get().charge(ask, wish.id());
             if (paid.refused()) {
                 book.complete(wish.id(), WishStatus.REJECTED, "the wish bank emptied before this make could be paid for");
                 FreeEdit.failed(who, wish.id());
                 MAKING.remove(who);
-                return done(Outcome.BANK_EMPTY, wish.id(), "", "the wish bank is empty");
+                return done(Outcome.BANK_EMPTY, wish.id(), "", com.moddingfromamod.wish.ChargeRefusal.BANK_EMPTY);
             }
         }
         // The spec rides on the wish's own log line, so a make can be reopened and replayed.
@@ -573,6 +604,9 @@ public final class BuilderMake {
             }
             final boolean ok = !failed;
             final String refusal = firstRefusal;
+            // WHICH RULE REFUSED IT, as data (McpProtocol's reach rule records it on the run): with no agent to explain
+            // the refusal, he is told that rule and its why in place of "didn't work this time".
+            final com.moddingfromamod.world.WorldRefusal byRule = ok ? null : run.worldRefusal();
             server.execute(() -> {
                 try {
                     String say = says.apply(ok);   //
@@ -588,6 +622,10 @@ public final class BuilderMake {
                     if (p != null) {
                         if (ok) {
                             WishFeedback.granted(p, say);
+                        } else if (byRule != null) {
+                            WishFeedback.refusedByWorld(p,
+                                    com.moddingfromamod.world.WorldRulesWords.madeRefused(subject, byRule), say,
+                                    wish.shortId());
                         } else {
                             WishFeedback.partial(p, say);
                         }

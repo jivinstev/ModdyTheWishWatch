@@ -4,20 +4,16 @@
 #   ./tools/store-release.sh 1.0.0+mc1.21.8 [OUTDIR]
 #   ./tools/store-release.sh --check-mixins JAR     # only the mixin checks, on a jar already built
 #
-# Where it builds:
-#   * in a checkout of the public repo (neoforge-1.21.8, no docs/public-repo/split.json): that checkout, which must be
-#     clean -- a store jar is a commit, never a working directory;
-#   * in the maintainers' repo: the public tree tools/public-tree.py renders (exactly what the mirror publishes), in
-#     $MODDY_STORE_TREE (default ~/.cache/moddy/store-tree). Never this repo's own `./gradlew build`, which ships the
-#     private plug-ins.
+# Where it builds: this checkout (the release line, neoforge-1.21.8), which must be clean -- a store jar is a commit,
+# never a working directory.
 #
 # What goes in, beyond the public build: the Apprentice's sentence model (D13: model.onnx + vocab.txt, ~90 MB,
 # sha-pinned by tools/fetch-apprentice-model.sh, which fills $MODDY_APPRENTICE_MODEL_CACHE once) at apprentice/model/,
 # and the licence files at META-INF/. ONNX Runtime and its natives are jarJar'd by every build.
 #
 # What it checks on the FINISHED jar (and refuses the jar on any miss):
-#   the leak scan over the tree (with the private forbidden list when this repo has it); the jar's own NEVER_SHIP and
-#   dangling-reference checks (the jarJar task); no plug-in listed in META-INF/services; the mixin checks (no private
+#   the leak scan over the tree; the jar's own NEVER_SHIP and
+#   dangling-reference checks (the jar task); no plug-in listed in META-INF/services; the mixin checks (no private
 #   mixin config, class or name in neoforge.mods.toml, no GameTest-only config or harness, no unlisted mixin class); the
 #   licence files and the model's licence present; the model present with its pinned hashes; ONNX Runtime nested with
 #   each of its four native sets (linux-x64, linux-aarch64, osx-aarch64, win-x64) and no *.dSYM/ debug bundle;
@@ -83,7 +79,7 @@ PY
 case "$VERSION" in
     -h|--help) sed -n '2,27p' "$0"; exit 0 ;;
     "") sed -n '2,27p' "$0" >&2; exit 2 ;;
-    # Only the mixin checks, on a jar already built (e.g. ./tools/public-build.sh --jar's): its self-check.
+    # Only the mixin checks, on a jar already built: its self-check.
     --check-mixins) [ -f "${2:-}" ] || { echo "store-release: --check-mixins JAR" >&2; exit 2; }; mixin_checks "$2"; exit $? ;;
 esac
 [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+\+mc[0-9][0-9.]*$ ]] || { echo "store-release: version must look like 1.0.0+mc1.21.8 (D25), got $VERSION" >&2; exit 2; }
@@ -91,23 +87,13 @@ for t in python3 unzip sha256sum; do command -v "$t" >/dev/null || { echo "store
 MODEL_CACHE="${MODDY_APPRENTICE_MODEL_CACHE:-$HOME/.cache/moddy/apprentice-model}"
 mkdir -p "$OUT"; OUT="$(cd "$OUT" && pwd)"
 
-if [ -f "$ROOT/docs/public-repo/split.json" ]; then
-    TREE="${MODDY_STORE_TREE:-$HOME/.cache/moddy/store-tree}"
-    say "rendering the public tree into $TREE"
-    python3 "$ROOT/tools/public-tree.py" --out "$TREE" >/dev/null || fail "split.json leaves a tracked path undecided"
-    FORBIDDEN="$ROOT/tools/leak-forbidden.txt"
-    [ -f "$FORBIDDEN" ] || fail "the private forbidden list $FORBIDDEN is missing; a store jar is never scanned with fewer rules"
-    FARGS=(--forbidden "$FORBIDDEN")
-    SOURCE="maintainers' tree at $(git -C "$ROOT" rev-parse --short=12 HEAD)$(git -C "$ROOT" diff --quiet HEAD -- && echo '' || echo ' (DIRTY)')"
-else
-    TREE="$ROOT"
-    if [ -d "$ROOT/.git" ] && [ -n "$(git -C "$ROOT" status --porcelain --untracked-files=normal)" ]; then
-        echo "store-release: REFUSED: this checkout has uncommitted changes; a store jar is built from a commit" >&2
-        exit 2
-    fi
-    FARGS=()
-    SOURCE="public checkout $(git -C "$ROOT" rev-parse --abbrev-ref HEAD 2>/dev/null) at $(git -C "$ROOT" rev-parse --short=12 HEAD 2>/dev/null)"
+TREE="$ROOT"
+if [ -d "$ROOT/.git" ] && [ -n "$(git -C "$ROOT" status --porcelain --untracked-files=normal)" ]; then
+    echo "store-release: REFUSED: this checkout has uncommitted changes; a store jar is built from a commit" >&2
+    exit 2
 fi
+FARGS=()
+SOURCE="checkout $(git -C "$ROOT" rev-parse --abbrev-ref HEAD 2>/dev/null) at $(git -C "$ROOT" rev-parse --short=12 HEAD 2>/dev/null)"
 
 python3 "$ROOT/tools/leak-scan.py" "${FARGS[@]}" --summary --dir "$TREE" >"$OUT/leak-scan.log" 2>&1 \
     || { cat "$OUT/leak-scan.log"; fail "the tree carries private work (tools/leak-scan.py)"; }
@@ -118,7 +104,7 @@ bash "$ROOT/tools/fetch-apprentice-model.sh" "$MODEL_CACHE" || fail "could not g
 cd "$TREE" || exit 2
 LOG="$OUT/build.log"
 say "building the jar (version $VERSION) in $TREE"
-if ! ./gradlew --console=plain ${GRADLE_ARGS:-} jarJar -Pmod_version="$VERSION" -PbundleApprenticeModel="$MODEL_CACHE" >"$LOG" 2>&1; then
+if ! ./gradlew --console=plain ${GRADLE_ARGS:-} jar -Pmod_version="$VERSION" -PbundleApprenticeModel="$MODEL_CACHE" >"$LOG" 2>&1; then
     grep -E "error:|What went wrong|must never ship|shipped classes" -A3 "$LOG" | head -40
     fail "the build failed; full log: $LOG"
 fi

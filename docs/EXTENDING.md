@@ -54,6 +54,16 @@ public final class EmeraldPlugin implements ModdyPlugin {
   one emerald), `EmeraldPlugin` (its registration) and `EmeraldWishChargeGameTest`, which presses a recipe through
   the real `WishService.submit` twice: one emerald pays for the first, and the second is refused in the plug-in's
   words. It is test code and never ships in the jar.
+- **Testing a mod of your own against this one.** Two jars carry what a separate mod's tests need, built from this
+  repository and never shipped:
+  - `./gradlew testKitJar` (`build/test-kit/`): the GameTest harness (`testing/`), its test-only mixin config,
+    `CorpusSource` and `UsesCorpus`;
+  - `./gradlew testsJar` (`build/core-tests/`): this mod's unit-test classes, its GameTest and `test/` classes, and the
+    public corpus resources those tests read off the classpath.
+
+  Compile your tests against the mod jar and both. In a dev run the harness and the GameTest classes share packages
+  with the mod, and a package split across two mods stops the boot, so put them in the same mod as this jar's entries
+  (one merged dev jar), not beside it.
 
 ## Documented extension points
 
@@ -70,15 +80,29 @@ afford it, charging and refunding, and the words a menu, the guide book and `/mo
 
 | Method | Asked | Thread |
 |---|---|---|
-| `refusesAtSubmit(player, distress, text, recipe)` | as a wish is submitted, before anything runs; `true` refuses it (say why to the player yourself). Never refuse a child in `distress`: the core passes it so you can let that wish through. `recipe` is true for a wish served with no model: a button, a "make another one" (of a Builder make too, whose `text` is then the thing's own name), a Builder make (whose `text` starts `Builder: `) | server |
+| `refuses(ask)` | **what a new charge implements.** `ask` is a `WishAsk` (below). Asked as a wish starts, before anything runs or opens: typed words before the Apprentice's page or the re-wish reader opens (so a world that refuses typed words right now refuses them before any page), a Builder or Apprentice make before it is built, a recipe press, "Make another one" and a hotbar fire before the rate limiter. `Optional.empty()` lets it start; a value refuses it and **is the line the player reads**, said once by the core and nothing else with it. Your line is written by a world, so it passes the text sweep a chat line passes; a line that does not is replaced by "✨ That wish can't be made here right now. Try a different wish!". `Optional.of("")` refuses and says nothing more (you said your own words; a Builder make then adds "Your wish bank is empty. It fills up again soon."). **A child in distress is never refused**: the core lets that wish through whatever you answer (`ask.distress()` tells you). **Cheap and free of side effects**: the core may ask more than once for one wish (again when what answers turns out different), and a menu will ask while it draws, once per tile per draw; do your bookkeeping in `charge(ask, wishId)`. The default asks `refusesAtSubmit` and maps `true` to `Optional.of("")` | server |
+| `refusesAtSubmit(player, distress, text, recipe)` | still supported, asked by the default `refuses`, so a charge written before `refuses` behaves as it did; `true` refuses (say why to the player yourself). Never refuse a child in `distress`. `recipe` is true for a wish served with no model that was named by what started it: a button, a "make another one" or a hotbar fire (of a Builder make too, whose `text` is then the thing's own name), `/moddy try`, a Builder or Apprentice make (whose `text` starts `Builder: `); false for typed words, also when a cached recipe his words matched serves them | server |
+| `restLeft(ask)` | `ask` is a `WishAsk` (below); at a hotbar proxy it is `WishAsk.replay(player, recipe)`: `PRESET`, its recipe id, `REPLAY`, also when the proxy only lands in his inventory and no wish is in flight. How many ticks that wish still rests for that player, from now: `0` ready, `-1` (the default) you do not say. Asked right after every fire of a hotbar proxy, whatever came of it, and the proxy's vanilla cooldown sweep is set to your answer: the rest a fire you allowed started, the time left on one you refused because it is still resting (so the sweep never restarts), `0` for one you refused for another reason; `-1` keeps the core's one second. Asked again whenever a proxy is put in his inventory (added, given back after a knock-out, at login, after a respawn or a change of dimension), where an answer above `0` puts the sweep back at what is left, because the game keeps no cooldown across a logout or a respawn and his client loses its own on any respawn or change of dimension. **A query with no side effects**: answering must never start, restart or change a rest, since the core asks whenever it likes. Refuse a resting wish through `refuses` (or `refusesAtSubmit`) as before | server |
 | `waiveIfEmpty(player, wishId)` | a wish let through on nothing because of distress: never charge it | server |
-| `charge(player, wishId, agent)` | a wish served with no model starts (a button, a recipe, a Builder make): `agent` is false | server |
+| `charge(ask, wishId)` | a wish served with no model starts (a recipe, a hotbar fire, "Make another one", a Builder or Apprentice make), after the rate limiter: a fire the limiter refuses never reaches it. Where a charge takes its price and starts a rest (keyed by `ask.recipe()`). The default asks `charge(player, wishId, agent)` | server |
+| `charge(player, wishId, agent)` | still supported, asked by the default `charge(ask, wishId)`: `agent` is false | server |
 | `atPickup(wish)` | the AI picks a wish up, after the safety and world-rule checks | **an agent thread**: do not touch the world directly; hop to the server thread (`server.submit(…).join()`) as the example does |
-| `chargeAgain` / `afterAgain` / `refundAgain` | the three "again" presses (`Again.GIVE_ONE`, `PART`, `WHOLE`): charged before anything is handed over, refunded if nothing landed | server |
+| `chargeAgain` / `afterAgain` / `refundAgain` | the three "again" presses (`Again.GIVE_ONE`, `PART`, `WHOLE`): charged before anything is handed over, refunded if nothing landed. "Give me one" asks `chargeAgain(player, kind, ask)`, told which thing (`WishAsk.replay` of the key `/moddy give` takes: an item's, or a creature's for its egg); its default asks `chargeAgain(player, kind)` | server |
 | `refundUndone(player, wish)` | 👎 undid a wish; return the line saying the new balance, or `null` | server |
 | `onStatus(before, after)` | every status change in the wish book (refund an ungranted charge here) | server |
 | `priced`, `wishPrice`, `guideValues`, `panelTitle`, `composeTitle`, `wishesCommand`, `preview`, `loreLine`, `showBalance` | when a menu, the guide book or `/moddy wishes` is drawn | server |
 
+- **`WishAsk`** (`com.moddingfromamod.wish.WishAsk`) is the value a hook that takes one is asked about, the same shape
+  at every such hook: `player()` (UUID), `source()` (`WishSource`), `recipe()` (the id `/moddy again` takes, also the
+  `builder:<id>` of the kept make a Builder edit changes, or the key `/moddy give` takes for "Give me one"; `""` when
+  none), `magic()`, `text()` (the wish's words: typed words, a recipe's words, a Builder make's `Builder: …`) and
+  `distress()`. The magic is told truthfully at each start: `BUILDER` for a Builder make (and a Builder change on a
+  thing the Magician made); `APPRENTICE` for typed words the Apprentice's page or the re-wish reader will answer, and
+  for a make an Apprentice tile pressed; `REPLAY` for a thing made again with no model (a recipe button, a cached
+  recipe his typed words matched, "Make another one", a hotbar fire, "Give me one"); `MAGICIAN` for typed words the
+  Magician's model will grant. It is immutable and gains fields over time, so build one with
+  `WishAsk.of(player, source, magic)` (the kind of magic is always named, there is no default) or
+  `WishAsk.replay(player, recipe)` and the `with…` methods, never its constructor.
 - A charge that cannot be paid returns `new Paid(true, () -> "the words to say")` (or `AgainPaid(true, token)`);
   the core then starts nothing and says the line.
 - **Example:** `EmeraldWishCharge` above, about forty lines.

@@ -53,6 +53,7 @@ public final class CommandDialect {
         // An `attribute` aimed at many entities (@e[type=zombie]) is refused by the parser — at pack
         // load inside a datapack, taking the whole function with it. execute as … run attribute @s.
         out = AttributeSelectors.correct(out, notes);
+        out = EntityNbtKeys.correct(out, notes);   // 1.21.5: FallDistance is the double fall_distance
         // the 1.21.5 spellings of item components and text (dyed_color, enchantments,
         // attribute_modifiers, quoted JSON names/lore/sign text). Refused at load, or silently wrong.
         out = com.moddingfromamod.compat.ComponentSpelling.correct(out, notes);

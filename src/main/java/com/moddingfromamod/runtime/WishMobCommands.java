@@ -627,9 +627,11 @@ public final class WishMobCommands {
     /**
      * The species to spawn for a model key: an existing registered one, else built from a
      * {@code species.json} authored alongside the art, else sensible defaults — always carrying the
-     * model key so the renderer draws the custom geometry.
+     * model key so the renderer draws the custom geometry. What a player's world registers when a creature is
+     * first spawned (or its egg given); public so {@code StarterRegenGameTest} replays a starter's recipe in a world
+     * that has its creature, registered this same way.
      */
-    private static Species resolveSpecies(MinecraftServer server, String key) {
+    public static Species resolveSpecies(MinecraftServer server, String key) {
         Species existing = SpeciesRegistry.get(key);
         if (existing != null && existing.hasCustomModel()) {
             return existing;

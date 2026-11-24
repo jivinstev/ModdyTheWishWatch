@@ -1,0 +1,41 @@
+{
+  "recipe": "starter-pack",
+  "v": 1,
+  "id": "slushie_plain",
+  "calls": [
+    {
+      "tool": "make_item",
+      "args": {
+        "start_from": "slushie_plain",
+        "name": "Slushie",
+        "base_item": "minecraft:potion",
+        "shape": "on_consume",
+        "count": 1,
+        "effect": "food",
+        "params": {
+          "BONUS": "minecraft:speed",
+          "SECONDS": "30"
+        },
+        "variants": [
+          {
+            "name": "Small Slushie",
+            "colour": "#81D4FA"
+          },
+          {
+            "name": "Medium Slushie",
+            "colour": "#29B6F6"
+          },
+          {
+            "name": "GIANT Slushie",
+            "colour": "#0277BD"
+          }
+        ],
+        "icon": "cup",
+        "colour": "#4FC3F7"
+      }
+    }
+  ],
+  "compiler": "521e75eacb968528454fefd8e6914602c0fc9187",
+  "date": "2026-11-24",
+  "note": "The slushie machine pours this item BY ITS ID, and today's make_item would mint a fresh 'Slushie' with the food effect as slushie_food. So the call edits the starter's own design (start_from: slushie_plain), which keeps the id, with every field restated. Backfilled on 2026-11-24 from items/slushie_plain/item.json and icon.json, the design this pack was made from; the compiler and date are the ones this recipe was checked against, not the original grant's, which were not kept."
+}

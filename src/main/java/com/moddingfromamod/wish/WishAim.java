@@ -14,8 +14,16 @@ package com.moddingfromamod.wish;
  *   top is somewhere to stand);</li>
  *   <li><b>one slide along the gaze line by kind</b> at {@code plan_wish} ({@link #slide});</li>
  *   <li><b>only the agent's explicit {@code up} floats a wish</b>: every spot here is settled
- *   DOWN onto something, never left in the air and never raised out of a cave.</li>
+ *   DOWN onto something, never raised out of a cave — except over a drop or the void (below).</li>
  * </ul>
+ *
+ * <p><b>A settle never drops farther than the spot is out from him</b> (2026-11-24; at least {@value #MIN_MISS}
+ * blocks, {@link #maxDrop}). On a sky island a building's slide puts it 12 blocks out, over the edge; settling
+ * straight down then found whatever was far below (a flat world's floor 126 blocks under him) and the farm he wished
+ * for went up out of sight, while the same wish in a void world stayed beside him. Past that drop, or over the void
+ * (an empty column, {@link #emptyBelow}), the spot is left in the air at its own level: a slide level with where he
+ * aimed, a miss level with the ground under him. It lands beside his island where he can see it, the same in every
+ * kind of world, and keeps the miss rule's own aim: a spot within ~45° of his eye line, never under his feet.
  */
 public final class WishAim {
 
@@ -145,14 +153,23 @@ public final class WishAim {
         int stand = standAt(w, px, fy, pz);
         String why = (up ? "miss looking up" : "miss " + height + " above ground") + ", " + dd + " out"
                 + (dd < d ? " (last loaded point)" : "");
-        return stand == Integer.MIN_VALUE ? new Spot(px, fy, pz, why + ", nothing below")
-                : new Spot(px, stand, pz, why + overLava(w, px, stand, pz));
+        // A drop is measured from the ground under HIM, so a flier's miss still settles onto the ground he flies over.
+        int under = fy - height;
+        if (stand == Integer.MIN_VALUE) {
+            return emptyBelow(w, px, fy, pz) ? new Spot(px, under, pz, why + ", level with the ground under him over the void")
+                    : new Spot(px, fy, pz, why + ", nothing below");
+        }
+        if (under - stand > maxDrop(dd)) {
+            return new Spot(px, under, pz, why + ", level with the ground under him over a drop of " + (under - stand));
+        }
+        return new Spot(px, stand, pz, why + overLava(w, px, stand, pz));
     }
 
     /**
      * <b>The one slide by kind</b>, along the same gaze line and never sideways. Null when the spot
-     * is already in range for the kind (or there is nowhere to stand at the new distance — then it
-     * stays where it was, which he has already seen sparkle).
+     * is already in range for the kind, or when the new spot cannot be read (not loaded, or buried deep in rock)
+     * — then it stays where it was, which he has already seen sparkle. Over the void or a drop deeper than
+     * {@link #maxDrop}, the new spot is level with where he aimed.
      */
     public static Spot slide(Snapshot me, int ax, int ay, int az, Kind kind, World w) {
         if (kind == null) {
@@ -177,12 +194,33 @@ public final class WishAim {
         if (w.at(x, ay, z) == Cell.UNLOADED) {
             return null;
         }
-        int stand = standAt(w, x, Math.max(ay, floor(me.y())), z);
+        int from = Math.max(ay, floor(me.y()));
+        int stand = standAt(w, x, from, z);
+        String slid = "slid " + Math.round(d) + "→" + Math.round(want) + " for a "
+                + kind.name().toLowerCase(java.util.Locale.ROOT);
+        // A drop is measured from the spot he aimed at, so a flier who aimed at the ground still settles onto it.
         if (stand == Integer.MIN_VALUE) {
-            return null;
+            return emptyBelow(w, x, from, z) ? new Spot(x, ay, z, slid + ", level with where he aimed over the void") : null;
         }
-        return new Spot(x, stand, z, "slid " + Math.round(d) + "→" + Math.round(want) + " for a "
-                + kind.name().toLowerCase(java.util.Locale.ROOT) + overLava(w, x, stand, z));
+        if (ay - stand > maxDrop(want)) {
+            return new Spot(x, ay, z, slid + ", level with where he aimed over a drop of " + (ay - stand));
+        }
+        return new Spot(x, stand, z, slid + overLava(w, x, stand, z));
+    }
+
+    /** How far below its own level a spot this far out from him may settle: that far, and at least {@link #MIN_MISS}. */
+    static int maxDrop(double out) {
+        return Math.max(MIN_MISS, (int) Math.round(out));
+    }
+
+    /** The void: every block of this column is air, from {@code fromY} down to the bottom of the world. */
+    static boolean emptyBelow(World w, int x, int fromY, int z) {
+        for (int y = Math.min(fromY, w.top()); y >= w.bottom(); y--) {
+            if (w.at(x, y, z) != Cell.AIR) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /** {@code ", over lava"} when the spot's floor is lava — it is somewhere to aim, not to stand. */

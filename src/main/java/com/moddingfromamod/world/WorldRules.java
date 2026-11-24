@@ -31,6 +31,10 @@ import com.google.gson.JsonParser;
  *  "rules": [{"id": "no-time", "type": "deny_world_effect", "effects": ["time"],
  *             "message": {"rule": "…", "why": "…"}}, …]}
  * </pre>
+ * <p>Every word in it a child reads — the {@code workshop}'s name and each rule's {@code message.rule} and
+ * {@code message.why} — passes the safety lexicon here, as his chat lines pass it at the text sweep: a file with one
+ * it flags is refused, naming the field, like any other bad field. The {@code brief} lines are the agent's, not his.
+ *
  * Strict on purpose: an unknown key, type or effect is an ERROR, never ignored, because a typo in a
  * rules file that silently allowed everything would be the quietest possible failure — the world
  * looks governed and is not. Keys starting with {@code _} are notes and are skipped.
@@ -246,6 +250,18 @@ public final class WorldRules {
 
     /** {@link #parse(String, String)} with the plug-in types given, so a test names its own library. */
     public static Parsed parse(String text, String expectWorld, List<WorldRuleType> pluginTypes) {
+        return parse(text, expectWorld, pluginTypes, com.moddingfromamod.safety.SafetyLexicon.shared());
+    }
+
+    /**
+     * {@link #parse(String, String, List)} judging the words a child reads with {@code lexicon}, so a test names its
+     * own list. A line the lexicon puts CLEARLY in a band refuses the file, as the text sweep refuses such a line in his
+     * chat ({@code SafetyTextSweep}); a wellbeing note alone does not.
+     */
+    public static Parsed parse(String text, String expectWorld, List<WorldRuleType> pluginTypes,
+                               com.moddingfromamod.safety.SafetyLexicon lexicon) {
+        java.util.function.Predicate<String> notForAChild = t -> lexicon != null && lexicon.check(t)
+                .map(v -> v.overall() == com.moddingfromamod.safety.SafetyVerdict.Band.CLEARLY).orElse(false);
         List<String> err = new ArrayList<>();
         Map<String, WorldRuleType> library = library(pluginTypes, err);
         JsonObject o;
@@ -284,6 +300,8 @@ public final class WorldRules {
         String workshop = o.has("workshop") ? str(o, "workshop") : DEFAULT_WORKSHOP;
         if (workshop == null || workshop.isBlank() || workshop.length() > 60) {
             err.add("workshop must be a place name of 1–60 characters");
+        } else if (notForAChild.test(workshop)) {
+            err.add("workshop: a child reads this name, and the safety lexicon flags it");
         }
         List<String> brief = new ArrayList<>();
         if (o.has("brief")) {
@@ -321,7 +339,7 @@ public final class WorldRules {
                     err.add(where + " is not an object");
                     continue;
                 }
-                WorldRule r = rule(e.getAsJsonObject(), where, err, library);
+                WorldRule r = rule(e.getAsJsonObject(), where, err, library, notForAChild);
                 if (r == null) {
                     continue;
                 }
@@ -380,7 +398,8 @@ public final class WorldRules {
         return out;
     }
 
-    private static WorldRule rule(JsonObject r, String where, List<String> err, Map<String, WorldRuleType> library) {
+    private static WorldRule rule(JsonObject r, String where, List<String> err, Map<String, WorldRuleType> library,
+                                  java.util.function.Predicate<String> notForAChild) {
         int before = err.size();
         for (String k : r.keySet()) {
             if (!k.startsWith("_") && !Set.of("id", "type", "effects", "params", "message").contains(k)) {
@@ -453,9 +472,13 @@ public final class WorldRules {
                 }
                 if (rule == null || rule.isBlank() || rule.length() > MAX_RULE_WORDS) {
                     err.add(where + ": message.rule is the rule in a child's words, 1–" + MAX_RULE_WORDS + " characters");
+                } else if (notForAChild.test(rule)) {
+                    err.add(where + ": message.rule is read by a child, and the safety lexicon flags it");
                 }
                 if (why == null || why.isBlank() || why.length() > MAX_WHY_WORDS) {
                     err.add(where + ": message.why is the reason in a child's words, 1–" + MAX_WHY_WORDS + " characters");
+                } else if (notForAChild.test(why)) {
+                    err.add(where + ": message.why is read by a child, and the safety lexicon flags it");
                 }
             }
         } else if (r.has("message")) {

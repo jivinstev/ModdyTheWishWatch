@@ -1,0 +1,31 @@
+{
+  "recipe": "starter-pack",
+  "v": 1,
+  "id": "lucky_block_outcome_table",
+  "calls": [
+    {
+      "tool": "make_item",
+      "args": {
+        "name": "Lucky Block",
+        "shape": "magic_block",
+        "count": 16,
+        "effect": "outcome_table",
+        "params": {
+          "PRESENTS": "minecraft:diamond*3, minecraft:cake, minecraft:golden_apple, minecraft:emerald*5, minecraft:enchanted_golden_apple",
+          "SURPRISES": "minecraft:chicken, minecraft:pig, minecraft:zombie",
+          "BOOM": "yes",
+          "_block": {
+            "when": "broken",
+            "look": "minecraft:gold_block"
+          }
+        },
+        "icon": "block",
+        "colour": "#FFD54F",
+        "from_scratch": true
+      }
+    }
+  ],
+  "compiler": "521e75eacb968528454fefd8e6914602c0fc9187",
+  "date": "2026-11-24",
+  "note": "Backfilled on 2026-11-24 from items/lucky_block_outcome_table/item.json and icon.json, the design this pack was made from; the compiler and date are the ones this recipe was checked against, not the original grant's, which were not kept."
+}

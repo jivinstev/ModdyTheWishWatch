@@ -59,8 +59,8 @@ Moddy is made for children. Everything a player reads or types goes through the 
 ./gradlew runClient                                 # play it in a development client
 ```
 
-- **Gate A** is `./gradlew build`. `gate-a.gradle` also defines a public-only compile and test (`compilePublicJava`,
-  `publicTest`); they switch themselves off when there is no split file, so here the build is the plain one.
+- **Gate A** is `./gradlew build`: compile, every unit test (`gate-a.gradle` configures the `test` task: one retry of a
+  failed test, recorded, and the ambient API keys removed so a test that needs one fails here rather than in CI).
 - **Gate B** boots a headless dedicated server and runs every `@GameTest` in the chosen shards. `-Pshard` takes a
   comma-separated list (`ci`, `default`, or `all`); `-Pgametests=ClassA,ClassB` runs only those classes. Gate B needs
   Python 3 with `ply` (`pip install ply`) for the datapack compiler; without it every datapack test fails with a
@@ -84,6 +84,13 @@ is the `neoforge-1.21.8` branch. A tag `moddingfromamod-<version>-mc1.21.8` (or 
 **promote** (`promote = <tag>`, `played_by = <login>`) makes it a full Release, and **publish** uploads a promoted
 release to Modrinth and CurseForge (`.github/port-publish.json`). Nothing is published that a person has not played.
 `tools/store-release.sh <version>` builds and checks the same jar locally.
+
+**A fix lands on `main` first.** `main` holds every change; `neoforge-1.21.8` is `main` at a release point, and a
+higher `neoforge-<mc>` branch holds only its port's own changes plus `main` merged upward. A hotfix the release line
+needs before the next release point is made on `main` and **cherry-picked down** in the same change, never committed to
+the release line alone. `.github/workflows/release-line.yml` refuses a push or pull request that brings
+`neoforge-1.21.8` a commit with no equivalent on `main` (`git cherry origin/main HEAD`, matched by patch, so a
+cherry-pick passes); the one exception is Port CI's own install-manifest refresh.
 
 ## Building on it: extension points
 
@@ -218,6 +225,7 @@ change.
   a shell script while it runs** (bash reads it by byte offset).
 - **The CBScript compiler ships bundled** in the jar (`tools/cbscript.zip`); a version-specific id or spelling belongs
   in the compiler, not in a lesson.
+  Rebuild it with `./tools/refresh-cbscript-bundle.sh --ref <branch|commit>`, which also writes `tools/cbscript.SOURCE`.
 - **Builder and Apprentice powers are precompiled** (`datapack/PrecompiledPacks`, `datapack/ReadyMadeSkeleton`): every
   template is compiled at build time with sentinels where a player's values go, and Java puts the values back, so no
   player needs Python for them. Changed a template in `effects/` or `items/`, a catalogue, the bundled compiler, or how
@@ -235,15 +243,16 @@ change.
 
 ## Pull requests
 
-This repository is where changes land: fork it, branch, open a pull request against `main`. CI runs the leak scan,
-Gate A and Gate B's `ci` shard on it, and a maintainer reviews and merges it.
+**A pull request is the only way a change reaches `main`**, the maintainers' own included: fork it (or branch, with
+write access), open a pull request against `main`. CI runs the leak scan, Gate A and Gate B's `ci` shard on it, and a
+maintainer reviews and merges it. Nobody pushes to `main` directly, and nothing arrives from anywhere else.
 
 - Run Gate A and the Gate B shard that covers what you changed before opening a PR; describe what you ran.
 - **Link only issues and pull requests in this repository**: a `#` number in a commit, a comment or a doc means this
   repository's tracker.
-- `main` also gets **sync commits** titled "Moddy the Wish Watch: sync": the project's own changes made outside a pull
-  request, as one commit. Their `Sync-from:` trailer is an internal id. A sync is made only after every merged pull
-  request has been taken in, so it never reverts one; rebase an open PR on `main` after one lands, as for any commit.
+- **Sync commits are history.** `main` holds older commits titled "Moddy the Wish Watch: sync", with a `Sync-from:`
+  trailer: the project's changes from before every change came through a pull request. No new ones are made; read them
+  as ordinary commits.
 - Keep a change to one concern. A new wish kind, tool, setting or hook brings its tests and its doc rows with it.
 - Code is MPL-2.0 and art and presets CC BY 4.0 ([LICENSE](LICENSE), [LICENSE-ASSETS.md](LICENSE-ASSETS.md)). "Moddy"
   is a trademark; a fork's name follows [TRADEMARKS.md](TRADEMARKS.md).
