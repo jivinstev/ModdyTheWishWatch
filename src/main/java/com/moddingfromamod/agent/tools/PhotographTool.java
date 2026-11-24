@@ -1,7 +1,5 @@
 package com.moddingfromamod.agent.tools;
 
-import java.awt.Graphics2D;
-import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.nio.file.Files;
@@ -3362,12 +3360,8 @@ public final class PhotographTool implements McpTool {
             double factor = Math.min(1.0, (double) MAX_EDGE / Math.max(w, h));
             int nw = Math.max(1, (int) Math.round(w * factor));
             int nh = Math.max(1, (int) Math.round(h * factor));
-            BufferedImage dst = new BufferedImage(nw, nh, BufferedImage.TYPE_INT_RGB);
-            Graphics2D g = dst.createGraphics();
-            g.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
-                    RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-            g.drawImage(src, 0, 0, nw, nh, null);
-            g.dispose();
+            // no Java2D: it froze the game window on macOS (runtime/Pixels)
+            BufferedImage dst = com.moddingfromamod.runtime.Pixels.scaled(src, nw, nh, BufferedImage.TYPE_INT_RGB);
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
             ImageIO.write(dst, "PNG", bos);
             return bos.toByteArray();

@@ -24,6 +24,7 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import com.moddingfromamod.testing.PlotChild;
 import com.moddingfromamod.testing.gt.GameTestHolder;
 
 /**
@@ -69,11 +70,15 @@ import com.moddingfromamod.testing.gt.GameTestHolder;
  *       a GameTest world deliberately has none — {@code ItemEditGameTest.anItemIsRecognisedByTheCamera}
  *       asserts on reaching "nobody is holding it", so a mock player left in the world by a
  *       concurrent test turns that one red for no reason its own author could see. The first cut of
- *       this file did exactly that. So these work where {@code modify_mob} works with nobody online:
- *       at <b>world spawn</b>. "He walks twenty blocks" is staged by moving the <i>mobs</i>, which is
- *       the same thing to the distance sort that is actually under test.</li>
- *   <li>Each test uses a <b>different species</b>, because "the nearest panda" is a question about
- *       the whole world and tests in a batch run concurrently.</li>
+ *       this file did exactly that. So the child is a <b>stand-in</b> ({@code PlotChild.standHere}),
+ *       the shipped shape for a world with nobody in it, standing in the test's OWN plot, and every
+ *       animal is placed round him there. Not world spawn, where these used to work: nothing keeps it
+ *       loaded from 1.21.9, and the animals were unloaded under the tests. "He walks twenty blocks"
+ *       is staged by moving the <i>mobs</i>, which is the same thing to the distance sort that is
+ *       actually under test; the chunk twenty blocks off is held for the test.</li>
+ *   <li>The stand-in is one shared slot, so each test that stands one runs in a <b>batch of its
+ *       own</b>. Each still uses a <b>different species</b>, because "the nearest panda" is a
+ *       question about the whole world and a GameTest world is reused between batches.</li>
  *   <li>Cleanup runs on <b>entry</b> as well as at the end: teardown at the end only happens
  *       when the test passes, and a leaked mock or a leaked mob becomes somebody else's mystery.</li>
  * </ul>
@@ -100,16 +105,16 @@ public class MobIdentityGameTest {
      * The sequence that says already works for the child. Asserted anyway, because it is the
      * control: if this one ever goes red, the sharper three below are measuring nothing.
      */
-    @GameTest(template = "empty_test", timeoutTicks = 900)
+    @GameTest(template = "empty_test", timeoutTicks = 900, batch = "mobid_goat")
     public static void aSummonedMobIsTheSameMobOnAllThreeRungs(GameTestHelper helper) {
         ServerLevel level = arrive(helper, EntityType.GOAT);
-        Vec3 spawn = worldSpawn(level);
+        Vec3 here = PlotChild.spot(helper);
 
         // Rung 1 — "summon a goat", through the path run_command really uses: diff the entities
         // near the child before and after, and hand a handle to whatever is new.
-        var before = EntityCapture.snapshot(level, spawn);
-        LivingEntity goat = place(level, EntityType.GOAT, spawn.add(4, 0, 0));
-        EntityCapture.rememberNew(level, spawn, before);
+        var before = EntityCapture.snapshot(level, here);
+        LivingEntity goat = place(level, EntityType.GOAT, here.add(4, 0, 0));
+        EntityCapture.rememberNew(level, here, before);
 
         AtomicReference<Ladder> out = new AtomicReference<>();
         ladder(out, l -> {
@@ -139,13 +144,15 @@ public class MobIdentityGameTest {
      * <p>The mob a wish acted on has to become addressable BY THAT ACT, or the second half of every
      * ladder is a distance sort.
      */
-    @GameTest(template = "empty_test", timeoutTicks = 900)
+    @GameTest(template = "empty_test", timeoutTicks = 900, batch = "mobid_panda")
     public static void theMobHePointedAtStaysTheMobEvenWhenAnotherIsNearer(GameTestHelper helper) {
         ServerLevel level = arrive(helper, EntityType.PANDA);
-        Vec3 spawn = worldSpawn(level);
+        Vec3 here = PlotChild.spot(helper);
+        // Twenty blocks is outside the plot: hold that chunk, or his panda is unloaded where he walked it.
+        PlotChild.holdChunksAt(helper, here.add(20, 0, 0));
 
         // His panda. Deliberately NOT registered: he pointed at one that was already there.
-        LivingEntity his = place(level, EntityType.PANDA, spawn.add(4, 0, 0));
+        LivingEntity his = place(level, EntityType.PANDA, here.add(4, 0, 0));
         AtomicReference<LivingEntity> decoyRef = new AtomicReference<>();
 
         AtomicReference<Ladder> out = new AtomicReference<>();
@@ -153,8 +160,8 @@ public class MobIdentityGameTest {
             l.rung(2, asAFreshWorkerWould("panda"), "\"scale\":2.0");
             // …the child walks twenty blocks, and another panda is standing nearer than his.
             AgentBridge.onServer(() -> {
-                his.teleportTo(spawn.x + 20, spawn.y, spawn.z);
-                decoyRef.set(place(level, EntityType.PANDA, spawn.add(3, 0, 0)));
+                his.teleportTo(here.x + 20, here.y, here.z);
+                decoyRef.set(place(level, EntityType.PANDA, here.add(3, 0, 0)));
                 return null;
             });
             l.rung(3, asAFreshWorkerWould("panda"), "\"scale\":4.0");
@@ -186,12 +193,12 @@ public class MobIdentityGameTest {
      * different fox is the invariant's sharpest failure: the child asked about one animal and a
      * different one changed, with a cheerful success message either way.
      */
-    @GameTest(template = "empty_test", timeoutTicks = 900)
+    @GameTest(template = "empty_test", timeoutTicks = 900, batch = "mobid_fox")
     public static void whenTheMobDiesTheAnswerIsHeIsGoneAndNotAnotherFox(GameTestHelper helper) {
         ServerLevel level = arrive(helper, EntityType.FOX);
-        Vec3 spawn = worldSpawn(level);
+        Vec3 here = PlotChild.spot(helper);
 
-        LivingEntity his = place(level, EntityType.FOX, spawn.add(4, 0, 0));
+        LivingEntity his = place(level, EntityType.FOX, here.add(4, 0, 0));
         AtomicReference<LivingEntity> otherRef = new AtomicReference<>();
 
         AtomicReference<Ladder> out = new AtomicReference<>();
@@ -200,7 +207,7 @@ public class MobIdentityGameTest {
             // …it burns at sunrise, and another fox wanders up.
             AgentBridge.onServer(() -> {
                 his.discard();
-                otherRef.set(place(level, EntityType.FOX, spawn.add(3, 0, 0)));
+                otherRef.set(place(level, EntityType.FOX, here.add(3, 0, 0)));
                 return null;
             });
             l.rung(3, asAFreshWorkerWould("fox"), "\"scale\":4.0");
@@ -234,12 +241,14 @@ public class MobIdentityGameTest {
      * nothing. If the referent only survives when one worker handles the whole ladder, the identity
      * is being carried on the worker and is wrong.
      */
-    @GameTest(template = "empty_test", timeoutTicks = 900)
+    @GameTest(template = "empty_test", timeoutTicks = 900, batch = "mobid_llama")
     public static void theReferentSurvivesADifferentWorkerOnEveryRung(GameTestHelper helper) {
         ServerLevel level = arrive(helper, EntityType.LLAMA);
-        Vec3 spawn = worldSpawn(level);
+        Vec3 here = PlotChild.spot(helper);
+        // Twenty blocks is outside the plot: hold that chunk, or his llama is unloaded where he walked it.
+        PlotChild.holdChunksAt(helper, here.add(20, 0, 0));
 
-        LivingEntity his = place(level, EntityType.LLAMA, spawn.add(4, 0, 0));
+        LivingEntity his = place(level, EntityType.LLAMA, here.add(4, 0, 0));
         AtomicReference<LivingEntity> decoyRef = new AtomicReference<>();
 
         AtomicReference<Ladder> out = new AtomicReference<>();
@@ -247,8 +256,8 @@ public class MobIdentityGameTest {
             l.rung(2, AgentContext.with("mobid-pool-w2", () -> asAFreshWorkerWould("llama")),
                     "\"scale\":2.0", "mobid-pool-w2");
             AgentBridge.onServer(() -> {
-                his.teleportTo(spawn.x + 20, spawn.y, spawn.z);
-                decoyRef.set(place(level, EntityType.LLAMA, spawn.add(3, 0, 0)));
+                his.teleportTo(here.x + 20, here.y, here.z);
+                decoyRef.set(place(level, EntityType.LLAMA, here.add(3, 0, 0)));
                 return null;
             });
             l.rung(3, AgentContext.with("mobid-pool-w3", () -> asAFreshWorkerWould("llama")),
@@ -298,11 +307,11 @@ public class MobIdentityGameTest {
      * that the file the real tool wrote is a file the real parser can read, and that is provable
      * without touching the world's own copy.
      */
-    @GameTest(template = "empty_test", timeoutTicks = 900)
+    @GameTest(template = "empty_test", timeoutTicks = 900, batch = "mobid_turtle")
     public static void theNameIsOnDiskAndSurvivesTheWorldClosing(GameTestHelper helper) {
         ServerLevel level = arrive(helper, EntityType.TURTLE);
-        Vec3 spawn = worldSpawn(level);
-        LivingEntity turtle = place(level, EntityType.TURTLE, spawn.add(4, 0, 0));
+        Vec3 here = PlotChild.spot(helper);
+        LivingEntity turtle = place(level, EntityType.TURTLE, here.add(4, 0, 0));
 
         AtomicReference<Ladder> out = new AtomicReference<>();
         ladder(out, l -> l.rung(2, "turtle", "\"scale\":2.0"));
@@ -353,11 +362,11 @@ public class MobIdentityGameTest {
      * wishes about nothing in particular. {@code modify_mob} has no id argument to read, so it
      * reports one — this asserts both halves of what {@code McpProtocol} then does with it.
      */
-    @GameTest(template = "empty_test", timeoutTicks = 900)
+    @GameTest(template = "empty_test", timeoutTicks = 900, batch = "mobid_sniffer")
     public static void aChangedMobIsRecordedAsSomethingTheWishWasAbout(GameTestHelper helper) {
         ServerLevel level = arrive(helper, EntityType.SNIFFER);
-        Vec3 spawn = worldSpawn(level);
-        LivingEntity sniffer = place(level, EntityType.SNIFFER, spawn.add(4, 0, 0));
+        Vec3 here = PlotChild.spot(helper);
+        LivingEntity sniffer = place(level, EntityType.SNIFFER, here.add(4, 0, 0));
 
         AtomicReference<String> reported = new AtomicReference<>();
         AtomicReference<Ladder> out = new AtomicReference<>();
@@ -407,13 +416,13 @@ public class MobIdentityGameTest {
     @GameTest(template = "empty_test", timeoutTicks = 900, batch = "mobid_undo")
     public static void undoingAMobWishPutsTheAnimalBack(GameTestHelper helper) {
         ServerLevel level = arrive(helper, EntityType.CAMEL);
-        Vec3 spawn = worldSpawn(level);
-        LivingEntity camel = place(level, EntityType.CAMEL, spawn.add(4, 0, 0));
+        Vec3 here = PlotChild.spot(helper);
+        LivingEntity camel = place(level, EntityType.CAMEL, here.add(4, 0, 0));
         double sizeBefore = camel.getAttributeValue(Attributes.SCALE);
 
         var marshal = com.moddingfromamod.marshal.Marshal.global();
         java.util.UUID wishId = java.util.UUID.randomUUID();
-        java.util.UUID child = java.util.UUID.nameUUIDFromBytes("mobid-undo".getBytes());
+        java.util.UUID child = PlotChild.childId(helper);   // his wish: the tools measure from him
         String worker = "mobid-undo-w1";
         marshal.submit(wishId, child, "make the camel huge");
         var run = marshal.assign(worker, wishId);
@@ -431,7 +440,7 @@ public class MobIdentityGameTest {
             helper.assertFalse(l.failed(), Component.literal(l.why()));
             helper.assertTrue(camel.getAttributeValue(Attributes.SCALE) > 3.0,
                     Component.literal("the wish should have grown it first. " + l.trace()
-                            + "\n" + whichCamels(level, spawn, camel)));
+                            + "\n" + whichCamels(level, here, camel)));
 
             String handle = EntityHandles.global().handleFor(camel.getUUID());
             helper.assertTrue(handle != null, Component.literal("the camel has no handle to undo. " + l.trace()));
@@ -467,8 +476,8 @@ public class MobIdentityGameTest {
     @GameTest(template = "empty_test", timeoutTicks = 900, batch = "mobid_candidates")
     public static void aChangedMobIsSomethingHeCouldMeanByHim(GameTestHelper helper) {
         ServerLevel level = arrive(helper, EntityType.AXOLOTL);
-        Vec3 spawn = worldSpawn(level);
-        LivingEntity axolotl = place(level, EntityType.AXOLOTL, spawn.add(4, 0, 0));
+        Vec3 here = PlotChild.spot(helper);
+        LivingEntity axolotl = place(level, EntityType.AXOLOTL, here.add(4, 0, 0));
 
         AtomicReference<Ladder> out = new AtomicReference<>();
         ladder(out, l -> l.rung(2, "axolotl", "\"scale\":2.0"));
@@ -479,7 +488,7 @@ public class MobIdentityGameTest {
             String handle = EntityHandles.global().handleFor(axolotl.getUUID());
             helper.assertTrue(handle != null, Component.literal("no handle to offer. " + l.trace()));
 
-            ServerPlayer looker = unplacedPlayer(level, spawn);
+            ServerPlayer looker = unplacedPlayer(level, here);
             var candidates = com.moddingfromamod.wish.ArtifactIndex.forPlayer(looker);
             var mine = candidates.stream()
                     .filter(c -> handle.equals(c.id())).findFirst().orElse(null);
@@ -526,11 +535,11 @@ public class MobIdentityGameTest {
      * so it is required, and the error tells the agent what his words read as so the retry is one
      * step rather than a guess.
      */
-    @GameTest(template = "empty_test", timeoutTicks = 900)
+    @GameTest(template = "empty_test", timeoutTicks = 900, batch = "mobid_bee")
     public static void aMobWishMustSayHowManyAnimalsItMeans(GameTestHelper helper) {
         ServerLevel level = arrive(helper, EntityType.BEE);
-        Vec3 spawn = worldSpawn(level);
-        LivingEntity bee = place(level, EntityType.BEE, spawn.add(4, 0, 0));
+        Vec3 here = PlotChild.spot(helper);
+        LivingEntity bee = place(level, EntityType.BEE, here.add(4, 0, 0));
 
         AtomicReference<ToolResult> out = new AtomicReference<>();
         offThread(() -> out.set(new ModifyMobTool().call(JsonParser.parseString(
@@ -556,16 +565,16 @@ public class MobIdentityGameTest {
      * invincible forever and nothing in the game shows him why. A guard nobody has watched fire is
      * decorative, so this drives a real wish whose text says "him" and asserts the tool says no.
      */
-    @GameTest(template = "empty_test", timeoutTicks = 900)
+    @GameTest(template = "empty_test", timeoutTicks = 900, batch = "mobid_rabbit")
     public static void claimingTheWholeSpeciesAboutOneAnimalIsRefused(GameTestHelper helper) {
         ServerLevel level = arrive(helper, EntityType.RABBIT);
-        Vec3 spawn = worldSpawn(level);
-        LivingEntity rabbit = place(level, EntityType.RABBIT, spawn.add(4, 0, 0));
+        Vec3 here = PlotChild.spot(helper);
+        LivingEntity rabbit = place(level, EntityType.RABBIT, here.add(4, 0, 0));
 
         var marshal = com.moddingfromamod.marshal.Marshal.global();
         java.util.UUID wishId = java.util.UUID.randomUUID();
         String worker = "mobid-scope-w1";
-        marshal.submit(wishId, java.util.UUID.nameUUIDFromBytes("mobid-scope".getBytes()),
+        marshal.submit(wishId, PlotChild.childId(helper),   // his wish: the tools measure from him
                 "make him bigger");
         marshal.assign(worker, wishId);
 
@@ -689,12 +698,12 @@ public class MobIdentityGameTest {
      *
      * <p>Picking one of them would be the distance sort again, wearing the referent's clothes.
      */
-    @GameTest(template = "empty_test", timeoutTicks = 900)
+    @GameTest(template = "empty_test", timeoutTicks = 900, batch = "mobid_ocelot")
     public static void twoOfTheSameKindAlreadyChangedMeansAskHim(GameTestHelper helper) {
         ServerLevel level = arrive(helper, EntityType.OCELOT);
-        Vec3 spawn = worldSpawn(level);
-        LivingEntity first = place(level, EntityType.OCELOT, spawn.add(4, 0, 0));
-        LivingEntity second = place(level, EntityType.OCELOT, spawn.add(8, 0, 0));
+        Vec3 here = PlotChild.spot(helper);
+        LivingEntity first = place(level, EntityType.OCELOT, here.add(4, 0, 0));
+        LivingEntity second = place(level, EntityType.OCELOT, here.add(8, 0, 0));
 
         AtomicReference<Ladder> out = new AtomicReference<>();
         ladder(out, l -> {
@@ -736,17 +745,18 @@ public class MobIdentityGameTest {
     @GameTest(template = "empty_test", timeoutTicks = 900, batch = "mobid_nearest")
     public static void thereIsAWayToSayHeMeansADifferentOne(GameTestHelper helper) {
         ServerLevel level = arrive(helper, EntityType.MULE);
-        Vec3 spawn = worldSpawn(level);
+        Vec3 here = PlotChild.spot(helper);
         // @nearest is "whichever mob is nearest", of ANY kind, so this is the one test here whose
         // answer depends on every other animal at world spawn: in defaultBatch,
         // ModifyMobGameTest's sheep stood ON spawn, @nearest grew it to ×5 instead of this mule,
         // and both tests went red. Hence its own batch (nothing runs beside it), and the stand
         // cleared of whatever earlier batches left there — that is safe only BECAUSE of the batch.
-        for (LivingEntity e : com.moddingfromamod.mob.Creatures.nearby(level, spawn, 8)) {
+        for (LivingEntity e : com.moddingfromamod.mob.Creatures.nearby(level, here, 8)) {
             e.discard();
         }
-        LivingEntity his = place(level, EntityType.MULE, spawn.add(20, 0, 0));
-        LivingEntity other = place(level, EntityType.MULE, spawn.add(3, 0, 0));
+        PlotChild.holdChunksAt(helper, here.add(20, 0, 0));   // outside the plot: held for this test
+        LivingEntity his = place(level, EntityType.MULE, here.add(20, 0, 0));
+        LivingEntity other = place(level, EntityType.MULE, here.add(3, 0, 0));
 
         AtomicReference<Ladder> out = new AtomicReference<>();
         ladder(out, l -> {
@@ -787,11 +797,11 @@ public class MobIdentityGameTest {
      * <p>Both arms in one test, because a guard that refuses everything is indistinguishable from a
      * broken tool.
      */
-    @GameTest(template = "empty_test", timeoutTicks = 900)
+    @GameTest(template = "empty_test", timeoutTicks = 900, batch = "mobid_frog")
     public static void makingHimBiggerMayNotMakeHimSmaller(GameTestHelper helper) {
         ServerLevel level = arrive(helper, EntityType.FROG);
-        Vec3 spawn = worldSpawn(level);
-        LivingEntity frog = place(level, EntityType.FROG, spawn.add(4, 0, 0));
+        Vec3 here = PlotChild.spot(helper);
+        LivingEntity frog = place(level, EntityType.FROG, here.add(4, 0, 0));
         // SIZE, not speed, even though an earlier issue's headline example is "make him faster". Every mob
         // starts at scale 1.0 against a ceiling of 8, whereas a frog's base MOVEMENT_SPEED is 1.0
         // and MobTweak clamps speed to 0.6 — so on a frog NO legal speed is faster, and the first
@@ -803,7 +813,7 @@ public class MobIdentityGameTest {
         var marshal = com.moddingfromamod.marshal.Marshal.global();
         java.util.UUID wishId = java.util.UUID.randomUUID();
         String worker = "mobid-dir-w1";
-        marshal.submit(wishId, java.util.UUID.nameUUIDFromBytes("mobid-dir".getBytes()),
+        marshal.submit(wishId, PlotChild.childId(helper),   // his wish: the tools measure from him
                 "make him bigger");
         marshal.assign(worker, wishId);
 
@@ -845,11 +855,11 @@ public class MobIdentityGameTest {
      * one left, and it is where writing an absolute over an unread value shows most — "make him a
      * different colour" answered without knowing he is already pink can repaint him pink.
      */
-    @GameTest(template = "empty_test", timeoutTicks = 900)
+    @GameTest(template = "empty_test", timeoutTicks = 900, batch = "mobid_parrot")
     public static void aGlowingMobSaysWhatColourItIsAlreadyGlowing(GameTestHelper helper) {
         ServerLevel level = arrive(helper, EntityType.PARROT);
-        Vec3 spawn = worldSpawn(level);
-        LivingEntity parrot = place(level, EntityType.PARROT, spawn.add(4, 0, 0));
+        Vec3 here = PlotChild.spot(helper);
+        LivingEntity parrot = place(level, EntityType.PARROT, here.add(4, 0, 0));
 
         AtomicReference<Ladder> out = new AtomicReference<>();
         AtomicReference<String> report = new AtomicReference<>();
@@ -857,7 +867,7 @@ public class MobIdentityGameTest {
             l.rung(2, "parrot", "\"glow\":\"pink\"");
             report.set(AgentBridge.onServer(() -> {
                 var over = AgentBridge.serverOrNull().overworld();
-                return com.moddingfromamod.agent.Surroundings.describe(over, worldSpawn(over));
+                return com.moddingfromamod.agent.Surroundings.describe(over, whereTheChildIs(AgentBridge.serverOrNull()));
             }));
         });
 
@@ -890,7 +900,7 @@ public class MobIdentityGameTest {
         String text = AgentBridge.onServer(() -> {
             var server = AgentBridge.serverOrNull();
             ServerLevel over = server.overworld();
-            return com.moddingfromamod.agent.Surroundings.describe(over, worldSpawn(over));
+            return com.moddingfromamod.agent.Surroundings.describe(over, whereTheChildIs(AgentBridge.serverOrNull()));
         });
 
         // 1. Did the report say what he is talking about, and is it the KIND he just said? A
@@ -1017,23 +1027,23 @@ public class MobIdentityGameTest {
     }
 
     /**
-     * Clear anything an earlier (possibly failed) test left behind, and hand back the overworld.
+     * Stand the child in this test's plot, clear anything an earlier (possibly failed) test left
+     * behind, and hand back the overworld.
      *
-     * <p>On ENTRY, not at the end: teardown at the end of a test only runs when the test
-     * PASSES, so a failure leaves its animals standing in the shared world for the next victim.
-     * These all work at <b>world spawn</b>, which is outside every test plot and therefore never
-     * reset, and a GameTest world is reused between runs.
+     * <p>The child is {@link PlotChild#standHere}'s stand-in, never a player in the list (see the
+     * class note), and the whole scene is placed round him: inside the plot, which the framework
+     * keeps loaded while the test runs. It used to be world spawn, which nothing keeps loaded
+     * from 1.21.9, and an animal stood there was unloaded under the test.
+     *
+     * <p>Cleared on ENTRY, not at the end: teardown at the end of a test only runs when the test
+     * PASSES, and a GameTest world is reused between runs, so a failure leaves its animals and
+     * handles behind for the next victim.
      */
     private static ServerLevel arrive(GameTestHelper helper, EntityType<?> mine) {
-        // Same premise as ModifyMobGameTest, and it was the file the first fix MISSED: these tests
-        // place their subject at world spawn because that is where "the child" is when nobody is
-        // online. See MockPlayerNetwork.requireNobodyIsOnline for what it looks like when that is
-        // untrue.
-        com.moddingfromamod.testing.MockPlayerNetwork.requireNobodyIsOnline(helper);
+        Vec3 here = PlotChild.standHere(helper);
         ServerLevel level = helper.getLevel().getServer().overworld();
-        Vec3 spawn = worldSpawn(level);
         for (LivingEntity e : level.getEntitiesOfClass(LivingEntity.class,
-                new AABB(spawn, spawn).inflate(64), e -> e.getType() == mine)) {
+                new AABB(here, here).inflate(64), e -> e.getType() == mine)) {
             e.discard();
         }
         // ...and the handles they left behind. Discarding the animal is not enough: a
@@ -1052,10 +1062,10 @@ public class MobIdentityGameTest {
     }
 
     /**
-     * Every camel near world spawn and which one {@code @camel} names — so a red run of the undo test says WHICH camel
+     * Every camel near the child and which one {@code @camel} names — so a red run of the undo test says WHICH camel
      * the rungs grew, rather than only that this one did not.
      */
-    private static String whichCamels(ServerLevel level, Vec3 spawn, LivingEntity mine) {
+    private static String whichCamels(ServerLevel level, Vec3 here, LivingEntity mine) {
         StringBuilder sb = new StringBuilder("the test's camel ").append(mine.getUUID().toString(), 0, 8)
                 .append(mine.isRemoved() ? " REMOVED (" + mine.getRemovalReason() + ")" : " in the world")
                 .append(" at ").append(mine.blockPosition().toShortString())
@@ -1065,18 +1075,23 @@ public class MobIdentityGameTest {
                 + (live instanceof LivingEntity le ? le.getAttributeValue(Attributes.SCALE) : -1));
         var h = EntityHandles.global().resolve("@camel");
         sb.append("; @camel names ").append(h.map(x -> x.id().toString().substring(0, 8)).orElse("nothing"));
-        sb.append("; camels within 64 of spawn:");
-        for (LivingEntity e : level.getEntitiesOfClass(LivingEntity.class, new AABB(spawn, spawn).inflate(64),
+        sb.append("; camels within 64 of the child:");
+        for (LivingEntity e : level.getEntitiesOfClass(LivingEntity.class, new AABB(here, here).inflate(64),
                 e -> e.getType() == EntityType.CAMEL)) {
             sb.append(String.format(java.util.Locale.ROOT, " [%s %.1f blocks scale %.2f tags %s]",
-                    e.getUUID().toString().substring(0, 8), e.position().distanceTo(spawn),
+                    e.getUUID().toString().substring(0, 8), e.position().distanceTo(here),
                     e.getAttributeValue(Attributes.SCALE), e.getTags()));
         }
         return sb.toString();
     }
 
-    private static Vec3 worldSpawn(ServerLevel level) {
-        return Vec3.atBottomCenterOf(level.getLevelData().getRespawnData().pos());
+    /** Where the tools see the child: the test's stand-in, resolved exactly as {@code modify_mob} resolves him. */
+    private static Vec3 whereTheChildIs(net.minecraft.server.MinecraftServer server) {
+        ServerPlayer child = com.moddingfromamod.agent.ActingChild.person(server);
+        if (child == null) {
+            throw new IllegalStateException("no child stands in this test's plot: arrive() puts one there");
+        }
+        return child.position();
     }
 
     /**

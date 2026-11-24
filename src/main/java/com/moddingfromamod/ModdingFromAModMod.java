@@ -35,14 +35,6 @@ public class ModdingFromAModMod {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MODID);
 
-    static {
-        // before anything draws a BufferedImage. A non-headless AWT on macOS starts the desktop toolkit from
-        // whatever thread first draws, and the game's window freezes for good (runtime/HeadlessAwt).
-        if (com.moddingfromamod.runtime.HeadlessAwt.ensure()) {
-            LOGGER.info("AWT set headless (java.awt.headless=true): Moddy only draws into images");
-        }
-    }
-
     public ModdingFromAModMod(IEventBus modEventBus, ModContainer container) {
         // Private plug-ins first: the core reads their hooks from here on, and behaves as the public
         // single-player mod when none are listed.
