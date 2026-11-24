@@ -87,8 +87,9 @@ public class ReplayWorldRulesGameTest {
             WorldModuleHost.forTest(null);
             WorldRulesService.forTest(null);
         }
-        // The control: no rules and no bases — the same button runs.
-        var control = WishExecutor.runOne(server, helper.getLevel(), him.position(), him, "time set " + dayBefore);
+        // The control: no rules and no bases — the same button runs. One tick on from where the clock stands: since
+        // 26.3 `time set` to the time it already is fails ("Clock minecraft:overworld is already set to ...").
+        var control = WishExecutor.runOne(server, helper.getLevel(), him.position(), him, "time set " + (dayBefore + 1));
         helper.assertTrue(control.success(), Component.literal("with no world rules the same button runs: " + control.joined()));
         MockPlayerNetwork.remove(him);
         helper.succeed();
