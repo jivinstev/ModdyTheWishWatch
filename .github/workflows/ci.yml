@@ -9,6 +9,7 @@
 #                    and tokens, a child's-data file by its name, and the structural markers of server-side work
 #                    that does not belong in this single-player mod; then tools/secret-scan.py over every file and
 #                    every commit in the history (the credential shapes of tools/secret_patterns.py). It prints nothing it matched.
+#                    Also the hermetic test of tools/refresh-cbscript-bundle.sh (a fixture repo, no network).
 #   gate-a           compile, the unit tests, the mod jar and its checks (./gradlew build).
 #   gate-b-ci        a headless game server running the `ci` shard: one GameTest per wish class, MCP, two wishes at
 #                    once. Every pull request and every push to main.
@@ -102,6 +103,8 @@ jobs:
           git fetch --quiet --unshallow || true
           python3 tools/secret-scan.py --tree
           python3 tools/secret-scan.py --history
+      - name: The compiler bundle's refresh tool still builds, records and refuses
+        run: python3 tools/test-refresh-cbscript-bundle.py
 
   gate-a:
     name: Gate A (build and unit tests)
