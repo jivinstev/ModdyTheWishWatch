@@ -112,7 +112,7 @@ public final class Tidy {
             ItemStack s = inv.getItem(i);
             if (!s.isEmpty() && TidyRule.isJunk(BuiltInRegistries.ITEM.getKey(s.getItem()).toString())) {
                 inv.setItem(i, ItemStack.EMPTY);
-                p.drop(s, false);
+                p.drop(s, false, net.minecraft.util.Prediction.SERVER_ONLY);
                 n++;
             }
         }

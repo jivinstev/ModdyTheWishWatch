@@ -158,7 +158,7 @@ public final class StockHairStage {
                 CreatureAnatomy.widthBlocks(extents), CreatureAnatomy.heightBlocks(extents));
         Mob base = rig.base();
         base.setNoAi(true);
-        base.setInvulnerable(true);
+        base.setPermanentlyInvulnerable(true);
         base.setSilent(true);
         base.setYHeadRot(0f);
         base.setYBodyRot(0f);

@@ -375,7 +375,7 @@ public class WishMobEntity extends PathfinderMob {
             // otherwise a club smash is an invisible shockwave and the child never sees the swing.
             if (kind == com.moddingfromamod.runtime.Abilities.Kind.SLAM
                     || kind == com.moddingfromamod.runtime.Abilities.Kind.CHARGE) {
-                this.swing(net.minecraft.world.InteractionHand.MAIN_HAND);
+                com.moddingfromamod.compat.Swings.swing(this, net.minecraft.world.InteractionHand.MAIN_HAND, false);
             }
         }
     }

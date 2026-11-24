@@ -383,7 +383,7 @@ public final class VanillaLightClientTest {
 
     private static void freeze(Mob m, float yaw) {
         m.setNoAi(true);
-        m.setInvulnerable(true);
+        m.setPermanentlyInvulnerable(true);
         m.setSilent(true);
         m.setYRot(yaw);
         m.setYHeadRot(yaw);

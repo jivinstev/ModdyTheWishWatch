@@ -79,8 +79,8 @@ public final class WishHotbar {
     private static final List<DataComponentType<?>> LOOKS = List.of(
             DataComponents.ITEM_MODEL, DataComponents.CUSTOM_MODEL_DATA, DataComponents.DYED_COLOR,
             DataComponents.PROFILE, DataComponents.POTION_CONTENTS, DataComponents.BANNER_PATTERNS,
-            DataComponents.BASE_COLOR, DataComponents.TRIM, DataComponents.FIREWORK_EXPLOSION,
-            DataComponents.MAP_COLOR);
+            DataComponents.BASE_COLOR, DataComponents.TRIM, DataComponents.FIREWORK_EXPLOSION);
+            // (26.3 removed the map_color component.)
 
     private WishHotbar() {
     }

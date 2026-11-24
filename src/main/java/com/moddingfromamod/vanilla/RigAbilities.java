@@ -412,7 +412,7 @@ public final class RigAbilities {
         ball.yRotO = ball.getYRot();
         ball.xRotO = ball.getXRot();
         level.addFreshEntity(ball);
-        carrier.swing(InteractionHand.MAIN_HAND);   // its attack clip, if it has one: the throw
+        com.moddingfromamod.compat.Swings.swing(carrier, InteractionHand.MAIN_HAND, false);   // its attack clip, if it has one: the throw
         sound(level, carrier, SoundEvents.SNOW_GOLEM_SHOOT, 1.0F);
         return true;
     }
@@ -550,10 +550,10 @@ public final class RigAbilities {
             double dz = victim.getZ() - carrier.getZ();
             double len = Math.max(0.1, Math.sqrt(dx * dx + dz * dz));
             victim.push(dx / len * 0.8, 0.5, dz / len * 0.8);
-            victim.hurtMarked = true;
+            victim.syncVelocity = true;
             Damage.hurt(victim, carrier.damageSources().mobAttack(carrier), dmg);
         }
-        carrier.swing(InteractionHand.MAIN_HAND);   // its attack clip, if it has one, on the blow
+        com.moddingfromamod.compat.Swings.swing(carrier, InteractionHand.MAIN_HAND, false);   // its attack clip, if it has one, on the blow
         shockwave(level, carrier);
         return true;
     }
@@ -633,9 +633,9 @@ public final class RigAbilities {
         double dz = t.getZ() - carrier.getZ();
         double len = Math.max(0.1, Math.sqrt(dx * dx + dz * dz));
         t.push(dx / len * 0.9, 0.3, dz / len * 0.9);
-        t.hurtMarked = true;
+        t.syncVelocity = true;
         Damage.hurt(t, carrier.damageSources().mobAttack(carrier), (float) Math.max(2.0, sp.damage()));
-        carrier.swing(InteractionHand.MAIN_HAND);
+        com.moddingfromamod.compat.Swings.swing(carrier, InteractionHand.MAIN_HAND, false);
         stopCharge(carrier, st, t);
     }
 

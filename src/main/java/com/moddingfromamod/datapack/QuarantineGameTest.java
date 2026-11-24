@@ -312,7 +312,7 @@ public final class QuarantineGameTest {
                 return;
             }
             f.victim().setHealth(f.victim().getMaxHealth());
-            f.victim().invulnerableTime = 0;
+            f.victim().setInvulnerableTime(0);
             f.victim().hurtServer(helper.getLevel(), helper.getLevel().damageSources().generic(), 1.0f);
         });
     }

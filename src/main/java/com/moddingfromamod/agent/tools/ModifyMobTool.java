@@ -1038,7 +1038,7 @@ public final class ModifyMobTool implements McpTool {
                 e.setCustomNameVisible(true);
             }
             if (tweak.invulnerable() != null) {
-                e.setInvulnerable(tweak.invulnerable());
+                e.setPermanentlyInvulnerable(tweak.invulnerable());
             }
             if (tweak.glow() != null) {
                 applyGlow(scoreboard, e, tweak);
@@ -1101,7 +1101,7 @@ public final class ModifyMobTool implements McpTool {
             e.setCustomNameVisible(true);
         }
         if (tweak.invulnerable() != null) {
-            e.setInvulnerable(tweak.invulnerable());
+            e.setPermanentlyInvulnerable(tweak.invulnerable());
         }
         if (tweak.persistent() != null && tweak.persistent() && e instanceof Mob mob) {
             mob.setPersistenceRequired();

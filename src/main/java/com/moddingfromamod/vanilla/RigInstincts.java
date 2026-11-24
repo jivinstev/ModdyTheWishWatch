@@ -382,7 +382,7 @@ public final class RigInstincts {
         if (reach) {
             if (now - st.lastHit >= RigInstinct.HIT_EVERY) {
                 st.lastHit = now;
-                carrier.swing(InteractionHand.MAIN_HAND);
+                com.moddingfromamod.compat.Swings.swing(carrier, InteractionHand.MAIN_HAND, false);
                 // A rig's species damage, or a real mob's own attack damage.
                 Species sp = com.moddingfromamod.mob.RealMobBehaviours.speciesFor(carrier);
                 float dmg = RigInstinct.hit(sp == null ? 3.0 : sp.damage());

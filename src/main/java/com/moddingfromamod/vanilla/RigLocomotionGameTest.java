@@ -92,7 +92,7 @@ public final class RigLocomotionGameTest {
         LivingEntity carrier = VanillaRigBridge.manifestNow(level, mob);
         helper.assertTrue(carrier instanceof Mob, Component.literal("the bridge made no rig for " + id));
         Mob m = (Mob) carrier;
-        m.setInvulnerable(true);
+        m.setPermanentlyInvulnerable(true);
         return m;
     }
 

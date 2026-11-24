@@ -131,11 +131,11 @@ public class PeopleRulesGameTest {
             helper.setBlock(at, Blocks.OAK_SIGN);
             SignBlockEntity sign = (SignBlockEntity) helper.getBlockEntity(at, net.minecraft.world.level.block.entity.BlockEntity.class);
             sign.setAllowedPlayerEditor(a.getUUID());
-            sign.updateSignText(a, true, lines("add me on", "discord", "", ""));
-            String refused = sign.getFrontText().getMessage(1, false).getString();
+            sign.updateSignText(a, net.minecraft.world.level.block.entity.SignTextSlot.FRONT, lines("add me on", "discord", "", ""));
+            String refused = sign.getText(net.minecraft.world.level.block.entity.SignTextSlot.FRONT).getMessages(false).get(1).getString();
             sign.setAllowedPlayerEditor(a.getUUID());
-            sign.updateSignText(a, true, lines("Bob's farm", "keep out", "", ""));
-            String kept = sign.getFrontText().getMessage(0, false).getString();
+            sign.updateSignText(a, net.minecraft.world.level.block.entity.SignTextSlot.FRONT, lines("Bob's farm", "keep out", "", ""));
+            String kept = sign.getText(net.minecraft.world.level.block.entity.SignTextSlot.FRONT).getMessages(false).get(0).getString();
 
             AnvilMenu anvil = new AnvilMenu(0, a.getInventory(), ContainerLevelAccess.NULL);
             anvil.getSlot(0).set(new ItemStack(Items.NAME_TAG));

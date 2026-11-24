@@ -96,7 +96,7 @@ public final class TickScalingPerfGameTest {
         for (int i = 0; i < 15; i++) {
             Zombie z = helper.spawn(EntityTypes.ZOMBIE, new BlockPos(1 + (i % 5), 2, 13 + i / 5));
             z.setNoAi(true);
-            z.setInvulnerable(true);
+            z.setPermanentlyInvulnerable(true);
             made.add(z);
         }
 

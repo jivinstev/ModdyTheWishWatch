@@ -76,7 +76,7 @@ public final class GoalGuide {
             }
             Optional<DisplayInfo> display = h.value().display();
             // A node with no display is a technical check; a hidden one is a surprise. Neither is a goal.
-            if (display.isEmpty() || display.get().isHidden()) {
+            if (display.isEmpty() || display.get().hidden()) {
                 skip.add(id);
             }
             if (player.getAdvancements().getOrStartProgress(h).isDone()) {
@@ -92,10 +92,10 @@ public final class GoalGuide {
         }
         AdvancementHolder h = holders.get(next.get());
         DisplayInfo d = h.value().display().orElse(null);
-        String title = d == null ? next.get() : d.getTitle().getString();
+        String title = d == null ? next.get() : d.title().getString();
         WorldGuide.Help help = guide.goals().helpFor(next.get());
         String hint = !help.hint().isEmpty() ? help.hint()
-                : d == null ? "" : d.getDescription().getString().replaceAll("\\s+", " ").strip();
+                : d == null ? "" : d.description().getString().replaceAll("\\s+", " ").strip();
         return new Answer(true, new GuidePanel.Goal(next.get(), title, hint, NextGoal.helpWish(help, title)));
     }
 
@@ -130,16 +130,16 @@ public final class GoalGuide {
             }
             n.children().forEach(queue::add);
             Optional<DisplayInfo> display = h.value().display();
-            if (display.isEmpty() || display.get().isHidden() || skip.contains(id) || n.parent() == null) {
+            if (display.isEmpty() || display.get().hidden() || skip.contains(id) || n.parent() == null) {
                 continue;
             }
             DisplayInfo d = display.get();
             WorldGuide.Help help = guide.goals().helpFor(id);
             String hint = !help.hint().isEmpty() ? help.hint()
-                    : d.getDescription().getString().replaceAll("\\s+", " ").strip();
+                    : d.description().getString().replaceAll("\\s+", " ").strip();
             String icon = net.minecraft.core.registries.BuiltInRegistries.ITEM
-                    .getKey(d.getIcon().item().value()).toString();
-            out.add(new Line(d.getTitle().getString(), hint,
+                    .getKey(d.icon().item().value()).toString();
+            out.add(new Line(d.title().getString(), hint,
                     player.getAdvancements().getOrStartProgress(h).isDone(), icon));
         }
         return out;

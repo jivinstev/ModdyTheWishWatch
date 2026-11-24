@@ -87,7 +87,7 @@ public final class MobStates {
             any = true;
         }
         if (was.invulnerable() != null) {
-            e.setInvulnerable(was.invulnerable());
+            e.setPermanentlyInvulnerable(was.invulnerable());
             any = true;
         }
         any |= restoreGlow(scoreboard, e, was.glow());

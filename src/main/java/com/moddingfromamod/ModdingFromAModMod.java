@@ -53,7 +53,7 @@ public class ModdingFromAModMod {
         // D28: a dedicated server's settings come from config/moddingfromamod-server.toml. Only there: a
         // single-player game never grows the file.
         if (net.neoforged.fml.loading.FMLEnvironment.getDist() == net.neoforged.api.distmarker.Dist.DEDICATED_SERVER) {
-            container.registerConfig(net.neoforged.fml.config.ModConfig.Type.COMMON,
+            container.registerConfig(net.neoforged.fml.config.ModConfig.Type.LOCAL,
                     com.moddingfromamod.config.ServerConfigFile.SPEC, com.moddingfromamod.config.ServerConfigFile.FILE);
         }
         // the local logs that can hold a player's words are pruned after the privacy notice's period, now and

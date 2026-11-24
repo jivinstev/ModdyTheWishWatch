@@ -24,7 +24,7 @@ import net.neoforged.neoforge.event.entity.living.LivingFallEvent;
  * {@code shake}, {@code ignite}, {@code hurt} and {@code status}. The feel is in {@link CatchRules};
  * this is only the part that touches an entity.
  *
- * <p><b>Everything that moves a body goes through one velocity with {@code hurtMarked}.</b> That flag
+ * <p><b>Everything that moves a body goes through one velocity with {@code syncVelocity}.</b> That flag
  * is the only wire a server-set velocity has to a player's own client, and a command-written
  * {@code Motion} is overwritten by that client (an earlier issue's launch pad shipped exactly that bug past every
  * server-side test). And every velocity REPLACES the component it acts on, so nothing compounds.
@@ -154,7 +154,7 @@ public final class Effects {
     /** The one way an event moves anything. */
     public static void move(ServerLevel level, Entity e, Vec3 v) {
         e.setDeltaMovement(v);
-        e.hurtMarked = true;
+        e.syncVelocity = true;
         e.resetFallDistance();
         MOVED.put(e.getUUID(), level.getGameTime());
     }

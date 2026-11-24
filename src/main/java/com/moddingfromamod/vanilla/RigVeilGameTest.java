@@ -62,7 +62,7 @@ public final class RigVeilGameTest {
         java.util.Set<Integer> out = new java.util.HashSet<>();
         for (Object o : packets) {
             if (o instanceof ClientboundRemoveEntitiesPacket rm) {
-                rm.getEntityIds().forEach((int id) -> out.add(id));
+                rm.entityIds().forEach((int id) -> out.add(id));
             }
         }
         return out;
@@ -248,7 +248,7 @@ public final class RigVeilGameTest {
                     out.put(e.getId(), "move");
                 }
             } else if (o instanceof ClientboundRemoveEntitiesPacket rm) {
-                rm.getEntityIds().forEach((int id) -> out.put(id, "remove"));
+                rm.entityIds().forEach((int id) -> out.put(id, "remove"));
             }
         }
         return out;

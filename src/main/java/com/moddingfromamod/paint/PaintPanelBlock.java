@@ -1,6 +1,5 @@
 package com.moddingfromamod.paint;
 
-import com.mojang.serialization.MapCodec;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
@@ -31,16 +30,9 @@ import net.minecraft.world.level.block.state.StateDefinition;
  */
 public class PaintPanelBlock extends HorizontalDirectionalBlock implements EntityBlock {
 
-    public static final MapCodec<PaintPanelBlock> CODEC = simpleCodec(PaintPanelBlock::new);
-
     public PaintPanelBlock(Properties properties) {
         super(properties);
         registerDefaultState(stateDefinition.any().setValue(FACING, net.minecraft.core.Direction.NORTH));
-    }
-
-    @Override
-    protected MapCodec<? extends HorizontalDirectionalBlock> codec() {
-        return CODEC;
     }
 
     @Override

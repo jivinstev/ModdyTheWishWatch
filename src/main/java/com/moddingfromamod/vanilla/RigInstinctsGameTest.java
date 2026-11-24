@@ -145,7 +145,7 @@ public final class RigInstinctsGameTest {
         // skip it would choose it and punch it for ever.
         var proxy = helper.spawn(EntityTypes.COW, SPOT.offset(2, 0, 0));
         proxy.addTag(HitProxies.PROXY_TAG);
-        proxy.setInvulnerable(true);
+        proxy.setPermanentlyInvulnerable(true);
         proxy.setNoAi(true);
         var cow = helper.spawn(EntityTypes.COW, SPOT.offset(4, 0, 3));
         cow.setNoAi(true);

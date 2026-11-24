@@ -90,6 +90,8 @@ public final class VanillaRigAnimator {
         int swing = -1;
         /** How many swings have started (a native creature replays its attack clip on each). */
         int swings;
+        /** The swing vanilla last reported ({@code getCurrentSwing()}); a new object is a new swing. */
+        Object lastSwing;
         /** The game tick the talking flag was first seen on ({@link RigTalk}), or -1. */
         long talkSince = -1;
         /** The film script's last applied look (rigstate=showcase), or null. */
@@ -1004,20 +1006,21 @@ public final class VanillaRigAnimator {
         // and an attack clip driven by it is selected correctly and FROZEN ON FRAME ONE. Both
         // paths, always, and it looks exactly like a clip that failed to load.
         //
-        // Vanilla also never CLEARS `swinging` for such a creature — `swing()` sets it and only
-        // `updateSwingTime` puts it back — so one attack latches the clip on for the rest of the
-        // creature's life. Owning the clock fixes both halves.
-        if (base.swinging && live.swing < 0) {
+        // Since 26.3 vanilla's own swing state (LivingEntity.SwingState) ticks for every creature
+        // and ends itself, but a swing is a new SwingDescription object, not a flag: a swing starts
+        // here when vanilla reports a swing we have not seen, so one swing never starts two clips.
+        Object current = base.getCurrentSwing();
+        if (current != null && current != live.lastSwing && live.swing < 0) {
             live.swing = 0;
             live.swings++;
         }
+        live.lastSwing = current;
         float attackProgress = 0f;
         boolean attacking = false;
         if (live.swing >= 0) {
             live.swing++;
             if (live.swing >= SWING_TICKS) {
                 live.swing = -1;
-                base.swinging = false;
             } else {
                 attacking = true;
                 attackProgress = live.swing / (float) SWING_TICKS;

@@ -87,8 +87,13 @@ public final class ModelData {
 
     /** The {@code item_model} this stack names EXPLICITLY (its patch, not the item's default), or null. */
     public static String itemModelOf(net.minecraft.world.item.ItemStack stack) {
-        var patch = stack.getComponentsPatch().getPatch(net.minecraft.core.component.DataComponents.ITEM_MODEL);
-        return patch == null || patch.isEmpty() ? null : patch.get().toString();
+        // 26.3: getPatch throws for a type the patch does not touch, and is null for a removed one.
+        var patches = stack.getComponentsPatch();
+        if (!patches.isPatched(net.minecraft.core.component.DataComponents.ITEM_MODEL)) {
+            return null;
+        }
+        var patch = patches.getPatch(net.minecraft.core.component.DataComponents.ITEM_MODEL);
+        return patch == null ? null : patch.toString();
     }
 
     /**

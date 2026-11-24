@@ -14,9 +14,9 @@ import java.util.regex.Pattern;
 
 import com.mojang.authlib.ProfileLookupCallback;
 import com.mojang.authlib.minecraft.MinecraftProfileTexture;
-import com.mojang.authlib.minecraft.MinecraftSessionService;
-import com.mojang.authlib.yggdrasil.ProfileNotFoundException;
-import com.mojang.authlib.yggdrasil.YggdrasilAuthenticationService;
+import com.mojang.authlib.minecraft.SessionService;
+import com.mojang.authlib.services.MinecraftServicesDiscoveryService;
+import com.mojang.authlib.services.ProfileNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -89,7 +89,7 @@ public final class SkinFetch {
     /** Skin bytes by {@code uuid:hash}. A texture hash names its bytes, so this never goes stale. */
     private static final Map<String, byte[]> CACHE = new ConcurrentHashMap<>();
 
-    private static volatile YggdrasilAuthenticationService auth;
+    private static volatile MinecraftServicesDiscoveryService auth;
 
     private SkinFetch() {
     }
@@ -150,7 +150,7 @@ public final class SkinFetch {
     // ───────────────────────────── the real services ─────────────────────────────
 
     private static Result live(String name) {
-        YggdrasilAuthenticationService svc = auth();
+        MinecraftServicesDiscoveryService svc = auth();
         UUID[] foundId = new UUID[1];
         String[] foundName = new String[1];
         Exception[] failed = new Exception[1];
@@ -174,7 +174,7 @@ public final class SkinFetch {
             LOGGER.info("skin: profile lookup for '{}' failed: {}", name, failed[0].toString());
             return new Failed("the Minecraft profile service did not answer");
         }
-        MinecraftSessionService session = svc.createMinecraftSessionService();
+        SessionService session = svc.createMinecraftSessionService();
         var result = session.fetchProfile(foundId[0], false);
         if (result == null) {
             return new Failed("the Minecraft profile service did not answer");
@@ -208,8 +208,8 @@ public final class SkinFetch {
                 "slim".equals(tex.getMetadata("model")), png));
     }
 
-    private static YggdrasilAuthenticationService auth() {
-        YggdrasilAuthenticationService a = auth;
+    private static MinecraftServicesDiscoveryService auth() {
+        MinecraftServicesDiscoveryService a = auth;
         if (a == null) {
             synchronized (SkinFetch.class) {
                 if (auth == null) {
@@ -226,7 +226,7 @@ public final class SkinFetch {
                     } catch (RuntimeException ignored) {
                         // no selector: DIRECT
                     }
-                    auth = new YggdrasilAuthenticationService(proxy);
+                    auth = MinecraftServicesDiscoveryService.create(proxy);   // 26.3: authlib's services, found by discovery
                 }
                 a = auth;
             }

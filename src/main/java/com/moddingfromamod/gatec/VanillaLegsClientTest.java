@@ -461,7 +461,7 @@ public final class VanillaLegsClientTest {
             BAD.add(t + ": the bridge did not make a rig for " + id);
             return;
         }
-        m.setInvulnerable(true);
+        m.setPermanentlyInvulnerable(true);
         m.setSilent(true);
         m.setPersistenceRequired();
         // A staged walker: it does not look round at the onlooker. Its look-at-player goal turned

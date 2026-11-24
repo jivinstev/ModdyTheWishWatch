@@ -158,7 +158,7 @@ public record DropRule(String name, Source source, String which, String item, do
     public JsonObject toModifierJson(String type) {
         JsonObject o = new JsonObject();
         o.addProperty("type", type);
-        o.add("conditions", new com.google.gson.JsonArray());
+        // No "condition": since 26.3 a loot modifier takes one optional condition, not a list.
         o.addProperty("source", source.name().toLowerCase(Locale.ROOT));
         o.addProperty("which", which);
         o.addProperty("item", item);

@@ -105,7 +105,8 @@ class DropRuleTest {
         JsonObject j = rule("{source:'block', which:'stone', item:'emerald', chance:0.05, count:2}")
                 .toModifierJson("moddingfromamod:add_drop");
         assertEquals("moddingfromamod:add_drop", j.get("type").getAsString());
-        assertTrue(j.getAsJsonArray("conditions").isEmpty());
+        // 26.3: one optional "condition", and this rule has none; the pre-26.3 "conditions" list is gone.
+        assertFalse(j.has("condition") || j.has("conditions"));
         assertEquals("block", j.get("source").getAsString());
         assertEquals("minecraft:stone", j.get("which").getAsString());
         assertEquals("minecraft:emerald", j.get("item").getAsString());

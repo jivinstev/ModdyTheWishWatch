@@ -419,7 +419,7 @@ public final class VanillaPitchClientTest {
                     null);
             Mob base = rig.base();
             base.setNoAi(true);
-            base.setInvulnerable(true);
+            base.setPermanentlyInvulnerable(true);
             base.setSilent(true);
             base.setYHeadRot(180f);
             base.setYBodyRot(180f);

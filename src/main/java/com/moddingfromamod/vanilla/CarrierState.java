@@ -97,7 +97,7 @@ public record CarrierState(List<MobEffectInstance> effects, Component name, bool
             }
         }
         rebuilt.setNoAi(noAi);
-        rebuilt.setInvulnerable(invulnerable);
+        rebuilt.setPermanentlyInvulnerable(invulnerable);
         if (home != null) {
             rebuilt.setHomeTo(net.minecraft.core.BlockPos.of(home), homeRadius);
         }

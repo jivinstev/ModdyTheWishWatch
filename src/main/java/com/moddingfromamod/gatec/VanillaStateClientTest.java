@@ -329,8 +329,8 @@ public final class VanillaStateClientTest {
             // 🔴 BOTH must be invulnerable BEFORE anything is set on fire. Fire damage would kill
             // arm A over twenty seconds, and a creature that dies mid-run changes its own picture
             // (the death flop, then nothing) -- which would read as the fire test failing.
-            mob.setInvulnerable(true);
-            rig.base().setInvulnerable(true);
+            mob.setPermanentlyInvulnerable(true);
+            rig.base().setPermanentlyInvulnerable(true);
 
             // 🔴 A VANILLA MOB IN THE SAME FRAME, and it is the control the burning row needs.
             // "Both arms agree" says the two PATHS match; it says nothing about whether what
@@ -351,7 +351,7 @@ public final class VanillaStateClientTest {
                 z.setNoGravity(true);
                 z.setNoAi(true);
                 z.setSilent(true);
-                z.setInvulnerable(true);
+                z.setPermanentlyInvulnerable(true);
                 z.setPersistenceRequired();
                 level.addFreshEntity(z);
                 mobZ = z.getUUID();

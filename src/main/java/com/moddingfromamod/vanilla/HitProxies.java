@@ -394,7 +394,7 @@ public final class HitProxies {
         mob.setSilent(true);
         mob.setNoAi(true);
         mob.setNoGravity(true);
-        mob.setInvulnerable(true);
+        mob.setPermanentlyInvulnerable(true);
         mob.noPhysics = true;
         mob.setPersistenceRequired();
         var attr = mob.getAttribute(Attributes.SCALE);

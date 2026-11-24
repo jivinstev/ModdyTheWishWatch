@@ -68,9 +68,9 @@ public final class AddDropModifier extends LootModifier {
 
     private final DropRule rule;
 
-    private AddDropModifier(LootItemCondition[] conditions, int priority, String source, String which, String item,
+    private AddDropModifier(java.util.Optional<net.minecraft.core.Holder<LootItemCondition>> condition, int priority, String source, String which, String item,
                             float chance, int count) {
-        super(conditions, priority);
+        super(condition, priority);
         this.rule = new DropRule("", DropRule.Source.of(source), which, item, chance, count);
     }
 

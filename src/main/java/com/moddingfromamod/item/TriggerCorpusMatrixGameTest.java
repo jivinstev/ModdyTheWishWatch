@@ -348,7 +348,7 @@ public final class TriggerCorpusMatrixGameTest {
                 var f = LivingEntity.class.getDeclaredField("useItemRemaining");
                 f.setAccessible(true);
                 f.setInt(p, p.getUseItem().getUseDuration(p) - 20);
-                p.invulnerableTime = 0;
+                p.setInvulnerableTime(0);
                 p.connection.markClientLoaded();   // 1.21.11: the client-loaded flag is the connection's
             } catch (ReflectiveOperationException e) {
                 throw GameTestCompat.assertion("cannot step the raise: " + e);

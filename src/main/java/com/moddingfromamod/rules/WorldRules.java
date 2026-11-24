@@ -665,7 +665,7 @@ public final class WorldRules {
             }
         }
         e.setDeltaMovement(e.getDeltaMovement().add(add));
-        e.hurtMarked = true;
+        e.syncVelocity = true;
         if (p.up() > 0) {
             e.resetFallDistance();
         }
@@ -676,7 +676,7 @@ public final class WorldRules {
         List<BlockPos> candidates = new ArrayList<>();
         for (BlockPos q : BlockPos.betweenClosed(at.offset(-radius, -2, -radius), at.offset(radius, 2, radius))) {
             BlockState s = level.getBlockState(q);
-            if (s.getBlock() instanceof BonemealableBlock b && b.isValidBonemealTarget(level, q, s)) {
+            if (s.getBlock() instanceof BonemealableBlock b && b.isValidBonemealTarget(level, q, s, net.minecraft.world.level.block.BonemealSource.INTERACTION)) {
                 candidates.add(q.immutable());
             }
         }
@@ -688,9 +688,9 @@ public final class WorldRules {
                 break;
             }
             BlockState s = level.getBlockState(q);
-            if (s.getBlock() instanceof BonemealableBlock b && b.isValidBonemealTarget(level, q, s)) {
-                if (b.isBonemealSuccess(level, rnd, q, s)) {
-                    b.performBonemeal(level, rnd, q, s);
+            if (s.getBlock() instanceof BonemealableBlock b && b.isValidBonemealTarget(level, q, s, net.minecraft.world.level.block.BonemealSource.INTERACTION)) {
+                if (b.isBonemealSuccess(level, rnd, q, s, net.minecraft.world.level.block.BonemealSource.INTERACTION)) {
+                    b.performBonemeal(level, rnd, q, s, net.minecraft.world.level.block.BonemealSource.INTERACTION);
                 }
                 level.levelEvent(1505, q, 15);
                 grown++;

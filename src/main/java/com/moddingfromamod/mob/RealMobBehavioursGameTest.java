@@ -19,7 +19,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.monster.EnderMan;
+import net.minecraft.world.entity.monster.Enderman;
 import net.minecraft.world.entity.monster.zombie.Zombie;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.GameType;
@@ -61,7 +61,7 @@ public final class RealMobBehavioursGameTest {
             }
         }
         Player child = helper.makeMockPlayer(GameType.SURVIVAL);
-        EnderMan soldier = helper.spawn(EntityTypes.ENDERMAN, new BlockPos(2, y, 2));
+        Enderman soldier = helper.spawn(EntityTypes.ENDERMAN, new BlockPos(2, y, 2));
         Zombie zombie = helper.spawn(EntityTypes.ZOMBIE, new BlockPos(6, y, 6));
         zombie.setPersistenceRequired();
         zombie.setTarget(child);

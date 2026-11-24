@@ -307,7 +307,7 @@ public final class VanillaTwoClientTest {
             rig.base().setNoGravity(true);
             rig.base().setNoAi(true);
             rig.base().setSilent(true);
-            rig.base().setInvulnerable(true);
+            rig.base().setPermanentlyInvulnerable(true);
             for (var d : rig.all()) {
                 d.setNoGravity(true);
             }

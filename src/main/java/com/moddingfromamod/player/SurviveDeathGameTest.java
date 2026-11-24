@@ -99,7 +99,7 @@ public final class SurviveDeathGameTest {
                 PlayerPowers.Level.NORMAL, new ArrayList<>());
         ModifyPlayerTool.applyOne(subject, PlayerPowers.find("fast"), false, PlayerPowers.INFINITE,
                 PlayerPowers.Level.NORMAL, new ArrayList<>());
-        subject.invulnerableTime = 0;
+        subject.setInvulnerableTime(0);
         subject.hurt(subject.damageSources().generic(), 1000.0f);
         helper.assertTrue(subject.isAlive(), Component.literal("never_die did not hold, so this asks nothing"));
         helper.assertTrue(!SurviveDeath.remembering(subject),

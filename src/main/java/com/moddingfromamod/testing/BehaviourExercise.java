@@ -902,7 +902,7 @@ public final class BehaviourExercise {
     static void meadow(ServerLevel level, BlockPos at) {
         int r = ExercisePlan.ARENA_RADIUS;
         var random = net.minecraft.util.RandomSource.create(1696L);
-        var features = level.registryAccess().lookupOrThrow(net.minecraft.core.registries.Registries.CONFIGURED_FEATURE);
+        var features = level.registryAccess().lookupOrThrow(net.minecraft.core.registries.Registries.FEATURE);
         var trees = List.of(net.minecraft.data.worldgen.features.TreeFeatures.OAK,
                 net.minecraft.data.worldgen.features.TreeFeatures.BIRCH,
                 net.minecraft.data.worldgen.features.TreeFeatures.FANCY_OAK);

@@ -834,7 +834,7 @@ public final class VanillaLocomotionClientTest {
         m.snapTo(x, y, z, 180f, 0f);
         m.setYHeadRot(180f);
         m.setYBodyRot(180f);
-        m.setInvulnerable(true);
+        m.setPermanentlyInvulnerable(true);
         m.setPersistenceRequired();
         m.setSilent(true);
         if (frozen) {
@@ -912,7 +912,7 @@ public final class VanillaLocomotionClientTest {
             BAD.add(role + ": the bridge did not make a rig for " + id);
             throw new IllegalStateException("no rig for " + id);
         }
-        m.setInvulnerable(true);
+        m.setPermanentlyInvulnerable(true);
         m.setSilent(true);
         SUBJECTS.put(role, m);
         SPAWNED.add(m);

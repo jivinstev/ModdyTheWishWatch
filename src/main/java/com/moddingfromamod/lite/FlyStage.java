@@ -125,7 +125,7 @@ public final class FlyStage {
         if (!(carrier instanceof Mob m)) {
             throw new IllegalStateException("the bridge made no rig for " + id);
         }
-        m.setInvulnerable(true);
+        m.setPermanentlyInvulnerable(true);
         m.setSilent(true);
         LOG.info("FLYSTAGE staged '{}' (a flying copy of {}) on a {}-tick loop at {}", id, starter, LAP_TICKS,
                 java.util.Arrays.toString(CENTRE));

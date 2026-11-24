@@ -46,7 +46,7 @@ public final class GrappleGameTest {
         p.setGameMode(GameType.SURVIVAL);
         p.snapTo(feet.getX() + 0.5, feet.getY(), feet.getZ() + 0.5, 0, 0);
         p.setDeltaMovement(Vec3.ZERO);
-        p.hurtMarked = false;
+        p.syncVelocity = false;
         return p;
     }
 
@@ -59,7 +59,7 @@ public final class GrappleGameTest {
         Vec3 v = Grapple.pull(p);
         helper.assertTrue(v != null && v.x > 0.2 && v.y > 0 && Math.abs(v.z) < 0.05,
                 Component.literal("he was not sent toward the mark 10 east and 4 up: " + v));
-        helper.assertTrue(p.hurtMarked, Component.literal("the motion was not marked to go to his client"));
+        helper.assertTrue(p.syncVelocity, Component.literal("the motion was not marked to go to his client"));
         LivingFallEvent fall = new LivingFallEvent(p, 8, 1);
         NeoForge.EVENT_BUS.post(fall);
         helper.assertTrue(fall.getDamageMultiplier() == 0, Component.literal("his landing after the swing hurt him"));

@@ -96,7 +96,7 @@ public final class OnBlockShapeGameTest {
      * read as a block that never happened. The first version of this test fell into exactly that.
      */
     private static void hurtable(ServerPlayer p) {
-        p.invulnerableTime = 0;
+        p.setInvulnerableTime(0);
         // The two targets protect a new player differently: 1.21.4 until his client says it has
         // LOADED (a mock never does), 1.21.1 for a spawn timer. Whichever this Minecraft has.
         // 1.21.11 moved "his client has loaded" to the connection (ServerGamePacketListenerImpl.markClientLoaded)

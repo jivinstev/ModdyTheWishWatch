@@ -189,7 +189,7 @@ public final class WatchPinService {
                 } else {
                     // Full bag (owner): at his feet, never destroyed. Not a watch, so the loose-watch
                     // guard lets it land.
-                    p.drop(displaced, false);
+                    p.drop(displaced, false, net.minecraft.util.Prediction.SERVER_ONLY);
                 }
             }
         }
@@ -259,7 +259,7 @@ public final class WatchPinService {
                     inv.setItem(plan.displacedTo(), displaced);
                 } else {
                     String what = displaced.getHoverName().getString();
-                    p.drop(displaced, false);
+                    p.drop(displaced, false, net.minecraft.util.Prediction.SERVER_ONLY);
                     p.sendSystemMessage(net.minecraft.network.chat.Component.literal("✨ Your Wish Bag"
                             + " lives in slot 2 and your inventory is full, so your " + what
                             + " is on the ground at your feet!").withStyle(net.minecraft.ChatFormatting.LIGHT_PURPLE));

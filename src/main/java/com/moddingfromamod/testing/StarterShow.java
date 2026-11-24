@@ -149,7 +149,7 @@ public final class StarterShow {
         eye.onUpdateAbilities();
         kid = MockPlayerNetwork.asSurvival(MockPlayerNetwork.inServer(level, "Wisher",
                 UUID.nameUUIDFromBytes("moddingfromamod-starter-show".getBytes()), false));
-        kid.setInvulnerable(true);
+        kid.setPermanentlyInvulnerable(true);
         kid.getInventory().clearContent();
         kid.snapTo(centre.x, centre.y, centre.z, 0f, 0f);   // facing south, +z: where the wish appears
         LOGGER.info("{} showing {} at {}", TAG, which(), ground.toShortString());
@@ -420,7 +420,7 @@ public final class StarterShow {
         if (t >= SWING_AT && k < props.size() && (t - SWING_AT) % 70 == 0) {
             Mob m = props.get(k);
             kid.lookAt(EntityAnchorArgument.Anchor.EYES, m.getEyePosition());
-            kid.swing(InteractionHand.MAIN_HAND, true);
+            com.moddingfromamod.compat.Swings.swing(kid, InteractionHand.MAIN_HAND, true);
             kid.attack(m);
             String fn = com.moddingfromamod.item.WishItem.onHit(kid.getMainHandItem());
             var rl = net.minecraft.resources.Identifier.tryParse(fn);
@@ -476,7 +476,7 @@ public final class StarterShow {
     }
 
     private static void useOn(BlockPos target, Direction face) {
-        kid.swing(InteractionHand.MAIN_HAND, true);
+        com.moddingfromamod.compat.Swings.swing(kid, InteractionHand.MAIN_HAND, true);
         kid.gameMode.useItemOn(kid, level, kid.getMainHandItem(), InteractionHand.MAIN_HAND,
                 new BlockHitResult(Vec3.atCenterOf(target).add(0, 0.5, 0), face, target, false));
     }
@@ -547,7 +547,7 @@ public final class StarterShow {
         if (t >= 70 && k < LUCKY.length && (t - 70) % 70 == 0) {
             BlockPos body = BlockPos.containing(centre.x + LUCKY[k][0], centre.y, centre.z + LUCKY[k][1]);
             kid.lookAt(EntityAnchorArgument.Anchor.EYES, Vec3.atCenterOf(body));
-            kid.swing(InteractionHand.MAIN_HAND, true);
+            com.moddingfromamod.compat.Swings.swing(kid, InteractionHand.MAIN_HAND, true);
             kid.gameMode.destroyBlock(body);
         }
         return t < 330;

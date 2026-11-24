@@ -157,7 +157,7 @@ public final class WishShimmer {
             return null;
         }
         carrier.addTag(PREVIEW_TAG);
-        carrier.setInvulnerable(true);
+        carrier.setPermanentlyInvulnerable(true);
         carrier.setSilent(true);
         if (carrier instanceof Mob m) {
             m.setNoAi(true);
@@ -174,7 +174,7 @@ public final class WishShimmer {
     /** A preview made whole: it can be hurt, moves and makes its sounds. */
     private static void makeReal(Entity e) {
         e.removeTag(PREVIEW_TAG);
-        e.setInvulnerable(false);
+        e.setPermanentlyInvulnerable(false);
         e.setSilent(false);
         if (e instanceof Mob m) {
             m.setNoAi(false);

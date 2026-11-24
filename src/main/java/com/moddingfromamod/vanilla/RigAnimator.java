@@ -77,7 +77,7 @@ public final class RigAnimator {
      */
     public static Motion motionOf(LivingEntity base) {
         // No start time is known here, so a talk read this way runs on the creature's age.
-        return new Motion(base.swinging, base.getAttackAnim(1.0f),
+        return new Motion(base.isSwinging(), base.getSwingAnimation(1.0f),
                 base.walkAnimation.speed(), base.walkAnimation.position(),
                 base.tickCount / 20.0f, RigTalk.isTalking(base), base.tickCount / 20.0f);
     }

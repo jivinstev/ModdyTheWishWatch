@@ -121,12 +121,12 @@ public final class ModifyPlayerGameTest {
         helper.assertTrue(NeverDie.isOn(subject), Component.literal("the never-die flag was not set"));
 
         subject.setHealth(subject.getMaxHealth());
-        subject.invulnerableTime = 0;
+        subject.setInvulnerableTime(0);
         subject.hurt(subject.damageSources().generic(), 6.0f);
         helper.assertTrue(subject.getHealth() < subject.getMaxHealth(),
                 Component.literal("he was not hurt at all — that is invincibility, not what he asked for"));
 
-        subject.invulnerableTime = 0;
+        subject.setInvulnerableTime(0);
         subject.hurt(subject.damageSources().generic(), 1000.0f);
         helper.assertTrue(subject.isAlive(), Component.literal("a killing blow still killed him"));
         helper.assertTrue(subject.getHealth() > 0, Component.literal("he is alive with no health"));

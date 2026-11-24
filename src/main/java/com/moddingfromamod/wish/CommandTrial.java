@@ -65,8 +65,8 @@ public final class CommandTrial {
     public static List<String> problems(MinecraftServer server, ServerLevel level, Vec3 pos,
                                         String raw) {
         String command = WishExecutor.repairAttributeIds(raw == null ? "" : raw.strip()).command();
-        CommandSourceStack stack = new CommandSourceStack(CommandSource.NULL, pos, Vec2.ZERO, level,
-                net.minecraft.server.permissions.LevelBasedPermissionSet.GAMEMASTER, "wish-trial", Component.literal("wish-trial"), server, null);
+        CommandSourceStack stack = com.moddingfromamod.compat.CommandStacks.of(CommandSource.NULL, pos, Vec2.ZERO, level,
+                net.minecraft.server.permissions.LevelBasedPermissionSet.GAMEMASTER, Component.literal("wish-trial"), server, null);
         ParseResults<CommandSourceStack> parsed =
                 server.getCommands().getDispatcher().parse(command, stack);
         if (!parsed.getExceptions().isEmpty()) {

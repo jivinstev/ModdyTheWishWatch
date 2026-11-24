@@ -321,7 +321,7 @@ public final class WishCapture {
         ACTIVE.put(player.getUUID(),
                 new Session(origin, held.startedMs(), held.lastActivityMs()));
         BORROWED.merge(player.getUUID(), 1, Integer::sum);
-        player.setInvulnerable(true);
+        player.setPermanentlyInvulnerable(true);
         player.sendSystemMessage(Component.literal(
                         "✨ Hold still for a sec! Moddy needs to borrow your eyes to make sure your "
                         + "wish looks just right... 📸🪄")
@@ -576,7 +576,7 @@ public final class WishCapture {
         }
         // Warp back to the exact spot AND view he had before — undoing the camera aim.
         player.connection.teleport(o.x(), o.y(), o.z(), o.yaw(), o.pitch());
-        player.setInvulnerable(o.wasInvulnerable());
+        player.setPermanentlyInvulnerable(o.wasInvulnerable());
         // AND PUT GRAVITY BACK -- see Origin. The aim raised this to stop the body falling out of
         // frame mid-shot; leaving it raised leaves a child floating after his eyes are handed back.
         player.setNoGravity(o.wasNoGravity());
@@ -670,7 +670,7 @@ public final class WishCapture {
             Session s = ACTIVE.remove(player.getUUID());
             QUEUES.remove(player.getUUID());
             if (s != null && s.origin() != null) {
-                player.setInvulnerable(s.origin().wasInvulnerable());
+                player.setPermanentlyInvulnerable(s.origin().wasInvulnerable());
                 player.setNoGravity(s.origin().wasNoGravity());
             }
         }

@@ -100,7 +100,7 @@ public final class RigTransformation {
         static Frozen of(Mob m) {
             Frozen f = new Frozen(m, m.isNoAi(), m.isInvulnerable());
             m.setNoAi(true);
-            m.setInvulnerable(true);
+            m.setPermanentlyInvulnerable(true);
             m.setDeltaMovement(net.minecraft.world.phys.Vec3.ZERO);
             // 🔴 A BAT IS BORN RESTING, and only its AI wakes it (RigPowers.tick does, for a driven
             // rig). A resting bat snaps itself under the block above every tick -- floor(y)+1-height
@@ -115,7 +115,7 @@ public final class RigTransformation {
         void restore() {
             if (!mob.isRemoved()) {
                 mob.setNoAi(noAi);
-                mob.setInvulnerable(invulnerable);
+                mob.setPermanentlyInvulnerable(invulnerable);
             }
         }
     }

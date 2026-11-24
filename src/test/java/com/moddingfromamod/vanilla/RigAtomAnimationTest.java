@@ -774,18 +774,18 @@ class RigAtomAnimationTest {
             ps.translate(anim.position()[0], anim.position()[1], anim.position()[2]);
         }
         if (isHead) {
-            ps.mulPose(Axis.YP.rotationDegrees(headDeg[0]));
-            ps.mulPose(Axis.XP.rotationDegrees(headDeg[1]));
+            ps.rotate(Axis.YP.rotationDegrees(headDeg[0]));
+            ps.rotate(Axis.XP.rotationDegrees(headDeg[1]));
         }
         // Bedrock order is Z, Y, X; Y and Z negate because the top-level scale(-1,…) mirrors X.
         if (anim != null && anim.rotation() != null) {
-            ps.mulPose(Axis.ZP.rotationDegrees(-anim.rotation()[2]));
-            ps.mulPose(Axis.YP.rotationDegrees(-anim.rotation()[1]));
-            ps.mulPose(Axis.XP.rotationDegrees(anim.rotation()[0]));
+            ps.rotate(Axis.ZP.rotationDegrees(-anim.rotation()[2]));
+            ps.rotate(Axis.YP.rotationDegrees(-anim.rotation()[1]));
+            ps.rotate(Axis.XP.rotationDegrees(anim.rotation()[0]));
         }
-        ps.mulPose(Axis.ZP.rotationDegrees(-rot[2]));
-        ps.mulPose(Axis.YP.rotationDegrees(-rot[1]));
-        ps.mulPose(Axis.XP.rotationDegrees(rot[0]));
+        ps.rotate(Axis.ZP.rotationDegrees(-rot[2]));
+        ps.rotate(Axis.YP.rotationDegrees(-rot[1]));
+        ps.rotate(Axis.XP.rotationDegrees(rot[0]));
         if (anim != null && anim.scale() != null) {
             ps.scale(anim.scale()[0], anim.scale()[1], anim.scale()[2]);
         }

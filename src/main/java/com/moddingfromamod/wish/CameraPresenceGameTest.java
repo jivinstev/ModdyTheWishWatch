@@ -44,7 +44,7 @@ public final class CameraPresenceGameTest {
 
     private static boolean toldToForget(List<Object> packets, int id) {
         for (Object o : packets) {
-            if (o instanceof ClientboundRemoveEntitiesPacket rm && rm.getEntityIds().contains(id)) {
+            if (o instanceof ClientboundRemoveEntitiesPacket rm && rm.entityIds().contains(id)) {
                 return true;
             }
         }

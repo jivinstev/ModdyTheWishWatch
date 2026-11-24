@@ -1,10 +1,10 @@
 package com.moddingfromamod.compat;
 
-/** The Minecraft version THIS build targets (26.2), for tools outside the JVM that must know. */
+/** The Minecraft version THIS build targets (26.3), for tools outside the JVM that must know. */
 public final class Target {
     private Target() {
     }
 
     /** Handed to the CBScript compiler as {@code CBSCRIPT_MC}, which flips its attribute-id correction. */
-    public static final String MINECRAFT = "26.2";
+    public static final String MINECRAFT = "26.3";
 }

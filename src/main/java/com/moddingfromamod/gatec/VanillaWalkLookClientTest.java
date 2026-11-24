@@ -775,7 +775,10 @@ public final class VanillaWalkLookClientTest {
             // of the target: a creature standing still still turns its body, and a turn
             // delivered across two client ticks pulls the displays apart in yaw exactly as a
             // split move does in position.
-            double[] t = {d.getInterpolation().position().x, d.getInterpolation().position().z, d.getInterpolation().yRot()};
+            // 26.3: the handler's target() is null once no interpolation runs; then the target is where it stands.
+            var target = d.getInterpolation().target();
+            double[] t = target != null ? new double[] {target.position().x, target.position().z, target.yRot()}
+                    : new double[] {d.getX(), d.getZ(), d.getYRot()};
             double[] was = LAST_TARGET.put(d.getId(), t);
             targets.add(t[0] + "," + t[1] + "," + t[2]);
             // an interpolation RESTARTED with the target unchanged (a resync packet re-sent the

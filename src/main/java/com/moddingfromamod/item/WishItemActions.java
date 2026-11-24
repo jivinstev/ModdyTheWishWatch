@@ -135,7 +135,7 @@ public final class WishItemActions {
         }
         anchor.setInvisible(true);
         anchor.setNoGravity(true);
-        anchor.setInvulnerable(true);
+        anchor.setPermanentlyInvulnerable(true);
         anchor.setSilent(true);
         setMarker(anchor);
         if (tag != null && !tag.isEmpty()) {

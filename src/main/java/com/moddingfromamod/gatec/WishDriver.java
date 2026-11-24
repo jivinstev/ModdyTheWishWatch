@@ -370,7 +370,7 @@ public final class WishDriver {
             return false;
         }
         // 1.21.9: a press carries the input that made it; Enter, no modifiers, is what a keyboard press would give
-        ((Button) b).onPress(new net.minecraft.client.input.KeyEvent(org.lwjgl.glfw.GLFW.GLFW_KEY_ENTER, 0, 0));
+        ((Button) b).onPress(new net.minecraft.client.input.KeyEvent(com.mojang.blaze3d.platform.InputConstants.KEY_RETURN, 0, 0));
         return true;
     }
 

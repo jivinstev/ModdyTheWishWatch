@@ -282,7 +282,7 @@ public final class MapArtPanels {
 
     private static void dress(ItemFrame frame) {
         frame.setInvisible(true);       // the picture, not the picture frame
-        frame.setInvulnerable(true);
+        frame.setPermanentlyInvulnerable(true);
         frame.setSilent(true);
         frame.setRotation(0);           // 8 positions exist; a rotated tile is a rotated 1/n of art
     }

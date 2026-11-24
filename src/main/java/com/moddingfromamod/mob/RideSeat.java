@@ -261,7 +261,7 @@ public final class RideSeat {
         seat.setSilent(true);
         seat.setNoAi(true);
         seat.setNoGravity(true);
-        seat.setInvulnerable(true);
+        seat.setPermanentlyInvulnerable(true);
         seat.noPhysics = true;
         seat.addTag(SEAT_TAG);
         seat.addTag(CreatureMatch.PROXY_TAG);

@@ -213,8 +213,8 @@ public final class LoadAndPourGameTest {
                     boolean found = false;
                     for (BlockPos q : BlockPos.betweenClosed(floorA.offset(-2, 0, -2), floorA.offset(2, 4, 2))) {
                         if (helper.getLevel().getBlockEntity(q) instanceof SignBlockEntity sign) {
-                            String l2 = sign.getFrontText().getMessage(1, false).getString();
-                            String l3 = sign.getFrontText().getMessage(2, false).getString();
+                            String l2 = sign.getText(net.minecraft.world.level.block.entity.SignTextSlot.FRONT).getMessages(false).get(1).getString();
+                            String l3 = sign.getText(net.minecraft.world.level.block.entity.SignTextSlot.FRONT).getMessages(false).get(2).getString();
                             helper.assertTrue(l2.equals("ice + sugar"), Component.literal("sign line 2 is '" + l2 + "'"));
                             helper.assertTrue(l3.contains("Mushroom Stew"), Component.literal("sign line 3 is '" + l3 + "'"));
                             found = true;

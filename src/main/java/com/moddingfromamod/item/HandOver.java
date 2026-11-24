@@ -7,7 +7,7 @@ import net.minecraft.world.item.ItemStack;
  * <b>Put a stack in a child's hands, and know whether it got there.</b>
  *
  * <p>Every path that hands something over used to be a line of the form
- * {@code if (!player.getInventory().add(stack)) player.drop(stack, false);} — which reads as
+ * {@code if (!player.getInventory().add(stack)) player.drop(stack, false, net.minecraft.util.Prediction.SERVER_ONLY);} — which reads as
  * exactly right and, in the only game mode he plays in, has never once dropped anything.
  *
  * <h2>Why the obvious line is wrong</h2>
@@ -63,7 +63,7 @@ public final class HandOver {
         // Creative discard above only fires when NOTHING moved), so this covers both "no room at
         // all" and "room for some of it".
         if (!stack.isEmpty()) {
-            player.drop(stack, false);
+            player.drop(stack, false, net.minecraft.util.Prediction.SERVER_ONLY);
         }
         // THE CLIENT HAS TO BE TOLD. Adding to the server-side inventory alone leaves him staring
         // at an empty hotbar while the command reports success — vanilla's own /give calls this for

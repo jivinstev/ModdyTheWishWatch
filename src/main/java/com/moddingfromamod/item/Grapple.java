@@ -125,7 +125,7 @@ public final class Grapple {
         }
         Vec3 motion = new Vec3(v[0], v[1], v[2]);
         p.setDeltaMovement(motion);
-        p.hurtMarked = true;
+        p.syncVelocity = true;
         p.resetFallDistance();
         FLUNG.put(p.getUUID(), p.level().getGameTime());
         return motion;

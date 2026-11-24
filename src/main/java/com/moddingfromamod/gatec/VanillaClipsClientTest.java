@@ -242,7 +242,7 @@ public final class VanillaClipsClientTest {
                     CreatureAnatomy.widthBlocks(extents) * scale,
                     CreatureAnatomy.heightBlocks(extents) * scale, null);
             rig.base().setNoAi(true);
-            rig.base().setInvulnerable(true);
+            rig.base().setPermanentlyInvulnerable(true);
             rig.base().setSilent(true);
             // 🔴 THE REAL DRIVER, not this harness. Everything the creature does from here is the
             // shipped path; the test only ever changes what the CARRIER is doing.
@@ -376,14 +376,14 @@ public final class VanillaClipsClientTest {
             attackBefore = grab(mc, "5a-attack-before");
         }
         if (ticks % 8 == 3 && ticks < 33) {
-            server.execute(() -> base.swing(net.minecraft.world.InteractionHand.MAIN_HAND, true));
+            server.execute(() -> com.moddingfromamod.compat.Swings.swing(base, net.minecraft.world.InteractionHand.MAIN_HAND, true));
         }
         server.execute(() -> {
-            float p = base.getAttackAnim(1.0f);
+            float p = base.getSwingAnimation(1.0f);
             if (p > peakAttack) {
                 peakAttack = p;
             }
-            if (base.swinging) {
+            if (base.isSwinging()) {
                 sawSwinging = true;
             }
         });

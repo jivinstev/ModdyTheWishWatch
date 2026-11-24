@@ -172,10 +172,10 @@ public class AtomNormalPathTest {
                                        float yawDeg) {
         PoseStack ps = new PoseStack();
         ps.translate(0.5, 0.0, 0.5);
-        ps.mulPose(new Quaternionf().rotationYXZ((float) (-Math.PI / 180.0) * yawDeg, 0.0f, 0.0f));
+        ps.rotate(new Quaternionf().rotationYXZ((float) (-Math.PI / 180.0) * yawDeg, 0.0f, 0.0f));
         ps.mulPose(new Transformation(new Vector3f(0.0f, 0.5f, 0.0f), left, scale, right)
                 .getMatrix());
-        ps.mulPose(new Quaternionf().rotationY((float) Math.PI));
+        ps.rotate(new Quaternionf().rotationY((float) Math.PI));
         ps.translate(-0.5f, -0.5f, -0.5f);
         return ps.last();
     }

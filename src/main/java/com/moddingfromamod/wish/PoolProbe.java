@@ -154,7 +154,7 @@ public final class PoolProbe {
                 if (rig.base() instanceof net.minecraft.world.entity.Mob mob) {
                     mob.setNoAi(true);
                 }
-                rig.base().setInvulnerable(true);
+                rig.base().setPermanentlyInvulnerable(true);
                 rig.base().setSilent(true);
                 LOG.info("POOL: staged {} at {} {} {}", rows.get(i).species(), r(x), r(y), r(z));
             }

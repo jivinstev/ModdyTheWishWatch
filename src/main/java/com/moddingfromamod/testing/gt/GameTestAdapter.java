@@ -145,7 +145,7 @@ public final class GameTestAdapter {
                                                 .build())))
                                 : List.of())));
                 Identifier id = Identifier.fromNamespaceAndPath(f.ns(), f.id());
-                TestData<Holder<TestEnvironmentDefinition<?>>> data = new TestData<>(env,
+                TestData<Holder<TestEnvironmentDefinition<?>>> data = new TestData<>(env, net.minecraft.world.level.Level.OVERWORLD,
                         Identifier.fromNamespaceAndPath(f.ns(), f.spec().template()),
                         CoverageMap.timeoutOf(f.method(), f.spec().timeoutTicks()), 0, f.spec().required(), net.minecraft.world.level.block.Rotation.NONE,
                         false, f.spec().attempts(), 1, f.spec().skyAccess(), 0);
@@ -157,7 +157,7 @@ public final class GameTestAdapter {
                         new TestEnvironmentDefinition.AllOf(List.of()));
                 e.registerTest(CoverageMap.IDLE_ID, new FunctionGameTestInstance(
                         ResourceKey.create(Registries.TEST_FUNCTION, CoverageMap.IDLE_ID),
-                        new TestData<>(idle, Identifier.fromNamespaceAndPath(CoverageMap.IDLE_ID.getNamespace(), "empty_test"),
+                        new TestData<>(idle, net.minecraft.world.level.Level.OVERWORLD, Identifier.fromNamespaceAndPath(CoverageMap.IDLE_ID.getNamespace(), "empty_test"),
                                 CoverageMap.IDLE_TICKS * 2, 0, true, net.minecraft.world.level.block.Rotation.NONE,
                                 false, 1, 1, false, 0)));
             }

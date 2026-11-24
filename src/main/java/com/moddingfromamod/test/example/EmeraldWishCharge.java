@@ -67,7 +67,7 @@ public final class EmeraldWishCharge implements WishCharge {
         if (p == null) {
             return Paid.FREE;                                     // nobody to charge (he left): let it through
         }
-        int took = p.getInventory().clearOrCountMatchingItems(s -> s.is(Items.EMERALD), 1,
+        int took = p.getInventory().clearOrCountMatchingItems(s -> s.is(Items.EMERALD), false, 1,
                 p.inventoryMenu.getCraftSlots());
         return took == 1 ? Paid.FREE : new Paid(true, () -> NO_EMERALD);
     }

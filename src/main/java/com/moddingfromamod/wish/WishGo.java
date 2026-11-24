@@ -139,7 +139,7 @@ public final class WishGo {
                 landing.yaw(), landing.pitch(), System.currentTimeMillis()));
         // He may have arrived in the dark, 3,000 blocks from anywhere, beside whatever the wish
         // summoned. The same seam WishCapture already uses for the photograph.
-        player.setInvulnerable(true);
+        player.setPermanentlyInvulnerable(true);
         player.addEffect(new net.minecraft.world.effect.MobEffectInstance(
                 net.minecraft.world.effect.MobEffects.RESISTANCE, ARRIVAL_GRACE_TICKS, 4,
                 false, false));
@@ -172,7 +172,7 @@ public final class WishGo {
             return false;
         }
         com.moddingfromamod.compat.Teleports.player(player, level, home.x(), home.y(), home.z(), home.yaw(), home.pitch());
-        player.setInvulnerable(false);
+        player.setPermanentlyInvulnerable(false);
         arrive(player);
         tell(player, "🏠 Back where you were!", ChatFormatting.AQUA);
         return true;

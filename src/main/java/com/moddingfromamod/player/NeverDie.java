@@ -73,6 +73,6 @@ public final class NeverDie {
         player.clearFire();
         // Without this the next tick of whatever was killing him kills him again on the same tick
         // budget, which reads as the power not working rather than as a very fast second death.
-        player.invulnerableTime = 40;
+        player.setInvulnerableTime(40);
     }
 }
