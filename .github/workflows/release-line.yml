@@ -1,0 +1,58 @@
+# The release line follows main: every change on neoforge-1.21.8 is already on main.
+#
+# main holds every change. neoforge-1.21.8 is main at a release point (Port CI builds, gates and releases from it), and
+# a higher neoforge-<mc> branch holds only its port's own changes plus main merged upward. So a fix lands on main
+# FIRST; a hotfix the release line needs before the next release point is cherry-picked DOWN from main.
+#
+# This job refuses a push or pull request that brings neoforge-1.21.8 a commit with no equivalent on main. It asks
+# `git cherry origin/main HEAD`, which matches by patch, so both ways a change legitimately reaches the release line pass:
+# a commit reachable from main (main fast-forwarded or merged in), and a cherry-pick of a commit that is on main. Merge
+# commits carry no patch of their own and are not judged.
+#
+# One exception, the only commit Port CI itself writes to the release line: its install-manifest refresh
+# (github-actions[bot], .github/port-install.json alone, after a promote). This repository has no install manifest
+# today, so it never happens; the exception keeps a future one from failing here.
+#
+# It reads only. Port CI (port-ci.yml) runs beside it and is not changed: a red check here blocks a pull request, and on
+# a push says loudly that the release line has a commit main does not.
+name: Release line follows main
+
+on:
+  push:
+    branches: ["neoforge-1.21.8"]
+  pull_request:
+    branches: ["neoforge-1.21.8"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  follows-main:
+    name: Every release-line commit is on main
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - name: git cherry origin/main HEAD
+        run: |
+          set -euo pipefail
+          git fetch --no-tags -q origin main
+          bad=0
+          while read -r mark sha; do
+            [ "$mark" = "+" ] || continue
+            author="$(git log -1 --format='%an' "$sha")"
+            files="$(git show --name-only --format= "$sha" | sed '/^$/d')"
+            if [ "$author" = "github-actions[bot]" ] && [ "$files" = ".github/port-install.json" ]; then
+              echo "allowed: $sha is Port CI's install-manifest refresh"
+              continue
+            fi
+            echo "::error::$(git log -1 --format='%h %s' "$sha") is on the release line but not on main. Land it on main first, then fast-forward the release line or cherry-pick it down."
+            bad=1
+          done < <(git cherry origin/main HEAD)
+          if [ "$bad" = 0 ]; then
+            echo "Every commit on this release line is on main (by patch)." >> "$GITHUB_STEP_SUMMARY"
+          fi
+          exit "$bad"
