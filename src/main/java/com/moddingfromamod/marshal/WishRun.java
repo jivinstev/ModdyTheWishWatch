@@ -301,6 +301,24 @@ public final class WishRun {
         builderMade = true;
     }
 
+    private volatile com.moddingfromamod.world.WorldRefusal worldRefusal;
+
+    /**
+     * A world rule refused one of this wish's calls ({@code McpProtocol}'s reach rule): the FIRST such refusal is kept,
+     * so a make with no agent can tell the child that rule rather than "didn't work" ({@code BuilderMake}). The agent
+     * reads the refusal's own words in the call's reply; this is the same fact, as data. Null is ignored.
+     */
+    public void refusedByWorld(com.moddingfromamod.world.WorldRefusal why) {
+        if (why != null && worldRefusal == null) {
+            worldRefusal = why;
+        }
+    }
+
+    /** The first world rule that refused one of this wish's calls, or null. */
+    public com.moddingfromamod.world.WorldRefusal worldRefusal() {
+        return worldRefusal;
+    }
+
     // ---- what the child has already been told --------------------------------------
 
     private boolean planAnnounced;
