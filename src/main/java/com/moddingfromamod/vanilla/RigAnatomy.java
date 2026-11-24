@@ -55,9 +55,29 @@ public final class RigAnatomy {
         }
     }
 
-    /** A wing panel; {@code side} is the sign of its X, and every panel of a side shares a hinge. */
-    public record Wing(String bone, int side, float[] hinge, int rank, boolean hanging) {
+    /**
+     * A wing panel; {@code side} is the sign of its X, and every panel of a side shares a hinge.
+     *
+     * <p>{@code upright}: the side's panels stand on edge, thin front to back (the swept, bat,
+     * dragon and butterfly kits build them that way, and so do many hand-sculpted wings). Turned
+     * about the body's long axis as it is, such a wing swings within its own plane and slices the
+     * air edge first instead of pushing it down, so in flight it is first laid flat about
+     * {@code attach}: the point on its ATTACHMENT edge (the top of the innermost panel, where the
+     * leading edge meets the body), and the flap then turns about that same point. See
+     * {@link #uprightPanels}.
+     */
+    public record Wing(String bone, int side, float[] hinge, int rank, boolean hanging,
+                       boolean upright, float[] attach) {
     }
+
+    /**
+     * A box is a PLATE when its thinnest dimension is at most this fraction of its middle one. A
+     * feather rod (two thin dimensions alike) is not a plate, so it votes neither way. A small kit
+     * wing read whole (seven wide, five tall, three deep) is just inside it.
+     */
+    static final float PLATE_RATIO = 0.6f;
+    /** A plate is upright when its face points within this many degrees of the body's long axis. */
+    static final float UPRIGHT_DEGREES = 40f;
 
     /** One tail segment, joint at the end nearest the body; {@code index} counts outwards. */
     public record Tail(String bone, float[] joint, int index) {
@@ -144,6 +164,20 @@ public final class RigAnatomy {
 
     public List<Wing> wings() {
         return wings;
+    }
+
+    /**
+     * This anatomy with no wing read as upright: the flight pose exactly as it was before upright
+     * wings were laid flat. Only the tests use it, as the "before" side of a comparison.
+     */
+    RigAnatomy withoutUprightWings() {
+        List<Wing> flat = new ArrayList<>(wings.size());
+        for (Wing w : wings) {
+            flat.add(new Wing(w.bone(), w.side(), w.hinge(), w.rank(), w.hanging(), false,
+                    w.attach()));
+        }
+        return new RigAnatomy(parts, front, groundY, topY, bodyBottomY, body, head, legs,
+                List.copyOf(flat), tails, fins, tentacles, eyes);
     }
 
     public List<Tail> tails() {
@@ -355,9 +389,23 @@ public final class RigAnatomy {
             boolean hanging = h > w;
             float hy = hanging ? in[4] : (in[1] + in[4]) / 2f;
             float hz = (in[2] + in[5]) / 2f;
+            // Upright or not is decided for the whole SIDE (every panel and what hangs from it),
+            // by plate area: a bat wing's arm is a thin flat strut, its membranes stand on edge,
+            // and the arm must go where the membranes go or the wing comes apart.
+            List<float[][]> sideBoxes = new ArrayList<>();
+            for (CreatureSculpt.Part p : mine) {
+                for (String n : RigLocomotion.subtree(parts, p.name())) {
+                    float[][] cs = rest.get(n);
+                    if (cs != null) {
+                        sideBoxes.add(cs);
+                    }
+                }
+            }
+            boolean upright = uprightPanels(sideBoxes);
+            float[] attach = {innerX, in[4], hz};
             for (int i = 0; i < mine.size(); i++) {
                 wings.add(new Wing(mine.get(i).name(), side, new float[]{innerX, hy, hz}, i,
-                        hanging));
+                        hanging, upright, attach));
             }
         }
 
@@ -580,6 +628,139 @@ public final class RigAnatomy {
     }
 
     /** {@code [minX,minY,minZ,maxX,maxY,maxZ]} of eight corners, or null. */
+    /**
+     * <b>Do these boxes make an UPRIGHT wing</b> — panels standing on edge, thin front to back?
+     * Each box is read as it is drawn at rest (its eight corners, any rest tilt included): its
+     * three edges are its own axes, and when the shortest is at most {@link #PLATE_RATIO} of the
+     * middle one the box is a plate whose face points along that shortest edge. A plate whose face
+     * points within {@link #UPRIGHT_DEGREES} of Z (the body's long axis) is upright; one facing up
+     * is a flat wing, one facing sideways a slab hanging at the side. The wing is upright when
+     * upright plates make at least half of its plate area. Rods and cubes do not vote. When no box
+     * is a plate on its own, the wing's whole extent is read as one box by the same rule; and a
+     * wing that is not a plate even then is not upright: nothing is laid flat on a guess. A wing
+     * whose boxes step back one behind another ({@link #isFan}) is never upright.
+     */
+    static boolean uprightPanels(List<float[][]> boxes) {
+        double up = 0;
+        double all = 0;
+        double cos = Math.cos(Math.toRadians(UPRIGHT_DEGREES));
+        if (isFan(boxes)) {
+            return false;
+        }
+        for (float[][] c : boxes) {
+            float[] plate = plate(c);
+            if (plate == null) {
+                continue;
+            }
+            all += plate[3];
+            if (Math.abs(plate[2]) >= cos) {
+                up += plate[3];
+            }
+        }
+        if (all > 0) {
+            return up >= 0.5 * all;
+        }
+        // No box is a plate on its own (a small kit wing is three stubby blocks side by side): the
+        // wing is read as one box, the extent of all of them together, by the same rule.
+        float[] b = null;
+        for (float[][] c : boxes) {
+            float[] x = bounds(c);
+            if (x == null) {
+                continue;
+            }
+            b = b == null ? x : new float[]{Math.min(b[0], x[0]), Math.min(b[1], x[1]),
+                    Math.min(b[2], x[2]), Math.max(b[3], x[3]), Math.max(b[4], x[4]),
+                    Math.max(b[5], x[5])};
+        }
+        if (b == null) {
+            return false;
+        }
+        float[][] whole = new float[8][];
+        for (int i = 0; i < 8; i++) {
+            whole[i] = new float[]{(i & 1) == 0 ? b[0] : b[3], (i & 2) == 0 ? b[1] : b[4],
+                    (i & 4) == 0 ? b[2] : b[5]};
+        }
+        float[] plate = plate(whole);
+        return plate != null && Math.abs(plate[2]) >= cos;
+    }
+
+    /**
+     * Boxes laid out one behind another (a feather fan: each feather a little further back) rather
+     * than side by side along the span. Each may stand on edge, but the wing as a whole is spread
+     * front to back already, and laying it over would stand the fan on end. A fan is never upright.
+     */
+    static boolean isFan(List<float[][]> boxes) {
+        if (boxes.size() < 2) {
+            return false;
+        }
+        float xLo = Float.MAX_VALUE;
+        float xHi = -Float.MAX_VALUE;
+        float zLo = Float.MAX_VALUE;
+        float zHi = -Float.MAX_VALUE;
+        for (float[][] c : boxes) {
+            float[] b = bounds(c);
+            if (b == null) {
+                continue;
+            }
+            float x = (b[0] + b[3]) / 2f;
+            float z = (b[2] + b[5]) / 2f;
+            xLo = Math.min(xLo, x);
+            xHi = Math.max(xHi, x);
+            zLo = Math.min(zLo, z);
+            zHi = Math.max(zHi, z);
+        }
+        return zHi - zLo > 1f + FAN_RATIO * (xHi - xLo);
+    }
+
+    /** How far back, as a fraction of how far out, a wing's boxes may step before it is a fan. */
+    static final float FAN_RATIO = 0.5f;
+
+    /**
+     * A drawn box's face, when it is a plate: {@code {nx, ny, nz, area}} with {@code n} the unit
+     * normal (along its shortest edge), or {@code null} for a rod or a cube. Corners are indexed as
+     * {@link RigLocomotion#corners} writes them: bit 0 is X, bit 1 Y, bit 2 Z.
+     */
+    static float[] plate(float[][] c) {
+        if (c == null || c.length < 8) {
+            return null;
+        }
+        float[][] e = {sub(c[1], c[0]), sub(c[2], c[0]), sub(c[4], c[0])};
+        float[] len = {norm(e[0]), norm(e[1]), norm(e[2])};
+        Integer[] order = {0, 1, 2};
+        java.util.Arrays.sort(order, Comparator.comparingDouble(i -> len[i]));
+        float thin = len[order[0]];
+        float mid = len[order[1]];
+        float wide = len[order[2]];
+        if (mid <= 0f || thin > PLATE_RATIO * mid) {
+            return null;
+        }
+        float[] n;
+        if (thin > 1e-6f) {
+            float[] t = e[order[0]];
+            n = new float[]{t[0] / thin, t[1] / thin, t[2] / thin};
+        } else {
+            // A box with no thickness at all: its face is across its two other edges.
+            float[] a = e[order[1]];
+            float[] b = e[order[2]];
+            float[] x = {a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2],
+                    a[0] * b[1] - a[1] * b[0]};
+            float l = norm(x);
+            if (l <= 0f) {
+                return null;
+            }
+            n = new float[]{x[0] / l, x[1] / l, x[2] / l};
+        }
+        return new float[]{n[0], n[1], n[2], mid * wide};
+    }
+
+    private static float[] sub(float[] a, float[] b) {
+        return new float[]{a[0] - b[0], a[1] - b[1], a[2] - b[2]};
+    }
+
+    private static float norm(float[] v) {
+        return (float) Math.sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]);
+    }
+
     static float[] bounds(float[][] corners) {
         if (corners == null || corners.length == 0) {
             return null;

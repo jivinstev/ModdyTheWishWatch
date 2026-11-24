@@ -342,7 +342,7 @@ public final class BuilderMenus {
             }
             String say = switch (r.outcome()) {
                 case REFUSED -> "The Builder can't make that here: " + r.detail();
-                case BANK_EMPTY -> "Your wish bank is empty. It fills up again soon.";
+                case BANK_EMPTY -> r.detail();
                 case BUSY -> "Your last Builder make is still on its way.";
                 default -> "";
             };
@@ -493,7 +493,7 @@ public final class BuilderMenus {
         BuilderMake.make(p, spec, BuilderSettings.forPlayer(p.getUUID()).allow(), flow.editOf()).thenAccept(r -> {
             String say = switch (r.outcome()) {
                 case REFUSED -> "The Builder can't make that here: " + r.detail();
-                case BANK_EMPTY -> "Your wish bank is empty. It fills up again soon.";
+                case BANK_EMPTY -> r.detail();
                 case BUSY -> "Your last Builder make is still on its way.";
                 default -> "";
             };
@@ -523,7 +523,7 @@ public final class BuilderMenus {
         BuilderMake.magicianBuilding(p, flow.magicianBuilding(), calls).thenAccept(r -> {
             String say = switch (r.outcome()) {
                 case REFUSED -> "The Builder can't change that here: " + r.detail();
-                case BANK_EMPTY -> "Your wish bank is empty. It fills up again soon.";
+                case BANK_EMPTY -> r.detail();
                 case BUSY -> "Your last Builder make is still on its way.";
                 default -> "";
             };
@@ -553,7 +553,7 @@ public final class BuilderMenus {
         BuilderMake.magician(p, flow.magician(), calls).thenAccept(r -> {
             String say = switch (r.outcome()) {
                 case REFUSED -> "The Builder can't change that here: " + r.detail();
-                case BANK_EMPTY -> "Your wish bank is empty. It fills up again soon.";
+                case BANK_EMPTY -> r.detail();
                 case BUSY -> "Your last Builder make is still on its way.";
                 default -> "";
             };

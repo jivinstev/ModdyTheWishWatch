@@ -306,30 +306,49 @@ public final class WishService {
         // is the route, and the doors cannot drift apart. A Wish Crafter's typed words always go to the
         // Apprentice: a local, deterministic matcher that offers Builder makes, and never the agent. A Magician's go
         // there when his watch's toggle says so, or when he asked for it by name. BELOW the lexicon (a CLEARLY is
-        // answered as one) and ABOVE the bank, the graders and the book: looking at the Apprentice's page spends
+        // answered as one) and ABOVE the graders and the book (the world's charge is asked first, below): the page spends
         // nothing, and nothing of a Crafter's words is kept. His words are not in this record either.
+        // ── THE WORLD'S CHARGE IS ASKED FIRST (#13): before the re-wish reader or the Apprentice opens a page, so a world
+        // that refuses this wish refuses it before anything opens. Told truthfully what will answer, which is decided
+        // here with nothing done: a named recipe is a REPLAY; typed words the Apprentice's route or the re-wish reader
+        // will answer are APPRENTICE; a cached recipe his words match is a REPLAY of it; anything else goes to the
+        // Magician. A child in distress is never refused (ChargeRefusal). With no charge, nothing here changes a thing.
+        final WishRoute.Route route = named.isEmpty()
+                ? ApprenticeService.route(player, hint, WishIntent.isQuestion(text)) : null;
+        final boolean readerTakes = named.isEmpty() && route != WishRoute.Route.APPRENTICE
+                && Rewish.wouldRead(player, text, source, hint);
+        TypedMatch typed = named.isEmpty() && route != WishRoute.Route.APPRENTICE && !readerTakes
+                ? typedMatch(player, text, source) : null;
+        WishAsk ask = askFor(player, source, text, distress, named, namedTemplateId, route, readerTakes, typed);
+        if (refusedByCharge(player, ask, text, source)) {
+            return Outcome.BANK_EMPTY;
+        }
+
         // a typed RE-WISH the local reader is sure of — change one of his things the Builder's way, another
         // of one, undo / stop — is answered here, at once, by the paths that already exist; anything else goes on as
-        // typed. After the lexicon (L0) above, before the route and the bank (each path it takes is charged as it is).
+        // typed. After the lexicon (L0) and the world's charge, before the route (each path it takes is charged as it is).
         if (named.isEmpty() && Rewish.tryAnswer(player, text, source, hint)) {
             com.moddingfromamod.agent.ActionLog.wish(CrafterService.isCrafter(player) ? "" : text, "REWISH", source.name(), "",
                     player.getStringUUID());
             return Outcome.APPRENTICE;
         }
-        if (named.isEmpty() && ApprenticeService.route(player, hint, WishIntent.isQuestion(text))
-                == WishRoute.Route.APPRENTICE) {
+        if (readerTakes) {
+            // the reader found no instant way after all, and his words go on as typed: the charge is asked again about
+            // what answers them now.
+            typed = typedMatch(player, text, source);
+            ask = askFor(player, source, text, distress, named, namedTemplateId, route, false, typed);
+            if (refusedByCharge(player, ask, text, source)) {
+                return Outcome.BANK_EMPTY;
+            }
+        }
+        if (route == WishRoute.Route.APPRENTICE) {
             boolean crafter = CrafterService.isCrafter(player);
             ApprenticeService.offer(player, text, source);
             com.moddingfromamod.agent.ActionLog.wish(crafter ? "" : text, "APPRENTICE", source.name(), "",
                     player.getStringUUID());
             return Outcome.APPRENTICE;
         }
-        // A QUESTION is never refused here — it is answered, and costs nothing at pickup.
-        if (WishCharge.get().refusesAtSubmit(player, distress, text, named.isPresent())) {
-            com.moddingfromamod.agent.ActionLog.wish(text, "BANK_EMPTY", source.name(), "",
-                    player.getStringUUID());
-            return Outcome.BANK_EMPTY;
-        }
+        final WishAsk asked = ask;
 
         // Memoised on the sanitised text, so the three re-wish paths that skip this method join
         // the grade already in flight rather than starting a second one.
@@ -442,28 +461,10 @@ public final class WishService {
         // ── IS MODDY TIRED? Asked here, and acted on only after the cache has declined:
         // a confident match or a button is "open for cached wishes"; a NEW grant is refused.
         final Optional<com.moddingfromamod.health.ModdyTired.Tired> tired = tiredNow(now);
-        Optional<WishTemplates.Match> matched = named;
-        boolean question = false;
-        boolean contextual = false;
-        if (matched.isEmpty()) {
-            question = WishIntent.isQuestion(text);
-            // A PRONOUN IS NOT THE ONLY WAY TO POINT AT SOMETHING. "Make the stone tower bigger"
-            // has none, and used to be handed to the offline matcher -- which matched on the word
-            // "tower" and BUILT HIM A SECOND TOWER. Naming a thing he already owns, plus a word
-            // that changes it, is exactly as contextual as saying "it", and a fixed list of
-            // commands can no more edit his tower than it can edit "it".
-            contextual = WishReference.isContextual(text) || namesSomethingHeOwns(player, text);
-            matched = (question || contextual) ? Optional.empty() : route(text, source);
-            // never quietly reuse a design he took off his watch. A button or press names
-            // its recipe and skips this; only WORD matching is refused, and the wish goes on to
-            // the agent like any other.
-            if (matched.isPresent() && WatchHides.hidesTemplate(player.getStringUUID(),
-                    matched.get().templateId())) {
-                LOGGER.info("not serving '{}' by word match: he hid it from his watch",
-                        matched.get().templateId());
-                matched = Optional.empty();
-            }
-        }
+        // his words' match was decided above, before the charge was asked (typedMatch), and is used as it was decided.
+        Optional<WishTemplates.Match> matched = named.isPresent() ? named : typed.matched();
+        boolean question = named.isEmpty() && typed.question();
+        boolean contextual = named.isEmpty() && typed.contextual();
         if (matched.isPresent()) {
             WishTopic.wished(player.getUUID(), text);   //: his previous wish, cached or not
             String templateId = matched.get().templateId();
@@ -480,7 +481,7 @@ public final class WishService {
             // wish per press, whichever it is (bank/RewishPrice). The bank emptied since the check
             // above (two presses on the last wish) → refused in the bank's words, nothing run.
             // served with no model, so HALF a wish (WishBank.Params.priceHalves).
-            var paid = WishCharge.get().charge(player.getUUID(), tagged.id(), false);
+            var paid = WishCharge.get().charge(asked, tagged.id());
             if (paid.refused()) {
                 WishBook.get(serverOf(player)).complete(wish.id(), WishStatus.REJECTED,
                         "the wish bank emptied before this wish could be paid for");
@@ -628,6 +629,67 @@ public final class WishService {
         com.moddingfromamod.agent.WishQueue.global().offer(
                 WishBook.get(serverOf(player)).byId(wish.id()).orElse(wish));
         return Outcome.PENDING_ESCALATION;
+    }
+
+    /** What typed words come to before anything answers them: a question, a pointer at his things, a cached recipe. */
+    private record TypedMatch(boolean question, boolean contextual, Optional<WishTemplates.Match> matched) {
+    }
+
+    /**
+     * How the core will answer typed words that are not the Apprentice's or the re-wish reader's: decided once, with
+     * nothing done, so the world's charge can be told before anything runs and the answer is the one it was told.
+     */
+    private static TypedMatch typedMatch(ServerPlayer player, String text, WishSource source) {
+        boolean question = WishIntent.isQuestion(text);
+        // A PRONOUN IS NOT THE ONLY WAY TO POINT AT SOMETHING. "Make the stone tower bigger"
+        // has none, and used to be handed to the offline matcher -- which matched on the word
+        // "tower" and BUILT HIM A SECOND TOWER. Naming a thing he already owns, plus a word
+        // that changes it, is exactly as contextual as saying "it", and a fixed list of
+        // commands can no more edit his tower than it can edit "it".
+        boolean contextual = WishReference.isContextual(text) || namesSomethingHeOwns(player, text);
+        Optional<WishTemplates.Match> matched = (question || contextual) ? Optional.empty() : route(text, source);
+        // never quietly reuse a design he took off his watch. A button or press names
+        // its recipe and skips this; only WORD matching is refused, and the wish goes on to
+        // the agent like any other.
+        if (matched.isPresent() && WatchHides.hidesTemplate(player.getStringUUID(),
+                matched.get().templateId())) {
+            LOGGER.info("not serving '{}' by word match: he hid it from his watch",
+                    matched.get().templateId());
+            matched = Optional.empty();
+        }
+        return new TypedMatch(question, contextual, matched);
+    }
+
+    /** What the world's charge is told about this wish (see the call in submit for the rule). */
+    private static WishAsk askFor(ServerPlayer player, WishSource source, String text, boolean distress,
+                                  Optional<WishTemplates.Match> named, String namedTemplateId, WishRoute.Route route,
+                                  boolean readerTakes, TypedMatch typed) {
+        WishAsk base = WishAsk.of(player.getUUID(), source, WishAsk.Magic.MAGICIAN).withText(text)
+                .withDistress(distress);
+        if (named.isPresent()) {
+            String id = named.get().templateId();
+            return base.withMagic(WishAsk.Magic.REPLAY)
+                    .withRecipe(id == null || id.isEmpty() ? (namedTemplateId == null ? "" : namedTemplateId) : id);
+        }
+        if (route == WishRoute.Route.APPRENTICE || readerTakes) {
+            return base.withMagic(WishAsk.Magic.APPRENTICE);
+        }
+        if (typed != null && typed.matched().isPresent()) {
+            return base.withMagic(WishAsk.Magic.REPLAY).withRecipe(typed.matched().get().templateId());
+        }
+        return base;
+    }
+
+    /** Ask the world's charge; a refusal is said (once) and logged, and the wish goes no further. */
+    private static boolean refusedByCharge(ServerPlayer player, WishAsk ask, String text, WishSource source) {
+        ChargeRefusal r = ChargeGate.ask(ask, ChargeRefusal.Where.WISH);
+        if (!r.refused()) {
+            return false;
+        }
+        ChargeGate.say(player, r);
+        com.moddingfromamod.agent.ActionLog.wish(CrafterService.isCrafter(player) ? "" : text, "BANK_EMPTY",
+                source.name(), "", player.getStringUUID());
+        return true;
     }
 
     /**
