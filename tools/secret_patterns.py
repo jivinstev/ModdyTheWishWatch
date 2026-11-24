@@ -1,8 +1,8 @@
 """secret_patterns.py — the ONE library of what a credential looks like.
 
 Every scanner that keeps a key or token out of a repository reads this file: tools/secret-scan.py (the git hooks, the
-tracked-tree check, the history scan, the Claude Code PreToolUse guard) and tools/leak-scan.py (the public tree, the
-mirror and the public clone's pre-push). It is public-safe on purpose: it names SHAPES, never values.
+tracked-tree check, the history scan, the Claude Code PreToolUse guard) and tools/leak-scan.py (the tracked tree,
+CI and the pre-push hook in tools/public-hooks/). It is public-safe on purpose: it names SHAPES, never values.
 
 Two kinds of check, and they fail in opposite directions:
 
