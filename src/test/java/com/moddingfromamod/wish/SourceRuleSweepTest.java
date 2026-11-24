@@ -631,7 +631,22 @@ class SourceRuleSweepTest {
                     path -> isJavaSource(path) && path.getFileName().toString().endsWith("GameTest.java"),
                     text -> java.util.regex.Pattern.compile(
                             "\\.then(Apply|Accept|Run|Compose|Combine)\\(").matcher(text).find(),
-                    "CompletableFuture<ToolResult> b = a.thenApply(r -> call());\n"));
+                    "CompletableFuture<ToolResult> b = a.thenApply(r -> call());\n"),
+            new Rule("an entity is added to a client at its exact position, not its block's corner",
+                    """
+                    new ClientboundAddEntityPacket(entity, data, blockPos) is the HANGING-entity \
+                    constructor (paintings, item frames): in 1.21.8 it writes blockPos.getX/Y/Z, \
+                    so any other entity added with entity.blockPosition() lands up to a block off \
+                    on each axis and stays there on a stock client until a move or teleport \
+                    corrects it. RigVeilService's reveal did this, and a revealed creature that \
+                    held still stayed pulled apart (#59). Send the exact form: id, UUID, getX/Y/Z, \
+                    rotations, type, data, getDeltaMovement() and getYHeadRot(). A hanging entity \
+                    passes its own getPos(), never blockPosition().""",
+                    SourceRuleSweepTest::isJavaSource,
+                    text -> java.util.regex.Pattern.compile(
+                            "new\\s+ClientboundAddEntityPacket\\([^;]*?\\.blockPosition\\(\\)")
+                            .matcher(text).find(),
+                    "p.connection.send(new ClientboundAddEntityPacket(e, 0, e.blockPosition()));\n"));
 
     // ──────────────────────────── the same idea, for the shell tooling ────────────────────────────
 

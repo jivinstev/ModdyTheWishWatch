@@ -349,7 +349,12 @@ public final class RigVeilService {
                 if (!e.isAlive()) {
                     continue;
                 }
-                p.connection.send(new ClientboundAddEntityPacket(e, 0, e.blockPosition()));
+                // The exact form: (entity, data, blockPosition) is the HANGING-entity
+                // constructor and sends the block's corner, so a part that holds still would
+                // stay up to a block off on a stock client until something moved it (#59).
+                p.connection.send(new ClientboundAddEntityPacket(e.getId(), e.getUUID(),
+                        e.getX(), e.getY(), e.getZ(), e.getXRot(), e.getYRot(), e.getType(), 0,
+                        e.getDeltaMovement(), e.getYHeadRot()));
                 p.connection.send(new ClientboundSetEntityDataPacket(
                         e.getId(), e.getEntityData().getNonDefaultValues()));
                 sent++;

@@ -512,8 +512,10 @@ public final class RigVeilGameTest {
 
                     // Vanilla's tracker re-pairing him: the add the sweep has to answer.
                     for (Entity d : rig[0].displays()) {
-                        child.connection.send(new ClientboundAddEntityPacket(d, 0,
-                                d.blockPosition()));
+                        child.connection.send(new ClientboundAddEntityPacket(d.getId(),
+                                d.getUUID(), d.getX(), d.getY(), d.getZ(), d.getXRot(),
+                                d.getYRot(), d.getType(), 0, d.getDeltaMovement(),
+                                d.getYHeadRot()));
                     }
                     drain(helper, child);
                     RigVeilService.onServerTick(
@@ -617,6 +619,73 @@ public final class RigVeilGameTest {
                     helper.assertTrue(takenBack.isEmpty(),
                             Component.literal("the tick after the reveal took " + takenBack.size() + " part(s) back "
                                     + "off the child (ids " + String.join(",", takenBack) + ")"));
+                });
+            } finally {
+                tearDown(rig[0]);
+                MockPlayerNetwork.remove(child);
+                MockPlayerNetwork.remove(cam);
+            }
+        });
+        helper.succeed();
+    }
+
+    /**
+     * <b>The reveal hands each part back at its exact position, not its block's corner</b> (#59).
+     *
+     * <p>{@code new ClientboundAddEntityPacket(e, 0, e.blockPosition())} is the hanging-entity
+     * constructor: it writes {@code blockPos.getX/Y/Z}, so a display released that way lands up to
+     * a block off on each axis and stays there on a stock client until a move or teleport corrects
+     * it, which a creature holding still never sends. The rig is aimed at a fractional spot so a
+     * block-corner add cannot pass by coincidence.
+     */
+    @GameTest(template = "empty_test", batch = ATOM_BATCH)
+    public void theRevealReleasesEachPartAtItsExactPosition(GameTestHelper helper) {
+        isolated(helper, () -> {
+            ServerPlayer cam = camera(helper);
+            ServerPlayer child = MockPlayerNetwork.inLevel(helper);
+            DisplayRig[] rig = new DisplayRig[1];
+            try {
+                MockPlayerNetwork.withoutChannels(child, () -> {
+                    publishAtoms(helper, "gt_atomveil_exact");
+                    rig[0] = build(helper, helper.absoluteVec(new Vec3(2.37, 2.61, 2.83)));
+                    helper.assertTrue(RigVeil.isVeiling(),
+                            Component.literal("nothing was veiled, so a reveal that released nothing would pass"));
+                    drain(helper, child);
+
+                    revealAtoms(helper);
+
+                    java.util.Map<Integer, ClientboundAddEntityPacket> adds = new java.util.HashMap<>();
+                    for (Object o : drain(helper, child)) {
+                        if (o instanceof ClientboundAddEntityPacket add) {
+                            adds.put(add.getId(), add);
+                        }
+                    }
+                    List<String> off = new ArrayList<>();
+                    int fractional = 0;
+                    for (Entity d : rig[0].displays()) {
+                        ClientboundAddEntityPacket add = adds.get(d.getId());
+                        helper.assertTrue(add != null,
+                                Component.literal("the reveal sent no add for rig part " + d.getId()
+                                        + ", so its position could not be checked"));
+                        if (d.getX() != Math.floor(d.getX()) || d.getY() != Math.floor(d.getY())
+                                || d.getZ() != Math.floor(d.getZ())) {
+                            fractional++;
+                        }
+                        if (Math.abs(add.getX() - d.getX()) > 1e-6
+                                || Math.abs(add.getY() - d.getY()) > 1e-6
+                                || Math.abs(add.getZ() - d.getZ()) > 1e-6) {
+                            off.add(d.getId() + " sent (" + add.getX() + ", " + add.getY() + ", "
+                                    + add.getZ() + ") but stands at (" + d.getX() + ", " + d.getY()
+                                    + ", " + d.getZ() + ")");
+                        }
+                    }
+                    helper.assertTrue(fractional > 0,
+                            Component.literal("every rig part stands on a whole-block position, so a "
+                                    + "block-corner add would pass this test unseen"));
+                    helper.assertTrue(off.isEmpty(),
+                            Component.literal("the reveal released " + off.size() + " part(s) away from "
+                                    + "where they stand: " + String.join("; ", off) + ". A stock "
+                                    + "client keeps that wrong spot until the part moves"));
                 });
             } finally {
                 tearDown(rig[0]);
