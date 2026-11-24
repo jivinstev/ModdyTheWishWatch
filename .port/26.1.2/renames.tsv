@@ -3,3 +3,6 @@
 net.minecraft.world.inventory.ClickType	net.minecraft.world.inventory.ContainerInput
 # Entity.getTags() -> Entity.entityTags(): applied by hand at the compiler's own error lines only (other types keep getTags()).
 re:\.handleInventoryMouseClick\(	.handleContainerInput(
+# 26.1 split #minecraft:dirt: grass_block/podzol/mycelium went to #grass_blocks, mud and moss to their own tags, and
+# #substrate_overworld holds exactly 1.21.11's #dirt (the ten blocks, compared in both jars). Meaning-preserving.
+re:\bBlockTags\.DIRT\b	BlockTags.SUBSTRATE_OVERWORLD

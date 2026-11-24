@@ -230,11 +230,10 @@ public final class ChangeDropsTool implements McpTool {
     /**
      * <b>The loot modifiers NeoForge has LOADED right now</b>, by id.
      *
-     * <p>From NeoForge 26.2 the {@code LootModifierManager} is a retained reload listener, reached through the
-     * server's resources ({@code getListener(NeoForgeReloadListeners.LOOT_MODIFIERS_KEY)}), the way NeoForge's own
-     * {@code CommonHooks.modifyLoot} reaches it; before, it sat behind a package-private accessor read by reflection.
-     * It fails LOUDLY: no running server, or no manager, goes red in {@code ChangeDropsGameTest}, never quietly
-     * reports every rule as "not loaded".
+     * <p>From NeoForge 26.1 the {@code LootModifierManager} is a reload listener the server's resources hand out by key
+     * ({@code managers().getListener(NeoForgeReloadListeners.LOOT_MODIFIERS_KEY)}, as NeoForge's own
+     * {@code CommonHooks.modifyLoot} reads it), so no reflection is needed. It is LOUD by design: no server, or no
+     * manager, must go red in {@code ChangeDropsGameTest}, never quietly report every rule as "not loaded".
      */
     public static final class LiveLootModifiers {
         private LiveLootModifiers() {
@@ -243,16 +242,16 @@ public final class ChangeDropsTool implements McpTool {
         public static Set<String> ids() {
             var server = net.neoforged.neoforge.server.ServerLifecycleHooks.getCurrentServer();
             if (server == null) {
-                throw new IllegalStateException("no running server, so no loaded loot modifiers to read");
+                throw new IllegalStateException("no server is running, so its loaded loot modifiers cannot be read");
             }
-            var manager = server.getServerResources().managers()
+            net.neoforged.neoforge.common.loot.LootModifierManager manager = server.getServerResources().managers()
                     .getListener(net.neoforged.neoforge.resource.NeoForgeReloadListeners.LOOT_MODIFIERS_KEY);
             if (manager == null) {
-                throw new IllegalStateException("NeoForge has no loot modifier manager in the server's resources; "
-                        + "ChangeDropsTool.LiveLootModifiers must follow it");
+                throw new IllegalStateException("NeoForge's loot modifier manager is not among the server's reload "
+                        + "listeners; ChangeDropsTool.LiveLootModifiers must follow it");
             }
             Set<String> out = new TreeSet<>();
-            for (var mod : manager.getSortedModifiers()) {
+            for (net.neoforged.neoforge.common.loot.IGlobalLootModifier mod : manager.getSortedModifiers()) {
                 out.add(String.valueOf(manager.getId(mod)));
             }
             return out;

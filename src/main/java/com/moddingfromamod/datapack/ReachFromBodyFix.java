@@ -31,6 +31,27 @@ public final class ReachFromBodyFix {
     private ReachFromBodyFix() {
     }
 
+    /** A step's or a landing's victim line, before or after the marker: group 1 is the creature's tag, 2 the reach. */
+    private static final Pattern REACH = Pattern.compile(
+            "^\\s*execute as @e\\[tag=([A-Za-z0-9_.+-]+),[^\\]]*scores=\\{mfam_(?:stepw|landair)=[^}]*}] at @s as @e\\[distance=\\.\\."
+                    + "([0-9]+(?:\\.[0-9]+)?),.*$");
+
+    /**
+     * Every step or landing reach in {@code text}, in line order, as {@code "<tag> ..<R>"}: what a pack's victims are
+     * selected by, marker or not, so two packs (a fresh render and an install copy) can be compared on how far they
+     * reach rather than on their bytes.
+     */
+    public static List<String> reaches(String text) {
+        List<String> out = new java.util.ArrayList<>();
+        for (String line : text.split("\n", -1)) {
+            Matcher m = REACH.matcher(line);
+            if (m.matches()) {
+                out.add(m.group(1) + " .." + m.group(2));
+            }
+        }
+        return out;
+    }
+
     /** {@code text} with a pre-#2505 step or landing reach counted from the creature's side, or unchanged. */
     public static String fix(String text, List<String> notes, ToDoubleFunction<String> halfWidthOfSpecies) {
         if (!text.contains("mfam_stepw") && !text.contains("mfam_landair")) {
