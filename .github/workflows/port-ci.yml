@@ -184,6 +184,11 @@ jobs:
           done
           [ "$n" -gt 0 ] || { echo "::error::dep_override names no entry"; exit 1; }
       - name: Build and gates
+        env:
+          # Gate B runs our `ci` GameTest shard, not every shard (hand-added; KEEP IT when port-ci.py regenerates this
+          # file). The kit stops a Gate B run after a fixed 1500 s and the whole suite takes 22-32 min, so without it
+          # every Gate B here is stopped by the clock and reported as a crash. The full tier runs by hand.
+          PORT_GRADLE_ARGS: "-Pshard=ci"
         run: |
           git rev-parse "HEAD^{tree}" > "$RUNNER_TEMP/built-tree.txt"   # the tree this run built: a from_run release checks it
           git fetch --no-tags origin "main"
