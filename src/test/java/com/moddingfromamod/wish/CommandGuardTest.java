@@ -125,8 +125,11 @@ class CommandGuardTest {
         assertFalse(CommandGuard.isAllowed("gamerule advance_time 0"));
         assertFalse(CommandGuard.isAllowed("gamerule advance_time false extra"));
         assertTrue(CommandGuard.isAllowed("gamerule minecraft:advance_weather true"));
-        // 1.21.11: the camelCase names are not commands any more, so they are not on the list either
-        assertFalse(CommandGuard.isAllowed("gamerule doDaylightCycle false"));
+        // the camelCase name the agent learned is allowed for these two only: GameRuleIds renames it before it runs
+        assertTrue(CommandGuard.isAllowed("gamerule doDaylightCycle false"));
+        assertTrue(CommandGuard.isAllowed("gamerule doWeatherCycle true"));
+        assertFalse(CommandGuard.isAllowed("gamerule keepInventory true"));
+        assertFalse(CommandGuard.isAllowed("gamerule mobGriefing false"));
     }
 
     @Test

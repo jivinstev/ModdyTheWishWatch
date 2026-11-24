@@ -156,11 +156,13 @@ public final class CommandGuard {
     }
 
     /**
-     * The two game rules "make it daytime forever" and its weather twin need, by their 1.21.11 registry ids (the
-     * camelCase doDaylightCycle / doWeatherCycle are no longer commands there), bare or namespaced.
+     * The two game rules "make it daytime forever" and its weather twin need: their 1.21.11 registry ids, bare or
+     * namespaced, and the camelCase names the agent learned. The guard sees the command before {@link CommandDialect}
+     * runs, and GameRuleIds rewrites doDaylightCycle / doWeatherCycle to advance_time / advance_weather before it
+     * executes; every other rule stays refused under either spelling.
      */
-    private static final Set<String> GAMERULES = Set.of("advance_time", "advance_weather", "minecraft:advance_time",
-            "minecraft:advance_weather");
+    private static final Set<String> GAMERULES = Set.of("dodaylightcycle", "doweathercycle",
+            "advance_time", "advance_weather", "minecraft:advance_time", "minecraft:advance_weather");
 
     /**
      * <b>Commands that change a PLAYER's lasting state</b> — what he holds, where he is, his health,
