@@ -54,6 +54,16 @@ public final class EmeraldPlugin implements ModdyPlugin {
   one emerald), `EmeraldPlugin` (its registration) and `EmeraldWishChargeGameTest`, which presses a recipe through
   the real `WishService.submit` twice: one emerald pays for the first, and the second is refused in the plug-in's
   words. It is test code and never ships in the jar.
+- **Testing a mod of your own against this one.** Two jars carry what a separate mod's tests need, built from this
+  repository and never shipped:
+  - `./gradlew testKitJar` (`build/test-kit/`): the GameTest harness (`testing/`), its test-only mixin config,
+    `CorpusSource` and `UsesCorpus`;
+  - `./gradlew testsJar` (`build/core-tests/`): this mod's unit-test classes, its GameTest and `test/` classes, and the
+    public corpus resources those tests read off the classpath.
+
+  Compile your tests against the mod jar and both. In a dev run the harness and the GameTest classes share packages
+  with the mod, and a package split across two mods stops the boot, so put them in the same mod as this jar's entries
+  (one merged dev jar), not beside it.
 
 ## Documented extension points
 

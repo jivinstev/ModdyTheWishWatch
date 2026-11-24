@@ -33,3 +33,31 @@ def testKitJar = tasks.register('testKitJar', Jar) {
 }
 artifacts { testKit testKitJar }
 tasks.named('assemble') { dependsOn testKitJar }   // so every `./gradlew build` builds and checks it (about a second)
+
+// THE TESTS JAR -- the kit's companion, never the shipped jar. A mod built against this one may extend or call this
+// mod's tests: its unit-test classes (a shared helper such as a sweep or a fixture reader), its GameTest classes and the
+// test/ package (a GameTest of the other mod that drives one of these), and the public corpus resources those tests read
+// off the classpath (src/main/resources/corpus, which a shipped jar never carries). CorpusSource and UsesCorpus are in
+// the kit, so they are left out here. Its own folder, build/core-tests/, never build/libs (Port CI releases what is
+// there). Built alone by `./gradlew testsJar`; not part of `build`, because only a mod built against this one needs it.
+tasks.register('testsJar', Jar) {
+    group = 'build'
+    description = 'This mod\'s test and GameTest classes and its public corpus, for a mod built against it'
+    archiveClassifier = 'coretests'
+    destinationDirectory = layout.buildDirectory.dir('core-tests')
+    from(sourceSets.test.output) {
+        exclude 'com/moddingfromamod/CorpusSource.class', 'com/moddingfromamod/CorpusSource$*.class',
+                'com/moddingfromamod/UsesCorpus.class'
+    }
+    from(sourceSets.main.output) {
+        include '**/?*GameTest.class', '**/?*GameTest$*.class', 'com/moddingfromamod/test/**', 'corpus/**'
+        exclude 'com/moddingfromamod/testing/**'
+    }
+    duplicatesStrategy = DuplicatesStrategy.FAIL
+    doLast {
+        def n = 0
+        new java.util.zip.ZipFile(archiveFile.get().asFile).withCloseable { z -> z.entries().each { if (it.name.endsWith('.class')) n++ } }
+        if (n == 0) throw new GradleException("tests jar: no classes in ${archiveFile.get().asFile}")
+        logger.lifecycle("tests jar: ${n} classes, ${archiveFile.get().asFile}")
+    }
+}
