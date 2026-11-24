@@ -1,0 +1,1099 @@
+diff --git a/src/main/java/com/moddingfromamod/builder/BlockRenamesGameTest.java b/src/main/java/com/moddingfromamod/builder/BlockRenamesGameTest.java
+index f79298d..7218336 100644
+--- a/src/main/java/com/moddingfromamod/builder/BlockRenamesGameTest.java
++++ b/src/main/java/com/moddingfromamod/builder/BlockRenamesGameTest.java
+@@ -7,7 +7,15 @@ import com.moddingfromamod.testing.gt.GameTestHolder;
+ import java.nio.charset.StandardCharsets;
+ import java.nio.file.Files;
+ import java.nio.file.Path;
++import net.minecraft.core.BlockPos;
++import net.minecraft.core.Direction;
+ import net.minecraft.core.registries.BuiltInRegistries;
++import net.minecraft.nbt.CompoundTag;
++import net.minecraft.nbt.ListTag;
++import net.minecraft.nbt.NbtUtils;
++import net.minecraft.world.level.block.Block;
++import net.minecraft.world.level.block.Blocks;
++import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+ import net.minecraft.gametest.framework.GameTestHelper;
+ import net.minecraft.network.chat.Component;
+ import net.minecraft.resources.ResourceLocation;
+@@ -65,4 +73,74 @@ public class BlockRenamesGameTest {
+             WishLibraryGameTest.restore(server);
+         }
+     }
++
++    /** A build-ground store as 1.21.8 wrote it: no marker, a chain the building replaced, planks it wrote there. */
++    static CompoundTag ground1218(long pos) {
++        CompoundTag chain = new CompoundTag();
++        chain.putString("Name", "minecraft:chain");
++        CompoundTag props = new CompoundTag();
++        props.putString("axis", "x");
++        chain.put("Properties", props);
++        ListTag palette = new ListTag();
++        palette.add(chain);
++        palette.add(NbtUtils.writeBlockState(Blocks.OAK_PLANKS.defaultBlockState()));
++        CompoundTag b = new CompoundTag();
++        b.putString("id", "gt_rename_ground");
++        b.put("palette", palette);
++        b.putLongArray("pos", new long[] {pos});
++        b.putIntArray("prior", new int[] {0});
++        b.putIntArray("written", new int[] {1});
++        ListTag builds = new ListTag();
++        builds.add(b);
++        CompoundTag tag = new CompoundTag();
++        tag.putInt("v", 1);
++        tag.put("builds", builds);
++        return tag;
++    }
++
++    /**
++     * <b>Undoing a building raised on 1.21.8 over a chain gives the chain back, as iron_chain</b> — through the store's
++     * own load and take-back. Before the rename was applied here, {@code NbtUtils.readBlockState} read the old id as AIR
++     * and the undo left a hole.
++     */
++    @GameTest(template = "empty_test", batch = "block_renames", timeoutTicks = 100)
++    public static void aChainJournalledOn1218IsGivenBackAsIronChain(GameTestHelper helper) {
++        var lookup = helper.getLevel().registryAccess();
++        long pos = BlockPos.asLong(1, 2, 3);
++        BuildGroundJournal.Store s = BuildGroundJournal.Store.load(ground1218(pos), lookup);
++        BuildGroundJournal.Answer a = BuildGroundJournal.takeBack(s, "gt_rename_ground", pos,
++                Blocks.OAK_PLANKS.defaultBlockState());
++        Block iron = BuiltInRegistries.BLOCK.getValue(ResourceLocation.parse("minecraft:iron_chain"));
++        helper.assertTrue(a.what() == BuildGroundJournal.Back.RESTORE && a.state() != null,
++                Component.literal("the undo gave nothing back: " + a));
++        helper.assertTrue(a.state().getBlock() == iron,
++                Component.literal("the undo gave back " + a.state() + ", not iron_chain"));
++        helper.assertTrue(a.state().getValue(BlockStateProperties.AXIS) == Direction.Axis.X,
++                Component.literal("the chain's axis was lost: " + a.state()));
++
++        CompoundTag saved = BuildGroundJournal.Store.load(ground1218(pos), lookup).save(new CompoundTag(), lookup);
++        helper.assertTrue(com.moddingfromamod.compat.Target.MINECRAFT.equals(saved.getStringOr("mc", "")),
++                Component.literal("a save does not stamp this Minecraft: " + saved));
++        helper.succeed();
++    }
++
++    /** A build ground a NEWER Minecraft wrote is read as it is, records nothing more, and is written back unchanged. */
++    @GameTest(template = "empty_test", batch = "block_renames", timeoutTicks = 100)
++    public static void aBuildGroundFromANewerMinecraftIsNeverWrittenOver(GameTestHelper helper) {
++        var lookup = helper.getLevel().registryAccess();
++        long pos = BlockPos.asLong(1, 2, 3);
++        CompoundTag tag = ground1218(pos);
++        tag.putString("mc", "1.22");
++        BuildGroundJournal.Store s = BuildGroundJournal.Store.load(tag, lookup);
++        helper.assertTrue(s.readOnly != null, Component.literal("a newer Minecraft's ground was not marked read-only"));
++        helper.assertTrue(s.refused == null, Component.literal("a newer Minecraft's ground was refused: " + s.refused));
++        helper.assertTrue(s.byBuild.containsKey("gt_rename_ground"), Component.literal("it was not read"));
++        helper.assertTrue(s.save(new CompoundTag(), lookup).equals(tag),
++                Component.literal("a save wrote over a newer Minecraft's ground"));
++        CompoundTag bad = ground1218(pos);
++        bad.putString("mc", "latest");
++        helper.assertTrue(BuildGroundJournal.Store.load(bad, lookup).refused != null,
++                Component.literal("a marker that is not a version was read"));
++        helper.succeed();
++    }
+ }
+diff --git a/src/main/java/com/moddingfromamod/builder/BuildGroundJournal.java b/src/main/java/com/moddingfromamod/builder/BuildGroundJournal.java
+index d8b3bfa..ee22c47 100644
+--- a/src/main/java/com/moddingfromamod/builder/BuildGroundJournal.java
++++ b/src/main/java/com/moddingfromamod/builder/BuildGroundJournal.java
+@@ -35,6 +35,12 @@ import org.slf4j.LoggerFactory;
+  * </ul>
+  * A building raised before this has no record and comes down to air, as it always did: nothing is shimmed
+  * (docs/COMPAT_SHIMS.md). Past {@link #MAX_CELLS} a building records no more, and the rest of it comes down to air.
++ *
++ * <p><b>Block ids across a Minecraft rename.</b> The store is not run through Minecraft's DataFixers, and
++ * {@code NbtUtils.readBlockState} reads an id this game does not have as AIR: a chain journalled on 1.21.8 would come
++ * back as a hole on 1.21.10. So the store keeps the Minecraft version it was written for ({@code mc}, none = 1.21.8)
++ * and each palette state's {@code Name} goes through {@link com.moddingfromamod.compat.BlockRenames} before it is read.
++ * A store a NEWER Minecraft wrote is read as it is, records nothing more, and is written back exactly as it was read.
+  */
+ public final class BuildGroundJournal {
+ 
+@@ -60,15 +66,34 @@ public final class BuildGroundJournal {
+         final Map<String, EventJournal<BlockState>> byBuild = new LinkedHashMap<>();
+         /** A copy written by a newer build: record nothing, give nothing back. */
+         String refused;
++        /** A copy a newer MINECRAFT wrote: read as it is, record nothing; {@link #original} is what a save writes. */
++        String readOnly;
++        CompoundTag original;
+ 
+         static Store load(CompoundTag tag, HolderLookup.Provider lookup) {
+             Store s = new Store();
+             int v = tag.getIntOr("v", 0);
+             if (v > VERSION) {
+                 s.refused = "the build ground was saved by a newer Moddy (v" + v + ")";
++                s.original = tag.copy();
++                LOGGER.warn("[build-ground] {}; it is left untouched", s.refused);
++                return s;
++            }
++            String writtenFor;
++            try {
++                writtenFor = com.moddingfromamod.compat.StoredBlockStates.writtenFor(tag);
++            } catch (IllegalArgumentException e) {
++                s.refused = "the build ground's " + e.getMessage();
++                s.original = tag.copy();
+                 LOGGER.warn("[build-ground] {}; it is left untouched", s.refused);
+                 return s;
+             }
++            String running = com.moddingfromamod.compat.Target.MINECRAFT;
++            if (com.moddingfromamod.compat.BlockRenames.newer(writtenFor, running)) {
++                s.readOnly = "the build ground was saved on Minecraft " + writtenFor + ", newer than " + running;
++                s.original = tag.copy();
++                LOGGER.warn("[build-ground] {}: read as it is, and not saved over this run", s.readOnly);
++            }
+             HolderGetter<Block> blocks = lookup.lookupOrThrow(Registries.BLOCK);
+             ListTag list = tag.getListOrEmpty("builds");
+             for (int i = 0; i < list.size(); i++) {
+@@ -77,7 +102,7 @@ public final class BuildGroundJournal {
+                     List<CompoundTag> palette = new java.util.ArrayList<>();
+                     ListTag p = t.getListOrEmpty("palette");
+                     for (int k = 0; k < p.size(); k++) {
+-                        palette.add(p.getCompoundOrEmpty(k));
++                        palette.add(com.moddingfromamod.compat.StoredBlockStates.renamed(p.getCompoundOrEmpty(k), writtenFor));
+                     }
+                     s.byBuild.put(t.getStringOr("id", ""), EventJournal.unflatten(new EventJournal.Flat<>(palette,
+                                     t.getLongArray("pos").orElseGet(() -> new long[0]),
+@@ -93,7 +118,11 @@ public final class BuildGroundJournal {
+         }
+ 
+         public CompoundTag save(CompoundTag tag, HolderLookup.Provider lookup) {
++            if (original != null) {
++                return original.copy();   // a newer build's or a newer Minecraft's: never written over
++            }
+             tag.putInt("v", VERSION);
++            com.moddingfromamod.compat.StoredBlockStates.stamp(tag);
+             ListTag list = new ListTag();
+             for (var e : byBuild.entrySet()) {
+                 if (e.getValue().isEmpty()) {
+@@ -130,7 +159,7 @@ public final class BuildGroundJournal {
+             return;
+         }
+         Store s = store(level);
+-        if (s.refused != null) {
++        if (s.refused != null || s.readOnly != null) {
+             return;
+         }
+         EventJournal<BlockState> j = s.byBuild.computeIfAbsent(buildId, k -> new EventJournal<>());
+@@ -147,7 +176,7 @@ public final class BuildGroundJournal {
+             return;
+         }
+         Store s = store(level);
+-        EventJournal<BlockState> j = s.refused != null ? null : s.byBuild.get(buildId);
++        EventJournal<BlockState> j = s.refused != null || s.readOnly != null ? null : s.byBuild.get(buildId);
+         if (j != null && j.holds(pos)) {
+             j.record(pos, null, written);
+             s.setDirty();
+@@ -160,7 +189,11 @@ public final class BuildGroundJournal {
+      * or the building predates this). Forgets the cell either way.
+      */
+     static Answer takeBack(ServerLevel level, String buildId, long pos, BlockState current) {
+-        Store s = buildId == null ? null : store(level);
++        return takeBack(buildId == null ? null : store(level), buildId, pos, current);
++    }
++
++    /** {@link #takeBack(ServerLevel, String, long, BlockState)} on a given store (a test's loaded one). */
++    static Answer takeBack(Store s, String buildId, long pos, BlockState current) {
+         EventJournal<BlockState> j = s == null || s.refused != null ? null : s.byBuild.get(buildId);
+         if (j == null || !j.holds(pos)) {
+             return new Answer(current.isAir() ? Back.LEAVE : Back.CLEAR, null);
+diff --git a/src/main/java/com/moddingfromamod/builder/BuildRegistry.java b/src/main/java/com/moddingfromamod/builder/BuildRegistry.java
+index e3ec380..9dcf304 100644
+--- a/src/main/java/com/moddingfromamod/builder/BuildRegistry.java
++++ b/src/main/java/com/moddingfromamod/builder/BuildRegistry.java
+@@ -40,6 +40,13 @@ public final class BuildRegistry {
+ 
+     private static final Map<String, BuildPlan> PLANS = new LinkedHashMap<>();
+ 
++    /**
++     * Records a NEWER Minecraft wrote ({@code mc} after this build's, {@link com.moddingfromamod.compat.BlockRenames}),
++     * by id, exactly as read. They read as they are, but are read-only for the run: a save writes this copy back, never
++     * this build's serialisation under its older marker, and never drops one.
++     */
++    private static final Map<String, JsonObject> NEWER = new LinkedHashMap<>();
++
+     /** When each building was made and last changed — what the watch sorts on. */
+     private static final com.moddingfromamod.store.ArtifactTimes.Book TIMES =
+             new com.moddingfromamod.store.ArtifactTimes.Book();
+@@ -103,6 +110,7 @@ public final class BuildRegistry {
+         PLANS.clear();
+         TIMES.clear();
+         PLACED_ROWS.clear();
++        NEWER.clear();
+         world = com.moddingfromamod.world.WorldModuleHost.worldKey(server);
+         seed = server.overworld() == null ? 0L : server.overworld().getSeed();
+         Path wishes = wishesDir(server);
+@@ -133,6 +141,11 @@ public final class BuildRegistry {
+                     LOGGER.error("a saved building was not read: {}", e.getMessage());
+                     continue;
+                 }
++                if (plan != null && com.moddingfromamod.compat.BlockRenames.newer(
++                        com.moddingfromamod.compat.BlockRenames.writtenFor(el.getAsJsonObject()),
++                        com.moddingfromamod.compat.Target.MINECRAFT)) {
++                    NEWER.put(plan.id(), el.getAsJsonObject().deepCopy());
++                }
+                 if (plan != null) {
+                     PLANS.put(plan.id(), plan);
+                     TIMES.read(plan.id(), el.getAsJsonObject());
+@@ -143,6 +156,10 @@ public final class BuildRegistry {
+         if (!PLANS.isEmpty()) {
+             LOGGER.info("loaded {} saved building(s)", PLANS.size());
+         }
++        if (!NEWER.isEmpty()) {
++            LOGGER.warn("{} saved building(s) were written by a newer Minecraft than {} ({}): read as they are, and "
++                    + "not saved over this run", NEWER.size(), com.moddingfromamod.compat.Target.MINECRAFT, NEWER.keySet());
++        }
+         SHELF.remember(payload(), com.moddingfromamod.marshal.ArtifactOwner::of);
+         // an earlier issue's backfill, after the base (see SpeciesRegistry.load for why the order matters).
+         int filled = 0;
+@@ -633,6 +650,7 @@ public final class BuildRegistry {
+         TOWARD.clear();
+         REMOVED.clear();
+         PLACED_ROWS.clear();
++        NEWER.clear();
+         world = null;
+     }
+ 
+@@ -651,9 +669,13 @@ public final class BuildRegistry {
+         JsonObject root = new JsonObject();
+         JsonArray arr = new JsonArray();
+         for (BuildPlan plan : PLANS.values()) {
++            if (NEWER.containsKey(plan.id())) {
++                continue;
++            }
+             arr.add(BuildPlacements.stamp(TIMES.stamp(plan.id(), plan.toStoredJson()),
+                     PLACED_ROWS.getOrDefault(plan.id(), Map.of()), world, placementHere(plan.id())));
+         }
++        NEWER.values().forEach(r -> arr.add(r.deepCopy()));   // read-only for the run, written back as read
+         root.add("buildings", arr);
+         return root;
+     }
+diff --git a/src/main/java/com/moddingfromamod/compat/BlockRenames.java b/src/main/java/com/moddingfromamod/compat/BlockRenames.java
+index 0dfe204..bded0f4 100644
+--- a/src/main/java/com/moddingfromamod/compat/BlockRenames.java
++++ b/src/main/java/com/moddingfromamod/compat/BlockRenames.java
+@@ -30,14 +30,18 @@ public final class BlockRenames {
+     private BlockRenames() {
+     }
+ 
+-    /** One rename: {@code from} no longer exists from Minecraft {@code since} on, and is {@code to} there. */
+-    public record Row(String from, String to, String since) {
++    /**
++     * One rename: {@code from} no longer exists from Minecraft {@code since} on, and is {@code to} there. {@code item}:
++     * the block's item was renamed the same way, so a field that may hold either a block or an item id (a turn_into
++     * FROM or TO) takes this row too; a block-only rename leaves such a field alone.
++     */
++    public record Row(String from, String to, String since, boolean item) {
+     }
+ 
+     /** Every rename, oldest first. */
+     public static final List<Row> ROWS = List.of(
+             // 1.21.9: DataFixers schema 4541, "Rename chain to iron_chain" (block and item)
+-            new Row("minecraft:chain", "minecraft:iron_chain", "1.21.9"));
++            new Row("minecraft:chain", "minecraft:iron_chain", "1.21.9", true));
+ 
+     /** The key a stored record's Minecraft version is kept under. */
+     public static final String MARKER = "mc";
+@@ -70,11 +74,23 @@ public final class BlockRenames {
+      * through untouched.
+      */
+     public static String remap(String block, String writtenFor, String runningOn) {
+-        return remap(ROWS, block, writtenFor, runningOn);
++        return remap(ROWS, block, writtenFor, runningOn, false);
++    }
++
++    /**
++     * {@link #remap(String, String, String)} for a field that names a block OR an item: only rows that renamed both
++     * ({@link Row#item}) apply.
++     */
++    public static String remapBlockOrItem(String id, String writtenFor, String runningOn) {
++        return remap(ROWS, id, writtenFor, runningOn, true);
+     }
+ 
+     /** {@link #remap(String, String, String)} through {@code rows} (a test hands its own table). */
+     static String remap(List<Row> rows, String block, String writtenFor, String runningOn) {
++        return remap(rows, block, writtenFor, runningOn, false);
++    }
++
++    static String remap(List<Row> rows, String block, String writtenFor, String runningOn, boolean orItem) {
+         if (block == null || block.isEmpty() || block.startsWith("#")) {
+             return block;
+         }
+@@ -91,7 +107,7 @@ public final class BlockRenames {
+         String full = bare ? "minecraft:" + id : id;
+         String was = full;
+         for (Row r : rows) {
+-            if (r.from().equals(full) && compare(writtenFor, r.since()) < 0 && compare(runningOn, r.since()) >= 0) {
++            if (r.from().equals(full) && (!orItem || r.item()) && compare(writtenFor, r.since()) < 0 && compare(runningOn, r.since()) >= 0) {
+                 full = r.to();
+             }
+         }
+@@ -136,6 +152,61 @@ public final class BlockRenames {
+         return out == null ? stored : out;
+     }
+ 
++    /**
++     * Was {@code writtenFor} a NEWER Minecraft than {@code runningOn}? Such a record is read as it is, and its store
++     * never writes it back under this build's older marker (read-only for the run).
++     */
++    public static boolean newer(String writtenFor, String runningOn) {
++        return compare(writtenFor, runningOn) > 0;
++    }
++
++    /**
++     * Remap, in place, the one field {@code key} of {@code o} when it holds exactly one id: a string, or an array whose
++     * strings are each one id. A tag, text that is not one id (a comma list, a command) and anything else are left as
++     * they are. {@code orItem}: the field may name an item too ({@link #remapBlockOrItem}). True when it changed.
++     */
++    public static boolean remapField(JsonObject o, String key, String writtenFor, String runningOn, boolean orItem) {
++        if (o == null || !o.has(key)) {
++            return false;
++        }
++        JsonElement v = o.get(key);
++        if (v.isJsonPrimitive() && v.getAsJsonPrimitive().isString()) {
++            String was = v.getAsString();
++            String now = oneId(was, writtenFor, runningOn, orItem);
++            if (!now.equals(was)) {
++                o.addProperty(key, now);
++                return true;
++            }
++            return false;
++        }
++        boolean changed = false;
++        if (v.isJsonArray()) {
++            JsonArray a = v.getAsJsonArray();
++            for (int i = 0; i < a.size(); i++) {
++                JsonElement e = a.get(i);
++                if (e.isJsonPrimitive() && e.getAsJsonPrimitive().isString()) {
++                    String now = oneId(e.getAsString(), writtenFor, runningOn, orItem);
++                    if (!now.equals(e.getAsString())) {
++                        a.set(i, new com.google.gson.JsonPrimitive(now));
++                        changed = true;
++                    }
++                }
++            }
++        }
++        return changed;
++    }
++
++    /** An id, optionally namespaced, optionally with block states or NBT after it. */
++    private static final java.util.regex.Pattern ONE_ID =
++            java.util.regex.Pattern.compile("([a-z0-9_.-]+:)?[a-z0-9_/.-]+(\\[.*\\]|\\{.*\\})?");
++
++    private static String oneId(String s, String writtenFor, String runningOn, boolean orItem) {
++        if (s == null || !ONE_ID.matcher(s).matches()) {
++            return s;
++        }
++        return remap(ROWS, s, writtenFor, runningOn, orItem);
++    }
++
+     /** Dotted Minecraft versions, numerically: {@code 1.21.10} is after {@code 1.21.9}; {@code 1.21} is {@code 1.21.0}. */
+     public static int compare(String a, String b) {
+         String[] x = a.split("\\.");
+diff --git a/src/main/java/com/moddingfromamod/compat/StoredBlockStates.java b/src/main/java/com/moddingfromamod/compat/StoredBlockStates.java
+new file mode 100644
+index 0000000..59aa1c7
+--- /dev/null
++++ b/src/main/java/com/moddingfromamod/compat/StoredBlockStates.java
+@@ -0,0 +1,43 @@
++package com.moddingfromamod.compat;
++
++import com.google.gson.JsonObject;
++import net.minecraft.nbt.CompoundTag;
++
++/**
++ * <b>Block states a world store saved as NBT, across a Minecraft rename.</b> Moddy's own world data is not run through
++ * Minecraft's DataFixers, and {@code NbtUtils.readBlockState} reads an id this game does not have as AIR. A store that
++ * keeps block states (the build ground, the staged events' journals) stamps the Minecraft version it was written for
++ * ({@link BlockRenames#MARKER} on its root tag, none = {@link BlockRenames#PRE_MARKER}) and passes each state through
++ * {@link #renamed} before it reads it. The decision is {@link BlockRenames}' (pure, Gate A); this only carries the NBT.
++ */
++public final class StoredBlockStates {
++
++    private StoredBlockStates() {
++    }
++
++    /** The Minecraft version a store's root tag was written for. Throws when its marker is not a version. */
++    public static String writtenFor(CompoundTag root) {
++        JsonObject m = new JsonObject();
++        if (root != null && root.contains(BlockRenames.MARKER)) {
++            m.addProperty(BlockRenames.MARKER, root.getString(BlockRenames.MARKER).orElse("(not a string)"));
++        }
++        return BlockRenames.writtenFor(m);
++    }
++
++    /** Stamp this build's Minecraft on a root tag being saved. */
++    public static void stamp(CompoundTag root) {
++        root.putString(BlockRenames.MARKER, Target.MINECRAFT);
++    }
++
++    /** One saved block state with its {@code Name} as this Minecraft calls it; the same tag when nothing changes. */
++    public static CompoundTag renamed(CompoundTag state, String writtenFor) {
++        String name = state.getStringOr("Name", "");
++        String now = BlockRenames.remap(name, writtenFor, Target.MINECRAFT);
++        if (now.equals(name)) {
++            return state;
++        }
++        CompoundTag out = state.copy();
++        out.putString("Name", now);
++        return out;
++    }
++}
+diff --git a/src/main/java/com/moddingfromamod/event/EventDirector.java b/src/main/java/com/moddingfromamod/event/EventDirector.java
+index 6bc45ba..55c1557 100644
+--- a/src/main/java/com/moddingfromamod/event/EventDirector.java
++++ b/src/main/java/com/moddingfromamod/event/EventDirector.java
+@@ -53,20 +53,40 @@ public final class EventDirector {
+         final Map<String, StagedEvent> events = new LinkedHashMap<>();
+         /** A copy written by a newer build: run nothing, write nothing. */
+         String refused;
++        /** What a save writes back when this copy is not ours to write over (a newer build's or a newer Minecraft's). */
++        CompoundTag original;
+ 
+         static Store load(CompoundTag tag, HolderLookup.Provider lookup) {
+             Store s = new Store();
+             int v = tag.getIntOr("v", 0);
+             if (v > VERSION) {
+                 s.refused = "the staged events were saved by a newer Moddy (v" + v + ")";
++                s.original = tag.copy();
+                 LOGGER.warn("[events] {}; they are left untouched", s.refused);
+                 return s;
+             }
++            // Each journal's block states are read as this Minecraft calls them (StoredBlockStates; no marker = 1.21.8).
++            String writtenFor;
++            try {
++                writtenFor = com.moddingfromamod.compat.StoredBlockStates.writtenFor(tag);
++            } catch (IllegalArgumentException e) {
++                s.refused = "the staged events' " + e.getMessage();
++                s.original = tag.copy();
++                LOGGER.warn("[events] {}; they are left untouched", s.refused);
++                return s;
++            }
++            if (com.moddingfromamod.compat.BlockRenames.newer(writtenFor, com.moddingfromamod.compat.Target.MINECRAFT)) {
++                // Read as it is, never written over this run: a restore run here could not be saved, so none is run.
++                s.refused = "the staged events were saved on Minecraft " + writtenFor + ", newer than "
++                        + com.moddingfromamod.compat.Target.MINECRAFT;
++                s.original = tag.copy();
++                LOGGER.warn("[events] {}: read as they are, and not saved over or run this run", s.refused);
++            }
+             HolderGetter<Block> blocks = lookup.lookupOrThrow(Registries.BLOCK);
+             ListTag list = tag.getListOrEmpty("events");
+             for (int i = 0; i < list.size(); i++) {
+                 try {
+-                    StagedEvent e = read(list.getCompoundOrEmpty(i), blocks);
++                    StagedEvent e = read(list.getCompoundOrEmpty(i), blocks, writtenFor);
+                     s.events.put(e.id, e);
+                 } catch (RuntimeException ex) {
+                     // One damaged record must not cost every other event its restore.
+@@ -76,7 +96,11 @@ public final class EventDirector {
+             return s;
+         }
+         public CompoundTag save(CompoundTag tag, HolderLookup.Provider lookup) {
++            if (original != null) {
++                return original.copy();
++            }
+             tag.putInt("v", VERSION);
++            com.moddingfromamod.compat.StoredBlockStates.stamp(tag);
+             ListTag list = new ListTag();
+             for (StagedEvent e : events.values()) {
+                 list.add(write(e));
+@@ -125,13 +149,13 @@ public final class EventDirector {
+         return t;
+     }
+ 
+-    static StagedEvent read(CompoundTag t, HolderGetter<Block> blocks) {
++    static StagedEvent read(CompoundTag t, HolderGetter<Block> blocks, String writtenFor) {
+         ResourceKey<Level> dim = ResourceKey.create(Registries.DIMENSION,
+                 ResourceLocation.parse(t.getStringOr("dim", "")));
+         List<CompoundTag> palette = new ArrayList<>();
+         ListTag p = t.getListOrEmpty("palette");
+         for (int i = 0; i < p.size(); i++) {
+-            palette.add(p.getCompoundOrEmpty(i));
++            palette.add(com.moddingfromamod.compat.StoredBlockStates.renamed(p.getCompoundOrEmpty(i), writtenFor));
+         }
+         EventJournal<BlockState> journal = EventJournal.unflatten(
+                 new EventJournal.Flat<>(palette, t.getLongArray("pos").orElseGet(() -> new long[0]), t.getIntArray("prior").orElseGet(() -> new int[0]),
+diff --git a/src/main/java/com/moddingfromamod/event/EventJournalRenamesGameTest.java b/src/main/java/com/moddingfromamod/event/EventJournalRenamesGameTest.java
+new file mode 100644
+index 0000000..e3c427b
+--- /dev/null
++++ b/src/main/java/com/moddingfromamod/event/EventJournalRenamesGameTest.java
+@@ -0,0 +1,74 @@
++package com.moddingfromamod.event;
++
++import com.moddingfromamod.ModdingFromAModMod;
++import com.moddingfromamod.testing.gt.GameTest;
++import com.moddingfromamod.testing.gt.GameTestHolder;
++import net.minecraft.core.BlockPos;
++import net.minecraft.core.registries.BuiltInRegistries;
++import net.minecraft.gametest.framework.GameTestHelper;
++import net.minecraft.nbt.CompoundTag;
++import net.minecraft.nbt.ListTag;
++import net.minecraft.nbt.NbtUtils;
++import net.minecraft.network.chat.Component;
++import net.minecraft.resources.ResourceLocation;
++import net.minecraft.world.level.block.Blocks;
++import net.minecraft.world.level.block.state.BlockState;
++
++/**
++ * <b>An event staged on 1.21.8 over a chain gives the chain back as iron_chain</b>, through the staged events' own load
++ * ({@link EventDirector.Store}); a store a newer Minecraft wrote is read, runs nothing, and is saved back unchanged.
++ */
++@GameTestHolder(ModdingFromAModMod.MODID)
++public class EventJournalRenamesGameTest {
++
++    static CompoundTag events1218(long pos) {
++        CompoundTag chain = new CompoundTag();
++        chain.putString("Name", "minecraft:chain");
++        ListTag palette = new ListTag();
++        palette.add(chain);
++        palette.add(NbtUtils.writeBlockState(Blocks.WATER.defaultBlockState()));
++        CompoundTag e = new CompoundTag();
++        e.putString("id", "gt_rename_event");
++        e.putString("dim", "minecraft:overworld");
++        e.putString("owner", "");
++        e.putString("scale", EventScale.values()[0].name());
++        e.putString("policy", EventGuard.Policy.values()[0].name());
++        e.putBoolean("restoreAtEnd", true);
++        e.putString("phase", EventPhase.values()[0].name());
++        e.put("palette", palette);
++        e.putLongArray("pos", new long[] {pos});
++        e.putIntArray("prior", new int[] {0});
++        e.putIntArray("written", new int[] {1});
++        ListTag list = new ListTag();
++        list.add(e);
++        CompoundTag tag = new CompoundTag();
++        tag.putInt("v", 1);
++        tag.put("events", list);
++        return tag;
++    }
++
++    @GameTest(template = "empty_test", batch = "block_renames", timeoutTicks = 100)
++    public static void aChainAnEventReplacedOn1218IsGivenBackAsIronChain(GameTestHelper helper) {
++        var lookup = helper.getLevel().registryAccess();
++        long pos = BlockPos.asLong(4, 5, 6);
++        EventDirector.Store s = EventDirector.Store.load(events1218(pos), lookup);
++        StagedEvent e = s.events.get("gt_rename_event");
++        helper.assertTrue(e != null && e.journal.holds(pos), Component.literal("the 1.21.8 event's cell did not read"));
++        BlockState back = e.journal.release(pos, Blocks.WATER.defaultBlockState());
++        helper.assertTrue(back != null && back.getBlock()
++                        == BuiltInRegistries.BLOCK.getValue(ResourceLocation.parse("minecraft:iron_chain")),
++                Component.literal("the event gives back " + back + ", not iron_chain"));
++        helper.assertTrue(com.moddingfromamod.compat.Target.MINECRAFT.equals(
++                        s.save(new CompoundTag(), lookup).getStringOr("mc", "")),
++                Component.literal("a save does not stamp this Minecraft"));
++
++        CompoundTag newer = events1218(pos);
++        newer.putString("mc", "1.22");
++        EventDirector.Store n = EventDirector.Store.load(newer, lookup);
++        helper.assertTrue(n.events.containsKey("gt_rename_event"), Component.literal("a newer Minecraft's event was not read"));
++        helper.assertTrue(n.refused != null, Component.literal("a newer Minecraft's events would be run and saved over"));
++        helper.assertTrue(n.save(new CompoundTag(), lookup).equals(newer),
++                Component.literal("a save wrote over a newer Minecraft's events"));
++        helper.succeed();
++    }
++}
+diff --git a/src/main/java/com/moddingfromamod/item/ItemSpecStore.java b/src/main/java/com/moddingfromamod/item/ItemSpecStore.java
+index b3b0830..d8b5e3b 100644
+--- a/src/main/java/com/moddingfromamod/item/ItemSpecStore.java
++++ b/src/main/java/com/moddingfromamod/item/ItemSpecStore.java
+@@ -62,6 +62,13 @@ public final class ItemSpecStore {
+     /** id -> the parameters it was made with. Insertion-ordered, so "the newest" is meaningful. */
+     private static final Map<String, Spec> SPECS = new LinkedHashMap<>();
+ 
++    /**
++     * Designs a NEWER Minecraft wrote ({@code mc} after this build's, {@link com.moddingfromamod.compat.BlockRenames}), by
++     * key, exactly as read: they read as they are, but are read-only for the run. A save writes this copy back, never
++     * this build's serialisation under its older marker, and never drops one.
++     */
++    private static final Map<String, JsonObject> NEWER = new LinkedHashMap<>();
++
+     /** When each design was made and last changed — what newest-first sorts on. */
+     private static final com.moddingfromamod.store.ArtifactTimes.Book TIMES =
+             new com.moddingfromamod.store.ArtifactTimes.Book();
+@@ -437,6 +444,10 @@ public final class ItemSpecStore {
+             JsonObject o = JsonParser.parseString(java.nio.file.Files.readString(f))
+                     .getAsJsonObject();
+             Spec s = Spec.fromJson(o);
++            if (s != null) {   // a library design from an older Minecraft: its FROM/TO as this one calls them
++                s = renamedBlocks(s, com.moddingfromamod.compat.BlockRenames.writtenFor(o),
++                        com.moddingfromamod.compat.Target.MINECRAFT);
++            }
+             // A curated item's look lives beside its design, in icon.json, so the icon
+             // revamp can re-dress a library item without touching what it does. An item.json
+             // promoted before the split carries its look inline and still reads.
+@@ -491,6 +502,7 @@ public final class ItemSpecStore {
+     /** Test seam, and what a fresh world starts from. */
+     public static synchronized void clear() {
+         SPECS.clear();
++        NEWER.clear();
+         TIMES.clear();
+         TIMES_BEFORE.clear();
+     }
+@@ -585,9 +597,8 @@ public final class ItemSpecStore {
+             return;
+         }
+         Map<String, ItemLook> looks = new LinkedHashMap<>();
+-        JsonArray specs = new JsonArray();
++        JsonArray specs = designRecords();
+         for (Spec s : SPECS.values()) {
+-            specs.add(TIMES.stamp(key(s.id()), s.designJson()));
+             ItemLook look = s.look();
+             if (look != null) {
+                 looks.put(key(s.id()), look);
+@@ -603,6 +614,22 @@ public final class ItemSpecStore {
+                 SCHEMA, payload, com.moddingfromamod.marshal.ArtifactOwner::of, LOGGER::warn);
+     }
+ 
++    /**
++     * Every design as the file holds it: this build's serialisation with its {@code mc} marker, and each design a newer
++     * Minecraft wrote exactly as it was read ({@link #NEWER}).
++     */
++    static JsonArray designRecords() {
++        JsonArray specs = new JsonArray();
++        for (Spec s : SPECS.values()) {
++            if (!NEWER.containsKey(key(s.id()))) {
++                specs.add(com.moddingfromamod.compat.BlockRenames.stamp(TIMES.stamp(key(s.id()), s.designJson()),
++                        com.moddingfromamod.compat.Target.MINECRAFT));
++            }
++        }
++        NEWER.values().forEach(r -> specs.add(r.deepCopy()));
++        return specs;
++    }
++
+     /** Design id to owner — where each design's look goes. */
+     private static Map<String, String> owners() {
+         Map<String, String> out = new LinkedHashMap<>();
+@@ -613,9 +640,8 @@ public final class ItemSpecStore {
+     /** The designs and their looks, as {@link #save} would write them — the shelves' merge base. */
+     private static void rememberBoth() {
+         Map<String, ItemLook> looks = new LinkedHashMap<>();
+-        JsonArray specs = new JsonArray();
++        JsonArray specs = designRecords();
+         for (Spec s : SPECS.values()) {
+-            specs.add(TIMES.stamp(key(s.id()), s.designJson()));
+             if (s.look() != null) {
+                 looks.put(key(s.id()), s.look());
+             }
+@@ -633,6 +659,7 @@ public final class ItemSpecStore {
+      */
+     public static synchronized void load() {
+         SPECS.clear();
++        NEWER.clear();
+         TIMES.clear();
+         TIMES_BEFORE.clear();
+         Map<String, ItemLook> looks = ItemIconStore.load();
+@@ -710,24 +737,39 @@ public final class ItemSpecStore {
+      * (see {@link #save}) — the same look either way. An icon row whose design is absent is simply
+      * not joined, and drops at the next save.
+      */
+-    private static void adopt(JsonObject root, Map<String, ItemLook> looks) {
++    static void adopt(JsonObject root, Map<String, ItemLook> looks) {
+         if (!root.has("specs") || !root.get("specs").isJsonArray()) {
+             return;
+         }
+         int skipped = 0;
++        String running = com.moddingfromamod.compat.Target.MINECRAFT;
+         for (var e : root.getAsJsonArray("specs")) {
+             Spec s = e.isJsonObject() ? Spec.fromJson(e.getAsJsonObject()) : null;
+-            if (s == null) {
++            String writtenFor;
++            try {
++                writtenFor = s == null ? null : com.moddingfromamod.compat.BlockRenames.writtenFor(e.getAsJsonObject());
++            } catch (IllegalArgumentException bad) {
++                LOGGER.warn("item design {} was not read: {}", s.id(), bad.getMessage());
++                writtenFor = null;
++            }
++            if (s == null || writtenFor == null) {
+                 skipped++;
+                 continue;
+             }
+-            s = turnInto(s);
++            s = renamedBlocks(turnInto(s), writtenFor, running);
++            if (com.moddingfromamod.compat.BlockRenames.newer(writtenFor, running)) {
++                NEWER.put(key(s.id()), e.getAsJsonObject().deepCopy());
++            }
+             SPECS.put(key(s.id()), s.withLook(looks.get(key(s.id()))));
+             TIMES.read(key(s.id()), e.getAsJsonObject());
+         }
+         if (skipped > 0) {
+             LOGGER.warn("skipped {} damaged item design(s)", skipped);
+         }
++        if (!NEWER.isEmpty()) {
++            LOGGER.warn("{} item design(s) were written by a newer Minecraft than {} ({}): read as they are, and not "
++                    + "saved over this run", NEWER.size(), running, NEWER.keySet());
++        }
+     }
+ 
+     /**
+@@ -749,6 +791,36 @@ public final class ItemSpecStore {
+                 s.variants(), s.properties(), s.parts(), s.baseItem(), s.ownerId());
+     }
+ 
++    /**
++     * A turn_into design's FROM and TO, as the Minecraft this build runs calls them, when each holds exactly one id (or a
++     * list of single ids): {@link com.moddingfromamod.compat.BlockRenames}, for rows that renamed the block AND its item,
++     * because FROM and TO name either. Flat (a one-effect design) or grouped under {@code turn_into}. A tag, a comma
++     * list, {@code any_block} or {@code furnace} is left as it is. The compiled pack is not rebuilt: the item keeps
++     * doing what it did until he edits it, as for the {@link #turnInto} migration.
++     */
++    static Spec renamedBlocks(Spec s, String writtenFor, String running) {
++        String turnInto = com.moddingfromamod.datapack.TurnInto.EFFECT;
++        if (s.effects() == null || !s.effects().contains(turnInto) || s.params() == null) {
++            return s;
++        }
++        JsonObject params = s.params().deepCopy();
++        boolean changed = false;
++        List<JsonObject> sides = new ArrayList<>();
++        if (s.effects().size() == 1) {
++            sides.add(params);
++        }
++        if (params.has(turnInto) && params.get(turnInto).isJsonObject()) {
++            sides.add(params.getAsJsonObject(turnInto));
++        }
++        for (JsonObject side : sides) {
++            for (String k : new String[] {"FROM", "TO"}) {
++                changed |= com.moddingfromamod.compat.BlockRenames.remapField(side, k, writtenFor, running, true);
++            }
++        }
++        return !changed ? s : new Spec(s.id(), s.name(), s.icon(), s.colour(), s.shape(), s.count(), s.effects(), params,
++                s.variants(), s.properties(), s.parts(), s.baseItem(), s.ownerId());
++    }
++
+     /** The file's text, or null when it is not there. */
+     private static String textOf(java.nio.file.Path f) {
+         try {
+diff --git a/src/main/java/com/moddingfromamod/rules/WorldRules.java b/src/main/java/com/moddingfromamod/rules/WorldRules.java
+index 424b0a2..486a8bf 100644
+--- a/src/main/java/com/moddingfromamod/rules/WorldRules.java
++++ b/src/main/java/com/moddingfromamod/rules/WorldRules.java
+@@ -118,19 +118,49 @@ public final class WorldRules {
+         final Map<String, WorldRule> rules = new LinkedHashMap<>();
+         /** A copy written by a newer build: read nothing, write nothing. */
+         String refused;
++        /**
++         * A copy a newer MINECRAFT wrote ({@code mc}): its rules are read and run as they are, but nothing is changed or
++         * written over it this run ({@link #original} is what a save writes back).
++         */
++        String readOnly;
++        CompoundTag original;
+ 
+         static Store load(CompoundTag tag, HolderLookup.Provider lookup) {
+             Store s = new Store();
+             int v = tag.getIntOr("v", 0);
+             if (v > VERSION) {
+                 s.refused = "the rules were saved by a newer Moddy (v" + v + ")";
++                s.original = tag.copy();
+                 return s;
+             }
++            // The Minecraft version the rules were written for ({@code mc}; none = 1.21.8), so a block a newer Minecraft
++            // renamed is read under its new id (BlockRenames). Only the structured one-id field: the commands are
++            // text, and the ids inside them are CBScript's per-version business.
++            String writtenFor;
++            String running = com.moddingfromamod.compat.Target.MINECRAFT;
++            try {
++                com.google.gson.JsonObject m = new com.google.gson.JsonObject();
++                if (tag.contains(com.moddingfromamod.compat.BlockRenames.MARKER)) {
++                    m.addProperty(com.moddingfromamod.compat.BlockRenames.MARKER,
++                            tag.getString(com.moddingfromamod.compat.BlockRenames.MARKER).orElse("(not a string)"));
++                }
++                writtenFor = com.moddingfromamod.compat.BlockRenames.writtenFor(m);
++            } catch (IllegalArgumentException e) {
++                s.refused = "the rules' " + e.getMessage();
++                s.original = tag.copy();
++                return s;
++            }
++            if (com.moddingfromamod.compat.BlockRenames.newer(writtenFor, running)) {
++                s.readOnly = "the rules were saved on Minecraft " + writtenFor + ", newer than " + running;
++                s.original = tag.copy();
++                LOGGER.warn("[rules] {}: read as they are, and not saved over this run", s.readOnly);
++            }
+             ListTag list = tag.getListOrEmpty("rules");
+             for (int i = 0; i < list.size(); i++) {
+                 try {
+-                    WorldRule r = WorldRule.fromJson(JsonParser.parseString(list.getStringOr(i, ""))
+-                            .getAsJsonObject());
++                    com.google.gson.JsonObject o = JsonParser.parseString(list.getStringOr(i, "")).getAsJsonObject();
++                    com.moddingfromamod.compat.BlockRenames.remapField(o, "block", writtenFor, running, false);
++                    WorldRule r = WorldRule.fromJson(o);
+                     s.rules.put(r.name(), r);
+                 } catch (RuntimeException e) {
+                     LOGGER.warn("[rules] an unreadable rule was skipped: {}", e.toString());
+@@ -139,7 +169,11 @@ public final class WorldRules {
+             return s;
+         }
+         public CompoundTag save(CompoundTag tag, HolderLookup.Provider lookup) {
++            if (original != null) {
++                return original.copy();   // a newer build's or a newer Minecraft's: never written over
++            }
+             tag.putInt("v", VERSION);
++            tag.putString(com.moddingfromamod.compat.BlockRenames.MARKER, com.moddingfromamod.compat.Target.MINECRAFT);
+             ListTag list = new ListTag();
+             for (WorldRule r : rules.values()) {
+                 list.add(StringTag.valueOf(r.toJson().toString()));
+@@ -194,6 +228,9 @@ public final class WorldRules {
+         if (s.refused != null) {
+             throw new IllegalStateException(s.refused + "; this build will not write over them.");
+         }
++        if (s.readOnly != null) {
++            throw new IllegalStateException(s.readOnly + "; this build will not write over them.");
++        }
+         return s;
+     }
+ 
+diff --git a/src/main/java/com/moddingfromamod/rules/WorldRulesRenamesGameTest.java b/src/main/java/com/moddingfromamod/rules/WorldRulesRenamesGameTest.java
+new file mode 100644
+index 0000000..86cd5d4
+--- /dev/null
++++ b/src/main/java/com/moddingfromamod/rules/WorldRulesRenamesGameTest.java
+@@ -0,0 +1,69 @@
++package com.moddingfromamod.rules;
++
++import com.moddingfromamod.ModdingFromAModMod;
++import com.moddingfromamod.compat.Target;
++import com.moddingfromamod.testing.gt.GameTest;
++import com.moddingfromamod.testing.gt.GameTestHolder;
++import java.util.List;
++import net.minecraft.gametest.framework.GameTestHelper;
++import net.minecraft.nbt.CompoundTag;
++import net.minecraft.nbt.ListTag;
++import net.minecraft.nbt.StringTag;
++import net.minecraft.network.chat.Component;
++
++/**
++ * <b>A world rule saved on 1.21.8 still knows its block</b>: the structured one-id {@code block} of a {@code near_block}
++ * rule reads as 1.21.10 calls it, through the store's own load ({@link WorldRules.Store}); its commands are text and are
++ * not touched (an id inside a command is CBScript's per-version business). A store a newer Minecraft wrote is read as it
++ * is, is not writable, and is saved back unchanged.
++ */
++@GameTestHolder(ModdingFromAModMod.MODID)
++public class WorldRulesRenamesGameTest {
++
++    static final String RULE = "{\"name\":\"gt_rename_rule\",\"when\":\"near_block\",\"block\":\"minecraft:chain\","
++            + "\"radius\":2,\"seconds\":10,\"chance\":1.0,\"do\":[\"setblock ~ ~1 ~ minecraft:chain\"]}";
++
++    static CompoundTag rules1218() {
++        ListTag list = new ListTag();
++        list.add(StringTag.valueOf(RULE));
++        CompoundTag tag = new CompoundTag();
++        tag.putInt("v", 1);
++        tag.put("rules", list);
++        return tag;
++    }
++
++    @GameTest(template = "empty_test", batch = "block_renames", timeoutTicks = 100)
++    public static void aNearBlockRuleSavedOn1218ReadsIronChain(GameTestHelper helper) {
++        var lookup = helper.getLevel().registryAccess();
++        WorldRules.Store s = WorldRules.Store.load(rules1218(), lookup);
++        WorldRule r = s.rules.get("gt_rename_rule");
++        helper.assertTrue(r != null, Component.literal("the 1.21.8 rule did not read"));
++        helper.assertTrue("minecraft:iron_chain".equals(r.block()),
++                Component.literal("the rule's block read as " + r.block() + ", not minecraft:iron_chain"));
++        helper.assertTrue(r.commands().equals(List.of("setblock ~ ~1 ~ minecraft:chain")),
++                Component.literal("the rule's command text was changed: " + r.commands()));
++        helper.assertTrue(s.readOnly == null && s.refused == null, Component.literal("a 1.21.8 store is ours to write"));
++        CompoundTag saved = s.save(new CompoundTag(), lookup);
++        helper.assertTrue(Target.MINECRAFT.equals(saved.getStringOr("mc", "")),
++                Component.literal("a save does not stamp this Minecraft: " + saved));
++        WorldRule again = WorldRules.Store.load(saved, lookup).rules.get("gt_rename_rule");
++        helper.assertTrue(again != null && "minecraft:iron_chain".equals(again.block()),
++                Component.literal("the saved rule did not read back: " + again));
++        helper.succeed();
++    }
++
++    @GameTest(template = "empty_test", batch = "block_renames", timeoutTicks = 100)
++    public static void rulesFromANewerMinecraftAreReadButNeverWrittenOver(GameTestHelper helper) {
++        var lookup = helper.getLevel().registryAccess();
++        CompoundTag tag = rules1218();
++        tag.putString("mc", "1.22");
++        WorldRules.Store s = WorldRules.Store.load(tag, lookup);
++        helper.assertTrue(s.readOnly != null, Component.literal("a newer Minecraft's rules were not marked read-only"));
++        WorldRule r = s.rules.get("gt_rename_rule");
++        helper.assertTrue(r != null && "minecraft:chain".equals(r.block()),
++                Component.literal("a newer Minecraft's rule was not read as it is: " + r));
++        helper.assertTrue(s.save(new CompoundTag(), lookup).equals(tag),
++                Component.literal("a save wrote over a newer Minecraft's rules"));
++        helper.succeed();
++    }
++}
+diff --git a/src/test/java/com/moddingfromamod/compat/BlockRenamesTest.java b/src/test/java/com/moddingfromamod/compat/BlockRenamesTest.java
+index bf80ffb..ad4bcbe 100644
+--- a/src/test/java/com/moddingfromamod/compat/BlockRenamesTest.java
++++ b/src/test/java/com/moddingfromamod/compat/BlockRenamesTest.java
+@@ -53,7 +53,7 @@ class BlockRenamesTest {
+ 
+     @Test
+     void the_table_names_the_chain_rename_at_1_21_9() {
+-        assertTrue(BlockRenames.ROWS.contains(new BlockRenames.Row("minecraft:chain", "minecraft:iron_chain", "1.21.9")));
++        assertTrue(BlockRenames.ROWS.contains(new BlockRenames.Row("minecraft:chain", "minecraft:iron_chain", "1.21.9", true)));
+         for (BlockRenames.Row r : BlockRenames.ROWS) {
+             assertTrue(r.from().contains(":") && r.to().contains(":"), "a row names namespaced ids: " + r);
+             assertTrue(r.since().matches("\\d+(\\.\\d+)*"), "a row's version is a version: " + r);
+@@ -99,8 +99,8 @@ class BlockRenamesTest {
+     @Test
+     void a_plan_saved_with_the_marker_is_not_remapped_again() throws IOException {
+         // A table whose second row would undo the first proves the marker, not idempotence, stops a second pass.
+-        List<BlockRenames.Row> rows = List.of(new BlockRenames.Row("minecraft:chain", "minecraft:iron_chain", "1.21.9"),
+-                new BlockRenames.Row("minecraft:iron_chain", "minecraft:chain", "1.21.9"));
++        List<BlockRenames.Row> rows = List.of(new BlockRenames.Row("minecraft:chain", "minecraft:iron_chain", "1.21.9", true),
++                new BlockRenames.Row("minecraft:iron_chain", "minecraft:chain", "1.21.9", true));
+         assertEquals("minecraft:chain", BlockRenames.remap(rows, "minecraft:chain", "1.21.8", "1.21.10"),
+                 "a pre-marker id runs through every row");
+         assertEquals("minecraft:iron_chain", BlockRenames.remap(rows, "minecraft:iron_chain", "1.21.10", "1.21.10"),
+@@ -181,6 +181,45 @@ class BlockRenamesTest {
+         assertTrue(hits.isEmpty(), "shipped files still name renamed blocks: " + hits);
+     }
+ 
++    @Test
++    void a_one_id_field_is_remapped_and_text_tags_and_lists_are_not() {
++        JsonObject o = JsonParser.parseString("""
++                {"block":"minecraft:chain","bare":"chain","tag":"#minecraft:chains","list":"minecraft:chain,minecraft:stone",
++                 "cmd":"setblock ~ ~ ~ minecraft:chain","arr":["minecraft:chain","#minecraft:logs","minecraft:stone"],
++                 "num":3}""").getAsJsonObject();
++        for (String k : new String[] {"block", "bare", "tag", "list", "cmd", "arr", "num", "absent"}) {
++            BlockRenames.remapField(o, k, "1.21.8", "1.21.10", false);
++        }
++        assertEquals("minecraft:iron_chain", o.get("block").getAsString());
++        assertEquals("iron_chain", o.get("bare").getAsString());
++        assertEquals("#minecraft:chains", o.get("tag").getAsString(), "a tag is left alone");
++        assertEquals("minecraft:chain,minecraft:stone", o.get("list").getAsString(), "a comma list is not one id");
++        assertEquals("setblock ~ ~ ~ minecraft:chain", o.get("cmd").getAsString(), "command text is CBScript's");
++        assertEquals(JsonParser.parseString("[\"minecraft:iron_chain\",\"#minecraft:logs\",\"minecraft:stone\"]"),
++                o.get("arr"), "each one-id element of a list of ids");
++        assertEquals(3, o.get("num").getAsInt());
++        assertFalse(BlockRenames.remapField(o, "block", "1.21.10", "1.21.10", false), "a marked field is not remapped");
++    }
++
++    @Test
++    void a_field_that_may_name_an_item_takes_only_rows_that_renamed_the_item_too() {
++        assertEquals("minecraft:iron_chain", BlockRenames.remapBlockOrItem("minecraft:chain", "1.21.8", "1.21.10"),
++                "chain's item was renamed with its block");
++        List<BlockRenames.Row> blockOnly = List.of(new BlockRenames.Row("minecraft:old_wall", "minecraft:new_wall", "1.21.9",
++                false));
++        assertEquals("minecraft:new_wall", BlockRenames.remap(blockOnly, "minecraft:old_wall", "1.21.8", "1.21.10", false));
++        assertEquals("minecraft:old_wall", BlockRenames.remap(blockOnly, "minecraft:old_wall", "1.21.8", "1.21.10", true),
++                "an item id the rename never touched is left alone");
++    }
++
++    @Test
++    void a_record_written_for_a_newer_minecraft_is_newer() {
++        assertTrue(BlockRenames.newer("1.21.11", "1.21.10"));
++        assertTrue(BlockRenames.newer("1.22", "1.21.10"));
++        assertFalse(BlockRenames.newer("1.21.10", "1.21.10"));
++        assertFalse(BlockRenames.newer(BlockRenames.PRE_MARKER, "1.21.10"));
++    }
++
+     private static JsonObject byIdRecord(List<JsonObject> records, String id) {
+         return records.stream().filter(r -> id.equals(r.get("id").getAsString())).findFirst().orElseThrow().deepCopy();
+     }
+diff --git a/src/test/java/com/moddingfromamod/item/ItemSpecBlockRenamesTest.java b/src/test/java/com/moddingfromamod/item/ItemSpecBlockRenamesTest.java
+new file mode 100644
+index 0000000..e684dad
+--- /dev/null
++++ b/src/test/java/com/moddingfromamod/item/ItemSpecBlockRenamesTest.java
+@@ -0,0 +1,105 @@
++package com.moddingfromamod.item;
++
++import static org.junit.jupiter.api.Assertions.assertEquals;
++import static org.junit.jupiter.api.Assertions.assertFalse;
++import static org.junit.jupiter.api.Assertions.assertNotNull;
++
++import com.google.gson.JsonElement;
++import com.google.gson.JsonObject;
++import com.google.gson.JsonParser;
++import com.moddingfromamod.compat.BlockRenames;
++import com.moddingfromamod.compat.Target;
++import java.util.Map;
++import org.junit.jupiter.api.BeforeEach;
++import org.junit.jupiter.api.Test;
++
++/**
++ * {@code item-specs.json} through the store's own read ({@link ItemSpecStore#adopt}) and write
++ * ({@link ItemSpecStore#designRecords}): a turn_into design saved on 1.21.8 reads its FROM/TO under 1.21.10's ids, a
++ * marked design is not remapped again, and a design a newer Minecraft wrote is read as it is and written back untouched.
++ */
++class ItemSpecBlockRenamesTest {
++
++    /** As 1.21.8 wrote them: no marker. */
++    static final String FILE = """
++            {"store":"item-specs","v":3,"specs":[
++             {"id":"gt_chain_wand","name":"Chain Wand","shape":"held","count":1,"effects":["turn_into"],
++              "params":{"FROM":"minecraft:chain","TO":"minecraft:gold_block","RADIUS":"2"}},
++             {"id":"gt_grouped","name":"Grouped","shape":"held","count":1,"effects":["turn_into","lightning"],
++              "params":{"turn_into":{"FROM":["minecraft:chain","#minecraft:logs"],"TO":"chain"},"lightning":{"HEARTS":"4"}}},
++             {"id":"gt_listed","name":"Listed","shape":"held","count":1,"effects":["turn_into"],
++              "params":{"FROM":"minecraft:chain,minecraft:stone","TO":"furnace"}},
++             {"id":"gt_marked","name":"Marked","shape":"held","count":1,"effects":["turn_into"],"mc":"1.21.10",
++              "params":{"FROM":"minecraft:chain","TO":"minecraft:stone"}},
++             {"id":"gt_newer","name":"Newer","shape":"held","count":1,"effects":["turn_into"],"mc":"1.22",
++              "params":{"FROM":"minecraft:chain","TO":"minecraft:copper_chain"}}
++            ]}""";
++
++    private JsonObject root;
++
++    @BeforeEach
++    void fresh() {
++        ItemSpecStore.clear();
++        root = JsonParser.parseString(FILE).getAsJsonObject();
++        ItemSpecStore.adopt(root.deepCopy(), Map.of());
++    }
++
++    private static JsonObject params(String id) {
++        ItemSpecStore.Spec s = ItemSpecStore.get(id);
++        assertNotNull(s, id + " was read");
++        return s.params();
++    }
++
++    private JsonObject stored(String id) {
++        for (JsonElement e : root.getAsJsonArray("specs")) {
++            if (id.equals(e.getAsJsonObject().get("id").getAsString())) {
++                return e.getAsJsonObject();
++            }
++        }
++        throw new AssertionError(id);
++    }
++
++    private static JsonObject written(String id) {
++        for (JsonElement e : ItemSpecStore.designRecords()) {
++            if (id.equals(e.getAsJsonObject().get("id").getAsString())) {
++                return e.getAsJsonObject();
++            }
++        }
++        throw new AssertionError(id + " was not written back");
++    }
++
++    @Test
++    void a_1_21_8_turn_into_design_reads_its_block_under_the_new_id() {
++        assertEquals("minecraft:iron_chain", params("gt_chain_wand").get("FROM").getAsString());
++        assertEquals("minecraft:gold_block", params("gt_chain_wand").get("TO").getAsString(), "ids not in the table pass");
++        assertEquals("2", params("gt_chain_wand").get("RADIUS").getAsString());
++        JsonObject g = params("gt_grouped").getAsJsonObject("turn_into");
++        assertEquals(JsonParser.parseString("[\"minecraft:iron_chain\",\"#minecraft:logs\"]"), g.get("FROM"));
++        assertEquals("iron_chain", g.get("TO").getAsString());
++        assertEquals("4", params("gt_grouped").getAsJsonObject("lightning").get("HEARTS").getAsString());
++    }
++
++    @Test
++    void text_that_is_not_one_id_is_left_alone() {
++        assertEquals("minecraft:chain,minecraft:stone", params("gt_listed").get("FROM").getAsString());
++        assertEquals("furnace", params("gt_listed").get("TO").getAsString());
++    }
++
++    @Test
++    void a_design_saved_with_the_marker_is_not_remapped_again() {
++        assertEquals("minecraft:chain", params("gt_marked").get("FROM").getAsString(),
++                "a 1.21.10 design is already in 1.21.10's ids");
++        JsonObject w = written("gt_chain_wand");
++        assertEquals(Target.MINECRAFT, w.get(BlockRenames.MARKER).getAsString(), "a save writes this build's marker");
++        assertEquals("minecraft:iron_chain", w.getAsJsonObject("params").get("FROM").getAsString());
++    }
++
++    @Test
++    void a_design_a_newer_minecraft_wrote_is_read_as_it_is_and_never_written_over() {
++        assertEquals("minecraft:copper_chain", params("gt_newer").get("TO").getAsString(), "read as it is");
++        assertEquals(stored("gt_newer"), written("gt_newer"), "written back exactly as it was read");
++        assertEquals(5, ItemSpecStore.designRecords().size(), "no design dropped");
++        assertFalse(written("gt_newer").get(BlockRenames.MARKER).getAsString().equals(Target.MINECRAFT),
++                "never under this build's older marker");
++    }
++}
