@@ -62,5 +62,9 @@ disagrees with the item's design.
 
 `StarterRegenGameTest` replays every recipe through the real tools, fails if a tool refuses one or makes a different
 pack, logs for each pack whether its functions match the shipped ones (`STARTER_REGEN:` lines), and writes each fresh
-zip into the directory given. A version branch that bumps the compiler runs it and copies the zips over
+zip into the directory given. Each recipe is replayed in a world that has the creatures it names (every
+`apply_effect` call's `tag`), registered from the library the way a player's world registers one when it is first
+spawned, and taken away again after, so anything that depends on the creature's size (a step's or a landing's reach,
+counted from its flank) comes out as it would in a player's world. It also fails a fresh pack whose steps and landings
+reach less or more far than the shipped pack does once installed in such a world. A version branch that bumps the compiler runs it and copies the zips over
 `datapacks/<id>/<id>.zip`, then updates each recipe's `compiler` and `date`.
