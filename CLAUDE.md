@@ -85,6 +85,13 @@ is the `neoforge-1.21.8` branch. A tag `moddingfromamod-<version>-mc1.21.8` (or 
 release to Modrinth and CurseForge (`.github/port-publish.json`). Nothing is published that a person has not played.
 `tools/store-release.sh <version>` builds and checks the same jar locally.
 
+**A fix lands on `main` first.** `main` holds every change; `neoforge-1.21.8` is `main` at a release point, and a
+higher `neoforge-<mc>` branch holds only its port's own changes plus `main` merged upward. A hotfix the release line
+needs before the next release point is made on `main` and **cherry-picked down** in the same change, never committed to
+the release line alone. `.github/workflows/release-line.yml` refuses a push or pull request that brings
+`neoforge-1.21.8` a commit with no equivalent on `main` (`git cherry origin/main HEAD`, matched by patch, so a
+cherry-pick passes); the one exception is Port CI's own install-manifest refresh.
+
 ## Building on it: extension points
 
 Read [`docs/EXTENDING.md`](docs/EXTENDING.md). In short: a plug-in is a `com.moddingfromamod.plugin.ModdyPlugin`
