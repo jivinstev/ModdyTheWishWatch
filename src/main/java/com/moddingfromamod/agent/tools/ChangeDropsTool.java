@@ -230,35 +230,31 @@ public final class ChangeDropsTool implements McpTool {
     /**
      * <b>The loot modifiers NeoForge has LOADED right now</b>, by id.
      *
-     * <p>NeoForge keeps its {@code LootModifierManager} behind a package-private accessor
-     * ({@code NeoForgeEventHandler.getLootModifierManager}) and the map behind a private field, so
-     * this reads both by reflection. It fails LOUDLY: a NeoForge that moved them must go red in
-     * {@code ChangeDropsGameTest}, never quietly report every rule as "not loaded". That is the same
-     * trade {@code LiteProbe} makes for its census.
+     * <p>From NeoForge 26.1 the {@code LootModifierManager} is a reload listener the server's resources hand out by key
+     * ({@code managers().getListener(NeoForgeReloadListeners.LOOT_MODIFIERS_KEY)}, as NeoForge's own
+     * {@code CommonHooks.modifyLoot} reads it), so no reflection is needed. It still fails LOUDLY: no server, or no
+     * manager, must go red in {@code ChangeDropsGameTest}, never quietly report every rule as "not loaded".
      */
     public static final class LiveLootModifiers {
         private LiveLootModifiers() {
         }
 
-        @SuppressWarnings("unchecked")
         public static Set<String> ids() {
-            try {
-                Class<?> handler = Class.forName("net.neoforged.neoforge.common.NeoForgeEventHandler");
-                var get = handler.getDeclaredMethod("getLootModifierManager");
-                get.setAccessible(true);
-                Object manager = get.invoke(null);
-                var field = manager.getClass().getDeclaredField("registeredLootModifiers");
-                field.setAccessible(true);
-                Map<Object, Object> map = (Map<Object, Object>) field.get(manager);
-                Set<String> out = new TreeSet<>();
-                for (Object k : map.keySet()) {
-                    out.add(String.valueOf(k));
-                }
-                return out;
-            } catch (ReflectiveOperationException e) {
-                throw new IllegalStateException("NeoForge moved its loot modifier manager ("
-                        + e + "); ChangeDropsTool.LiveLootModifiers must follow it", e);
+            var server = net.neoforged.neoforge.server.ServerLifecycleHooks.getCurrentServer();
+            if (server == null) {
+                throw new IllegalStateException("no server is running, so its loaded loot modifiers cannot be read");
             }
+            net.neoforged.neoforge.common.loot.LootModifierManager manager = server.getServerResources().managers()
+                    .getListener(net.neoforged.neoforge.resource.NeoForgeReloadListeners.LOOT_MODIFIERS_KEY);
+            if (manager == null) {
+                throw new IllegalStateException("NeoForge's loot modifier manager is not among the server's reload "
+                        + "listeners; ChangeDropsTool.LiveLootModifiers must follow it");
+            }
+            Set<String> out = new TreeSet<>();
+            for (net.neoforged.neoforge.common.loot.IGlobalLootModifier mod : manager.getSortedModifiers()) {
+                out.add(String.valueOf(manager.getId(mod)));
+            }
+            return out;
         }
     }
 }

@@ -168,7 +168,7 @@ public final class EventWriter {
      * stone — is on this list, and that is what protects his builds from an event that digs.
      */
     public static boolean natural(BlockState s) {
-        return s.is(BlockTags.DIRT) || s.is(BlockTags.BASE_STONE_OVERWORLD)
+        return s.is(BlockTags.SUBSTRATE_OVERWORLD) || s.is(BlockTags.BASE_STONE_OVERWORLD)
                 || s.is(BlockTags.BASE_STONE_NETHER) || s.is(BlockTags.SAND)
                 || s.is(BlockTags.SNOW) || s.is(BlockTags.ICE)
                 || s.is(Blocks.GRAVEL) || s.is(Blocks.CLAY);

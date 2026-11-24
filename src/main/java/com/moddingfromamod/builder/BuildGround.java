@@ -176,7 +176,7 @@ public final class BuildGround {
                 || s.is(Blocks.BROWN_MUSHROOM_BLOCK) || s.is(Blocks.RED_MUSHROOM_BLOCK)) {
             return BuildClearing.Kind.PLANT;
         }
-        if (s.is(BlockTags.DIRT) || s.is(BlockTags.BASE_STONE_OVERWORLD) || s.is(BlockTags.SAND)
+        if (s.is(BlockTags.SUBSTRATE_OVERWORLD) || s.is(BlockTags.BASE_STONE_OVERWORLD) || s.is(BlockTags.SAND)
                 || s.is(BlockTags.TERRACOTTA) || s.is(net.neoforged.neoforge.common.Tags.Blocks.ORES)
                 || s.is(Blocks.GRAVEL) || s.is(Blocks.CLAY) || s.is(Blocks.SNOW_BLOCK) || s.is(Blocks.POWDER_SNOW)
                 || s.is(Blocks.SANDSTONE) || s.is(Blocks.RED_SANDSTONE) || s.is(Blocks.DIRT_PATH)
