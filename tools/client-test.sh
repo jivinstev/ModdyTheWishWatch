@@ -3,7 +3,7 @@
 # client-test.sh — run an automated REAL-CLIENT test (Gate C), unattended.
 #
 # Launches a dev client (`./gradlew runClient -Pboottest -Ptestmode=<mode>`) that drives itself through a
-# scenario (a class in src/main/java/com/moddingfromamod/client/test/ that reads `moddingfromamod.testmode`),
+# scenario (a class in src/main/java/com/moddingfromamod/gatec/ that reads `moddingfromamod.testmode`),
 # writes PASS/FAIL to a signal dir, and quits. Prints the verdict and exits with an ACCURATE code:
 #
 #     0 = PASS        1 = FAIL        2 = setup error        3 = no result / timeout
