@@ -22,7 +22,8 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public abstract class SignTextMixin {
 
     @Inject(method = "updateSignText", at = @At("HEAD"), cancellable = true)
-    private void moddingfromamod$sweepSign(Player player, boolean front, List<FilteredText> lines, CallbackInfo ci) {
+    private void moddingfromamod$sweepSign(Player player, net.minecraft.world.level.block.entity.SignTextSlot slot,
+                                          List<FilteredText> lines, CallbackInfo ci) {
         if (!(player instanceof ServerPlayer sp) || lines == null) {
             return;
         }
