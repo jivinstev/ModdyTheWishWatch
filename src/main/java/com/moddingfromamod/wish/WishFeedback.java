@@ -211,7 +211,7 @@ public final class WishFeedback {
             return;
         }
         tell(player, Component.literal("✨ " + line).setStyle(Style.EMPTY.withColor(ChatFormatting.GOLD)));
-        player.playNotifySound(SoundEvents.NOTE_BLOCK_BELL.value(), SoundSource.PLAYERS, 0.5f, 0.8f);
+        com.moddingfromamod.mv.NotifySound.play(player,SoundEvents.NOTE_BLOCK_BELL.value(), SoundSource.PLAYERS, 0.5f, 0.8f);
     }
 
     /** Does a line he is about to read pass the text sweep (safety L0) every child-visible argument passes? */
