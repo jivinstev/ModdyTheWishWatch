@@ -33,7 +33,7 @@ class GateBWorldPresetTest {
     static final Path OVERRIDE = Path.of("src/main/resources").resolve(ENTRY);
 
     @Test
-    @DisplayName("the GameTest world is 26.2's flat world: plains, bedrock, two dirt, grass")
+    @DisplayName("the GameTest world is 26.2's flat world, its grass two below where 26.3 starts the tests (y 4)")
     void theOverrideIsTheFlatWorld() throws IOException {
         assertTrue(Files.isRegularFile(OVERRIDE), "no GameTest world override at " + OVERRIDE);
         JsonObject settings = JsonParser.parseString(Files.readString(OVERRIDE)).getAsJsonObject()
@@ -44,7 +44,9 @@ class GateBWorldPresetTest {
         List<String> got = new java.util.ArrayList<>();
         layers.forEach(l -> got.add(l.getAsJsonObject().get("block").getAsString() + "x"
                 + l.getAsJsonObject().get("height").getAsInt()));
-        assertEquals(List.of("minecraft:bedrockx1", "minecraft:dirtx2", "minecraft:grass_blockx1"), got);
+        // 26.2 started its tests at y -59 on grass at -61; 26.3 starts them at y 4 (GameTestServer's startPos), so the
+        // grass is at 2: bedrock at -64, 65 dirt, then grass. The same ground, two below the plots, as 26.2 had.
+        assertEquals(List.of("minecraft:bedrockx1", "minecraft:dirtx65", "minecraft:grass_blockx1"), got);
     }
 
     @Test
