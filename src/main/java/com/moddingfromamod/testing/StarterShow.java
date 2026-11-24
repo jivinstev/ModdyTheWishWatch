@@ -383,12 +383,8 @@ public final class StarterShow {
      * never seen holding.
      */
     private static void shown(EquipmentSlot slot, ItemStack stack) {
-        for (ServerPlayer p : level.players()) {
-            if (p != kid && kid.broadcastToPlayer(p)) {
-                p.connection.send(new net.minecraft.network.protocol.game.ClientboundSetEquipmentPacket(
-                        kid.getId(), List.of(com.mojang.datafixers.util.Pair.of(slot, stack.copy()))));
-            }
-        }
+        level.getChunkSource().sendToTrackingPlayers(kid, new net.minecraft.network.protocol.game.ClientboundSetEquipmentPacket(
+                kid.getId(), List.of(com.mojang.datafixers.util.Pair.of(slot, stack.copy()))));
     }
 
     private static Mob monster(double dx, double dz) {

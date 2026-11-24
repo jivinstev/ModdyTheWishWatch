@@ -4,3 +4,5 @@ p.getServer()	p.level().getServer()
 # 1.21.9 renamed the block and item minecraft:chain to minecraft:iron_chain (DataFixers: "Rename chain to iron_chain", schema 4541); applied to the shipped presets as well
 re:"minecraft:chain"	"minecraft:iron_chain"
 re:equals\("chain"\)	equals("iron_chain")
+# 1.21.9: ServerChunkCache.broadcast(Entity, Packet) is sendToTrackingPlayers (CATALOG M89); the compile loop had put a loop over level.players() in its place
+re:getChunkSource\(\)\.broadcast\(	getChunkSource().sendToTrackingPlayers(

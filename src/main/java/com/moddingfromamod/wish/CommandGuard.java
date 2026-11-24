@@ -283,6 +283,10 @@ public final class CommandGuard {
         // version — new in 1.21.6+: reads the server's version. DENY: no wish
         // needs it, and the agent's own prompt already says which Minecraft it builds for.
         deny("version", "no wish needs it; the agent already knows the version (#1786)");
+        // fetchprofile — new in 1.21.9: looks a player's profile up by name or id on Mojang's servers (a web call
+        // with words the agent chose) and offers a head or a mannequin with that skin. DENY, the verdict a root with
+        // no row already had: no wish has needed it, and a make never calls the web.
+        deny("fetchprofile", "looks a profile up on Mojang's servers by any name; no wish needs it yet");
 
         // ── this mod's own commands: each runs something SAVED, never anything arbitrary ───────
         allow("wishbuild", "runs a saved, volume-capped build plan by id");
