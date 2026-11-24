@@ -125,7 +125,10 @@ class WishHotbarPlanTest {
     void aHotbarProxyAsksAboutAReplayOfItsRecipe() {
         java.util.UUID him = java.util.UUID.randomUUID();
         WishAsk ask = WishAsk.replay(him, "fire_sword");
-        assertEquals(new WishAsk(him, WishSource.PRESET, "fire_sword", WishAsk.Magic.REPLAY), ask);
+        assertEquals(him, ask.player());
+        assertEquals(WishSource.PRESET, ask.source());
+        assertEquals("fire_sword", ask.recipe());
+        assertEquals(WishAsk.Magic.REPLAY, ask.magic());
         WishAsk typed = WishAsk.of(him, WishSource.TYPED, WishAsk.Magic.APPRENTICE);
         assertEquals(WishAsk.Magic.APPRENTICE, typed.magic(), "the magic is the one named, never a default");
         assertEquals("", typed.recipe(), "no recipe is the empty id, never null");
