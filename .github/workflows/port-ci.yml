@@ -111,11 +111,11 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0          # the author's branch is needed: mixins they left unlisted stay exempt
-      - name: Port CI kit v72 (pinned by sha256)
+      - name: Port CI kit v76 (pinned by sha256)
         run: |
           curl -fsSL -o "$RUNNER_TEMP/kit.tar.gz" \
-            "https://github.com/jivinstev/mc-mod-version-upgrade/releases/download/port-ci-kit-v72/port-ci-kit-v72.tar.gz"
-          echo "b0c3804f146a72ba7b9ff2e8476dee2e97dc39a5443a93fc06f5985550bad412  $RUNNER_TEMP/kit.tar.gz" | sha256sum -c -
+            "https://github.com/jivinstev/mc-mod-version-upgrade/releases/download/port-ci-kit-v76/port-ci-kit-v76.tar.gz"
+          echo "13983dceec8ec0176d45f854f746caaa366d7ea36ee34de3f3a546088504a8b5  $RUNNER_TEMP/kit.tar.gz" | sha256sum -c -
           mkdir -p .port-tools && tar -xzf "$RUNNER_TEMP/kit.tar.gz" -C .port-tools
       - uses: actions/setup-java@v4
         with:
@@ -184,18 +184,11 @@ jobs:
           done
           [ "$n" -gt 0 ] || { echo "::error::dep_override names no entry"; exit 1; }
       - name: Build and gates
-        env:
-          # Gate B runs our `ci` GameTest shard, not every shard (hand-added; KEEP IT when port-ci.py regenerates this
-          # file, tools/test-port-ci-budget.py fails without it). The kit stops a Gate B run after a fixed 1500 s and
-          # our whole suite takes 22-32 min, so every Gate B here was stopped by the clock and then reported as a
-          # "crash" quoting a deliberate test fixture's ERROR (docs/public-repo/PUBLIC_REPO_SPLIT.md, "Rules gaps").
-          # The full tier on the public cut is tools/public-build.sh.
-          PORT_GRADLE_ARGS: "-Pshard=ci"
         run: |
           git rev-parse "HEAD^{tree}" > "$RUNNER_TEMP/built-tree.txt"   # the tree this run built: a from_run release checks it
           git fetch --no-tags origin "main"
           python3 .port-tools/tools/ci-gates.py --repo . --modid "moddingfromamod" --base "origin/main" \
-            --gatec "none" --env "${{ matrix.env }}" --work-dir "$RUNNER_TEMP/port-ci" --summary "$RUNNER_TEMP/gates.md"
+            --gatec "none" --env "${{ matrix.env }}" --work-dir "$RUNNER_TEMP/port-ci" --summary "$RUNNER_TEMP/gates.md" --port-ci
       - name: Gate summary
         if: always()
         run: cat "$RUNNER_TEMP/gates.md" >> "$GITHUB_STEP_SUMMARY" 2>/dev/null || true
@@ -427,12 +420,12 @@ jobs:
       # branch only, and only where the branch has a manifest. The commit sits on top of the
       # tag, so publish (needs: promote) still finds the tag in the branch's history. A failure here is reported and
       # never stops publish.
-      - name: Port CI kit v72 (pinned by sha256)
+      - name: Port CI kit v76 (pinned by sha256)
         if: ${{ github.ref_name == 'neoforge-1.21.8' && hashFiles('.github/port-install.json') != '' }}
         run: |
           curl -fsSL -o "$RUNNER_TEMP/kit.tar.gz" \
-            "https://github.com/jivinstev/mc-mod-version-upgrade/releases/download/port-ci-kit-v72/port-ci-kit-v72.tar.gz"
-          echo "b0c3804f146a72ba7b9ff2e8476dee2e97dc39a5443a93fc06f5985550bad412  $RUNNER_TEMP/kit.tar.gz" | sha256sum -c -
+            "https://github.com/jivinstev/mc-mod-version-upgrade/releases/download/port-ci-kit-v76/port-ci-kit-v76.tar.gz"
+          echo "13983dceec8ec0176d45f854f746caaa366d7ea36ee34de3f3a546088504a8b5  $RUNNER_TEMP/kit.tar.gz" | sha256sum -c -
           mkdir -p .port-tools && tar -xzf "$RUNNER_TEMP/kit.tar.gz" -C .port-tools
       - name: Refresh the install manifest
         if: ${{ github.ref_name == 'neoforge-1.21.8' && hashFiles('.github/port-install.json') != '' }}
@@ -444,7 +437,7 @@ jobs:
           set -euo pipefail
           if ! printf '%s' "$TAG" | grep -Eq '^[A-Za-z0-9._+-]+$'; then echo "::error::not a release tag: $TAG"; exit 1; fi
           if [ ! -f .port-tools/tools/port-manifest.py ]; then
-            echo "::warning::Port CI kit v72 has no port-manifest.py: regenerate this workflow with a newer kit"; exit 0
+            echo "::warning::Port CI kit v76 has no port-manifest.py: regenerate this workflow with a newer kit"; exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
@@ -473,11 +466,11 @@ jobs:
         with:
           ref: "neoforge-1.21.8"
           fetch-depth: 0          # tags and history, to prove the tag was built from this branch
-      - name: Port CI kit v72 (pinned by sha256)
+      - name: Port CI kit v76 (pinned by sha256)
         run: |
           curl -fsSL -o "$RUNNER_TEMP/kit.tar.gz" \
-            "https://github.com/jivinstev/mc-mod-version-upgrade/releases/download/port-ci-kit-v72/port-ci-kit-v72.tar.gz"
-          echo "b0c3804f146a72ba7b9ff2e8476dee2e97dc39a5443a93fc06f5985550bad412  $RUNNER_TEMP/kit.tar.gz" | sha256sum -c -
+            "https://github.com/jivinstev/mc-mod-version-upgrade/releases/download/port-ci-kit-v76/port-ci-kit-v76.tar.gz"
+          echo "13983dceec8ec0176d45f854f746caaa366d7ea36ee34de3f3a546088504a8b5  $RUNNER_TEMP/kit.tar.gz" | sha256sum -c -
           mkdir -p .port-tools && tar -xzf "$RUNNER_TEMP/kit.tar.gz" -C .port-tools
       - name: Publish to Modrinth and CurseForge
         env:
@@ -498,11 +491,11 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: "neoforge-1.21.8"
-      - name: Port CI kit v72 (pinned by sha256)
+      - name: Port CI kit v76 (pinned by sha256)
         run: |
           curl -fsSL -o "$RUNNER_TEMP/kit.tar.gz" \
-            "https://github.com/jivinstev/mc-mod-version-upgrade/releases/download/port-ci-kit-v72/port-ci-kit-v72.tar.gz"
-          echo "b0c3804f146a72ba7b9ff2e8476dee2e97dc39a5443a93fc06f5985550bad412  $RUNNER_TEMP/kit.tar.gz" | sha256sum -c -
+            "https://github.com/jivinstev/mc-mod-version-upgrade/releases/download/port-ci-kit-v76/port-ci-kit-v76.tar.gz"
+          echo "13983dceec8ec0176d45f854f746caaa366d7ea36ee34de3f3a546088504a8b5  $RUNNER_TEMP/kit.tar.gz" | sha256sum -c -
           mkdir -p .port-tools && tar -xzf "$RUNNER_TEMP/kit.tar.gz" -C .port-tools
       - name: Create the Modrinth draft project
         env:
