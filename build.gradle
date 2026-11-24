@@ -750,11 +750,13 @@ apply from: 'gate-a.gradle'
 // path) and `seam/` (the marks a test sets and shipped code reads), and the mod boots the harness by name through
 // seam/TestHarness, which finds nothing in a jar.
 // and the GameTest harness's test-only mixin config (its classes are under testing/, above).
-def SHIP_EXCLUDES = ['corpus/**', 'com/moddingfromamod/test/**', 'com/moddingfromamod/testing/**',
+// The real-client tests (gatec: Gate C, the rig films) are dev-run code too: a client run loads them from the
+// build's classes, and a jar never carries them.
+def SHIP_EXCLUDES = ['corpus/**', 'com/moddingfromamod/test/**', 'com/moddingfromamod/testing/**', 'com/moddingfromamod/gatec/**',
                      '**/?*GameTest.class', '**/?*GameTest$*.class', '**/*.gametest.mixins.json']
 // What must never be in a shipped jar, wherever a future move puts it. Checked on the built jar's
 // entry names (nested jarJar libraries are opaque entries under META-INF/jarjar/ and never match).
-def NEVER_SHIP = ~/(^|.*\/)[^\/]+\.gametest\.mixins\.json$|^corpus\/.*|(^|.*\/)(real-wishes|safety-wishes|real-tool-calls)[^\/]*\.jsonl$|^com\/moddingfromamod\/(test|testing)\/.*|.*\/[^\/]+GameTest(\$[^\/]*)?\.class$/
+def NEVER_SHIP = ~/(^|.*\/)[^\/]+\.gametest\.mixins\.json$|^corpus\/.*|(^|.*\/)(real-wishes|safety-wishes|real-tool-calls)[^\/]*\.jsonl$|^com\/moddingfromamod\/(test|testing|gatec)\/.*|.*\/[^\/]+GameTest(\$[^\/]*)?\.class$/
 // a shipped class may name only mod classes the jar carries. A reference to one left out (the harness, a
 // GameTest, or, in the public cut, a private class) is a NoClassDefFoundError waiting for the line that runs it.
 // A deliberate exception would be a dev-only driver reached only behind seam/TestHarness.present(), listed here. There
