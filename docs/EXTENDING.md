@@ -54,6 +54,10 @@ public final class EmeraldPlugin implements ModdyPlugin {
   one emerald), `EmeraldPlugin` (its registration) and `EmeraldWishChargeGameTest`, which presses a recipe through
   the real `WishService.submit` twice: one emerald pays for the first, and the second is refused in the plug-in's
   words. It is test code and never ships in the jar.
+- **The contract test world** is `src/main/java/com/moddingfromamod/test/contract/` (#63): `ContractWorld` stands in
+  for a world jar, built only from what a world jar may use (the documented hooks and `MakeFacts`, never a Builder
+  id), and its GameTests drive the core's real entry points with it in place. A core change that would break a world
+  jar goes red there, in the core's own CI. Test code; never in the jar.
 - **Testing a mod of your own against this one.** Two jars carry what a separate mod's tests need, built from this
   repository and never shipped:
   - `./gradlew testKitJar` (`build/test-kit/`): the GameTest harness (`testing/`), its test-only mixin config,
@@ -64,6 +68,51 @@ public final class EmeraldPlugin implements ModdyPlugin {
   Compile your tests against the mod jar and both. In a dev run the harness and the GameTest classes share packages
   with the mod, and a package split across two mods stops the boot, so put them in the same mod as this jar's entries
   (one merged dev jar), not beside it.
+
+## Reading what a make is: `MakeFacts`
+
+A read-only API, not a hook: a world (or any plug-in) asks it what a make is, to decide something of its own.
+`com.moddingfromamod.wishbuilder.MakeFacts` is pure and Minecraft-free; `com.moddingfromamod.wish.MakeFactsLookup`
+reads what the server holds. Nothing is stored or stamped anywhere: facts are computed when asked, so a thing carried
+from one world to another has the same facts in both.
+
+| Ask | For |
+|---|---|
+| `MakeFacts.of(BuilderSpec)` | a Builder make, an Apprentice tile's make, any spec still being picked (rated by its picks so far, never cautiously) |
+| `MakeFacts.ofStoredSpec(JsonObject)` | a kept make's stored spec |
+| `MakeFactsLookup.forRecipe(server, player, recipe)` | a recipe id: `builder:<id>` (his kept Builder make; once a Magician wish changed it, the thing as it is now, never below its spec), a taught or library recipe, `<wish>@<part>` |
+| `MakeFactsLookup.forThing(server, kind, id)` | a thing on a shelf, from its stored design (what the Magician made) |
+| `MakeFacts.ofCommands(commands, artifacts)`, `MakeFacts.ofArtifact(kind, json)`, `MakeFacts.combine(list)` | the pure pieces the two above are made of |
+
+The answer is a `MakeFacts(kind, tier, tags, known)`:
+
+- **`kind`**: `creature`, `ride`, `item`, `machine`, `magic_block`, `building`, `picture`, `event`, `rule`,
+  `supplies` (the Builder's kinds), or `other` (a command or datapack the core cannot place).
+- **`tags`**, a closed vocabulary (`MakeFacts.TAGS`), every one derived from fields the entries already carry (a
+  creature's powers and temperament, an item effect's `applies_to` and parameters in the item catalogue, a creature
+  ability's parameters in the effects catalogue, an event's motion and what it leaves, the kind). Nothing is hand-rated,
+  so a Builder entry added later is rated with no decision from you:
+  - `fights`: can hurt a creature (an effect that lands on what he hits, lightning or a blast at the spot, an ability
+    that catches or commands others, a guard, anything hostile);
+  - `hostile`: a creature that may attack players; `boss`: a creature with a boss bar;
+  - `changes_blocks`: puts, takes or turns blocks where it acts (an effect taking a block, a turn-into, a blast that
+    may break blocks, an event that leaves something or wrecks what it passes);
+  - `builds`: puts a built thing in the world (a building, a picture's board);
+  - `summons`: makes other creatures appear; `gives_items`: hands items over (supplies, prizes, a creature's treats);
+  - `world_rule`: changes a rule for the whole world;
+  - `decorative`: does nothing but be there (a picture, a "just for fun" item);
+  - `harmless`: none of `fights`, `hostile`, `boss`, `changes_blocks`, `summons`, `world_rule`.
+- **`tier`**, `0`..`MakeFacts.TOP_TIER` (5): `0` for a decorative make; otherwise `1`, plus a step for each of its
+  size (3 → +1, 4 → +2, for a creature, ride, building or event; a stored creature's scale, a stored event's size, a
+  stored building's extent), its strength (3 → +1), how many (a creature made 2+ → +1, 10+ → +2; supplies 32+ → +1), a
+  stored creature's health and damage, one each for `fights`, `hostile`, `boss`, `changes_blocks`, `summons`, two for
+  `world_rule`. More size, strength, health, damage or count never lowers a tier.
+- **`known`** is false when the thing could not be read (gone from its store, a newer Moddy's spec, a command the core
+  does not know): the facts are then `MakeFacts.cautious(kind)`, the most such a thing could be.
+
+Treat a tag you do not know as matching nothing, and a kind you do not know as allowed: the vocabulary and the kinds
+may grow, and a world that hides or locks by tag never has to change when the core adds Builder content.
+`MakeFactsTest` (Gate A) pins the vocabulary and rates every reviewed Builder entry and every ready-made.
 
 ## Documented extension points
 
