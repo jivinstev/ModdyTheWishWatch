@@ -325,7 +325,10 @@ You never write keyframes. The rig animates a creature from its own boxes, so wh
 power and a NAME:
 
 - **It flies** → `flies`. Its wings BEAT in the air and twitch on the ground. Only boxes whose name
-  has `wing` in it (or the `wing` kit) flap — a wing called `sail` or `leftArm2` is a statue.
+  has `wing` in it (or the `wing` kit) flap — a wing called `sail` or `leftArm2` is a statue. A
+  wing you sculpt by hand is a panel THIN TOP TO BOTTOM (long out to the side, deep front to back,
+  a pixel or two tall), the way a wing is held in flight: it beats up and down, so its flat face
+  must face up and down to push the air.
 - **It swims** (a shark, a fish, a mermaid, an octopus) → name its parts `tail…`, `fin…`,
   `tentacle…`. In water the tail sweeps, fins paddle, tentacles open and close, and it tips its nose
   up or down the way it is going. On land it walks.
