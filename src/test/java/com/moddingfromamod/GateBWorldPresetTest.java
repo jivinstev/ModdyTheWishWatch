@@ -23,7 +23,8 @@ import org.junit.jupiter.api.Test;
  * <p>26.3's GameTestServer builds its world from the world preset {@code minecraft:flat_all_dimensions}, a desert of
  * sandstone. Up to 26.2 it built {@code minecraft:flat}, grass on plains, and the GameTests that transform, flood
  * and locate were written for that world. The dev runs read an override of {@code flat_all_dimensions} (26.2's flat
- * preset) from the mod's resources. The override is test ground only, so the build leaves it out of the jar
+ * world: its biome and layers; it names no structures, which the GameTest world never generates, so it is not a copy
+ * of a vanilla file, {@code NoVanillaCopyTest}) from the mod's resources. The override is test ground only, so the build leaves it out of the jar
  * ({@code SHIP_EXCLUDES}), and the jar task's finished-jar check refuses a jar that carries it ({@code NEVER_SHIP}).
  */
 class GateBWorldPresetTest {
