@@ -7,8 +7,8 @@
 gamemode creative
 time set noon
 weather clear
-gamerule doDaylightCycle false
-gamerule doMobSpawning false
+gamerule advance_time false
+gamerule spawn_mobs false
 execute if entity @e[type=!minecraft:player] run kill @e[type=!minecraft:player]
 tp @s ~ ~ ~ 0 10
 

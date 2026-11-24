@@ -87,7 +87,7 @@ final class StockHotbarProbe {
                     NAMES[i], NAMES[i], RECIPES[i], NAMES[i], icons[i], List.of());
         }
         // Noon and peaceful: on a fresh flat world a night's mobs killed him before the first page (a rig fault).
-        for (String cmd : List.of("time set noon", "gamerule doDaylightCycle false", "difficulty peaceful", "kill @e[type=!player]")) {
+        for (String cmd : List.of("time set noon", "gamerule advance_time false", "difficulty peaceful", "kill @e[type=!player]")) {
             server.getCommands().performPrefixedCommand(server.createCommandSourceStack().withSuppressedOutput(), cmd);
         }
         // A world kept from an earlier run still carries its tags, which would read as "made" before any use.

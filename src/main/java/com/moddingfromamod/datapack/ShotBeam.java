@@ -13,7 +13,7 @@ import java.util.List;
  * still flies, because the weapon shoots it; the beam is additive.
  *
  * <p>Unrolled rather than recursive, like {@link ChangeBlock#aimLines}: a function that calls itself
- * is bounded by {@code maxCommandChainLength} and fails silently past it, and 32 fixed steps are
+ * is bounded by {@code max_command_sequence_length} and fails silently past it, and 32 fixed steps are
  * easy to read in the compiled pack. The shooter is tagged for the duration, so the beam never
  * "hits" him as it leaves his eyes and an effect's own selector can leave him out.
  *

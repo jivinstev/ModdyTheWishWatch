@@ -285,7 +285,7 @@ public final class ScopedPacksGameTest {
                     + (z + 900) + " run setblock ~ ~ ~ minecraft:stone")));
             no.put("the nether", w.call("author_datapack", pack(p + "r6", "execute in minecraft:the_nether run setblock 0 64 0 minecraft:stone")));
             no.put("time", w.call("author_datapack", pack(p + "r7", "time set day")));
-            no.put("gamerule", w.call("author_datapack", pack(p + "r8", "gamerule doDaylightCycle false")));
+            no.put("gamerule", w.call("author_datapack", pack(p + "r8", "gamerule advance_time false")));
             no.put("another player named", w.call("author_datapack", pack(p + "r9", "effect give BobOther minecraft:glowing 5")));
             no.put("function out of the pack", w.call("author_datapack", pack(p + "r10", "function minecraft:nothing")));
             no.put("Pos in NBT", w.call("author_datapack", pack(p + "r11", "data merge entity @e[tag=" + pet + ",limit=1] {Motion:[9d,0d,0d]}")));

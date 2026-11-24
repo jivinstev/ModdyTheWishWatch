@@ -215,7 +215,7 @@ public final class DatapackDialect {
         return changed;
     }
 
-    /** This build's server-data pack format (48 on 1.21.1, 61 on 1.21.4, 88 on 1.21.10). */
+    /** This build's server-data pack format (48 on 1.21.1, 61 on 1.21.4, 88 on 1.21.10, 94 on 1.21.11). */
     public static int packFormat() {
         return SharedConstants.getCurrentVersion().packVersion(PackType.SERVER_DATA).major();
     }

@@ -29,7 +29,7 @@ import com.moddingfromamod.wish.CommandGuard;
  *): the DENY rows hit 0 of them, while {@code run_command}'s LIMITED rows would refuse 33
  * ({@code kill @s}: a fireball removing itself) and its player narrowing 160 (a dragon's breath
  * hurting whoever stands near). Those need datapack-shaped rules — an earlier issue's later steps. The
- * compiler's own boilerplate ({@code gamerule maxCommandChainLength}) is a LIMITED row and so is
+ * compiler's own boilerplate ({@code gamerule max_command_sequence_length}) is a LIMITED row and so is
  * never seen here. {@code CbScriptCorpusTest} replays the whole corpus through
  * {@code CbScriptCompiler.compile}, so a corpus pack this starts refusing fails Gate A by name.
  */

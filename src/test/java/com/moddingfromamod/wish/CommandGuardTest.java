@@ -110,20 +110,23 @@ class CommandGuardTest {
     /** "make it daytime forever" is one command, and only the two rules that wish needs. */
     @Test
     void allowsStoppingTheSunAndTheRainAndNoOtherRule() {
-        assertTrue(CommandGuard.isAllowed("gamerule doDaylightCycle false"));
-        assertTrue(CommandGuard.isAllowed("gamerule doDaylightCycle true"));
-        assertTrue(CommandGuard.isAllowed("gamerule doWeatherCycle false"));
-        assertTrue(CommandGuard.isAllowed("minecraft:gamerule doDaylightCycle false"));
-        assertTrue(CommandGuard.isAllowed("execute as @p run gamerule doDaylightCycle false"));
+        assertTrue(CommandGuard.isAllowed("gamerule advance_time false"));
+        assertTrue(CommandGuard.isAllowed("gamerule advance_time true"));
+        assertTrue(CommandGuard.isAllowed("gamerule advance_weather false"));
+        assertTrue(CommandGuard.isAllowed("minecraft:gamerule advance_time false"));
+        assertTrue(CommandGuard.isAllowed("execute as @p run gamerule advance_time false"));
 
-        assertFalse(CommandGuard.isAllowed("gamerule keepInventory true"));
-        assertFalse(CommandGuard.isAllowed("gamerule mobGriefing false"));
-        assertFalse(CommandGuard.isAllowed("gamerule sendCommandFeedback false"));
-        assertFalse(CommandGuard.isAllowed("gamerule randomTickSpeed 1000"));
-        assertFalse(CommandGuard.isAllowed("gamerule doDaylightCycle"),
+        assertFalse(CommandGuard.isAllowed("gamerule keep_inventory true"));
+        assertFalse(CommandGuard.isAllowed("gamerule mob_griefing false"));
+        assertFalse(CommandGuard.isAllowed("gamerule send_command_feedback false"));
+        assertFalse(CommandGuard.isAllowed("gamerule random_tick_speed 1000"));
+        assertFalse(CommandGuard.isAllowed("gamerule advance_time"),
                 "a bare query is not a wish");
-        assertFalse(CommandGuard.isAllowed("gamerule doDaylightCycle 0"));
-        assertFalse(CommandGuard.isAllowed("gamerule doDaylightCycle false extra"));
+        assertFalse(CommandGuard.isAllowed("gamerule advance_time 0"));
+        assertFalse(CommandGuard.isAllowed("gamerule advance_time false extra"));
+        assertTrue(CommandGuard.isAllowed("gamerule minecraft:advance_weather true"));
+        // 1.21.11: the camelCase names are not commands any more, so they are not on the list either
+        assertFalse(CommandGuard.isAllowed("gamerule doDaylightCycle false"));
     }
 
     @Test

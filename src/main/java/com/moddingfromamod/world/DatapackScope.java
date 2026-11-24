@@ -41,7 +41,7 @@ public final class DatapackScope {
     }
 
     /** The CBScript compiler writes this into every pack's reset function; it is the compiler's, not the wish's. */
-    static final Pattern COMPILER_BOILERPLATE = Pattern.compile("gamerule maxCommandChainLength \\d+");
+    static final Pattern COMPILER_BOILERPLATE = Pattern.compile("gamerule max_command_sequence_length \\d+");
 
     private static final Set<String> HARMFUL = Set.of("instant_damage", "poison", "wither", "minecraft:instant_damage",
             "minecraft:poison", "minecraft:wither");

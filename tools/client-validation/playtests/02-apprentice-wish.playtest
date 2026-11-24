@@ -6,8 +6,8 @@
 gamemode creative
 time set noon
 weather clear
-gamerule doDaylightCycle false
-gamerule doMobSpawning false
+gamerule advance_time false
+gamerule spawn_mobs false
 tp @s ~ ~ ~ 0 10
 
 @step type a wish for the Apprentice

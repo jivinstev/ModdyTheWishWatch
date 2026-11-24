@@ -81,7 +81,7 @@ class CommandCoordsTest {
 
     @Test
     void worldWideCommandsAreRefused() {
-        for (String c : List.of("time set day", "weather clear", "gamerule doDaylightCycle false",
+        for (String c : List.of("time set day", "weather clear", "gamerule advance_time false",
                 "difficulty hard", "worldborder set 10", "setworldspawn 0 64 0", "function foo:bar",
                 "minecraft:time set night")) {
             assertNotNull(CommandCoords.analyse(c, AT_100).refusal(), c);

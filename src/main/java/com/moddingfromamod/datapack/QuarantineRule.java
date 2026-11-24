@@ -46,7 +46,7 @@ import java.util.Map;
  * A sustained window cannot see a recursive {@code function} that never returns: it is ONE tick, and the
  * watchdog kills the server at 60 s. So one outermost function call of a wish pack running past
  * {@link #HARD_STOP_MS} is stopped where it stands (the command quota is spent, as vanilla's own
- * {@code maxCommandChainLength} would), and {@link #HARD_STOPS} of them inside {@link #HARD_STOP_WINDOW_MS}
+ * {@code max_command_sequence_length} would), and {@link #HARD_STOPS} of them inside {@link #HARD_STOP_WINDOW_MS}
  * quarantine the pack. One stop alone does not: a one-off heavy function is cut short once and keeps its place.
  */
 public final class QuarantineRule {

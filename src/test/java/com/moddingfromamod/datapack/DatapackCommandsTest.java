@@ -30,7 +30,7 @@ class DatapackCommandsTest {
     void whatWishedPacksReallyRunIsUntouched() {
         // The LIMITED rows are run_command's, not a datapack's (an earlier issue's measurement): a fireball
         // removing itself, the compiler's own boilerplate, a breath that hurts whoever stands near.
-        for (String line : new String[]{"kill @s", "gamerule maxCommandChainLength 1000000000",
+        for (String line : new String[]{"kill @s", "gamerule max_command_sequence_length 1000000000",
                 "execute as @a[distance=..4] run damage @s 4 minecraft:in_fire", "tellraw @a \"hi\"",
                 "# a comment", "", "scoreboard players add @s t 1", "execute if entity @s[tag=x]",
                 "particle minecraft:flame ~ ~ ~ 0 0 0 0 5"}) {

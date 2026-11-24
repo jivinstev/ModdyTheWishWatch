@@ -155,8 +155,12 @@ public final class CommandGuard {
     public record Rule(String root, Tier tier, Limit limit, Set<String> subs, boolean showsText, String why) {
     }
 
-    /** The two game rules "make it daytime forever" and its weather twin need. */
-    private static final Set<String> GAMERULES = Set.of("dodaylightcycle", "doweathercycle");
+    /**
+     * The two game rules "make it daytime forever" and its weather twin need, by their 1.21.11 registry ids (the
+     * camelCase doDaylightCycle / doWeatherCycle are no longer commands there), bare or namespaced.
+     */
+    private static final Set<String> GAMERULES = Set.of("advance_time", "advance_weather", "minecraft:advance_time",
+            "minecraft:advance_weather");
 
     /**
      * <b>Commands that change a PLAYER's lasting state</b> — what he holds, where he is, his health,
@@ -241,7 +245,7 @@ public final class CommandGuard {
         allow("playanimation", "plays an animation");
         allow("kill", "only what a wish tagged: an untagged kill took the child's animals and another wish's"
                 + " creatures (#174)", Limit.TAG_SCOPED);
-        allow("gamerule", "only the sun and the rain stopping (#770); every other rule changes how the whole"
+        allow("gamerule", "only the sun and the rain stopping (advance_time, advance_weather: #770); every other rule changes how the whole"
                 + " world plays for everyone", Limit.ONLY_THESE_GAMERULES);
 
         // ── words on screen (swept by SafetyTextSweep) ─────────────────────────────────────────
