@@ -79,6 +79,7 @@ public final class ServerSettings {
                             log.warn("settings: Magician stays OFF: {}", report.summary());
                         }
                     } finally {
+                        releaseStandInHold();
                         Magician.endCheck();
                         if (!Magician.allowsAi()) {
                             com.moddingfromamod.agent.AgentSession.stop();
@@ -86,6 +87,13 @@ public final class ServerSettings {
                     }
                 }));
     }
+
+    /**
+     * The stand-in's hold on the world spawn while the check's wish runs. A fake player loads no chunks,
+     * and 1.21.9+ no longer keeps the spawn loaded, so without it whatever the test wish made beside
+     * the stand-in would land in a chunk nothing loads. Server thread only.
+     */
+    private static com.moddingfromamod.place.SpawnHold standInHold;
 
     /** A stand-in player at world spawn to make the start-up check's wish (nobody is online yet). */
     private static net.minecraft.server.level.ServerPlayer standIn(net.minecraft.server.MinecraftServer server) {
@@ -96,11 +104,22 @@ public final class ServerSettings {
         p.setPos(spawn.getX() + 0.5, spawn.getY(), spawn.getZ() + 0.5);
         p.setServerLevel(level);
         com.moddingfromamod.agent.ActingChild.standIn(p);
+        releaseStandInHold();
+        standInHold = com.moddingfromamod.place.SpawnHold.open(level, spawn,
+                com.moddingfromamod.place.SpawnHoldPlan.Followup.NONE);
         return p;
+    }
+
+    private static void releaseStandInHold() {
+        if (standInHold != null) {
+            standInHold.close();
+            standInHold = null;
+        }
     }
 
     @SubscribeEvent
     public static void onStopped(ServerStoppedEvent event) {
+        standInHold = null;
         dedicated = false;
         checkPending = false;
         values = Map.of();

@@ -275,7 +275,15 @@ public final class ModifyMobTool implements McpTool {
             if (settleWho != null) {
                 com.moddingfromamod.wish.WishCapture.awaitSettled(settleWho);
             }
-            ToolResult out = AgentBridge.onServer(() -> com.moddingfromamod.agent.CreatureEdits.collecting(edits, () -> {
+            // HE HAS LEFT: "the nearest" is measured from the world spawn (below), which 1.21.9+ no
+            // longer keeps loaded. The spawn is held while the change is found and made, and for the
+            // agent's next call; with him here his own chunk is loaded and nothing is held.
+            ToolResult out = AgentBridge.onServer(() -> com.moddingfromamod.place.SpawnHold.during(
+                    com.moddingfromamod.agent.ActingChild.person(AgentBridge.serverOrNull()) == null,
+                    AgentBridge.serverOrNull().overworld(),
+                    AgentBridge.serverOrNull().overworld().getRespawnData().pos(),
+                    com.moddingfromamod.place.SpawnHoldPlan.Followup.AGENT,
+                    () -> com.moddingfromamod.agent.CreatureEdits.collecting(edits, () -> {
                 var server = AgentBridge.serverOrNull();
                 // The child whose wish this is — NOT whoever joined first. The old form was
                 // getPlayers().stream().findFirst(), which with one child is always right and with
@@ -464,7 +472,7 @@ public final class ModifyMobTool implements McpTool {
                               + " — use those to mean these exact ones.");
                 }
                 return ToolResult.ok(sb.toString());
-            }), 10_000L);
+            })), 10_000L);
             if (made[0] != null && !made[0].isBlank()) {
                 LAST_MADE.set(made[0]);
             }

@@ -42,7 +42,7 @@ public final class SpinFilm {
         int fw = strip.getWidth() / n;
         for (int i = 0; i < n; i++) {
             BufferedImage f = new BufferedImage(fw, strip.getHeight(), BufferedImage.TYPE_INT_RGB);   // no alpha: a quarter smaller
-            f.getGraphics().drawImage(strip, -i * fw, 0, null);
+            Pixels.draw(f, strip, -i * fw, 0);   // no Java2D: it froze the game window on macOS (Pixels)
             out.add(f);
         }
         return out;
@@ -63,13 +63,7 @@ public final class SpinFilm {
             return f;
         }
         int h = Math.max(1, (int) Math.round(f.getHeight() * (width / (double) f.getWidth())));
-        BufferedImage out = new BufferedImage(width, h, BufferedImage.TYPE_INT_RGB);
-        java.awt.Graphics2D g = out.createGraphics();
-        g.setRenderingHint(java.awt.RenderingHints.KEY_INTERPOLATION,
-                java.awt.RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-        g.drawImage(f, 0, 0, width, h, null);
-        g.dispose();
-        return out;
+        return Pixels.scaled(f, width, h, BufferedImage.TYPE_INT_RGB);
     }
 
     /** One frame as a plain PNG. */

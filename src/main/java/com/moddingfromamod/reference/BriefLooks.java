@@ -290,13 +290,8 @@ public final class BriefLooks {
         }
         double k = 512.0 / max;
         int nw = Math.max(1, (int) (w * k)), nh = Math.max(1, (int) (h * k));
-        var out = new java.awt.image.BufferedImage(nw, nh, java.awt.image.BufferedImage.TYPE_INT_ARGB);
-        var g = out.createGraphics();
-        g.setRenderingHint(java.awt.RenderingHints.KEY_INTERPOLATION,
-                java.awt.RenderingHints.VALUE_INTERPOLATION_BILINEAR);
-        g.drawImage(img, 0, 0, nw, nh, null);
-        g.dispose();
-        return out;
+        // no Java2D: it froze the game window on macOS (runtime/Pixels)
+        return com.moddingfromamod.runtime.Pixels.scaled(img, nw, nh, java.awt.image.BufferedImage.TYPE_INT_ARGB);
     }
 
     /** The model's answer reduced to one paragraph; UNSAFE, NONE and junk become empty. */

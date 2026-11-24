@@ -13,7 +13,7 @@
 #
 # What it checks on the FINISHED jar (and refuses the jar on any miss):
 #   the leak scan over the tree; the jar's own NEVER_SHIP and
-#   dangling-reference checks (the jarJar task); no plug-in listed in META-INF/services; the mixin checks (no private
+#   dangling-reference checks (the jar task); no plug-in listed in META-INF/services; the mixin checks (no private
 #   mixin config, class or name in neoforge.mods.toml, no GameTest-only config or harness, no unlisted mixin class); the
 #   licence files and the model's licence present; the model present with its pinned hashes; ONNX Runtime nested with
 #   each of its four native sets (linux-x64, linux-aarch64, osx-aarch64, win-x64) and no *.dSYM/ debug bundle;
@@ -104,7 +104,7 @@ bash "$ROOT/tools/fetch-apprentice-model.sh" "$MODEL_CACHE" || fail "could not g
 cd "$TREE" || exit 2
 LOG="$OUT/build.log"
 say "building the jar (version $VERSION) in $TREE"
-if ! ./gradlew --console=plain ${GRADLE_ARGS:-} jarJar -Pmod_version="$VERSION" -PbundleApprenticeModel="$MODEL_CACHE" >"$LOG" 2>&1; then
+if ! ./gradlew --console=plain ${GRADLE_ARGS:-} jar -Pmod_version="$VERSION" -PbundleApprenticeModel="$MODEL_CACHE" >"$LOG" 2>&1; then
     grep -E "error:|What went wrong|must never ship|shipped classes" -A3 "$LOG" | head -40
     fail "the build failed; full log: $LOG"
 fi

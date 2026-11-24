@@ -705,6 +705,10 @@ public final class Builder {
      * different things must not share a square. A hash of the id gives both, with no state to keep
      * and no order to depend on.
      *
+     * <p><b>Since 1.21.9 the spawn is not kept loaded</b>, so a caller that builds here holds the spot
+     * with {@link com.moddingfromamod.place.SpawnHold} until the building is up (BuildStructureTool):
+     * the blocks land either way, a creature seated on it or summoned beside it would not be found.
+     *
      * @param id the thing being built, so the same thing always returns to the same spot
      */
     public static BlockPos fallbackAnchor(ServerLevel level, String id, int forward, int offsetY) {

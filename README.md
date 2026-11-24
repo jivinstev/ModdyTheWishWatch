@@ -9,6 +9,9 @@ a rule for your world) and it makes it, right there in your game.
   wish in your own words and the Apprentice matches it to things it can make. Both run on your computer, offline.
 - **Requirements:** NeoForge for Minecraft 1.21.8 and nothing else. Builder and Apprentice powers are compiled when
   the mod is built; Python 3 is needed only for the Magician's own powers.
+- **Moving a world to a newer Minecraft version isn't supported yet.** Wishes made in a world (its buildings, wished
+  items and their powers, rules and saved plans) are saved for the Minecraft version they were made in. Open them in a
+  newer version of Minecraft and some may come out wrong or not work. Start a new world when you change versions.
 - **Magician mode is optional.** If you have Claude Code or Muse Code, wishes can be granted by an AI model on your
   own subscription. It is off until you set it up, and it never starts a program or calls a model while it is off.
   API keys are read only from environment variables.

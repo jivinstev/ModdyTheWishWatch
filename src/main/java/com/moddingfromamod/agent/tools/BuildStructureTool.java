@@ -768,8 +768,25 @@ public final class BuildStructureTool implements McpTool {
                         ? " (" + BuildRegistry.whyNotHere(plan.id()) + " So this one went up where "
                                 + "he aimed; the old one, if it still stands, was not touched.)"
                         : "";
-                String result = Builder.submit(level, anchor, plan, true,
-                        new com.moddingfromamod.builder.BuildGround.Ground(floated, !editing), null)
+                // NOBODY TO BUILD IN FRONT OF: the fallback anchor is scattered round the world
+                // spawn, which 1.21.9+ no longer keeps loaded. The blocks would land anyway
+                // (setBlock loads its chunk); what would not is a creature seated on it once it is
+                // built, or summoned there by the agent's next call. Held until the building is
+                // up, then for the agent's next call.
+                var spawnHold = editing || byThing != null || chosen != null ? null
+                        : com.moddingfromamod.place.SpawnHold.open(level, anchor,
+                                com.moddingfromamod.place.SpawnHoldPlan.Followup.AGENT);
+                String submitted;
+                try {
+                    submitted = Builder.submit(level, anchor, plan, true,
+                            new com.moddingfromamod.builder.BuildGround.Ground(floated, !editing), null);
+                } finally {
+                    if (spawnHold != null) {
+                        // Right away when nothing is going up (refused, or already done).
+                        Builder.whenBuilt(plan.id(), spawnHold::close);
+                    }
+                }
+                String result = submitted
                         + (editing ? " (Rebuilt in place, where it already stood."
                                 + (at.isEmpty() ? "" : " Its at was not used: a change never moves it.") + ")"
                         : lostNote + (byThing != null ? byNote

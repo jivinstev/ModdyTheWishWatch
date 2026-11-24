@@ -13,7 +13,8 @@
 plugins {
     id 'java-library'
     id 'maven-publish'
-    id 'net.neoforged.gradle.userdev' version '7.1.39'
+    // ModDevGradle (MDG), not NeoGradle: NeoGradle has no path to Minecraft 26.x and MDG is required there.
+    id 'net.neoforged.moddev' version '2.0.148'
     // Gate A retries a failed test ONCE (gate-a.gradle: maxRetries 1, maxFailures 5, recorded, never hidden)
     id 'org.gradle.test-retry' version '1.6.6'
 }
@@ -116,13 +117,37 @@ def fetchApprenticeModel(File dir, String url) {
     }
 }
 
-runs {
+neoForge {
+    // the NeoForge version; MDG adds net.neoforged:neoforge itself (and Minecraft with it), so `dependencies` does not.
+    version = neo_version
+    // our sources ARE the mod every run loads (NeoGradle's modSources.add).
+    mods {
+        "${mod_id}" {
+            sourceSet sourceSets.main
+        }
+    }
+    // the vanilla client jar of the pinned Minecraft, READ by HotbarBadgeTest (Gate A) and tools/gen-hotbar-badge.py.
+    // NeoGradle left one at .gradle/caches/minecraft/versions/<mc>/client.jar as a side effect; MDG keeps its downloads
+    // in a shared cache, so the build asks NeoFormRuntime for it by name and puts it where those two read it.
+    additionalMinecraftArtifacts.put('node.downloadClient.output.output',
+            layout.buildDirectory.file("minecraft/client-${minecraft_version}.jar").get().asFile)
+    // Gate A's unit tests compile and run against Minecraft and NeoForge (and the libraries they bring: gson, the
+    // vanilla resources a test reads off the classpath). NeoGradle's `implementation neoforge` reached the test source
+    // set through testImplementation; MDG adds them to `main` only, so the test source set is named here. This is NOT
+    // MDG's unitTest {} (a JUnit run that boots the game): Gate A stays hermetic and runs from the project directory.
+    addModdingDependenciesTo(sourceSets.test)
+}
+
+neoForge.runs {
     configureEach {
-        // ONNX Runtime is a plain library, not a mod: it must be put on each RUN's classpath by name.
-        // `implementation` alone compiles and then fails at run time with NoClassDefFoundError; so does jarJar alone.
-        dependencies { runtime "com.microsoft.onnxruntime:onnxruntime:1.32.0" }
+        // ONNX Runtime is a plain library, not a mod. From Minecraft 1.21.9 (FML 10) a dev run's JVM classpath is the
+        // source set's runtime classpath (no legacyClassPath, and MDG refuses `additionalRuntimeClasspath`), so the
+        // `implementation` declaration in `dependencies` below puts it on every run; jarJar alone would not.
         systemProperty 'forge.logging.markers', 'REGISTRIES'
         systemProperty 'forge.logging.console.level', 'debug'
+        // MDG writes the run's log4j2 config itself, with this as the root level (INFO by default); DEBUG keeps the console
+        // and debug.log at the level forge.logging.console.level=debug gave them under NeoGradle.
+        logLevel = org.slf4j.event.Level.DEBUG
         // PARALLEL RUNS. Every run otherwise shares run/<name> — the same options.txt, the same
         // saves folder, the same latest.log — so two clients at once quietly corrupt each other's
         // world and interleave their logs. -Prundir gives a run its own directory.
@@ -133,9 +158,9 @@ runs {
         //
         // The agent port needed no equivalent flag — a test run already defaults to an OS-assigned
         // ephemeral port (McpHttpServer#portFor), which was designed for exactly this.
-        workingDirectory project.layout.projectDirectory.dir('run')
+        // MDG's default is ONE shared run/ for every run; this keeps NeoGradle's run/<name> (and -Prundir).
+        gameDirectory = project.layout.projectDirectory.dir('run')
                 .dir(project.hasProperty('rundir') ? project.property('rundir').toString() : name)
-        modSources.add(project.mod_id.toString(), project.sourceSets.main)
         // the GameTest harness's own mixins (testing/mixin: one test's crash fails that test, a timeout is also
         // wall-clock) are a TEST-ONLY config. FML 10 (NeoForge 21.9+) has no --fml.mixinConfig: it applies only the
         // configs a mod file's neoforge.mods.toml declares. So processResources appends the declaration to the dev
@@ -147,6 +172,7 @@ runs {
     }
 
     client {
+        client()
         // the Apprentice's trained layer, as a dedicated server has it (never for gameTestServer, see above).
         if (!apprenticeModelOff() && new File(apprenticeModelCache(), 'model.onnx').isFile()) {
             systemProperty 'moddingfromamod.apprenticeModelDir', apprenticeModelCache().absolutePath
@@ -180,15 +206,15 @@ runs {
         // to click through the server list. Vanilla's own launcher argument; absent, the
         // client behaves exactly as before. Added 's mixed-session question.
         if (project.hasProperty('quickjoin')) {
-            argument '--quickPlayMultiplayer'
-            argument project.property('quickjoin').toString()
+            programArgument '--quickPlayMultiplayer'
+            programArgument project.property('quickjoin').toString()
         }
         // ── -Pquickplay=<world> ───────────────────────────────────────────────
         // The same for SINGLE-PLAYER: straight into the save `run/saves/<world>` (vanilla's own launcher argument), so a
         // build with no client harness at all — the public cut, — can be shown opening a world.
         if (project.hasProperty('quickplay')) {
-            argument '--quickPlaySingleplayer'
-            argument project.property('quickplay').toString()
+            programArgument '--quickPlaySingleplayer'
+            programArgument project.property('quickplay').toString()
         }
         // ── -Pwindow=<w>x<h> ──────────────────────────────────────────────────
         // The client window's size in points, through vanilla's own --width/--height launch
@@ -196,23 +222,23 @@ runs {
         // films a portrait 9:16 short at 540x960 (1080x1920 on a 2x display).
         if (project.hasProperty('window')) {
             def wh = project.property('window').toString().split('x')
-            argument '--width'
-            argument wh[0]
-            argument '--height'
-            argument wh[1]
+            programArgument '--width'
+            programArgument wh[0]
+            programArgument '--height'
+            programArgument wh[1]
         }
         // ── -Pusername=<name> ─────────────────────────────────────────────────
-        // TWO modded clients in one world need two names: NeoGradle's dev client is always
+        // TWO modded clients in one world need two names: the dev client is always
         // "Dev", and a server refuses a second player with a name and UUID it already has —
         // so without this the second child is not a second child, it is a failed login. Added
         // (two children, one world).
         if (project.hasProperty('username')) {
-            argument '--username'
-            argument project.property('username').toString()
+            programArgument '--username'
+            programArgument project.property('username').toString()
         }
         if (project.hasProperty('boottest')) systemProperty "${project.mod_id}.boottest", 'true'
-        if (project.hasProperty('testmode')) systemProperty "${project.mod_id}.testmode", project.property('testmode')
-        if (project.hasProperty('sigdir'))   systemProperty "${project.mod_id}.sigdir", project.property('sigdir')
+        if (project.hasProperty('testmode')) systemProperty "${project.mod_id}.testmode", project.property('testmode').toString()
+        if (project.hasProperty('sigdir'))   systemProperty "${project.mod_id}.sigdir", project.property('sigdir').toString()
         // WHAT THIS RUN MEANT TO BOOT. Its own property rather than a testprops key
         // because the value is a comma-separated LIST and testprops splits on commas.
         if (project.hasProperty('expectmods')) {
@@ -229,12 +255,13 @@ runs {
     }
 
     server {
+        server()
         // the Apprentice's trained layer, as a dedicated server has it (never for gameTestServer, see above).
         if (!apprenticeModelOff() && new File(apprenticeModelCache(), 'model.onnx').isFile()) {
             systemProperty 'moddingfromamod.apprenticeModelDir', apprenticeModelCache().absolutePath
         }
         systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
-        argument '--nogui'
+        programArgument '--nogui'
         // The SAME arbitrary-knob mapping the client and gameTestServer runs have. Without it a
         // real dedicated server is the ONE run config that cannot be configured, which is exactly
         // the run the headless wish rung needs (HeadlessWishProbe): it wants a wish, a signal dir
@@ -258,6 +285,7 @@ runs {
 
     // Gate B — boots a GAME TEST server (a dedicated one until 1.21.4), runs every @GameTest, exits non-zero on failure.
     gameTestServer {
+        type = 'gameTestServer'
         // SHARDING. Gate B's batches are strictly sequential inside one server (runBatch(i) starts
         // i+1 only when i finishes), so the only way to overlap them is to boot two servers over
         // disjoint namespaces. -Pshard picks one; absent, every shard runs, so a bare
@@ -313,7 +341,7 @@ runs {
         // JaCoCo agent jar, -Pcovmap the directory testing.gt.CoverageMap writes one .exec per
         // GameTest class into. output=none: the mod dumps at class boundaries, the agent never does.
         if (project.hasProperty('covagent')) {
-            jvmArguments.add("-javaagent:${project.property('covagent')}=output=none,includes=com.moddingfromamod.*")
+            jvmArguments.add("-javaagent:${project.property('covagent')}=output=none,includes=com.moddingfromamod.*".toString())
             systemProperty "${project.mod_id}.covmap", project.property('covmap').toString()
         }
         // THE HEAP IS NAMED, AND RUNNING OUT OF IT ENDS THE RUN (2026-11-20, docs/GATE_FLAKES_2026-11-20.md §3). With no
@@ -323,10 +351,10 @@ runs {
         // which read as a hang with no cause. One size everywhere, so a run here measures what the builder gets, and an
         // OOM exits the JVM at once (gate-b.sh prints the line) instead of leaving a dead worker behind. -Pgateheap
         // overrides; -Pgclog=FILE writes the GC log a sizing decision is read from.
-        jvmArguments.add("-Xmx${project.findProperty('gateheap') ?: '3g'}")
+        jvmArguments.add("-Xmx${project.findProperty('gateheap') ?: '3g'}".toString())
         jvmArguments.add('-XX:+ExitOnOutOfMemoryError')
         if (project.hasProperty('gclog')) {
-            jvmArguments.add("-Xlog:gc:file=${project.property('gclog')}:time,uptime")
+            jvmArguments.add("-Xlog:gc:file=${project.property('gclog')}:time,uptime".toString())
         }
         // Ephemeral agent port: a FIXED port can't be bound twice, so without this the gates fail
         // spuriously whenever a real game is already running. Tests read the actual bound port.
@@ -344,7 +372,7 @@ runs {
         // tell "the runner's environment breaks this machine" from "one of the five machines
         // sharing its column does".
         if (project.hasProperty('onlycase')) {
-            systemProperty "${project.mod_id}.onlycase", project.property('onlycase')
+            systemProperty "${project.mod_id}.onlycase", project.property('onlycase').toString()
         }
         // GATE B IS HERMETIC TOO -- the same rule Gate A has carried since, and Gate B never
         // did. CharacterResolver shells out to the `claude` CLI, and ClaudeCli.resolve() finds one
@@ -388,8 +416,9 @@ runs {
 // The datagen run's TYPE is per target: NeoForge 21.4 split `data` into clientData/serverData
 // (migrator U1 -- on 1.21.4 an unknown type fails at CONFIGURATION, reading like noise).
 project.data_run_types.split(',').each { String rt ->
-    runs.register(rt.trim()) {
-        arguments.addAll '--mod', project.mod_id, '--all',
+    neoForge.runs.register(rt.trim()) {
+        type = rt.trim()
+        programArguments.addAll '--mod', project.mod_id, '--all',
             '--output', file('src/generated/resources/').getAbsolutePath(),
             '--existing', file('src/main/resources/').getAbsolutePath()
     }
@@ -424,9 +453,8 @@ tasks.matching { it.name == 'runGameTestServer' }.configureEach { runTask ->
         // hardcoded path under it would clear an absent directory, report nothing, and leave the
         // real world growing -- the silent no-op this task exists to prevent, reintroduced by the
         // task itself.
-        def base = runTask.hasProperty('workingDir') && runTask.workingDir
-                ? runTask.workingDir
-                : file('run/gameTestServer')
+        // (MDG's RunGameTask sets workingDir only when it executes, so a doFirst reads gameDirectory, the run's own.)
+        def base = runTask.gameDirectory.get().asFile
         // NeoForge 21.4 ran Gate B on a DEDICATED server, which writes server.properties at
         // boot, and DeploymentGuard's checks read it (HomeOpsGameTest asserts they ran). 21.8 runs a
         // vanilla GameTestServer, which writes nothing — so seed the file the dedicated server left,
@@ -476,9 +504,7 @@ tasks.matching { it.name == 'runGameTestServer' }.configureEach { runTask ->
 // ---------------------------------------------------------------------------------------------
 tasks.matching { it.name == 'runServer' }.configureEach { runTask ->
     doFirst {
-        def base = runTask.hasProperty('workingDir') && runTask.workingDir
-                ? runTask.workingDir
-                : file("run/server")
+        def base = runTask.gameDirectory.get().asFile
         base.mkdirs()
         def props = new File(base, 'server.properties')
         def key = 'pause-when-empty-seconds'
@@ -495,11 +521,16 @@ tasks.matching { it.name == 'runServer' }.configureEach { runTask ->
 }
 
 configurations {
-    // The seam that lets us boot OTHER prebuilt mod jars alongside ours (see -Psmokejars).
+    // The seam that lets us boot OTHER prebuilt mod jars alongside ours (see -Psmokejars). NeoGradle created
+    // `localRuntime` itself; MDG does not, so it is declared here: on the dev runs' classpath, never in what we publish.
+    localRuntime {
+        canBeConsumed = false
+        canBeResolved = false
+    }
     runtimeClasspath.extendsFrom localRuntime
 }
 
-// a bundled jar's native DEBUG data never ships. jarJar resolves its configuration through an artifact view, so
+// a bundled jar's native DEBUG data never ships. MDG's jarJar resolves its configuration through an artifact view, so
 // asking that configuration for NATIVE_DEBUG_STRIPPED=true makes Gradle run every nested jar through this transform
 // (artifactTypes marks plain jars false). A jar with no *.dSYM/ entry passes through untouched; one with them is
 // rewritten without them, under its own file name, every other entry (natives, classes, licence and notice files, the
@@ -533,7 +564,8 @@ abstract class StripNativeDebugInfo implements TransformAction<org.gradle.api.ar
 }
 
 dependencies {
-    implementation "net.neoforged:neoforge:${neo_version}"
+    // ONNX Runtime on every dev run's classpath: from Minecraft 1.21.9 (FML 10) MDG runs on the plain runtime classpath and
+    // has no `additionalRuntimeClasspath` (it refuses one), so the `implementation` declaration below is what puts it there.
 
     // GeckoLib (optional — flip uses_geckolib=true in gradle.properties).
     // Compiled against AND bundled via JarJar, so the shipped jar runs without the
@@ -573,9 +605,9 @@ dependencies {
     }
 
     // The Apprentice's trained layer: ONNX Runtime's Java package runs the frozen sentence model on the
-    // server. A JNI library, MIT; its natives are inside its jar (resources apprentice/onnxruntime.NOTICE.txt). Three declarations are
-    // needed and each one alone fails differently: this one compiles, the `runs` one above puts it on a dev run's
-    // classpath, and jarJar ships it inside our jar (it needs a version RANGE or the metadata task refuses it).
+    // server. A JNI library, MIT; its natives are inside its jar (resources apprentice/onnxruntime.NOTICE.txt). Two declarations are
+    // needed and each one alone fails differently: this one compiles and (FML 10) puts it on a dev
+    // run's classpath, and jarJar ships it inside our jar (it needs a version RANGE or the metadata task refuses it).
     implementation "com.microsoft.onnxruntime:onnxruntime:1.32.0"
     jarJar("com.microsoft.onnxruntime:onnxruntime") {
         version {
@@ -701,12 +733,11 @@ tasks.register('precompileReadyMades', JavaExec) {
 // Gate A's budget, testJunit unwiring and the `test {}` task: gate-a.gradle.
 apply from: 'gate-a.gradle'
 
-// When bundling nested libs via JarJar, the bundled jar must be the PRIMARY artifact
-// (NeoGradle otherwise emits it with an '-all'-style classifier), or you'd ship the
-// plain jar without its embedded libs. Plain jar -> 'slim'; jarJar takes the main name.
-// The WebP decoder is ALWAYS bundled, so this is unconditional now -- it used to be gated
-// on uses_geckolib, and leaving that gate in place would have shipped the plain jar (with no
-// nested libs) while every test that runs on the dev classpath stayed green.
+// ONE JAR. Under ModDevGradle the `jarJar` task only stages the nested libraries (build/generated/jarJar:
+// META-INF/jarjar/*.jar and their metadata.json) and the ordinary `jar` task packs them, so `jar` IS the jar we ship.
+// (NeoGradle's jarJar was a second archive beside a 'slim' plain jar; there is no slim jar any more.) The WebP decoder
+// and ONNX Runtime are ALWAYS bundled, so a jar without META-INF/jarjar/ would be the plain jar every test on the dev
+// classpath stays green without: the checks below read the finished jar.
 // the eval corpora under src/main/resources/corpus/ are DEV AND TEST data, never shipped.
 // They include real-wishes.jsonl (sentences a child typed, verbatim) and safety-wishes.jsonl (the
 // labelled safety set), and a jar is public once it leaves our machines. Nothing in production
@@ -731,24 +762,19 @@ def NEVER_SHIP = ~/(^|.*\/)[^\/]+\.gametest\.mixins\.json$|^corpus\/.*|(^|.*\/)(
 // is none: the Isle's walkthrough driver became real-client playtests in moddy-worlds.
 def HARNESS_GUARDED = []
 
-jar {
-    archiveClassifier = 'slim'
-    exclude SHIP_EXCLUDES
-    // store_jar: build/libs holds the player's jar alone -- MMVU's Port CI releases every jar there, and its publish
-    // step uploads the one a release carries (the slim jar is an input of jarJar, never shipped)
-    if (storeJar) destinationDirectory = layout.buildDirectory.dir('slim-jar')
-}
+// store_jar: build/libs holds the player's jar alone -- MMVU's Port CI releases every jar there, and its publish
+// step uploads the one a release carries. With one jar, that holds for every build.
 // the licence files go in every jar's META-INF/ (the public repo has them at its root; this repo stages them in
 // docs/public-repo/). The STORE release also carries the Apprentice's sentence model (D13): -PbundleApprenticeModel=DIR
 // (tools/store-release.sh passes the fetched, sha-checked folder), copied out at first start by apprentice/BundledModel.
 def LICENSE_FILES = ['LICENSE', 'NOTICE.md', 'THIRD_PARTY_NOTICES.md', 'LICENSE-ASSETS.md', 'TRADEMARKS.md']
-// What a store jar must carry (the jarJar task refuses one without; the same list as tools/store-release.sh's).
+// What a store jar must carry (the jar task refuses one without; the same list as tools/store-release.sh's).
 def STORE_JAR_REQUIRED = LICENSE_FILES.collect { "META-INF/${it}".toString() } + [
         'apprentice/sentence-model.NOTICE.txt', 'apprentice/sentence-model.LICENSE.txt', 'apprentice/onnxruntime.NOTICE.txt',
         'apprentice/english-words.NOTICE.txt', 'licenses/twelvemonkeys.LICENSE.txt', 'licenses/cbscript.NOTICE.txt',
         'apprentice/model/model.onnx', 'apprentice/model/vocab.txt', 'apprentice/layer.json']
 // store_jar with no -PbundleApprenticeModel: the machine-wide cache, filled (and sha-checked) by storeApprenticeModel
-// before jarJar reads it. Unlike `apprenticeModel` for dev runs, a store jar without its model is a FAILED build.
+// before the jar task reads it. Unlike `apprenticeModel` for dev runs, a store jar without its model is a FAILED build.
 def BUNDLE_MODEL = project.findProperty('bundleApprenticeModel')?.toString() ?: (storeJar ? apprenticeModelCache().absolutePath : null)
 tasks.register('storeApprenticeModel') {
     group = 'build'
@@ -760,9 +786,8 @@ tasks.register('storeApprenticeModel') {
     }
 }
 configurations.named('jarJar') { attributes.attribute(NATIVE_DEBUG_STRIPPED, true) }  //, see StripNativeDebugInfo
-tasks.named('jarJar') {
+tasks.named('jar') {
     dependsOn 'storeApprenticeModel'
-    archiveClassifier = ''
     exclude SHIP_EXCLUDES
     LICENSE_FILES.each { n ->
         def f = file(n).isFile() ? file(n) : file("docs/public-repo/${n}")
@@ -773,7 +798,7 @@ tasks.named('jarJar') {
     if (thirdParty.isDirectory()) from(thirdParty) { into 'META-INF/third_party' }
     if (BUNDLE_MODEL) {
         def dir = file(BUNDLE_MODEL)
-        // checked when jarJar runs, after storeApprenticeModel has filled the cache
+        // checked when the jar task runs, after storeApprenticeModel has filled the cache
         doFirst {
             ['model.onnx', 'vocab.txt'].each { n ->
                 if (!new File(dir, n).isFile()) throw new GradleException("model ${dir}: no ${n} there (tools/fetch-apprentice-model.sh DIR)")
@@ -791,6 +816,19 @@ tasks.named('jarJar') {
             if (toml != null && z.getInputStream(toml).getText('UTF-8').contains('.gametest.mixins.json')) {
                 leaked << 'META-INF/neoforge.mods.toml (it declares the GameTest mixin config)'
             }
+        }
+        // the jarJar libraries are IN it (under MDG the jar task packs them; a jar without them loads and then fails the
+        // first WebP picture or Apprentice sentence with a NoClassDefFoundError)
+        def notNested = []
+        new java.util.zip.ZipFile(jarFile).withCloseable { z ->
+            def names = z.entries().collect { it.name }
+            if (!names.contains('META-INF/jarjar/metadata.json')) notNested << 'META-INF/jarjar/metadata.json'
+            ['onnxruntime', 'imageio-webp'].each { lib ->
+                if (!names.any { it ==~ /META-INF\/jarjar\/${lib}-[^\/]+\.jar/ }) notNested << "META-INF/jarjar/${lib}-<version>.jar"
+            }
+        }
+        if (!notNested.isEmpty()) {
+            throw new GradleException("${jarFile.name} does not nest its jarJar libraries: no ${notNested.join(', ')}")
         }
         // and no nested library carries native debug data (StripNativeDebugInfo took it out before nesting)
         new java.util.zip.ZipFile(jarFile).withCloseable { z ->
@@ -916,7 +954,7 @@ def readEnvLocal(String key) {
     return value
 }
 
-/** The jar we ship: JarJar's bundled one when enabled, else the plain jar. */
+/** The jar we ship: the `jar` task's, with the jarJar libraries nested in it. */
 def deployedJarName() {
     return "${mod_id}-${mod_version}.jar"
 }

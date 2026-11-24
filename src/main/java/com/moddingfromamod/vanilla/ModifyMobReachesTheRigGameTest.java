@@ -65,7 +65,7 @@ public class ModifyMobReachesTheRigGameTest {
     @GameTest(template = "empty_test", batch = "modifymob_rig_on", timeoutTicks = 600)
     public static void makeItBiggerReachesARiggedCreature(GameTestHelper helper) {
         plantSpecies(helper);
-        LivingEntity carrier = riggedCreatureAtWorldSpawn(helper);
+        LivingEntity carrier = riggedCreatureBesideTheChild(helper);
         if (carrier == null) {
             // NOT a pass. The bridge declining to rig is the one thing that would make every
             // assertion below vacuous, so it is named rather than skipped.
@@ -110,7 +110,7 @@ public class ModifyMobReachesTheRigGameTest {
     public static void makeItRideableIsSavedToTheDesign(GameTestHelper helper) {
         String id = "mfam_rig_ride_test";
         plantSpecies(helper, id);
-        LivingEntity carrier = riggedCreatureAtWorldSpawn(helper, id);
+        LivingEntity carrier = riggedCreatureBesideTheChild(helper, id);
         if (carrier == null) {
             helper.fail(Component.literal("the bridge did not produce a rig for '" + id + "'"));
             return;
@@ -142,7 +142,7 @@ public class ModifyMobReachesTheRigGameTest {
     public static void aTemperamentIsSavedToTheDesign(GameTestHelper helper) {
         String id = "mfam_rig_guard_test";
         plantSpecies(helper, id);
-        LivingEntity carrier = riggedCreatureAtWorldSpawn(helper, id);
+        LivingEntity carrier = riggedCreatureBesideTheChild(helper, id);
         if (carrier == null) {
             helper.fail(Component.literal("the bridge did not produce a rig for '" + id + "'"));
             return;
@@ -195,18 +195,19 @@ public class ModifyMobReachesTheRigGameTest {
     /**
      * Spawn the creature the way a wish does and let the bridge convert it.
      *
-     * <p>At WORLD SPAWN, because {@code modify_mob} searches around the child and with nobody
-     * online that is where the child is. World spawn is outside every test plot and is therefore
-     * never reset, so any rig left there by an earlier run is cleared first — by TAG, which touches
-     * only this feature's own leftovers rather than a sibling test's animal.
+     * <p>In front of a stand-in child in the test's own plot ({@code PlotChild.standHere}), because
+     * {@code modify_mob} searches around the child. It used to be world spawn, where the child is with
+     * nobody online, and nothing keeps world spawn loaded from 1.21.9. The world is reused between
+     * runs, so any rig left near here by an earlier one is cleared first — by TAG, which touches only
+     * this feature's own leftovers rather than a sibling test's animal.
      */
-    private static LivingEntity riggedCreatureAtWorldSpawn(GameTestHelper helper) {
-        return riggedCreatureAtWorldSpawn(helper, ID);
+    private static LivingEntity riggedCreatureBesideTheChild(GameTestHelper helper) {
+        return riggedCreatureBesideTheChild(helper, ID);
     }
 
-    private static LivingEntity riggedCreatureAtWorldSpawn(GameTestHelper helper, String id) {
+    private static LivingEntity riggedCreatureBesideTheChild(GameTestHelper helper, String id) {
         ServerLevel overworld = helper.getLevel().getServer().overworld();
-        Vec3 at = clearWorldSpawn(helper, overworld);
+        Vec3 at = clearAroundTheChild(helper, overworld);
         WishMobEntity mob = ModEntities.WISH_MOB.get().create(overworld, EntitySpawnReason.COMMAND);
         helper.assertTrue(mob != null, Component.literal("could not create a wish mob"));
         mob.snapTo(at.x, at.y, at.z, 0f, 0f);
@@ -230,8 +231,8 @@ public class ModifyMobReachesTheRigGameTest {
         return null;
     }
 
-    private static Vec3 clearWorldSpawn(GameTestHelper helper, ServerLevel overworld) {
-        com.moddingfromamod.testing.MockPlayerNetwork.requireNobodyIsOnline(helper);
+    private static Vec3 clearAroundTheChild(GameTestHelper helper, ServerLevel overworld) {
+        Vec3 child = com.moddingfromamod.testing.PlotChild.standHere(helper);
         // THE THIRD FACE of this test's flake, found only once the batches were split: "Which one?
         // This wish has already changed @wish_mob5 (Bot), @wish_mob4 (Bot)". modify_mob's referent
         // lives in the process-wide EntityHandles, so every wish mob any EARLIER test
@@ -239,7 +240,7 @@ public class ModifyMobReachesTheRigGameTest {
         // refusal by design. This test is about a creature it plants itself, so it starts from no
         // conversation. Safe here because a named batch runs alone: nothing else is mid-wish.
         com.moddingfromamod.mob.EntityHandles.global().clear();
-        Vec3 at = Vec3.atBottomCenterOf(overworld.getRespawnData().pos());
+        Vec3 at = child.add(4, 0, 0);
         for (LivingEntity stale : overworld.getEntitiesOfClass(LivingEntity.class,
                 new AABB(at, at).inflate(64),
                 e -> e.getTags().contains(DisplayRig.RIG_TAG) || e instanceof WishMobEntity)) {
