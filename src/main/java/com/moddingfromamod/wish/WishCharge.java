@@ -147,7 +147,9 @@ public interface WishCharge {
      * How many ticks this wish ({@link WishAsk#recipe}, the id {@code /moddy again} takes) still rests for
      * {@link WishAsk#player}, counted from now; {@code 0} when it is ready; {@code -1} (the default) when this charge
      * does not say. <b>A query with no side effects</b>: answering must never start, restart or change a rest (the core
-     * asks it again whenever it likes). The charge keeps its own rest, and still refuses a fire through its other hooks.
+     * asks it again whenever it likes, and may ask it with no wish in flight: a proxy landing in his inventory asks about
+     * the wish a fire of it would make, {@link WishAsk#replay}). The charge keeps its own rest, and still refuses a fire
+     * through its other hooks.
      *
      * <p>Asked by the hotbar ({@code WishHotbar}) right after each fire of a proxy, whatever came of it, and the proxy's
      * cooldown sweep is set to the answer ({@code -1} keeps the core's one second); and whenever a proxy is put into

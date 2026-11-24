@@ -380,7 +380,9 @@ public final class WishHotbarGameTest {
         LearnedTemplates.restoreForTest(with, server);
         TenSecondRest charge = new TenSecondRest(nope);
         ServerPlayer[] rebornHolder = new ServerPlayer[1];
+        ServerPlayer[] relogged = new ServerPlayer[1];
         MockPlayerNetwork.afterTest(helper, () -> {
+            MockPlayerNetwork.remove(relogged[0]);
             if (rebornHolder[0] != null && rebornHolder[0] != p) {
                 MockPlayerNetwork.remove(rebornHolder[0]);
             }
@@ -506,11 +508,36 @@ public final class WishHotbarGameTest {
                 charge.now += left;
             }
 
+            // A REAL LOGOUT AND LOGIN mid-rest: PlayerList.remove, then placeNewPlayer with the same id (which fires
+            // the real login event). The harness deletes a mock's saved file, so the new body arrives empty and the
+            // proxy is put back as his loaded inventory would hold it, before the login handler runs.
+            java.util.UUID relogId = UUID.randomUUID();
+            ServerPlayer before = MockPlayerNetwork.inLevel(helper, "mfam-hotbar-relog", relogId);
+            relogged[0] = before;
+            ItemStack relogProxy = WishHotbar.proxy(cell("Strong " + tag, strong), relogId);
+            before.getInventory().setItem(0, relogProxy);
+            use = WishHotbar.use(before, relogProxy);
+            check(helper, use.outcome() == WishService.Outcome.FULFILLING, "relog: the rest starts: " + use);
+            pass(before, charge, 40);
+            MockPlayerNetwork.remove(before);
+            ServerPlayer after = MockPlayerNetwork.inLevel(helper, "mfam-hotbar-relog", relogId);
+            relogged[0] = after;
+            check(helper, after != before && !after.getCooldowns().isOnCooldown(relogProxy),
+                    "the game kept a cooldown across a logout, so the login path was not tested");
+            after.getInventory().setItem(0, relogProxy.copy());
+            WishHotbar.onLogin(new net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedInEvent(after));
+            left = ticksLeft(after, relogProxy, 1000);
+            check(helper, left == TenSecondRest.REST - 40, "logged out and in 40 ticks into a ten-second rest: the "
+                    + "sweep has " + left + " ticks left, not " + (TenSecondRest.REST - 40));
+            charge.now += left;
+            final java.util.UUID relogUuid = relogId;
+
             // WHAT THE CHARGE WAS ASKED: one shape, the wish's recipe, a replay from a preset.
             check(helper, !charge.asked.isEmpty() && charge.asked.stream().allMatch(a ->
                             a.source() == WishSource.PRESET && a.magic() == WishAsk.Magic.REPLAY
                             && (a.recipe().equals(strong) || a.recipe().equals(nope))
-                            && (a.player().equals(p.getUUID()) || a.player().equals(reborn.getUUID()))),
+                            && (a.player().equals(p.getUUID()) || a.player().equals(reborn.getUUID())
+                                    || a.player().equals(relogUuid))),
                     "the charge was asked about something other than his replay: " + charge.asked);
         });
         helper.succeed();
