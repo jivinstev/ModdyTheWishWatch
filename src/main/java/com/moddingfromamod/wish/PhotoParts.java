@@ -1,7 +1,6 @@
 package com.moddingfromamod.wish;
 
-import java.awt.Graphics2D;
-import java.awt.RenderingHints;
+import com.moddingfromamod.runtime.Pixels;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -137,15 +136,12 @@ public final class PhotoParts {
             h += Math.round(i.getHeight() * (float) w / i.getWidth());
         }
         BufferedImage out = new BufferedImage(w, h, BufferedImage.TYPE_INT_RGB);
-        Graphics2D g = out.createGraphics();
-        g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
         int y = 0;
         for (BufferedImage i : imgs) {
             int ih = Math.round(i.getHeight() * (float) w / i.getWidth());
-            g.drawImage(i, 0, y, w, ih, null);
+            Pixels.draw(out, i, 0, y, w, ih);   // no Java2D: it froze the game window on macOS (runtime/Pixels)
             y += ih;
         }
-        g.dispose();
         try {
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
             ImageIO.write(out, "PNG", bos);
