@@ -117,7 +117,7 @@ public final class HotbarRestClientTest {
                                     WatchPanel.Action.CARD, "Blaze Rod", "Blaze Rod", RECIPE, "Blaze Rod",
                                     "minecraft:blaze_rod", List.of()));
                         });
-                        mc.options.hideGui = false;
+                        com.moddingfromamod.gatec.ClientHarness.setHudHidden(mc, false);
                         go(Phase.FIRE);
                     }
                 }
