@@ -131,6 +131,11 @@ neoForge {
     // in a shared cache, so the build asks NeoFormRuntime for it by name and puts it where those two read it.
     additionalMinecraftArtifacts.put('node.downloadClient.output.output',
             layout.buildDirectory.file("minecraft/client-${minecraft_version}.jar").get().asFile)
+    // Gate A's unit tests compile and run against Minecraft and NeoForge (and the libraries they bring: gson, the
+    // vanilla resources a test reads off the classpath). NeoGradle's `implementation neoforge` reached the test source
+    // set through testImplementation; MDG adds them to `main` only, so the test source set is named here. This is NOT
+    // MDG's unitTest {} (a JUnit run that boots the game): Gate A stays hermetic and runs from the project directory.
+    addModdingDependenciesTo(sourceSets.test)
 }
 
 neoForge.runs {
