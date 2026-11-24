@@ -291,6 +291,10 @@ public final class CommandGuard {
         // with words the agent chose) and offers a head or a mannequin with that skin. DENY, the verdict a root with
         // no row already had: no wish has needed it, and a make never calls the web.
         deny("fetchprofile", "looks a profile up on Mojang's servers by any name; no wish needs it yet");
+        // stopwatch — new in 1.21.11: creates, queries, restarts and removes named server-wide stopwatches (world
+        // state every player shares, kept in the save). DENY, the verdict a root with no row already had: no wish has
+        // needed it, and a race timer a wish makes is a datapack's scoreboard, scoped to that wish.
+        deny("stopwatch", "server-wide named stopwatches kept in the save; no wish needs it yet");
 
         // ── this mod's own commands: each runs something SAVED, never anything arbitrary ───────
         allow("wishbuild", "runs a saved, volume-capped build plan by id");
