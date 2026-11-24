@@ -23,8 +23,8 @@ import org.junit.jupiter.api.Test;
 /**
  * <b>Every make has facts, derived, never hand-rated</b> ({@link MakeFacts}). Every reviewed Builder id and every
  * catalogue effect is rated by the rules (a new catalogue prefix fails here by name until a rule reads it), every
- * ready-made on every kind's menu yields known facts, tiers only grow with their knobs, and the tag vocabulary is
- * pinned and documented.
+ * ready-made on every kind's menu yields known facts, the numbers are the knobs' own values in their units and absent
+ * where nothing was measured, and the tag and number vocabularies are pinned and documented.
  */
 class MakeFactsTest {
 
@@ -41,6 +41,14 @@ class MakeFactsTest {
         String doc = Files.readString(Path.of("docs/EXTENDING.md"));
         for (String t : MakeFacts.TAGS) {
             assertTrue(doc.contains("`" + t + "`"), "docs/EXTENDING.md does not describe the tag " + t);
+        }
+        // the numbers' names are a shipped vocabulary: additive only, never renamed or given another unit
+        assertEquals(List.of("healthHalfHearts", "attackDamageHalfHearts", "movementSpeedAttribute", "scaleTimes",
+                "builderSizeStep", "builderStrengthStep", "countMade", "amountItems", "radiusBlocks", "durationTicks",
+                "extentBlocks"), MakeFacts.NUMBERS.subList(0, 11),
+                "a shipped number was renamed, removed or reordered: add new ones at the end, never change these");
+        for (String n : MakeFacts.NUMBERS) {
+            assertTrue(doc.contains("`" + n + "`"), "docs/EXTENDING.md does not describe the number " + n);
         }
         for (String k : MakeFacts.KINDS) {
             assertTrue(doc.contains("`" + k + "`"), "docs/EXTENDING.md does not name the kind " + k);
@@ -158,10 +166,11 @@ class MakeFactsTest {
                 MakeFacts f = MakeFacts.of(item(s.id(), w.id(), 2));
                 assertTrue(f.known(), s.id() + "/" + w.id() + " → " + f);
                 if (w.effect().isEmpty()) {
-                    assertTrue(f.has(MakeFacts.DECORATIVE) && f.tier() == 0, s.id() + "/" + w.id() + " → " + f);
+                    assertTrue(f.has(MakeFacts.DECORATIVE), s.id() + "/" + w.id() + " → " + f);
                 } else {
-                    assertTrue(f.tier() >= 1, s.id() + "/" + w.id() + " → " + f);
+                    assertFalse(f.has(MakeFacts.DECORATIVE), s.id() + "/" + w.id() + " → " + f);
                 }
+                assertEquals(2.0, f.number(MakeFacts.BUILDER_STRENGTH_STEP).orElse(-1), s.id() + "/" + w.id());
             }
         }
     }
@@ -180,60 +189,68 @@ class MakeFactsTest {
     }
 
     @Test
-    void tiersNeverFallAsTheKnobsGrow() {
+    void theNumbersAreTheKnobsOwnValuesAndOnlyGrowWithThem() {
         List<String> bad = new ArrayList<>();
         for (var e : readyMades().entrySet()) {
             BuilderSpec s = e.getValue();
-            int last = -1;
+            double lastScale = -1;
             for (int size = 1; size <= 4; size++) {
-                int t = MakeFacts.of(new BuilderSpec(s.version(), s.kind(), s.from(), s.scheme(), size, s.powers(),
-                        s.temper(), s.count(), s.at(), s.name(), s.opts())).tier();
-                if (t < last) {
-                    bad.add(e.getKey() + ": size " + size + " is tier " + t + " < " + last);
+                MakeFacts f = MakeFacts.of(new BuilderSpec(s.version(), s.kind(), s.from(), s.scheme(), size, s.powers(),
+                        s.temper(), s.count(), s.at(), s.name(), s.opts()));
+                if (f.number(MakeFacts.BUILDER_SIZE_STEP).orElse(-1) != size) {
+                    bad.add(e.getKey() + ": size " + size + " reads " + f.number(MakeFacts.BUILDER_SIZE_STEP));
                 }
-                last = t;
+                double scale = f.number(MakeFacts.SCALE_TIMES).orElse(Double.NaN);
+                if (scale < lastScale) {
+                    bad.add(e.getKey() + ": size " + size + " is scale " + scale + " < " + lastScale);
+                }
+                lastScale = Double.isNaN(scale) ? lastScale : scale;
             }
-            if (s.kind() == BuilderSpec.Kind.CREATURE || s.kind() == BuilderSpec.Kind.RIDE) {
-                last = -1;
-                for (int n : new int[] {1, 2, 5, 10, 20}) {
-                    int t = MakeFacts.of(new BuilderSpec(s.version(), s.kind(), s.from(), s.scheme(), s.size(), s.powers(),
-                            s.temper(), n, s.at(), s.name(), s.opts())).tier();
-                    if (t < last) {
-                        bad.add(e.getKey() + ": count " + n + " is tier " + t + " < " + last);
-                    }
-                    last = t;
-                }
-            }
-        }
-        for (BuilderItemPowers.Stock st : BuilderItemPowers.STOCK) {
-            for (BuilderItemPowers.Power w : BuilderItemPowers.fitting(st)) {
-                if (w.id().equals(BuilderTurnInto.POWER)) {
-                    continue;
-                }
-                int last = -1;
-                for (int strength = 1; strength <= 3; strength++) {
-                    int t = MakeFacts.of(item(st.id(), w.id(), strength)).tier();
-                    if (t < last) {
-                        bad.add(st.id() + "/" + w.id() + ": strength " + strength + " is tier " + t + " < " + last);
-                    }
-                    last = t;
+            for (int n : new int[] {1, 2, 5, 10}) {
+                MakeFacts f = MakeFacts.of(new BuilderSpec(s.version(), s.kind(), s.from(), s.scheme(), s.size(),
+                        s.powers(), s.temper(), n, s.at(), s.name(), s.opts()));
+                if (f.number(MakeFacts.COUNT_MADE).orElse(-1) != n) {
+                    bad.add(e.getKey() + ": count " + n + " reads " + f.number(MakeFacts.COUNT_MADE));
                 }
             }
         }
+        for (int strength = 1; strength <= 3; strength++) {
+            MakeFacts f = MakeFacts.of(item("sword", "freeze", strength));
+            assertEquals(strength, f.number(MakeFacts.BUILDER_STRENGTH_STEP).orElse(-1));
+            assertTrue(f.number(MakeFacts.DURATION_TICKS).isPresent(), "freeze lasts: " + f);
+        }
+        assertTrue(MakeFacts.of(item("sword", "freeze", 3)).number(MakeFacts.DURATION_TICKS).orElse(0)
+                > MakeFacts.of(item("sword", "freeze", 1)).number(MakeFacts.DURATION_TICKS).orElse(0));
         assertTrue(bad.isEmpty(), String.join("\n", bad));
-        // and a stored creature: more health, damage or size never lowers it
-        int last = -1;
-        for (int step = 0; step < 8; step++) {
-            JsonObject sp = JsonParser.parseString("{\"id\":\"gt_beast\",\"name\":\"Beast\",\"powers\":[\"friendly\"]}")
-                    .getAsJsonObject();
-            sp.addProperty("health", 10 + step * 30);
-            sp.addProperty("damage", 1 + step * 4);
-            sp.addProperty("scale", 0.5 + step * 0.4);
-            int t = MakeFacts.ofArtifact("creature", sp).tier();
-            assertTrue(t >= last, "step " + step + ": tier " + t + " < " + last);
-            last = t;
+        // a stored creature's numbers are its own, in their units
+        JsonObject sp = JsonParser.parseString("{\"id\":\"gt_beast\",\"name\":\"Beast\",\"powers\":[\"friendly\"],"
+                + "\"health\":40,\"damage\":6,\"scale\":1.5,\"speed\":0.3}").getAsJsonObject();
+        MakeFacts beast = MakeFacts.ofArtifact("creature", sp);
+        assertEquals(40.0, beast.number(MakeFacts.HEALTH_HALF_HEARTS).orElse(-1));
+        assertEquals(6.0, beast.number(MakeFacts.ATTACK_DAMAGE_HALF_HEARTS).orElse(-1));
+        assertEquals(1.5, beast.number(MakeFacts.SCALE_TIMES).orElse(-1));
+        assertEquals(0.3, beast.number(MakeFacts.MOVEMENT_SPEED_ATTRIBUTE).orElse(-1), 1e-9);
+    }
+
+    @Test
+    void aNumberNothingMeasuredIsAbsentNeverZero() {
+        MakeFacts picture = MakeFacts.ofArtifact("picture", new JsonObject());
+        for (String n : MakeFacts.NUMBERS) {
+            assertTrue(picture.number(n).isEmpty(), "a picture has no " + n);
         }
-        assertTrue(last > 1, "a huge strong creature still rates " + last);
+        MakeFacts boots = MakeFacts.of(item("boots", "jump", 3));
+        assertTrue(boots.number(MakeFacts.HEALTH_HALF_HEARTS).isEmpty(), "an item has no health: " + boots);
+        for (String k : MakeFacts.KINDS) {
+            assertTrue(MakeFacts.cautious(k).numbers().isEmpty(), "nothing was measured of a cautious " + k);
+        }
+        // an unknown name is simply absent
+        assertTrue(boots.number("powerLevel").isEmpty());
+        // no rating of any kind is part of the API
+        for (var m : MakeFacts.class.getMethods()) {
+            String name = m.getName().toLowerCase(java.util.Locale.ROOT);
+            assertFalse(name.contains("tier") || name.contains("score") || name.contains("rank") || name.contains("cost"),
+                    "the core rates nothing: " + m.getName());
+        }
     }
 
     @Test
@@ -255,7 +272,6 @@ class MakeFactsTest {
         MakeFacts water = MakeFacts.of(item("wand", "place_water", 2));
         assertTrue(water.has(MakeFacts.CHANGES_BLOCKS), water.toString());
         MakeFacts picture = MakeFacts.ofArtifact("picture", new JsonObject());
-        assertEquals(0, picture.tier());
         assertTrue(picture.has(MakeFacts.DECORATIVE) && picture.has(MakeFacts.HARMLESS), picture.toString());
         // a creature: friendly by default, hostile as a boss, a fighter as a guard
         String cat = "preset:species/cat";
@@ -275,7 +291,6 @@ class MakeFactsTest {
                 .has(MakeFacts.HOSTILE));
         // a rule changes the world; supplies give
         assertTrue(MakeFacts.of(spec(BuilderSpec.Kind.RULE, "", 2, List.of(), "", 1, Map.of())).has(MakeFacts.WORLD_RULE));
-        assertTrue(MakeFacts.of(spec(BuilderSpec.Kind.RULE, "", 2, List.of(), "", 1, Map.of())).tier() >= 3);
     }
 
     @Test
@@ -296,7 +311,9 @@ class MakeFactsTest {
         MakeFacts.Artifacts store = (kind, id) -> kind.equals("creature") && id.equals("d") ? dragon : null;
         MakeFacts f = MakeFacts.ofCommands(List.of("wishmob spawn d"), store);
         assertTrue(f.known() && f.has(MakeFacts.BOSS) && f.has(MakeFacts.HOSTILE), f.toString());
-        assertEquals(MakeFacts.TOP_TIER, f.tier());
+        assertEquals(200.0, f.number(MakeFacts.HEALTH_HALF_HEARTS).orElse(-1));
+        assertEquals(1.0, f.number(MakeFacts.COUNT_MADE).orElse(-1));
+        assertEquals(4.0, MakeFacts.ofCommands(List.of("wishmob spawn d 3"), store).number(MakeFacts.COUNT_MADE).orElse(-1));
         // gone from the store: the cautious facts of a creature
         MakeFacts gone = MakeFacts.ofCommands(List.of("wishmob spawn nobody"), store);
         assertFalse(gone.known());
@@ -324,16 +341,17 @@ class MakeFactsTest {
         MakeFacts wild = MakeFacts.ofArtifact("event", JsonParser.parseString(
                 "{\"name\":\"t\",\"motion\":\"vortex\",\"size\":\"gigantic\"}").getAsJsonObject());
         assertTrue(wild.has(MakeFacts.FIGHTS) && wild.has(MakeFacts.CHANGES_BLOCKS), wild.toString());
-        assertTrue(wild.tier() > safe.tier(), wild + " vs " + safe);
     }
 
     @Test
     void combinedFactsTakeTheMostOfEach() {
-        MakeFacts a = new MakeFacts("machine", 2, Set.of(MakeFacts.GIVES_ITEMS, MakeFacts.HARMLESS), true);
-        MakeFacts b = new MakeFacts("item", 3, Set.of(MakeFacts.FIGHTS), true);
+        MakeFacts a = new MakeFacts("machine", Map.of(MakeFacts.COUNT_MADE, 1.0),
+                Set.of(MakeFacts.GIVES_ITEMS, MakeFacts.HARMLESS), true);
+        MakeFacts b = new MakeFacts("item", Map.of(MakeFacts.COUNT_MADE, 3.0, MakeFacts.DURATION_TICKS, 60.0),
+                Set.of(MakeFacts.FIGHTS), true);
         MakeFacts c = MakeFacts.combine(List.of(a, b));
         assertEquals("machine", c.kind());
-        assertEquals(3, c.tier());
+        assertEquals(Map.of(MakeFacts.COUNT_MADE, 3.0, MakeFacts.DURATION_TICKS, 60.0), c.numbers());
         assertEquals(Set.of(MakeFacts.GIVES_ITEMS, MakeFacts.FIGHTS), c.tags());
     }
 }

@@ -56,7 +56,8 @@ public final class EmeraldPlugin implements ModdyPlugin {
   words. It is test code and never ships in the jar.
 - **The contract test world** is `src/main/java/com/moddingfromamod/test/contract/` (#63): `ContractWorld` stands in
   for a world jar, built only from what a world jar may use (the documented hooks and `MakeFacts`, never a Builder
-  id), and its GameTests drive the core's real entry points with it in place. A core change that would break a world
+  id). It makes its own rating from the facts (a toy formula inside the test plug-in: the core needs none), and its
+  GameTests drive the core's real entry points with it in place. A core change that would break a world
   jar goes red there, in the core's own CI. Test code; never in the jar.
 - **Testing a mod of your own against this one.** Two jars carry what a separate mod's tests need, built from this
   repository and never shipped:
@@ -84,7 +85,9 @@ from one world to another has the same facts in both.
 | `MakeFactsLookup.forThing(server, kind, id)` | a thing on a shelf, from its stored design (what the Magician made) |
 | `MakeFacts.ofCommands(commands, artifacts)`, `MakeFacts.ofArtifact(kind, json)`, `MakeFacts.combine(list)` | the pure pieces the two above are made of |
 
-The answer is a `MakeFacts(kind, tier, tags, known)`:
+The answer is a `MakeFacts(kind, numbers, tags, known)`. **Facts only**: the core never rates, scores or ranks a
+make, and never combines its facts into one figure. A world that wants a rating makes its own from them (the contract
+test world below does, with a toy formula of its own).
 
 - **`kind`**: `creature`, `ride`, `item`, `machine`, `magic_block`, `building`, `picture`, `event`, `rule`,
   `supplies` (the Builder's kinds), or `other` (a command or datapack the core cannot place).
@@ -102,17 +105,33 @@ The answer is a `MakeFacts(kind, tier, tags, known)`:
   - `world_rule`: changes a rule for the whole world;
   - `decorative`: does nothing but be there (a picture, a "just for fun" item);
   - `harmless`: none of `fights`, `hostile`, `boss`, `changes_blocks`, `summons`, `world_rule`.
-- **`tier`**, `0`..`MakeFacts.TOP_TIER` (5): `0` for a decorative make; otherwise `1`, plus a step for each of its
-  size (3 → +1, 4 → +2, for a creature, ride, building or event; a stored creature's scale, a stored event's size, a
-  stored building's extent), its strength (3 → +1), how many (a creature made 2+ → +1, 10+ → +2; supplies 32+ → +1), a
-  stored creature's health and damage, one each for `fights`, `hostile`, `boss`, `changes_blocks`, `summons`, two for
-  `world_rule`. More size, strength, health, damage or count never lowers a tier.
+- **`numbers`**, measured, in real game units, the unit in the name (`MakeFacts.NUMBERS`). Read one with
+  `facts.number(name)`, an `OptionalDouble`: a number is there only where the make really carries it, and **absent
+  means not known, never 0**. The names are a stable vocabulary: additive only, never renamed or given another unit
+  once shipped (`MakeFactsTest` pins them), so a world must cope with a number it is not given.
+
+  | Number | Unit | Present for |
+  |---|---|---|
+  | `healthHalfHearts` | health points (one is half a heart) | a stored creature |
+  | `attackDamageHalfHearts` | health points | a stored creature |
+  | `movementSpeedAttribute` | the game's `movement_speed` attribute value (a zombie is 0.23) | a stored creature |
+  | `scaleTimes` | times its normal size | a Builder creature or ride, a stored creature |
+  | `builderSizeStep` | the Builder's size pick, 1 to 4 | a Builder creature, ride, building or event |
+  | `builderStrengthStep` | the Builder's strength pick, 1 to 3 | a Builder item power, snack machine or magic block |
+  | `countMade` | things made at once | a Builder creature, ride, item, machine or magic block; a recipe that spawns creatures |
+  | `amountItems` | items | Builder supplies |
+  | `radiusBlocks` | blocks: the largest radius an effect of it takes | an item or creature effect with a `RADIUS` |
+  | `durationTicks` | ticks (20 a second): the longest an effect of it lasts | an item or creature effect with `SECONDS` |
+  | `extentBlocks` | blocks: its longest side | a stored building |
+
+  `combine` (several things one recipe makes) keeps each number's largest value; a number none of them carries stays
+  absent.
 - **`known`** is false when the thing could not be read (gone from its store, a newer Moddy's spec, a command the core
-  does not know): the facts are then `MakeFacts.cautious(kind)`, the most such a thing could be.
+  does not know): the facts are then `MakeFacts.cautious(kind)`: every tag such a thing could carry, and no numbers.
 
 Treat a tag you do not know as matching nothing, and a kind you do not know as allowed: the vocabulary and the kinds
 may grow, and a world that hides or locks by tag never has to change when the core adds Builder content.
-`MakeFactsTest` (Gate A) pins the vocabulary and rates every reviewed Builder entry and every ready-made.
+`MakeFactsTest` (Gate A) pins both vocabularies and reads every reviewed Builder entry and every ready-made.
 
 ## Documented extension points
 

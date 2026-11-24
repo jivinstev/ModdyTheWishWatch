@@ -64,14 +64,14 @@ public final class ContractWorldFactsGameTest {
 
         // a taught recipe that replays a creature on the shelf, and the same creature as a shelf thing
         Species s = Species.fromJson(com.google.gson.JsonParser.parseString("{\"id\":\"gt_contract_dragon_" + tag
-                + "\",\"name\":\"Dragon\",\"powers\":[\"friendly\",\"flies\"],\"health\":200,\"scale\":2.6}")
+                + "\",\"name\":\"Dragon\",\"powers\":[\"friendly\",\"flies\"],\"health\":200,\"damage\":12,\"scale\":2.6}")
                 .getAsJsonObject());
         String recipe = "gt_contract_recipe_" + tag;
         String gone = "gt_contract_gone_" + tag;
         List<String> had = LearnedTemplates.savedJsonForTest();
         List<String> with = new ArrayList<>(had);
         with.add("{\"id\":\"" + recipe + "\",\"all\":[\"gtcontract" + tag + "\"],\"ownerId\":\"" + p.getStringUUID()
-                + "\",\"commands\":[\"wishmob spawn " + s.id() + "\"]}");
+                + "\",\"commands\":[\"wishmob spawn " + s.id() + " 5\"]}");
         with.add("{\"id\":\"" + gone + "\",\"all\":[\"gtcontractgone" + tag + "\"],\"ownerId\":\"" + p.getStringUUID()
                 + "\",\"commands\":[\"wishmob spawn gt_nobody_" + tag + "\"]}");
         LearnedTemplates.restoreForTest(with, server);
@@ -105,9 +105,17 @@ public final class ContractWorldFactsGameTest {
         MakeFacts thing = read[1];
         helper.assertTrue(replay.known() && (replay.kind().equals("creature") || replay.kind().equals("ride")),
                 Component.literal("the replay's facts: " + replay));
-        helper.assertTrue(replay.equals(thing), Component.literal("a replay is what it makes: " + replay + " vs " + thing));
+        helper.assertTrue(replay.tags().equals(thing.tags())
+                        && replay.number(MakeFacts.HEALTH_HALF_HEARTS).equals(thing.number(MakeFacts.HEALTH_HALF_HEARTS)),
+                Component.literal("a replay is what it makes: " + replay + " vs " + thing));
+        helper.assertTrue(replay.number(MakeFacts.COUNT_MADE).orElse(0) == 6,
+                Component.literal("the recipe spawns six: " + replay));
+        // the world's OWN rating, from the measured numbers: six big, tough, strong dragons are locked here; one is not
         helper.assertTrue(replay.has(MakeFacts.HARMLESS) && ContractWorld.verdict(replay) == ContractWorld.Verdict.LOCKED,
-                Component.literal("a big friendly dragon is harmless but locked by its tier here: " + replay));
+                Component.literal("six huge friendly dragons are harmless but this world locks them: " + replay
+                        + " rated " + ContractWorld.rating(replay)));
+        helper.assertTrue(ContractWorld.verdict(thing) == ContractWorld.Verdict.ALLOWED,
+                Component.literal("one dragon is allowed here: " + thing + " rated " + ContractWorld.rating(thing)));
         MakeFacts goneFacts = MakeFactsLookup.forRecipe(server, p.getUUID(), gone);
         helper.assertTrue(goneFacts.equals(MakeFacts.cautious("creature")),
                 Component.literal("a gone thing is rated cautiously: " + goneFacts));

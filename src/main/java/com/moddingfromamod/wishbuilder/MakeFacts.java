@@ -19,17 +19,39 @@ import com.moddingfromamod.event.design.EventDesign;
 import com.moddingfromamod.species.Species;
 
 /**
- * <b>What a make IS, in a few facts a world can decide by</b>: its kind, a power {@link #tier} and a set of
- * {@link #tags} from a small closed vocabulary. One pure function answers it for every kind of make and every way a
- * make reaches the core: a Builder spec (also an Apprentice tile's, and a kept {@code builder:<id>} make's), a stored
- * spec, a recipe's replay commands (a cached or taught recipe, a hotbar fire), and a thing on a child's shelf (what the
- * Magician made). A plug-in reads it; nothing here is a hook, and nothing is stored: facts are computed when asked.
+ * <b>What a make IS, as facts a world can decide by</b>: its kind, a few measured {@link #numbers} in real game units,
+ * and a set of {@link #tags} from a small closed vocabulary. Facts only: the core never rates, scores or ranks a make,
+ * and never combines these into one figure. A world that wants a rating makes its own from them.
+ *
+ * <p>One pure function answers it for every kind of make and every way a make reaches the core: a Builder spec (also an
+ * Apprentice tile's, and a kept {@code builder:<id>} make's), a stored spec, a recipe's replay commands (a cached or
+ * taught recipe, a hotbar fire), and a thing on a child's shelf (what the Magician made). A plug-in reads it; nothing
+ * here is a hook, and nothing is stored: facts are computed when asked.
  *
  * <p><b>Nothing is hand-rated.</b> Every fact is DERIVED from fields the entries already carry: a creature's powers and
  * temperament, an item effect's class in the item catalogue ({@code applies_to}) and the parameters it takes, a creature
- * ability's parameters in the effects catalogue, an event's motion and what it leaves, a kind. So a Builder entry or
- * catalogue effect added later is rated by the same rules with no decision from anyone ({@code MakeFactsTest} rates
- * every reviewed entry and every ready-made, and fails one by name that the rules cannot read).
+ * ability's parameters in the effects catalogue, an event's motion and what it leaves, a kind, and the numbers a spec or
+ * a stored design holds. A Builder entry or catalogue effect added later gets its facts with no decision from anyone
+ * ({@code MakeFactsTest} reads every reviewed entry and every ready-made, and fails one by name that the rules cannot
+ * read).
+ *
+ * <h2>Numbers</h2>
+ * A STABLE vocabulary ({@link #NUMBERS}), the unit in the name, additive only: a name is never renamed or given another
+ * unit once shipped. A number is present only where the make really carries it; ABSENT means "not known", never 0
+ * ({@link #number} is empty).
+ * <ul>
+ *   <li>{@link #HEALTH_HALF_HEARTS}: a stored creature's maximum health, in health points (one is half a heart);</li>
+ *   <li>{@link #ATTACK_DAMAGE_HALF_HEARTS}: a stored creature's attack damage, in health points;</li>
+ *   <li>{@link #MOVEMENT_SPEED_ATTRIBUTE}: a stored creature's {@code movement_speed} attribute value (a zombie is 0.23);</li>
+ *   <li>{@link #SCALE_TIMES}: how many times its normal size a creature is (a sculpt's {@code scale});</li>
+ *   <li>{@link #BUILDER_SIZE_STEP}: the Builder's size pick, 1 to 4 (a creature, ride, building or event);</li>
+ *   <li>{@link #BUILDER_STRENGTH_STEP}: the Builder's strength pick, 1 to 3 (an item power, a snack machine, a magic block);</li>
+ *   <li>{@link #COUNT_MADE}: how many are made at once;</li>
+ *   <li>{@link #AMOUNT_ITEMS}: how many items supplies hand over;</li>
+ *   <li>{@link #RADIUS_BLOCKS}: the largest radius, in blocks, an effect of it takes;</li>
+ *   <li>{@link #DURATION_TICKS}: the longest time, in ticks (20 a second), an effect of it lasts;</li>
+ *   <li>{@link #EXTENT_BLOCKS}: a stored building's longest side, in blocks.</li>
+ * </ul>
  *
  * <h2>Tags</h2>
  * <ul>
@@ -49,22 +71,33 @@ import com.moddingfromamod.species.Species;
  *   <li>{@link #HARMLESS}: none of fights, hostile, boss, changes blocks, summons, world rule.</li>
  * </ul>
  *
- * <h2>Tier</h2>
- * {@code 0} for a decorative make; otherwise {@code 1}, plus a step for each of: its size (3 → +1, 4 → +2, for a
- * creature, ride, building or event; a stored creature's scale ≥ 1.6 / ≥ 2.5, a stored event's big / gigantic, a stored
- * building's extent ≥ 24 / ≥ 48 blocks), its strength (3 → +1, for an item power, a snack machine, a magic block), how
- * many (a creature made 2+ → +1, 10+ → +2; supplies 32+ → +1), a stored creature's health (≥ 60 → +1, ≥ 150 → +2) and
- * damage (≥ 8 → +1, ≥ 20 → +2), and one each for fights, hostile, boss, changes blocks and summons, two for a world
- * rule; at most {@link #TOP_TIER}. Every step only grows with its knob, so more size, strength, health, damage or
- * count never lowers a tier.
- *
  * <p><b>{@link #known} false</b> when the facts were not read from the thing itself (an artifact that is gone or does
- * not read, a command the core does not know): then they are the CAUTIOUS facts of its kind ({@link #cautious}), the
- * most such a thing could be, so a world that limits makes never lets one through because it could not be read.
+ * not read, a command the core does not know): then they are the CAUTIOUS facts of its kind ({@link #cautious}): every
+ * tag such a thing could carry, and no numbers.
  *
  * <p>Pure and Minecraft-free.
  */
-public record MakeFacts(String kind, int tier, Set<String> tags, boolean known) {
+public record MakeFacts(String kind, Map<String, Double> numbers, Set<String> tags, boolean known) {
+
+    public static final String HEALTH_HALF_HEARTS = "healthHalfHearts";
+    public static final String ATTACK_DAMAGE_HALF_HEARTS = "attackDamageHalfHearts";
+    public static final String MOVEMENT_SPEED_ATTRIBUTE = "movementSpeedAttribute";
+    public static final String SCALE_TIMES = "scaleTimes";
+    public static final String BUILDER_SIZE_STEP = "builderSizeStep";
+    public static final String BUILDER_STRENGTH_STEP = "builderStrengthStep";
+    public static final String COUNT_MADE = "countMade";
+    public static final String AMOUNT_ITEMS = "amountItems";
+    public static final String RADIUS_BLOCKS = "radiusBlocks";
+    public static final String DURATION_TICKS = "durationTicks";
+    public static final String EXTENT_BLOCKS = "extentBlocks";
+
+    /**
+     * Every number's name, as shipped. Additive only: a name here is never renamed, removed or given another unit
+     * ({@code MakeFactsTest} pins it); a new one is added at the end.
+     */
+    public static final List<String> NUMBERS = List.of(HEALTH_HALF_HEARTS, ATTACK_DAMAGE_HALF_HEARTS,
+            MOVEMENT_SPEED_ATTRIBUTE, SCALE_TIMES, BUILDER_SIZE_STEP, BUILDER_STRENGTH_STEP, COUNT_MADE, AMOUNT_ITEMS,
+            RADIUS_BLOCKS, DURATION_TICKS, EXTENT_BLOCKS);
 
     public static final String FIGHTS = "fights";
     public static final String HOSTILE = "hostile";
@@ -84,9 +117,6 @@ public record MakeFacts(String kind, int tier, Set<String> tags, boolean known) 
     /** The tags that make a thing NOT harmless. */
     static final List<String> NOT_HARMLESS = List.of(FIGHTS, HOSTILE, BOSS, CHANGES_BLOCKS, SUMMONS, WORLD_RULE);
 
-    /** The highest tier. */
-    public static final int TOP_TIER = 5;
-
     /** The kind of a thing the core cannot place (a command it does not know, a datapack that is not an item). */
     public static final String OTHER = "other";
 
@@ -104,8 +134,22 @@ public record MakeFacts(String kind, int tier, Set<String> tags, boolean known) 
 
     public MakeFacts {
         kind = kind == null || kind.isBlank() ? OTHER : kind;
-        tier = Math.max(0, Math.min(TOP_TIER, tier));
+        Map<String, Double> n = new java.util.TreeMap<>();
+        if (numbers != null) {
+            numbers.forEach((k, v) -> {
+                if (k != null && v != null && !v.isNaN() && !v.isInfinite()) {
+                    n.put(k, v);
+                }
+            });
+        }
+        numbers = Collections.unmodifiableMap(n);
         tags = Collections.unmodifiableSet(new TreeSet<>(tags == null ? Set.of() : tags));
+    }
+
+    /** This number, or empty when the make does not carry it (never 0 for "not known"). */
+    public java.util.OptionalDouble number(String name) {
+        Double v = numbers.get(name);
+        return v == null ? java.util.OptionalDouble.empty() : java.util.OptionalDouble.of(v);
     }
 
     /** Does it carry this tag? */
@@ -113,10 +157,11 @@ public record MakeFacts(String kind, int tier, Set<String> tags, boolean known) 
         return tags.contains(tag);
     }
 
-    /** "creature, tier 2, fights hostile" — for a log line. */
+    /** "creature fights hostile {countMade=2.0}" — for a log line. */
     @Override
     public String toString() {
-        return kind + ", tier " + tier + (tags.isEmpty() ? "" : ", " + String.join(" ", tags)) + (known ? "" : " (cautious)");
+        return kind + (tags.isEmpty() ? "" : " " + String.join(" ", tags)) + (numbers.isEmpty() ? "" : " " + numbers)
+                + (known ? "" : " (cautious)");
     }
 
     // ── what a thing reads to make its facts ──────────────────────────────────────────────────
@@ -125,10 +170,7 @@ public record MakeFacts(String kind, int tier, Set<String> tags, boolean known) 
     private static final class Acc {
         final String kind;
         final Set<String> tags = new LinkedHashSet<>();
-        int size;
-        int strength;
-        int quantity;
-        int bulk;
+        final Map<String, Double> numbers = new LinkedHashMap<>();
         boolean inert;
         boolean known = true;
 
@@ -145,55 +187,15 @@ public record MakeFacts(String kind, int tier, Set<String> tags, boolean known) 
             if (NOT_HARMLESS.stream().noneMatch(t::contains)) {
                 t.add(HARMLESS);
             }
-            int tier = t.contains(DECORATIVE) ? 0 : tierOf(t, size, strength, quantity, bulk);
-            return new MakeFacts(kind, tier, t, known);
+            return new MakeFacts(kind, numbers, t, known);
         }
-    }
 
-    /** The tier formula (see the class note). */
-    static int tierOf(Set<String> tags, int size, int strength, int quantity, int bulk) {
-        int t = 1 + Math.max(0, size) + Math.max(0, strength) + Math.max(0, quantity) + Math.max(0, bulk);
-        for (String tag : List.of(FIGHTS, HOSTILE, BOSS, CHANGES_BLOCKS, SUMMONS)) {
-            if (tags.contains(tag)) {
-                t++;
+        /** Keep the largest value seen for {@code name}. */
+        void most(String name, double v) {
+            if (!Double.isNaN(v) && !Double.isInfinite(v)) {
+                numbers.merge(name, v, Math::max);
             }
         }
-        if (tags.contains(WORLD_RULE)) {
-            t += 2;
-        }
-        return Math.max(1, Math.min(TOP_TIER, t));
-    }
-
-    static int sizeStep(int size) {
-        return Math.max(0, Math.min(2, size - 2));
-    }
-
-    static int strengthStep(int strength) {
-        return strength >= 3 ? 1 : 0;
-    }
-
-    static int countStep(int count) {
-        return count >= 10 ? 2 : count >= 2 ? 1 : 0;
-    }
-
-    static int amountStep(int amount) {
-        return amount >= 32 ? 1 : 0;
-    }
-
-    static int scaleStep(double scale) {
-        return scale >= 2.5 ? 2 : scale >= 1.6 ? 1 : 0;
-    }
-
-    static int healthStep(double health) {
-        return health >= 150 ? 2 : health >= 60 ? 1 : 0;
-    }
-
-    static int damageStep(double damage) {
-        return damage >= 20 ? 2 : damage >= 8 ? 1 : 0;
-    }
-
-    static int extentStep(int blocks) {
-        return blocks >= 48 ? 2 : blocks >= 24 ? 1 : 0;
     }
 
     // ── the catalogues, read once ─────────────────────────────────────────────────────────────
@@ -350,14 +352,17 @@ public record MakeFacts(String kind, int tier, Set<String> tags, boolean known) 
         } catch (RuntimeException notComplete) {
             // rated by its picks alone
         }
+        // the numbers the spec itself carries, where its kind uses them
         if (creature || k == BuilderSpec.Kind.BUILDING || k == BuilderSpec.Kind.EVENT) {
-            a.size = sizeStep(spec.size());
+            a.most(BUILDER_SIZE_STEP, spec.size());
         }
-        a.strength = strengthStep(num(spec.opt("strength"), 2));
-        if (creature) {
-            a.quantity = countStep(spec.count());
+        if (!spec.opt("strength").isEmpty()) {
+            a.most(BUILDER_STRENGTH_STEP, num(spec.opt("strength"), 0));
+        }
+        if (creature || k == BuilderSpec.Kind.ITEM || k == BuilderSpec.Kind.MACHINE || k == BuilderSpec.Kind.MAGIC_BLOCK) {
+            a.most(COUNT_MADE, spec.count());
         } else if (k == BuilderSpec.Kind.SUPPLIES) {
-            a.quantity = amountStep(BuilderSupplies.amount(spec));
+            a.most(AMOUNT_ITEMS, BuilderSupplies.amount(spec));
         }
         if (creature && a.tags.contains(HOSTILE)) {
             a.tags.add(FIGHTS);
@@ -458,6 +463,9 @@ public record MakeFacts(String kind, int tier, Set<String> tags, boolean known) 
         JsonObject args = c.args();
         switch (c.tool()) {
             case "sculpt_creature" -> {
+                if (args.has("scale") && args.get("scale").isJsonPrimitive()) {
+                    a.most(SCALE_TIMES, args.get("scale").getAsDouble());
+                }
                 if (sculpted) {
                     creatureLives(a, strings(args.get("powers")));
                 }
@@ -466,6 +474,7 @@ public record MakeFacts(String kind, int tier, Set<String> tags, boolean known) 
                 }
             }
             case "apply_effect" -> {
+                params(a, args.get("params"));
                 Set<String> t = abilityTags(str(args, "effect"));
                 if (t == null) {
                     unknownEffect(a);
@@ -502,6 +511,36 @@ public record MakeFacts(String kind, int tier, Set<String> tags, boolean known) 
         }
         if (effects.isEmpty()) {
             a.inert = true;
+        }
+        params(a, item.get("params"));
+    }
+
+    /**
+     * The measured numbers an effect's parameters carry: {@code RADIUS} in blocks, {@code SECONDS} as ticks. Only these
+     * two, read where the catalogue names them so; a parameter the catalogue spells otherwise is not guessed at.
+     */
+    private static void params(Acc a, JsonElement params) {
+        if (!(params instanceof JsonObject p)) {
+            return;
+        }
+        double radius = numeric(p.get("RADIUS"));
+        if (!Double.isNaN(radius)) {
+            a.most(RADIUS_BLOCKS, radius);
+        }
+        double seconds = numeric(p.get("SECONDS"));
+        if (!Double.isNaN(seconds)) {
+            a.most(DURATION_TICKS, seconds * 20);
+        }
+    }
+
+    private static double numeric(JsonElement e) {
+        if (e == null || !e.isJsonPrimitive()) {
+            return Double.NaN;
+        }
+        try {
+            return Double.parseDouble(e.getAsString().strip());
+        } catch (NumberFormatException notANumber) {
+            return Double.NaN;
         }
     }
 
@@ -630,7 +669,6 @@ public record MakeFacts(String kind, int tier, Set<String> tags, boolean known) 
                 case "event" -> {
                     Acc a = new Acc(BuilderSpec.Kind.EVENT.id());
                     eventJson(a, stored);
-                    a.size = eventSize(str(stored, "size"));
                     yield a.done();
                 }
                 default -> cautious(k);
@@ -663,8 +701,10 @@ public record MakeFacts(String kind, int tier, Set<String> tags, boolean known) 
         if (a.tags.contains(HOSTILE)) {
             a.tags.add(FIGHTS);
         }
-        a.size = scaleStep(s.scale());
-        a.bulk = healthStep(s.health()) + damageStep(s.damage());
+        a.most(SCALE_TIMES, s.scale());
+        a.most(HEALTH_HALF_HEARTS, s.health());
+        a.most(ATTACK_DAMAGE_HALF_HEARTS, s.damage());
+        a.most(MOVEMENT_SPEED_ATTRIBUTE, s.speed());
         return a.done();
     }
 
@@ -690,35 +730,29 @@ public record MakeFacts(String kind, int tier, Set<String> tags, boolean known) 
                 }
             }
         }
-        a.size = extentStep(extent);
+        if (extent > 0) {
+            a.most(EXTENT_BLOCKS, extent);
+        }
         return a.done();
-    }
-
-    private static int eventSize(String size) {
-        return switch (size == null ? "" : size.strip().toLowerCase(Locale.ROOT)) {
-            case "big" -> 1;
-            case "gigantic", "huge" -> 2;
-            default -> 0;
-        };
     }
 
     /**
      * The facts of a thing that could not be read: the most a thing of {@code kind} could be. A creature may fight and
      * be hostile; an item, a machine or a magic block may fight and change blocks; an event may change blocks and
      * hurt; a rule changes the world; supplies give items; a building builds; a picture is a board on a wall; anything
-     * else is all of them at the top tier.
+     * else may be all of them. No numbers: nothing was measured.
      */
     public static MakeFacts cautious(String kind) {
         String k = kind == null ? OTHER : kind.strip().toLowerCase(Locale.ROOT);
         return switch (k) {
-            case "creature", "ride" -> new MakeFacts(k, 4, Set.of(FIGHTS, HOSTILE), false);
-            case "item", "machine", "magic_block" -> new MakeFacts(k, 3, Set.of(FIGHTS, CHANGES_BLOCKS), false);
-            case "event" -> new MakeFacts(k, 3, Set.of(FIGHTS, CHANGES_BLOCKS), false);
-            case "rule" -> new MakeFacts(k, 4, Set.of(WORLD_RULE), false);
-            case "supplies" -> new MakeFacts(k, 2, Set.of(GIVES_ITEMS, HARMLESS), false);
-            case "building" -> new MakeFacts(k, 2, Set.of(BUILDS, HARMLESS), false);
-            case "picture" -> new MakeFacts(k, 0, Set.of(BUILDS, DECORATIVE, HARMLESS), false);
-            default -> new MakeFacts(OTHER, TOP_TIER, Set.of(FIGHTS, HOSTILE, CHANGES_BLOCKS, SUMMONS, GIVES_ITEMS), false);
+            case "creature", "ride" -> new MakeFacts(k, Map.of(), Set.of(FIGHTS, HOSTILE), false);
+            case "item", "machine", "magic_block" -> new MakeFacts(k, Map.of(), Set.of(FIGHTS, CHANGES_BLOCKS), false);
+            case "event" -> new MakeFacts(k, Map.of(), Set.of(FIGHTS, CHANGES_BLOCKS), false);
+            case "rule" -> new MakeFacts(k, Map.of(), Set.of(WORLD_RULE), false);
+            case "supplies" -> new MakeFacts(k, Map.of(), Set.of(GIVES_ITEMS, HARMLESS), false);
+            case "building" -> new MakeFacts(k, Map.of(), Set.of(BUILDS, HARMLESS), false);
+            case "picture" -> new MakeFacts(k, Map.of(), Set.of(BUILDS, DECORATIVE, HARMLESS), false);
+            default -> new MakeFacts(OTHER, Map.of(), Set.of(FIGHTS, HOSTILE, CHANGES_BLOCKS, SUMMONS, GIVES_ITEMS), false);
         };
     }
 
@@ -781,7 +815,7 @@ public record MakeFacts(String kind, int tier, Set<String> tags, boolean known) 
             return cautious(OTHER);
         }
         MakeFacts all = combine(each);
-        return unknown ? new MakeFacts(all.kind(), all.tier(), all.tags(), false) : all;
+        return unknown ? new MakeFacts(all.kind(), all.numbers(), all.tags(), false) : all;
     }
 
     private static MakeFacts ofRef(Ref r, Artifacts artifacts) {
@@ -802,17 +836,18 @@ public record MakeFacts(String kind, int tier, Set<String> tags, boolean known) 
             stored = null;
         }
         MakeFacts f = ofArtifact(r.kind(), stored);
-        if (r.count() > 1 && f.known()) {
-            Set<String> t = new LinkedHashSet<>(f.tags());
-            int tier = f.has(DECORATIVE) ? 0 : Math.min(TOP_TIER, f.tier() + countStep(r.count()));
-            return new MakeFacts(f.kind(), tier, t, true);
+        if (!f.known() || !r.kind().equals(BuilderSpec.Kind.CREATURE.id())) {
+            return f;
         }
-        return f;
+        Map<String, Double> n = new LinkedHashMap<>(f.numbers());
+        n.put(COUNT_MADE, (double) r.count());   // the command says how many it spawns
+        return new MakeFacts(f.kind(), n, f.tags(), true);
     }
 
     /**
-     * Several things made at once (a recipe of a machine and its snack): the first one's kind, the highest tier, every
-     * tag (harmless and decorative only when every one is), known only when every one is.
+     * Several things made at once (a recipe of a machine and its snack): the first one's kind, every tag (harmless and
+     * decorative only when every one is), each number as the largest any of them carries (a number none carries stays
+     * absent), known only when every one is.
      */
     public static MakeFacts combine(List<MakeFacts> facts) {
         if (facts == null || facts.isEmpty()) {
@@ -822,13 +857,13 @@ public record MakeFacts(String kind, int tier, Set<String> tags, boolean known) 
             return facts.get(0);
         }
         Set<String> tags = new LinkedHashSet<>();
-        int tier = 0;
+        Map<String, Double> numbers = new LinkedHashMap<>();
         boolean known = true;
         boolean harmless = true;
         boolean decorative = true;
         for (MakeFacts f : facts) {
             tags.addAll(f.tags());
-            tier = Math.max(tier, f.tier());
+            f.numbers().forEach((k, v) -> numbers.merge(k, v, Math::max));
             known &= f.known();
             harmless &= f.has(HARMLESS);
             decorative &= f.has(DECORATIVE);
@@ -839,7 +874,7 @@ public record MakeFacts(String kind, int tier, Set<String> tags, boolean known) 
         if (!decorative) {
             tags.remove(DECORATIVE);
         }
-        return new MakeFacts(facts.get(0).kind(), tier, tags, known);
+        return new MakeFacts(facts.get(0).kind(), numbers, tags, known);
     }
 
     // ── small readers ─────────────────────────────────────────────────────────────────────────
