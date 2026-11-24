@@ -555,38 +555,34 @@ public final class MockPlayerNetwork {
     /**
      * <b>Refuse to run a test whose premise is "nobody is online", when somebody is.</b>
      *
-     * <p>Several GameTests spawn their subject at WORLD SPAWN, because the tools resolve "the
-     * child" as the first player in the list and <em>with nobody online that means world spawn</em>.
-     * That is a claim about the whole server, and a test that creates no player cannot make it
-     * true: any mock belonging to any other test silently becomes the child.
+     * <p>Several GameTests stand their subject in front of a STAND-IN child ({@link PlotChild#standHere}),
+     * because the tools resolve "the child" as the first player in the list and <em>only with nobody
+     * online is that the stand-in</em>. That is a claim about the whole server, and a test that creates
+     * no player cannot make it true: any mock belonging to any other test silently becomes the child.
+     * (Before the stand-in, the same premise meant world spawn.)
      *
      * <p>What it looked like before this existed: <i>"No mobs within 24 blocks of the child"</i>,
      * about a plot with a mob standing in it. True, about the wrong child, and mentioning no
      * player — so it reads as a defect in the tool, or in the reader's own branch. Two spikes
      * independently spent a control run on it before either filed an issue.
      *
-     * <p>So it fails here instead, naming the player, where it is, and how far that is from world
-     * spawn. Measured with the leak deliberately restored: <i>'mfam-mock' at
-     * BlockPos{x=752260, y=-58, z=-8031905}, 8067056 blocks from world spawn</i>. This makes the
+     * <p>So it fails here instead, naming the player, where it is, and how far that is from this
+     * test's plot. Measured with the leak deliberately restored (then from world spawn): <i>'mfam-mock'
+     * at BlockPos{x=752260, y=-58, z=-8031905}, 8067056 blocks from world spawn</i>. This makes the
      * tests no more robust — they still cannot run with a stray mock about — but it turns a
      * distance into a cause, which is the difference between one line and a control run.
      *
-     * <p>Lives here rather than in either test because there are <b>two</b> files with this
-     * premise and its own helper for it ({@code ModifyMobGameTest.spawnAtWorldSpawn} and
-     * {@code MobIdentityGameTest.arrive}), and the second was found only because the first one's
-     * fix left it still failing. A third would otherwise write a third copy.
+     * <p>Called by {@link PlotChild#standHere}, the one way such a test stands its child, so a new
+     * test with this premise cannot forget it.
      */
     public static void requireNobodyIsOnline(
             net.minecraft.gametest.framework.GameTestHelper helper) {
-        net.minecraft.server.level.ServerLevel overworld =
-                helper.getLevel().getServer().overworld();
-        net.minecraft.world.phys.Vec3 spawn = net.minecraft.world.phys.Vec3
-                .atBottomCenterOf(overworld.getSharedSpawnPos());
+        net.minecraft.world.phys.Vec3 plot = PlotChild.spot(helper);
         for (ServerPlayer p : helper.getLevel().getServer().getPlayerList().getPlayers()) {
-            helper.fail(Component.literal("a player is online, so 'the child' is not world spawn and this test "
-                    + "cannot run: '" + p.getGameProfile().getName() + "' at "
-                    + p.blockPosition() + ", " + (int) p.position().distanceTo(spawn)
-                    + " blocks from world spawn. If that name is '" + MOCK_NAME + "' it is another "
+            helper.fail(Component.literal("a player is online, so 'the child' is not this test's stand-in and "
+                    + "this test cannot run: '" + p.getGameProfile().getName() + "' at "
+                    + p.blockPosition() + ", " + (int) p.position().distanceTo(plot)
+                    + " blocks from this test's plot. If that name is '" + MOCK_NAME + "' it is another "
                     + "test's mock that outlived it — see MockPlayerNetwork, not the tool."));
         }
     }

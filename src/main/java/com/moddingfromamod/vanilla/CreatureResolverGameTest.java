@@ -33,6 +33,7 @@ import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import com.moddingfromamod.testing.PlotChild;
 import com.moddingfromamod.testing.gt.GameTestHolder;
 
 /**
@@ -56,9 +57,12 @@ import com.moddingfromamod.testing.gt.GameTestHolder;
  * <p>{@code ModifyMobReachesTheRigGameTest} stayed green through all of it because it targeted
  * the carrier's TYPE — the workaround itself — with no real mob of that type anywhere near.
  *
- * <p>⚠ At WORLD SPAWN, because {@code modify_mob} and {@code look_around} measure from the child,
- * and with nobody online that is where the child is. One NAMED batch per test: batches run one
- * after another, so nothing else is standing at world spawn while these run.
+ * <p>⚠ Round a stand-in child IN THE PLOT ({@code PlotChild.standHere}), because {@code modify_mob}
+ * and {@code look_around} measure from the child. It used to be world spawn, where the child is with
+ * nobody online, and nothing keeps world spawn loaded from 1.21.9: the creature was unloaded under the
+ * test. He stands three blocks in, so the real mob behind him and the creature in front are both in
+ * the plot. One NAMED batch per test: the stand-in is one shared slot, and batches run one after
+ * another, so nothing else is standing round him while these run.
  */
 @GameTestHolder(ModdingFromAModMod.MODID)
 public class CreatureResolverGameTest {
@@ -69,6 +73,9 @@ public class CreatureResolverGameTest {
     /** The creature's species — a whale, long enough that the rig needs hit proxies. */
     private static final String ID = "gt_t6g1_whale";
     private static final String NAME = "Wally Whale";
+
+    /** Where the child stands in the plot: three blocks in, so the real mob three behind him is in it too. */
+    private static final Vec3 CHILD = new Vec3(3.5, 1, 4.5);
 
     // ===================== +: modify_mob =====================
 
@@ -134,7 +141,7 @@ public class CreatureResolverGameTest {
         Scene s = stage(helper);
         ServerLevel level = helper.getLevel().getServer().overworld();
         String carrierType = EntityType.getKey(s.carrier.getType()).toString();
-        String said = Surroundings.describe(level, s.spawn);
+        String said = Surroundings.describe(level, s.here);
         String mobs = section(said);
 
         helper.assertTrue(mobs.contains(NAME) || mobs.contains(ID),
@@ -155,7 +162,7 @@ public class CreatureResolverGameTest {
         }
         helper.assertTrue(carrierLines == 1, Component.literal("exactly ONE line should say " + carrierType
                 + " — the real one — but " + carrierLines + " do:\n" + mobs));
-        int expected = Math.min(12, countMeaningful(level, s.spawn, 32));
+        int expected = Math.min(12, countMeaningful(level, s.here, 32));
         helper.assertTrue(lines == expected, Component.literal("#950: look_around lists " + lines + " mobs where "
                 + expected + " are things a child could mean — the " + s.proxies.size()
                 + " hit proxies are invisible machinery, not mobs:\n" + mobs));
@@ -169,11 +176,11 @@ public class CreatureResolverGameTest {
     public static void aCommandDiffMintsOneHandleForTheCreatureAndNoneForItsProxies(
             GameTestHelper helper) {
         ServerLevel level = helper.getLevel().getServer().overworld();
-        Vec3 spawn = clearWorldSpawn(helper, level);
+        Vec3 here = clearAroundTheChild(helper, level);
         // EXACTLY what run_command does around one command (RunCommandTool): snapshot, act, diff.
-        Set<java.util.UUID> before = EntityCapture.snapshot(level, spawn);
-        Scene s = standUp(helper, level, spawn);
-        List<String> minted = EntityCapture.rememberNew(level, spawn, before);
+        Set<java.util.UUID> before = EntityCapture.snapshot(level, here);
+        Scene s = standUp(helper, level, here);
+        List<String> minted = EntityCapture.rememberNew(level, here, before);
 
         helper.assertTrue(!s.proxies.isEmpty(), Component.literal("the whale was given no hit proxies, so this "
                 + "proves nothing about them: " + s.rig.hitPlan()));
@@ -202,9 +209,10 @@ public class CreatureResolverGameTest {
     public static void theNearestThingCanBeACreatureAndACreatureIsOneReferent(
             GameTestHelper helper) {
         ServerLevel level = helper.getLevel().getServer().overworld();
-        // what an earlier batch leaves at spawn, planted on purpose so this is not 1 run in N.
-        // Buildings never leave BuildRegistry when their test ends (WishVisitGameTest's castle, the
-        // builders'), and spawn is shared by every test in this reused world: in two full ci,default
+        // what an earlier batch leaves near where he stands, planted on purpose so this is not 1 run
+        // in N. Buildings never leave BuildRegistry when their test ends (WishVisitGameTest's castle,
+        // the builders'), and this world is reused by every batch (it was world spawn, shared by all of
+        // them, when this was found): in two full ci,default
         // runs one stood nearer him than the whale and was "in his view" first, while the test
         // passed alone. A named batch runs alone, so the stage must forget them as it does stray
         // creatures (clearOtherBuildings).
@@ -214,7 +222,7 @@ public class CreatureResolverGameTest {
               {"kind":"box","width":1,"height":1,"depth":1,"block":"minecraft:stone"}]}
             """.formatted(leftover)).getAsJsonObject()));
         BuildRegistry.rememberAnchor(leftover,
-                BlockPos.containing(Vec3.atBottomCenterOf(level.getSharedSpawnPos()).add(2, 0, 0)).asLong(),
+                BlockPos.containing(helper.absoluteVec(CHILD).add(2, 0, 0)).asLong(),
                 level.dimension());
         Scene s = stage(helper);
         // A building in view, three times as far away as the creature.
@@ -223,14 +231,14 @@ public class CreatureResolverGameTest {
             {"id":"%s","name":"Ladder castle","shapes":[
               {"kind":"box","width":2,"height":2,"depth":2,"block":"minecraft:stone"}]}
             """.formatted(castle)).getAsJsonObject()));
-        BuildRegistry.rememberAnchor(castle, BlockPos.containing(s.spawn.add(15, 0, 0)).asLong(),
+        BuildRegistry.rememberAnchor(castle, BlockPos.containing(s.here.add(15, 0, 0)).asLong(),
                 level.dimension());
         // What production's run_command → modify_mob left on this creature on 2026-09-25: a
         // handle named after its CARRIER. The index must still see ONE creature.
         EntityHandles.global().targeted(s.carrier.getUUID(),
                 EntityType.getKey(s.carrier.getType()).toString(), NAME);
 
-        ServerPlayer looker = unplacedPlayer(level, s.spawn);   // looking along +x, at both
+        ServerPlayer looker = unplacedPlayer(level, s.here);   // looking along +x, at both
         var all = com.moddingfromamod.wish.ArtifactIndex.forPlayer(looker);
         WishLadder.Candidate whale = find(all, ID);
         WishLadder.Candidate building = find(all, castle);
@@ -271,22 +279,22 @@ public class CreatureResolverGameTest {
 
     // ===================== the scene =====================
 
-    private record Scene(Vec3 spawn, DisplayRig rig, Mob carrier, List<Mob> proxies,
+    private record Scene(Vec3 here, DisplayRig rig, Mob carrier, List<Mob> proxies,
                          LivingEntity real) {
     }
 
-    /** Clear world spawn and stand up the creature and a real mob of its carrier's type. */
+    /** Stand the child in the plot, clear round him, and stand up the creature and a real mob of its carrier's type. */
     private static Scene stage(GameTestHelper helper) {
         ServerLevel level = helper.getLevel().getServer().overworld();
-        Vec3 spawn = clearWorldSpawn(helper, level);
-        return standUp(helper, level, spawn);
+        Vec3 here = clearAroundTheChild(helper, level);
+        return standUp(helper, level, here);
     }
 
-    private static Scene standUp(GameTestHelper helper, ServerLevel level, Vec3 spawn) {
+    private static Scene standUp(GameTestHelper helper, ServerLevel level, Vec3 here) {
         com.moddingfromamod.testing.SpeciesForTest.putSaved(helper, Species.fromJson(JsonParser.parseString(
                 "{\"id\":\"" + ID + "\",\"name\":\"" + NAME + "\",\"modelKey\":\"" + ID + "\","
                         + "\"health\":40,\"speed\":0.0,\"scale\":1.0}").getAsJsonObject()));
-        DisplayRig rig = DisplayRig.spawn(level, spawn.add(5, 0, 0), 0f,
+        DisplayRig rig = DisplayRig.spawn(level, here.add(5, 0, 0), 0f,
                 RigFitGameTest.whale(), 1.0, ID, CarrierPool.Move.WALK);
         rig.base().setNoAi(true);
         rig.base().addTag(MINE);
@@ -296,57 +304,56 @@ public class CreatureResolverGameTest {
         helper.assertTrue(made instanceof LivingEntity, Component.literal("cannot make a real "
                 + rig.base().getType()));
         LivingEntity real = (LivingEntity) made;
-        real.snapTo(spawn.x - 3, spawn.y, spawn.z, 0f, 0f);
+        real.snapTo(here.x - 3, here.y, here.z, 0f, 0f);
         if (real instanceof Mob m) {
             m.setNoAi(true);
         }
         real.addTag(MINE);
         level.addFreshEntity(real);
-        return new Scene(spawn, rig, rig.base(), new ArrayList<>(rig.proxies()), real);
+        return new Scene(here, rig, rig.base(), new ArrayList<>(rig.proxies()), real);
     }
 
-    private static Vec3 clearWorldSpawn(GameTestHelper helper, ServerLevel level) {
-        com.moddingfromamod.testing.MockPlayerNetwork.requireNobodyIsOnline(helper);
-        // Tidied however the test ENDS, not only on its last line: a red or timed-out test left its creature at the
-        // world spawn every test here shares, and the next one listed two of the same mob (2026-11-15 release smoke).
+    private static Vec3 clearAroundTheChild(GameTestHelper helper, ServerLevel level) {
+        Vec3 here = PlotChild.standHere(helper, CHILD);
+        // Tidied however the test ENDS, not only on its last line: a red or timed-out test left its creature where
+        // the next test stood (world spawn then), and the next one listed two of the same mob (2026-11-15 release smoke).
         com.moddingfromamod.testing.MockPlayerNetwork.afterTest(helper, () -> tidy(helper));
         // No conversation left over from an earlier test: a named batch runs alone.
         EntityHandles.global().clear();
         tidy(helper);
-        Vec3 spawn = Vec3.atBottomCenterOf(level.getSharedSpawnPos());
-        clearOtherCreatures(level, spawn);
-        clearOtherBuildings(spawn);
-        return spawn;
+        clearOtherCreatures(level, here);
+        clearOtherBuildings(here);
+        return here;
     }
 
     /**
-     * <b>Every OTHER test's building near spawn goes too</b> — the same leftover as
+     * <b>Every OTHER test's building near him goes too</b> — the same leftover as
      * {@link #clearOtherCreatures}, from the other store "in his view" reads. A building's record
      * outlives its test (WishVisitGameTest's castle never leaves the registry), so in a full
      * ci,default run one stood nearer the looker than the whale and was listed first, while the
      * test passed alone. Forgotten in memory only: nothing here may write a shelf.
      */
-    private static void clearOtherBuildings(Vec3 spawn) {
+    private static void clearOtherBuildings(Vec3 here) {
         for (String id : BuildRegistry.ids()) {
             Long packed = BuildRegistry.anchorOf(id);
-            if (packed != null && Vec3.atBottomCenterOf(BlockPos.of(packed)).distanceTo(spawn) < 64) {
+            if (packed != null && Vec3.atBottomCenterOf(BlockPos.of(packed)).distanceTo(here) < 64) {
                 BuildRegistry.forgetInMemoryForProbe(id);
             }
         }
     }
 
     /**
-     * <b>Every OTHER test's creature near spawn goes too.</b> These tests ask what is NEAREST the
-     * child at spawn, and spawn is shared by every test in this reused world: in a full ci,default
+     * <b>Every OTHER test's creature near him goes too.</b> These tests ask what is NEAREST the
+     * child, and this world is reused by every batch (world spawn, then, shared by all): in a full ci,default
      * run on 1.21.8 an earlier batch's 'Pet Dragon' ({@code gt_preview_edit_…}, left by
      * WishPreviewGameTest) stood 3 blocks from the looker, nearer than this test's own whale, and
      * the ladder test failed while passing alone. A named batch runs alone, so any creature here
      * now is a leftover, never a neighbour's live subject.
      */
-    private static void clearOtherCreatures(ServerLevel level, Vec3 spawn) {
+    private static void clearOtherCreatures(ServerLevel level, Vec3 here) {
         List<Entity> stray = new ArrayList<>();
         for (Entity e : level.getEntities().getAll()) {
-            if (e != null && e.position().distanceTo(spawn) < 64 && DisplayRig.speciesOn(e) != null) {
+            if (e != null && e.position().distanceTo(here) < 64 && DisplayRig.speciesOn(e) != null) {
                 stray.add(e);
             }
         }

@@ -9,7 +9,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import com.moddingfromamod.ModdingFromAModMod;
 import com.moddingfromamod.testing.gt.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
-import net.minecraft.world.entity.EntityType;
 import com.moddingfromamod.testing.gt.GameTestHolder;
 import com.moddingfromamod.testing.GateShards;
 
@@ -114,6 +113,11 @@ public class McpGameTest {
     @GameTest(template = "empty_test", timeoutTicks = 400)
     public static void toolCallCrossesTheThreadBoundaryAndChangesTheWorld(GameTestHelper helper) {
         int port = McpHttpServer.boundPort();
+        // At ABSOLUTE coordinates in this test's own plot. With no player online a relative "~ ~ ~" runs at world
+        // spawn (see RunCommandTool), which nothing keeps loaded from 1.21.9, so the pig could be unloaded before
+        // anyone looked; here the plot holds it, and the assertion can ask for it HERE, not "somewhere".
+        net.minecraft.core.BlockPos at = helper.absolutePos(new net.minecraft.core.BlockPos(4, 1, 4));
+        String where = at.getX() + " " + at.getY() + " " + at.getZ();
         AtomicReference<String> reply = new AtomicReference<>();
         run(() -> {
             String init = post(port,
@@ -122,17 +126,17 @@ public class McpGameTest {
             reply.set(post(port,
                     "{\"jsonrpc\":\"2.0\",\"id\":2,\"method\":\"tools/call\",\"params\":"
                             + "{\"name\":\"run_command\",\"arguments\":"
-                            + "{\"command\":\"summon minecraft:pig ~ ~ ~\"}}}", session, true));
+                            + "{\"command\":\"summon minecraft:pig " + where + "\"}}}", session, true));
         });
         helper.succeedWhen(() -> {
             helper.assertTrue(reply.get() != null, Component.literal("waiting for the tool call"));
             helper.assertTrue(reply.get().contains("\"isError\":false"),
                     Component.literal("the tool should have succeeded: " + body(reply.get())));
-            // Assert on the LEVEL, not the test structure: with no player online the command runs
-            // at world spawn (see RunCommandTool), which is outside this test's little box.
-            helper.assertTrue(
-                    !helper.getLevel().getEntities(EntityType.PIG, e -> true).isEmpty(),
-                    Component.literal("the agent's summon should have produced a pig somewhere in the world"));
+            var pigs = helper.getLevel().getEntitiesOfClass(net.minecraft.world.entity.animal.Pig.class,
+                    new net.minecraft.world.phys.AABB(at).inflate(2));
+            helper.assertTrue(!pigs.isEmpty(),
+                    Component.literal("the agent's summon should have produced a pig at " + where));
+            pigs.forEach(net.minecraft.world.entity.Entity::discard);
         });
     }
 
