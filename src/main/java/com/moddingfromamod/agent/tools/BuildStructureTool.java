@@ -690,7 +690,7 @@ public final class BuildStructureTool implements McpTool {
                 }
                 // Publish the editable design + provenance so this build can be upgraded later.
                 ProvenancePublisher.publish("build", plan.id(), "build.json",
-                        plan.toStoredJson().toString());
+                        plan.toJson().toString());
                 if (!buildNow) {
                     return ToolResult.ok("Saved building '" + plan.id() + "' ("
                             + plan.volume() + " blocks). Run it any time with wishbuild "
