@@ -99,18 +99,26 @@ public class ServiceClientGameTest {
             ActingChild.standIn(gone);
             MockPlayerNetwork.remove(gone);   // what the stand-in's own test does when it ends
             helper.assertTrue(gone.isRemoved(), Component.literal("precondition: the stand-in has left the world"));
-            helper.assertTrue(ActingChild.of(server) == null,
-                    Component.literal("a stand-in who has left the world must not be the child: " + ActingChild.of(server)));
-            helper.assertTrue(ActingChild.person(server) == null,
-                    Component.literal("nor the person a tool acts for: " + ActingChild.person(server)));
+            // WHOSE WISH: NONE. ActingChild.of(server) asks AgentContext.currentRun() first, and on the server thread
+            // (no worker bound) that falls back to the ONE wish in flight when there is exactly one: another test's,
+            // whose owner is not this stand-in. On a GitHub runner that turned this red (#40) with "a stand-in in the
+            // world must still be the child: null". This test is about the stand-in rule, so it asks with no owner.
+            helper.assertTrue(ActingChild.of(server, null) == null,
+                    Component.literal("a stand-in who has left the world must not be the child: "
+                            + ActingChild.of(server, null)));
+            helper.assertTrue(ActingChild.person(server, null) == null,
+                    Component.literal("nor the person a tool acts for: " + ActingChild.person(server, null)));
 
             // The other half: a stand-in still in the world is found, so this cannot pass by ignoring stand-ins.
             ServerPlayer here = MockPlayerNetwork.inLevel(helper, "gthere");
             try {
                 PlayerKind.registerServiceClient(here.getUUID());   // not in the child list: ONLY the stand-in finds him
                 ActingChild.standIn(here);
-                helper.assertTrue(ActingChild.of(server) == here,
-                        Component.literal("a stand-in in the world must still be the child: " + ActingChild.of(server)));
+                helper.assertTrue(ActingChild.of(server, null) == here,
+                        Component.literal("a stand-in in the world must still be the child: "
+                                + ActingChild.of(server, null) + " (wishes in flight: "
+                                + Marshal.global().working().size() + ", run the global lookup sees: "
+                                + AgentContext.currentRun() + ")"));
             } finally {
                 PlayerKind.forgetServiceClient(here.getUUID());
                 MockPlayerNetwork.remove(here);
