@@ -136,7 +136,7 @@ public final class WishExecutor {
             if (!landed.isEmpty()) {
                 List<String> out = new ArrayList<>(r.output());
                 out.add(com.moddingfromamod.item.delivery.DeliveryWords.forAgent(landed));
-                r = new Result(r.success(), out, r.ignored());
+                r = r.saying(out);
             }
             var scope = com.moddingfromamod.mob.SpawnScope.current();
             if (!opened || scope == null || !scope.droppedAny()) {
@@ -144,7 +144,7 @@ public final class WishExecutor {
             }
             List<String> out = new ArrayList<>(r.output());
             scope.lines().forEach(l -> out.add(com.moddingfromamod.mob.SpawnBudget.forTheAgent(l)));
-            return new Result(r.success(), out, r.ignored());
+            return r.saying(out);
         } finally {
             com.moddingfromamod.mob.SpawnScope.close(opened);
         }
@@ -225,7 +225,8 @@ public final class WishExecutor {
                 com.moddingfromamod.world.WorldRule rule = in.ruleFor(effect);
                 return new Result(false, List.of("That button can't work on this world"
                         + (rule == null ? "" : ": " + rule.rule() + " — " + rule.why())
-                        + ". It works in " + in.workshop() + ". (" + command + ")"));
+                        + ". It works in " + in.workshop() + ". (" + command + ")"), List.of(),
+                        com.moddingfromamod.world.WorldRefusal.of(effect, in, bases.noun()));
             }
         }
         // A SUMMON NOBODY CAN ADDRESS —, and it is a report because there is no fix.
@@ -471,9 +472,23 @@ public final class WishExecutor {
     }
 
     /** Outcome of one command: whether it looked successful, plus whatever it printed. */
-    public record Result(boolean success, List<String> output, List<String> ignored) {
+    /**
+     * @param refusedBy the world rule that refused the command, as data ({@code null} when none did): a replayed wish
+     *                  has no agent to read the refusal's words, so its job tells the child this rule instead
+     */
+    public record Result(boolean success, List<String> output, List<String> ignored,
+                         com.moddingfromamod.world.WorldRefusal refusedBy) {
         public Result(boolean success, List<String> output) {
             this(success, output, List.of());
+        }
+
+        public Result(boolean success, List<String> output, List<String> ignored) {
+            this(success, output, ignored, null);
+        }
+
+        /** The same outcome, saying {@code more}. */
+        Result saying(List<String> more) {
+            return new Result(success, more, ignored, refusedBy);
         }
 
         public String joined() {
@@ -493,6 +508,8 @@ public final class WishExecutor {
         private final boolean fanfare;
         private int index;
         private int failures;
+        /** The first world rule that refused one of its commands, said once at the end in place of "some bits". */
+        private com.moddingfromamod.world.WorldRefusal refusedBy;
         /** What the wand turned away, said once at the end. */
         private final java.util.Set<String> waveLines = new java.util.LinkedHashSet<>();
 
@@ -539,6 +556,9 @@ public final class WishExecutor {
             com.moddingfromamod.mob.EntityCapture.rememberNew(level, pos, before);
             if (!r.success()) {
                 failures++;
+                if (refusedBy == null) {
+                    refusedBy = r.refusedBy();
+                }
                 LOGGER.warn("wish {} command failed: {} -> {}", wish.shortId(), cmd, r.joined());
             } else if (!r.ignored().isEmpty()) {
                 // A replay that half-worked: counted as a failure, because the child was
@@ -560,6 +580,11 @@ public final class WishExecutor {
             if (player != null) {
                 if (ok) {
                     WishFeedback.granted(player, plan.sayToPlayer());
+                } else if (refusedBy != null) {
+                    // a replay has no agent to explain a world rule's refusal: he is told the rule itself
+                    WishFeedback.refusedByWorld(player,
+                            com.moddingfromamod.world.WorldRulesWords.madeRefused("That wish", refusedBy),
+                            plan.sayToPlayer(), wish.shortId());
                 } else {
                     WishFeedback.partial(player, plan.sayToPlayer());
                 }
