@@ -1,0 +1,4 @@
+# Entity types the mod deliberately replaces when they join a level. MMVU's Port CI harness reads this
+# file (its BaselineGameTest spawns every entity type bare): a listed type must still construct, and only
+# the level refusing it is excused. One `<entity id> <reason>` a line; the gate report lists each.
+moddingfromamod:wish_mob a bare wish mob is a stand-in: vanilla/VanillaRigBridge.onJoin cancels its join and builds the creature as a vanilla display rig
