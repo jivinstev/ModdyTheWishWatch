@@ -53,6 +53,25 @@ public final class WishHotbarPlan {
         return GROUP_PREFIX + Long.toHexString(h);
     }
 
+    /** The longest rest a sweep shows (a day of play), so a charge's answer can never overflow the game's clock. */
+    public static final int MAX_REST_TICKS = 24 * 60 * 60 * 20;
+
+    /**
+     * The rest a proxy's cooldown sweep is set to, from the world's charge ({@link WishCharge#restLeft}).
+     *
+     * @param fired      true right after a fire (allowed or refused), false when a proxy is given to him again
+     * @param chargeSays the charge's answer: ticks left, {@code 0} ready, {@code -1} (any negative) it does not say
+     * @param coreRest   the core's own rest after a fire ({@link WishHotbar#REST_TICKS})
+     * @return the ticks to set the cooldown to ({@code 0} clears it), or {@code -1}: leave it as it is
+     */
+    public static int shownRest(boolean fired, int chargeSays, int coreRest) {
+        if (chargeSays < 0) {
+            return fired ? coreRest : -1;        // the charge does not say: one second after a fire, else untouched
+        }
+        int rest = Math.min(chargeSays, MAX_REST_TICKS);
+        return fired ? rest : rest > 0 ? rest : -1;   // given again: only a rest the charge names is put back
+    }
+
     /** The proxy's name: says it is a WISH for the thing, never the thing ("✨ Wish: Fire Sword"). */
     public static String name(String label) {
         String l = label == null ? "" : label.replace("✨", "").strip();
