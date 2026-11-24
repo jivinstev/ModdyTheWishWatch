@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.google.gson.JsonParser;
 import com.moddingfromamod.safety.SafetyVerdict;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
@@ -354,11 +355,16 @@ class WishBriefTest {
 
     /** A stub whose lookup blocks until {@code release} (a brief stuck mid-lookup, as live). */
     static WishBriefs.Sources stuck(java.util.concurrent.CountDownLatch release) {
+        return stuck(release, "Puffo");
+    }
+
+    /** The same, for a character of its own name, so its brief never shares a cache entry with another test's. */
+    static WishBriefs.Sources stuck(java.util.concurrent.CountDownLatch release, String character) {
         WishBriefs.Sources base = stub(SubjectKind.CHARACTER, CLEAN_LOOK, SafetyVerdict.fine(SafetyVerdict.Provenance.HAIKU));
         return new WishBriefs.Sources() {
             @Override
             public Optional<CharacterResolver.Resolved> resolve(String wishText) {
-                return base.resolve(wishText);
+                return base.resolve(wishText).map(r -> new CharacterResolver.Resolved(character, r.kind()));
             }
 
             @Override
@@ -415,18 +421,68 @@ class WishBriefTest {
         System.setProperty(WishBriefs.WAIT_PROPERTY, "300");
         java.util.concurrent.CountDownLatch release = new java.util.concurrent.CountDownLatch(1);
         try {
-            WishBriefs.sourcesForTest(stuck(release));
+            WishBriefs.sourcesForTest(stuck(release, "Bloop"));
             UUID id = UUID.randomUUID();
-            WishBriefs.atSubmit(id, "make me Puffo");
+            WishBriefs.atSubmit(id, "make me Bloop");
             assertFalse(WishBriefs.willBrief(id));
             release.countDown();
             Thread.sleep(300);   // the brief completes now, OK
-            assertEquals("make me Puffo", WishBriefs.atHandOver(id, "make me Puffo", "make me Puffo", "t10"));
+            assertEquals("make me Bloop", WishBriefs.atHandOver(id, "make me Bloop", "make me Bloop", "t10"));
             assertFalse(WishBriefs.veiled(id));
         } finally {
             release.countDown();
             System.clearProperty(WishBrief.PROPERTY);
             System.clearProperty(WishBriefs.WAIT_PROPERTY);
+        }
+    }
+
+    @Test
+    @DisplayName("clearForTest waits for a brief still running, so it never lands in the next test's cache")
+    void clearForTestWaitsForABriefStillRunning() throws Exception {
+        System.setProperty(WishBrief.PROPERTY, "structured");
+        java.util.concurrent.CountDownLatch release = new java.util.concurrent.CountDownLatch(1);
+        WishBriefs.Sources stuck = stuck(release, "Laggo");
+        try {
+            // a runner slow enough that the brief is still grading when the test ends (as on a busy CI machine)
+            WishBriefs.sourcesForTest(new WishBriefs.Sources() {
+                @Override
+                public Optional<CharacterResolver.Resolved> resolve(String wishText) {
+                    return stuck.resolve(wishText);
+                }
+
+                @Override
+                public ReferenceSpec lookUp(String name, SubjectKind k) {
+                    return stuck.lookUp(name, k);
+                }
+
+                @Override
+                public String describe(String name, ReferenceSpec spec, SubjectKind k) {
+                    return stuck.describe(name, spec, k);
+                }
+
+                @Override
+                public SafetyVerdict grade(String l) {
+                    try {
+                        Thread.sleep(400);
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                    }
+                    return stuck.grade(l);
+                }
+            });
+            WishBriefs.atSubmit(UUID.randomUUID(), "make me Laggo");
+            release.countDown();
+            WishBriefs.clearForTest();
+            assertTrue(WishBriefs.readCache(WishBrief.Mode.STRUCTURED, "Laggo").isPresent(),
+                    "the brief finished, in this test's cache, before clearForTest returned");
+            Path next = Files.createTempDirectory(cache, "next-test");
+            ReferenceResearcher.cacheDir(next);
+            Thread.sleep(600);
+            assertTrue(WishBriefs.readCache(WishBrief.Mode.STRUCTURED, "Laggo").isEmpty(),
+                    "nothing landed later in the next test's cache");
+        } finally {
+            release.countDown();
+            System.clearProperty(WishBrief.PROPERTY);
         }
     }
 

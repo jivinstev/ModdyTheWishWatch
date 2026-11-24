@@ -160,6 +160,8 @@ public final class WishBriefs {
     private static volatile Sources sources = REAL;
 
     private static final ConcurrentHashMap<UUID, CompletableFuture<Result>> PENDING = new ConcurrentHashMap<>();
+    /** Every brief whose thread has not finished yet, even after a give-up took it out of PENDING: tests wait on it. */
+    private static final java.util.Set<CompletableFuture<Result>> IN_FLIGHT = ConcurrentHashMap.newKeySet();
     private static final ConcurrentHashMap<UUID, String> VEILED = new ConcurrentHashMap<>();
     private static final ConcurrentHashMap<UUID, String> LOOKS = new ConcurrentHashMap<>();
 
@@ -180,6 +182,8 @@ public final class WishBriefs {
         }
         CompletableFuture<Result> f = new CompletableFuture<>();
         PENDING.put(wishId, f);
+        IN_FLIGHT.add(f);
+        f.whenComplete((r, e) -> IN_FLIGHT.remove(f));
         DEADLINE.put(wishId, System.currentTimeMillis() + briefWaitMs());
         // A plain daemon thread that owns its try/catch, so the future always completes (CLAUDE.md).
         Thread t = new Thread(() -> {
@@ -589,7 +593,24 @@ public final class WishBriefs {
         sources = s == null ? REAL : s;
     }
 
+    /**
+     * Forget every wish's brief. First waits (up to 10 s) for every brief thread still running, so a brief a test let
+     * go on cannot finish later and write its look into the next test's cache directory.
+     */
     public static void clearForTest() {
+        long until = System.currentTimeMillis() + 10_000;
+        for (CompletableFuture<Result> f : List.copyOf(IN_FLIGHT)) {
+            long left = until - System.currentTimeMillis();
+            if (left <= 0) {
+                break;
+            }
+            try {
+                f.get(left, java.util.concurrent.TimeUnit.MILLISECONDS);
+            } catch (Exception e) {
+                // stuck for good, or failed: nothing more to wait for
+            }
+        }
+        IN_FLIGHT.clear();
         PENDING.clear();
         VEILED.clear();
         LOOKS.clear();
