@@ -272,7 +272,7 @@ public final class WishDriver {
                 }
                 // Typed key by key into the box itself, so its max_length is the client's own.
                 for (char c : text.toCharArray()) {
-                    box.charTyped(c, 0);
+                    box.charTyped(new net.minecraft.client.input.CharacterEvent(c, 0));   // 1.21.9: one CharacterEvent
                 }
                 String typed = boxValue(box);
                 if (!text.equals(typed)) {
@@ -369,7 +369,8 @@ public final class WishDriver {
         if (b == null) {
             return false;
         }
-        ((Button) b).onPress();
+        // 1.21.9: a press carries the input that made it; Enter, no modifiers, is what a keyboard press would give
+        ((Button) b).onPress(new net.minecraft.client.input.KeyEvent(org.lwjgl.glfw.GLFW.GLFW_KEY_ENTER, 0, 0));
         return true;
     }
 
