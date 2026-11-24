@@ -15,6 +15,7 @@
 # bundled compiler (tools/cbscript.zip) changed — or ReadyMadePrecompileGameTest (Gate B) could not make a Builder
 # power without Python (a tool's rendering changed: the give line, a derived parameter). Commit what it writes:
 # src/main/resources/precompiled/{ready-mades.json.gz,manifest.json}.
+# (The bundled compiler itself is rebuilt by tools/refresh-cbscript-bundle.sh; run --store after it.)
 #
 # WHAT: 1. ReadyMadePrecompileGameTest with precompiled.record=DIR and Python ON: every Builder power is made through
 #          the real Builder and every skeleton it asks for is written to DIR (a few minutes);

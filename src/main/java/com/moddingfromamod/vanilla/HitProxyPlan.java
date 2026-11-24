@@ -219,6 +219,46 @@ public final class HitProxyPlan {
     /** How far a ridden creature's carrier may stand over its back, in blocks (its seat is lower). */
     static final double SEAT_SLACK = 0.05;
 
+    /**
+     * Does a carrier whose own seat is {@code carrierSeat} blocks over its feet seat a rider ABOVE a
+     * back {@code back} blocks up, by more than {@link #SEAT_SLACK}? Then no seat can fix it
+     * ({@code RideSeat} can only lift), and the carrier itself must come down.
+     */
+    public static boolean seatsAboveBack(double carrierSeat, double back) {
+        return Double.isFinite(carrierSeat) && Double.isFinite(back) && back > 0
+                && carrierSeat > back + SEAT_SLACK;
+    }
+
+    /**
+     * <b>The plan that seats a rider on the back of a creature its carrier was not fitted for</b>
+     * (a creature made rideable after it was made, or one older than the cap above). Every
+     * carrier planned with a {@code seatCap} is fitted under the back; one planned without it is
+     * fitted to the WHOLE creature, and for a flier that is a bat sized over its head and wings —
+     * the pet dragon's bat stood 2.06 blocks over a back 1.20 up, and he rode 0.85 over it.
+     *
+     * <p>Planned again with the back as the cap, from carriers of the standing one's own kind
+     * only, so the creature keeps its carrier (its health, name and leash) and only its size and
+     * proxies change. The carrier's seat is taken as the top of its box, as the cap takes it.
+     *
+     * @param carrierId   the standing carrier's id ({@code bat})
+     * @param carrierSeat where the standing carrier seats a rider, over its feet
+     * @param back        the top of the creature's back over the carrier's feet ({@link RigFit#backTop})
+     * @return the plan to refit to, or null when the standing carrier already seats him no higher
+     *         than the back, or no carrier of its kind can
+     */
+    public static Plan fitUnderBack(List<RigFit.Atom> atoms, List<RigBase.Candidate> candidates,
+                                    String carrierId, double carrierSeat, double back) {
+        if (carrierId == null || !seatsAboveBack(carrierSeat, back)) {
+            return null;
+        }
+        Plan p = plan(atoms, candidates, List.of(carrierId), proxyPool(true), Bounds.VANILLA, back);
+        if (p == null || p.core() == null || !carrierId.equals(p.core().id())
+                || seatsAboveBack(p.core().height(), back)) {
+            return null;
+        }
+        return p;
+    }
+
     /** The tighter cores tried after the shipped one, as the F-beta each is fitted by. */
     static final double[] CORE_BETAS = {0.5, 0.25};
 

@@ -37,7 +37,9 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
  * seat on the carrier, sized to exactly the missing height ({@link #seat}), and the rider on that.
  * A seat's passenger point is computed by every client from its synced scale, so the lift is the
  * same on a stock client. Nothing in vanilla can LOWER a seat, which is why the carrier's choice
- * carries half of this.
+ * carries half of this — and why a carrier chosen before its creature was rideable, whose seat is
+ * above the back (a flier's bat, sized over the head and wings), is resized under the back when he
+ * climbs on ({@link #fitCarrier}).
  *
  * <p>The seat is a passenger and nothing else: invisible, never saved (one read back is refused),
  * and gone the tick its rider is.
@@ -139,6 +141,9 @@ public final class RideSeat {
             horse.tameWithName(player);
         }
         double lift = lift(mob, player);
+        if (fitCarrier(mob, player)) {
+            lift = lift(mob, player);
+        }
         boolean on;
         Mob seat = Double.isFinite(lift) && lift >= MIN_LIFT && mob.level() instanceof ServerLevel level
                 ? seat(level, mob, player, lift) : null;
@@ -158,6 +163,28 @@ public final class RideSeat {
             logSeat(player, mob, seat);
         }
         return on;
+    }
+
+    /**
+     * A seat only lifts, so a carrier that would seat him ABOVE the creature's back is brought down
+     * to it first: a creature made rideable after it was made keeps a carrier fitted to its whole
+     * body, and a flier's bat stands over its head and wings. Then he sits on the back as on any
+     * creature rideable from the start ({@code DisplayRig.fitSeatToBack}).
+     */
+    static boolean fitCarrier(Mob mob, Player rider) {
+        double back = seatOf(mob);
+        double carrierSeat = carrierSeat(mob, rider);
+        if (!com.moddingfromamod.vanilla.HitProxyPlan.seatsAboveBack(carrierSeat, back)
+                || !(mob.level() instanceof ServerLevel level)) {
+            return false;
+        }
+        var rig = com.moddingfromamod.vanilla.VanillaRigAnimator.rigOf(mob);
+        boolean fitted = rig != null && rig.fitSeatToBack(level, carrierSeat, back);
+        if (fitted) {
+            LOG.info(String.format(java.util.Locale.ROOT, "ride fit: carrier seat %.3f over a back at %.3f, "
+                    + "carrier now x%.3f, seat %.3f", carrierSeat, back, mob.getScale(), carrierSeat(mob, rider)));
+        }
+        return fitted;
     }
 
     private static final org.slf4j.Logger LOG = org.slf4j.LoggerFactory.getLogger("mfam-ride");

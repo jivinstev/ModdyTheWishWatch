@@ -273,7 +273,7 @@ public final class ItemSpecStore {
         }
 
         /** @return the spec, or null when the record is damaged — never a half-built one. */
-        static Spec fromJson(JsonObject o) {
+        public static Spec fromJson(JsonObject o) {
             try {
                 List<String> fx = new ArrayList<>();
                 for (var e : o.getAsJsonArray("effects")) {

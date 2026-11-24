@@ -225,6 +225,7 @@ change.
   a shell script while it runs** (bash reads it by byte offset).
 - **The CBScript compiler ships bundled** in the jar (`tools/cbscript.zip`); a version-specific id or spelling belongs
   in the compiler, not in a lesson.
+  Rebuild it with `./tools/refresh-cbscript-bundle.sh --ref <branch|commit>`, which also writes `tools/cbscript.SOURCE`.
 - **Builder and Apprentice powers are precompiled** (`datapack/PrecompiledPacks`, `datapack/ReadyMadeSkeleton`): every
   template is compiled at build time with sentinels where a player's values go, and Java puts the values back, so no
   player needs Python for them. Changed a template in `effects/` or `items/`, a catalogue, the bundled compiler, or how

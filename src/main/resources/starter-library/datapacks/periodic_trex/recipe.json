@@ -1,0 +1,20 @@
+{
+  "recipe": "starter-pack",
+  "v": 1,
+  "id": "periodic_trex",
+  "calls": [
+    {
+      "tool": "apply_effect",
+      "args": {
+        "effect": "periodic",
+        "tag": "trex",
+        "params": {
+          "COMMAND": "effect give @s minecraft:jump_boost infinite 5 true"
+        }
+      }
+    }
+  ],
+  "compiler": "521e75eacb968528454fefd8e6914602c0fc9187",
+  "date": "2026-11-24",
+  "note": "Backfilled on 2026-11-24: the T-rex's original grant call. The compiler and date are the ones this recipe was checked against, not the original grant's, which were not kept."
+}
