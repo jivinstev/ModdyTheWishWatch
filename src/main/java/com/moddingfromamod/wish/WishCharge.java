@@ -2,6 +2,7 @@ package com.moddingfromamod.wish;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
 
@@ -38,6 +39,12 @@ public interface WishCharge {
         com.moddingfromamod.world.WorldModule m = com.moddingfromamod.world.WorldModuleHost.liveModule();
         WishCharge own = m == null ? null : m.charge();
         return own != null ? own : Plugins.shared().first(WishCharge.class).orElse(NONE);
+    }
+
+    /** The online player with this id, or null (no server, or he left). */
+    private static ServerPlayer online(UUID id) {
+        net.minecraft.server.MinecraftServer server = net.neoforged.neoforge.server.ServerLifecycleHooks.getCurrentServer();
+        return server == null || id == null ? null : server.getPlayerList().getPlayer(id);
     }
 
     /** True when a plug-in has registered a charge (whether or not THIS world prices wishes). */
@@ -130,8 +137,40 @@ public interface WishCharge {
     // ── submit ──────────────────────────────────────────────────────────────────────────────────
 
     /**
+     * <b>May this wish start?</b> Asked as a wish starts, before anything runs or opens: typed words before the
+     * Apprentice's page or the re-wish reader, a Builder or Apprentice make before it is built, a recipe press, a
+     * "Make another one" and a hotbar fire before the rate limiter. {@link Optional#empty()} lets it start; a value
+     * refuses it, and is <b>the line the player reads</b>, said once by the core (after the safety text sweep: a line
+     * that does not pass is replaced by a fixed one). {@code Optional.of("")} refuses and says nothing more: the charge
+     * said its own words, as {@link #refusesAtSubmit} does, and a Builder make adds the core's default line.
+     *
+     * <p>{@code ask} names whose wish, where it came from, its recipe id, the kind of magic that will grant it, its
+     * words and whether the child is in distress. <b>A child in distress is never refused</b>: the core lets such a
+     * wish through whatever this answers (and then asks {@link #waiveIfEmpty}).
+     *
+     * <p><b>Cheap, and free of side effects</b>: answering must never charge, start a rest or change anything. The core
+     * may ask it more than once for one wish (again when what answers turns out different from what it first knew), and
+     * a menu will ask it while it draws, once per tile per draw. Do the bookkeeping in {@link #charge(WishAsk, UUID)},
+     * which runs only once the wish really starts, after the rate limiter. Server thread.
+     *
+     * <p>The default asks {@link #refusesAtSubmit} and maps {@code true} to {@code Optional.of("")}, so a charge
+     * written before this hook behaves as it always did. A new charge implements this one.
+     */
+    default Optional<String> refuses(WishAsk ask) {
+        ServerPlayer player = online(ask.player());
+        if (player == null) {
+            return Optional.empty();
+        }
+        return refusesAtSubmit(player, ask.distress(), ask.text(), ask.namedRecipe())
+                ? Optional.of("") : Optional.empty();
+    }
+
+    /**
      * At submit: refuse (and say why) when there is nothing to pay with. {@code recipe} is a wish served with no
      * model (a button, an "again", a Builder make). Never refuses a child in {@code distress}. False = go on.
+     *
+     * <p>Still supported, and asked by the default {@link #refuses}; a new charge implements {@link #refuses} instead,
+     * which is told what is being wished and whose answer is the line the player reads.
      */
     default boolean refusesAtSubmit(ServerPlayer player, boolean distress, String text, boolean recipe) {
         return false;
@@ -172,9 +211,28 @@ public interface WishCharge {
         return Paid.FREE;
     }
 
+    /**
+     * Charge a wish served with no model as it starts: a recipe, a hotbar fire, a "Make another one", a Builder or
+     * Apprentice make. Asked only once nothing else can refuse it (after the rate limiter), so this is where a charge
+     * does its bookkeeping: take the price, start the rest of {@link WishAsk#recipe}. The default asks
+     * {@link #charge(UUID, UUID, boolean)}, so an older charge is unchanged. Server thread.
+     */
+    default Paid charge(WishAsk ask, UUID wishId) {
+        return charge(ask.player(), wishId, ask.magic() == WishAsk.Magic.MAGICIAN);
+    }
+
     /** Charge one "again" press that is not a wish, BEFORE anything is handed over. Server thread. */
     default AgainPaid chargeAgain(ServerPlayer player, Again kind) {
         return AgainPaid.FREE;
+    }
+
+    /**
+     * {@link #chargeAgain(ServerPlayer, Again)}, told which thing: {@code ask} is "Give me one"'s
+     * {@link WishAsk#replay} of the key {@code /moddy give} takes (an item's, or a creature's for its egg). The default
+     * asks the method without it, so an older charge is unchanged. Server thread.
+     */
+    default AgainPaid chargeAgain(ServerPlayer player, Again kind, WishAsk ask) {
+        return chargeAgain(player, kind);
     }
 
     /** After an "again" hand-over landed: say what is left. */

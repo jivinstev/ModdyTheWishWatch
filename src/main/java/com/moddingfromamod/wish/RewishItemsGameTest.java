@@ -63,7 +63,12 @@ public final class RewishItemsGameTest {
                     }
                     WishService.Outcome out = WishService.submit(p, "make my crown a wizard hat", WishSource.TYPED);
                     if (out != WishService.Outcome.APPRENTICE) {
-                        wrong.set("'make my crown a wizard hat' was not answered at once: " + out);
+                        // Say what the reader saw, so a runner-only red (#40) names its cause: whether the reader was
+                        // on, and which of his things it could read against.
+                        wrong.set("'make my crown a wizard hat' was not answered at once: " + out + " (reader on: "
+                                + Rewish.on() + ", builder on: " + System.getProperty(BuilderSettings.ENABLED_PROPERTY)
+                                + ", his things: " + Rewish.his(p).stream().map(m -> m.kind() + ":" + m.name()).toList()
+                                + ", made: " + made.madeId() + ")");
                         return;
                     }
                     id.set(made.madeId());
