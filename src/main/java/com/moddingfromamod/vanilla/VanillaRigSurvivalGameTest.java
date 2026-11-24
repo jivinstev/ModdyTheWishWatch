@@ -93,6 +93,7 @@ public class VanillaRigSurvivalGameTest {
 
         base.removeAllEffects();
         base.tick();
+        base.updateDataBeforeSync();   // 1.21.11: invisibility follows the effects here, not in tickEffects
 
         boolean nowVisible = !base.isInvisible();
         LOG.info("VANILLA-RIG survival: clearing effects on the carrier -> visible={} (carrier is {})",
@@ -130,11 +131,13 @@ public class VanillaRigSurvivalGameTest {
 
         base.removeAllEffects();
         base.tick();
+        base.updateDataBeforeSync();   // 1.21.11: invisibility follows the effects here, not in tickEffects
         boolean visibleAfterMilk = !base.isInvisible();
 
         // What a re-apply tick would do.
         DisplayRig.hide(base);
         base.tick();
+        base.updateDataBeforeSync();   // 1.21.11: invisibility follows the effects here, not in tickEffects
         boolean hiddenAgain = base.isInvisible();
 
         Entity interaction = EntityType.INTERACTION.create(helper.getLevel(), EntitySpawnReason.COMMAND);
