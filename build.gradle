@@ -34,7 +34,7 @@ mcProps.each { k, v -> ext.set(k.toString(), v.toString()) }
 logger.lifecycle("moddingfromamod -> Minecraft ${minecraft_version} (NeoForge ${neo_version}, Java ${java_version})")
 
 // the STORE jar from a plain build. The public repo's gradle.properties says store_jar=true
-// (tools/public-tree.py writes it; this repo says false), so there `./gradlew build` -- which is all MMVU's Port CI runs --
+// (another build of these sources may say false), so here `./gradlew build` -- which is all MMVU's Port CI runs --
 // makes the jar tools/store-release.sh checks: version <mod_version>+mc<minecraft_version> (D25) and the Apprentice's
 // sentence model inside (D13, the storeApprenticeModel task below). -Pstore_jar=false builds a plain jar there.
 // A mod_version that already carries a '+' (store-release.sh passes -Pmod_version=1.0.0+mc1.21.8) is left as it is.
@@ -58,41 +58,6 @@ tasks.withType(JavaCompile).configureEach { options.compilerArgs += ['-Xmaxerrs'
 sourceSets.main.resources {
     srcDir('src/generated/resources')
     exclude("src/generated/**/.cache")
-}
-
-// ONE repo, the core jar and the house jar (plus each level's). The core's source sets are src/ ALONE, so its jar is
-// exactly the public cut (tools/public-tree.py; tools/jar-split-check.py compares the two jars' entry lists). house/
-// and each levels/<name>/ are their OWN source sets here, compiled against the core and loaded as their OWN mods in
-// every dev run (Gate B, runServer, runClient: core + house + every level, as a house loads them), so a package that
-// two of them carry stops the boot exactly as it would on a server (FML refuses a split package). Their jars are
-// built by their own builds (house/build.gradle, levels/<name>/build.gradle); these source sets exist for the dev
-// runs and for Gate A, whose `test` also runs house/src/test and levels/*/src/test on a classpath with all of them.
-// A level's own @Mod class and world-type listener (com/moddingfromamod/levels/**) need its access transformer, which
-// only its own build applies: they stay out of the dev source set (its mod loads with no entry point, as before).
-def treeProps = { String dir ->
-    def p = new Properties()
-    file("${dir}/gradle.properties").withInputStream { p.load(it) }
-    p
-}
-// The public tree has neither house/ nor levels/: there the core is the only mod.
-def HOUSE = file('house/gradle.properties').isFile() ? [[name: 'house', dir: 'house', props: treeProps('house')]] : []
-def LEVELS = (file('levels').listFiles() ?: [] as File[]).findAll { new File(it, 'src/main/java').isDirectory() && new File(it, 'gradle.properties').isFile() }
-        .sort { it.name }.collect { [name: it.name, dir: "levels/${it.name}".toString(), props: treeProps("levels/${it.name}")] }
-ext.extraMods = HOUSE + LEVELS
-extraMods.each { m ->
-    def ss = sourceSets.create(m.name) {
-        java { srcDir("${m.dir}/src/main/java"); exclude 'com/moddingfromamod/levels/**' }
-        resources { srcDir("${m.dir}/src/main/resources") }
-    }
-    configurations.named(ss.implementationConfigurationName) { extendsFrom configurations.implementation }
-    configurations.named(ss.runtimeOnlyConfigurationName) { extendsFrom configurations.runtimeOnly }
-    configurations.named(ss.compileOnlyConfigurationName) { extendsFrom configurations.compileOnly }
-    dependencies.add(ss.implementationConfigurationName, sourceSets.main.output)
-    sourceSets.test.java.srcDir("${m.dir}/src/test/java")
-    // Not testImplementation: that configuration also feeds gate-a.gradle's public test compile, which must see no
-    // private class.
-    sourceSets.test.compileClasspath += ss.output
-    sourceSets.test.runtimeClasspath += ss.output
 }
 
 repositories {
@@ -170,13 +135,11 @@ runs {
         // ephemeral port (McpHttpServer#portFor), which was designed for exactly this.
         workingDirectory project.layout.projectDirectory.dir('run')
                 .dir(project.hasProperty('rundir') ? project.property('rundir').toString() : name)
-        // the core, the house and every level, each its own mod (as a house loads their jars).
         modSources.add(project.mod_id.toString(), project.sourceSets.main)
-        project.extraMods.each { m -> modSources.add(m.props.mod_id.toString(), project.sourceSets[m.name]) }
         // the GameTest harness's own mixins (testing/mixin: one test's crash fails that test, a timeout is also
         // wall-clock) are a TEST-ONLY config, registered on every dev run by FML's --fml.mixinConfig and never in
         // neoforge.mods.toml. The jar leaves the config and the classes out (SHIP_EXCLUDES, checked by NEVER_SHIP),
-        // so a player's game, a house and a store jar never carry them; Gate B (runGameTestServer) always does.
+        // so a player's game and a store jar never carry them; Gate B (runGameTestServer) always does.
         // It sits in gametest/, below the resources root: a mixin-config check that reads top-level configs and counts
         // only neoforge.mods.toml declarations (the Port CI kit's) would take this dev-run config for one that never loads.
         arguments.addAll '--fml.mixinConfig', "gametest/${project.mod_id}.gametest.mixins.json".toString()
@@ -720,46 +683,6 @@ tasks.register('warmReference', JavaExec) {
     }
 }
 
-// SCORING IS A SEPARATE PASS OVER A STORED RUN, and deliberately NOT a JUnit report.
-//
-// It used to be one: a test driven by MFAM_SCULPT_DIR whose numbers were recovered by scraping
-// stdout with sed line ranges between banner strings. Environment variables are not task inputs,
-// so pointing it at a new run left the cache key unchanged and Gradle replayed the PREVIOUS run's
-// report -- complete, plausible and stale. The `test` block below still declares those vars as
-// inputs to contain that, but the real fix is not to route scoring through a cacheable test.
-//
-// Takes the run as an ARGUMENT and is never up-to-date, so a re-score is always a real pass.
-tasks.register('scoreRun', JavaExec) {
-    group = 'verification'
-    description = 'Score an archived run into scores.jsonl: -Prun=mfam-armb [-Proot=<archive>]'
-    classpath = (sourceSets.findByName('house') ?: sourceSets.main).runtimeClasspath   //: a house tool
-    mainClass = 'com.moddingfromamod.eval.RunScorer'
-    outputs.upToDateWhen { false }
-    doFirst {
-        if (!project.hasProperty('run')) {
-            throw new GradleException('which run? e.g. ./gradlew scoreRun -Prun=mfam-armb')
-        }
-    }
-    args((project.findProperty('root')
-            ?: "${System.getProperty('user.home')}/mfam-eval-corpus").toString(),
-         (project.findProperty('run') ?: '').toString(),
-         (project.hasProperty('force') ? 'force' : ''))
-}
-
-// IS THE REVEAL LINE WHAT THE PHOTOGRAPH SHOWS? An offline screen over archived wishes,
-// never on the wish path: tools/reveal-photo-cases.py gathers {wishId, said, photos}, this judges
-// each with the walled VisionJudge runner and prints the mismatch rate with its n and interval.
-tasks.register('revealCheck', JavaExec) {
-    group = 'verification'
-    description = 'Reveal line vs reveal photo, over gathered cases: -Pcases=FILE -Pout=FILE [-Plimit=N]'
-    classpath = (sourceSets.findByName('house') ?: sourceSets.main).runtimeClasspath   //: a house tool
-    mainClass = 'com.moddingfromamod.judge.RevealCheckRun'
-    outputs.upToDateWhen { false }
-    args((project.findProperty('cases') ?: '').toString(),
-         (project.findProperty('out') ?: '').toString(),
-         (project.findProperty('limit') ?: '').toString())
-}
-
 // THE PRECOMPILED READY-MADES: compile the skeletons ReadyMadePrecompileGameTest recorded into
 // src/main/resources/precompiled/, so no Builder or Apprentice power needs Python at run time. Run through
 // ./tools/precompile-ready-mades.sh, which records them first; -Pskeletons=store recompiles what the store holds.
@@ -774,7 +697,7 @@ tasks.register('precompileReadyMades', JavaExec) {
     args((project.findProperty('skeletons') ?: '').toString())
 }
 
-// Gate A's adoption report, budget, testJunit unwiring and the `test {}` task: gate-a.gradle.
+// Gate A's budget, testJunit unwiring and the `test {}` task: gate-a.gradle.
 apply from: 'gate-a.gradle'
 
 // When bundling nested libs via JarJar, the bundled jar must be the PRIMARY artifact
@@ -797,11 +720,10 @@ apply from: 'gate-a.gradle'
 // seam/TestHarness, which finds nothing in a jar.
 // and the GameTest harness's test-only mixin config (its classes are under testing/, above).
 def SHIP_EXCLUDES = ['corpus/**', 'com/moddingfromamod/test/**', 'com/moddingfromamod/testing/**',
-                     'com/moddingfromamod/house/test/**',   // the Bedrock batch's harness (moved to the house mod)
                      '**/?*GameTest.class', '**/?*GameTest$*.class', '**/*.gametest.mixins.json']
 // What must never be in a shipped jar, wherever a future move puts it. Checked on the built jar's
 // entry names (nested jarJar libraries are opaque entries under META-INF/jarjar/ and never match).
-def NEVER_SHIP = ~/(^|.*\/)[^\/]+\.gametest\.mixins\.json$|^corpus\/.*|(^|.*\/)(real-wishes|safety-wishes|real-tool-calls)[^\/]*\.jsonl$|^com\/moddingfromamod\/(house\/)?(test|testing)\/.*|.*\/[^\/]+GameTest(\$[^\/]*)?\.class$/
+def NEVER_SHIP = ~/(^|.*\/)[^\/]+\.gametest\.mixins\.json$|^corpus\/.*|(^|.*\/)(real-wishes|safety-wishes|real-tool-calls)[^\/]*\.jsonl$|^com\/moddingfromamod\/(test|testing)\/.*|.*\/[^\/]+GameTest(\$[^\/]*)?\.class$/
 // a shipped class may name only mod classes the jar carries. A reference to one left out (the harness, a
 // GameTest, or, in the public cut, a private class) is a NoClassDefFoundError waiting for the line that runs it.
 // A deliberate exception would be a dev-only driver reached only behind seam/TestHarness.present(), listed here. There
@@ -929,8 +851,7 @@ tasks.named('jarJar') {
     }
 }
 
-// The core's neoforge.mods.toml.: the private mixins' config is the house mod's (house/src/main/resources), named in
-// ITS mods.toml; the core's names only its own.: gate-a.gradle's public resources expand the same template.
+// The mod's neoforge.mods.toml, expanded from gradle.properties and the target's versions file.
 ext.modsTomlProperties = { boolean ignored = false ->
     [
             minecraft_version      : minecraft_version,
@@ -950,46 +871,6 @@ ext.modsTomlProperties = { boolean ignored = false ->
         def replaceProperties = modsTomlProperties()
         inputs.properties replaceProperties
         filesMatching(['META-INF/neoforge.mods.toml']) { expand replaceProperties }
-    }
-}
-
-// What ships from outside src/, split by public-tree.py: the core jar takes what the public cut takes, the house
-// jar the rest (house/build.gradle reads the same answers).: the generated creator list lives in corpus/
-// (tools/gen-creator-accounts.py) and ships as /creators/creator-accounts.jsonl, which reference/CreatorAccounts reads
-// from any loaded mod. The world manifests (worlds/<id>.json, top level only, not rules/) ship as /worlds/<id>.json,
-// read by world/WorldFacts from any loaded mod: a public one in the core, a level's own in its jar, the rest in the
-// house's. release-scope.py counts these files as a mod change.
-def publicAsk = { String rel -> publicSplit().ask[rel] == true }
-def worldIds = fileTree('worlds') { include '*.json' }.files.collect { it.name[0..-6] }.sort()
-def levelWorld = { String id -> LEVELS.any { it.name == id } }
-// Written as literal from/include/into rows (tools/gate-select.py parses them to know where a file lands); the exclude
-// leaves out what is not public, which the house's or a level's own processResources (below) takes instead.
-tasks.named('processResources') {
-    from('corpus/creator-accounts.jsonl') { into 'creators'; exclude { e -> !publicAsk('corpus/creator-accounts.jsonl') } }
-    from('worlds') { include '*.json'; into 'worlds'; exclude { e -> !publicAsk('worlds/' + e.name) } }
-}
-// The house and each level, as the dev runs load them: each mods.toml from its own gradle.properties (the versions
-// are the core's), and the files from outside its tree that its own build also copies.
-extraMods.each { m ->
-    def props = [mod_id     : m.props.mod_id, mod_name: m.props.mod_name, mod_version: m.props.mod_version,
-                 mod_license: m.props.mod_license, mod_authors: m.props.mod_authors,
-                 mod_description: m.props.mod_description, core_mod_id: m.props.core_mod_id,
-                 core_version_range: m.props.core_version_range, minecraft_version_range: minecraft_version_range]
-    tasks.named(sourceSets[m.name].processResourcesTaskName) {
-        inputs.properties props
-        filesMatching('META-INF/neoforge.mods.toml') { expand props }
-        if (m.name == 'house') {
-            if (!publicAsk('corpus/creator-accounts.jsonl')) {
-                from('corpus/creator-accounts.jsonl') { into 'creators' }
-            }
-            def theirs = worldIds.findAll { !publicAsk("worlds/${it}.json") && !levelWorld(it) }
-            if (theirs) {
-                from('worlds') { include theirs.collect { "${it}.json" }; into 'worlds' }
-            }
-        } else if (worldIds.contains(m.name)) {
-            from('worlds') { include "${m.name}.json"; into 'worlds' }
-            from('worlds/rules') { include "${m.name}.rules.json"; into 'worlds/rules' }
-        }
     }
 }
 
