@@ -2,9 +2,6 @@ package com.moddingfromamod.datapack;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.moddingfromamod.testing.GateShards;
 import com.moddingfromamod.testing.gt.GameTest;
@@ -15,7 +12,7 @@ import net.minecraft.network.chat.Component;
 /**
  * <b>A real Magician datapack wish starts no Python</b> (jivinstev/ModdyTheWishWatch#109). The Magician's powers
  * used to be compiled by a {@code python3} process; the compiler is now in the jar. This drives the real
- * {@code author_datapack} tool, the one the wish agent calls, with the real compiler, while a watcher lists every
+ * {@code author_datapack} tool, the one the wish agent calls, with the real compiler, while JFR records every
  * process the game starts, and fails on any Python among them. {@code NoPythonTest} (Gate A) holds the sources to the
  * same; the release check runs Gate B with no python3 on PATH at all.
  */
@@ -25,40 +22,44 @@ public final class NoPythonGameTest {
     private NoPythonGameTest() {
     }
 
-    /** Watches the game's child processes (and theirs) until stopped, and names any that is Python. */
-    static final class ProcessWatch implements AutoCloseable {
-        final Set<String> python = ConcurrentHashMap.newKeySet();
-        final AtomicBoolean on = new AtomicBoolean(true);
-        final Thread thread;
+    /**
+     * Records every process this JVM starts (JFR's {@code jdk.ProcessStart}: one event per start, from the JDK's own
+     * process launch, so even a program that exits at once is seen; polling the child processes misses those). The
+     * mod starts processes only through {@code ProcessBuilder}, which this covers.
+     */
+    static final class ProcessStarts implements AutoCloseable {
+        private final jdk.jfr.Recording recording = new jdk.jfr.Recording();
+        private final List<String> commands = new ArrayList<>();
 
-        ProcessWatch() {
-            thread = new Thread(() -> {
-                while (on.get()) {
-                    look();
-                    Thread.onSpinWait();
-                }
-                look();
-            }, "no-python-watch");
-            thread.setDaemon(true);
-            thread.start();
+        ProcessStarts() {
+            recording.enable("jdk.ProcessStart").withThreshold(java.time.Duration.ZERO);
+            recording.start();
         }
 
-        private void look() {
-            ProcessHandle.current().descendants().forEach(h -> {
-                var info = h.info();
-                String cmd = info.command().orElse("") + " " + String.join(" ", info.arguments().orElse(new String[0]));
-                String name = cmd.toLowerCase(java.util.Locale.ROOT);
-                if (name.contains("python") || name.contains(".py ") || name.endsWith(".py")) {
-                    python.add(h.pid() + ": " + cmd.strip());
+        /** Stops the recording and returns every command line it saw. */
+        List<String> stop() throws java.io.IOException {
+            recording.stop();
+            java.nio.file.Path f = java.nio.file.Files.createTempFile("process-starts", ".jfr");
+            try {
+                recording.dump(f);
+                for (jdk.jfr.consumer.RecordedEvent e : jdk.jfr.consumer.RecordingFile.readAllEvents(f)) {
+                    commands.add(String.valueOf(e.getString("command")));
                 }
-            });
+            } finally {
+                java.nio.file.Files.deleteIfExists(f);
+            }
+            return commands;
         }
 
         @Override
-        public void close() throws InterruptedException {
-            on.set(false);
-            thread.join(5_000);
+        public void close() {
+            recording.close();
         }
+    }
+
+    static boolean isPython(String command) {
+        String c = command.toLowerCase(java.util.Locale.ROOT);
+        return c.contains("python") || c.matches("(?s).*\\.py(\\s.*)?");
     }
 
     @GameTest(template = "empty_test", batch = "datapackRefuse")
@@ -76,8 +77,10 @@ public final class NoPythonGameTest {
         args.addProperty("note", "gate: a datapack wish compiles with no Python");
 
         String[] said = new String[1];
-        List<String> python = new ArrayList<>();
-        try (ProcessWatch watch = new ProcessWatch()) {
+        List<String> started;
+        try (ProcessStarts watch = new ProcessStarts()) {
+            // THE CONTROL: a process this recording must see, so a recorder that sees nothing cannot pass.
+            new ProcessBuilder("true").redirectErrorStream(true).start().waitFor();
             com.moddingfromamod.wish.BuiltAbility.inIsolationForTest(() -> {
                 try {
                     new com.moddingfromamod.agent.tools.AuthorDatapackTool().call(args);
@@ -86,11 +89,14 @@ public final class NoPythonGameTest {
                 }
                 said[0] = com.moddingfromamod.wish.BuiltAbility.describe();
             });
-            watch.close();
-            python.addAll(watch.python);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
+            started = watch.stop();
+        } catch (Exception e) {
+            throw com.moddingfromamod.testing.gt.GameTestCompat.assertion("could not record process starts: " + e);
         }
+        helper.assertTrue(started.stream().anyMatch(c -> c.equals("true") || c.endsWith("/true")),
+                Component.literal("the process recorder did not see its own control process, so it proves nothing: "
+                        + started));
+        List<String> python = started.stream().filter(NoPythonGameTest::isPython).toList();
         helper.assertTrue(python.isEmpty(), Component.literal("a datapack wish started Python: " + python));
         // The trigger sentence is recorded after a successful compile, so a blank one means the compile failed and
         // this proved nothing.
