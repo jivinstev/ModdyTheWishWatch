@@ -71,6 +71,24 @@ public final class MakeFit {
     public static final java.util.Set<String> LIVE = java.util.Set.of(MakeFacts.HEALTH_HALF_HEARTS,
             MakeFacts.ATTACK_DAMAGE_HALF_HEARTS, MakeFacts.ARMOR_POINTS, MakeFacts.KNOCKBACK_RESISTANCE_FRACTION);
 
+    /**
+     * A creature's or ride's SIZE, fitted where it stands at every spawn ({@code wish.LiveFit.drawnScale}), never kept in
+     * its make: a replay of a kept make over a size limit (a hotbar fire, "Make another one") is made and stands
+     * smaller, never refused, and a later, higher limit gives it its full size. A make itself is still fitted by its size
+     * knob when it is made (MakeFit.fit).
+     */
+    public static final java.util.Set<String> LIVE_SIZE = java.util.Set.of(MakeFacts.SCALE_TIMES, MakeFacts.BUILDER_SIZE_STEP);
+
+    /** Everything a creature or ride may carry over a limit and still be made here: {@link #LIVE} and {@link #LIVE_SIZE}. */
+    static boolean fittedWhereItStands(java.util.Collection<String> over) {
+        for (String k : over) {
+            if (!LIVE.contains(k) && !LIVE_SIZE.contains(k)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     /** Is this a make whose creatures are fitted live ({@link #LIVE})? */
     public static boolean livesFitted(MakeFacts f) {
         return f.kind().equals(BuilderSpec.Kind.CREATURE.id()) || f.kind().equals(BuilderSpec.Kind.RIDE.id());
@@ -78,11 +96,11 @@ public final class MakeFit {
 
     /**
      * Does a made thing keep within {@code limits} here: every number within, or a creature over only in what is fitted
-     * on the live entity at spawn ({@link #LIVE}).
+     * on the live entity at spawn ({@link #LIVE}) and its size, fitted where it stands ({@link #LIVE_SIZE}).
      */
     public static boolean satisfiesHere(MakeFacts facts, Map<String, Double> limits) {
         List<String> over = over(facts, limits);
-        return over.isEmpty() || livesFitted(facts) && LIVE.containsAll(over);
+        return over.isEmpty() || livesFitted(facts) && fittedWhereItStands(over);
     }
 
     /** What fitting did: the spec as made, whether it changed, whether it fits at all, and which numbers were lowered. */
@@ -348,7 +366,8 @@ public final class MakeFit {
             }
             List<String> over = new ArrayList<>(over(f, limits));
             if (livesFitted(f)) {
-                over.removeAll(LIVE);   // fitted on the live creature at spawn
+                over.removeAll(LIVE);        // fitted on the live creature at spawn
+                over.removeAll(LIVE_SIZE);   // and its size where it stands (LiveFit.drawnScale)
             }
             if (over.isEmpty()) {
                 out.add(c);

@@ -943,6 +943,174 @@ public final class ContractWorldGameTest {
         });
     }
 
+    /** A world that limits only how big a creature is (scaleTimes), as an arena does; its stamp may stay the same. */
+    static final class ScaleWorld implements WorldMakes {
+        volatile double most;
+        volatile String stamp;
+
+        ScaleWorld(double most, String stamp) {
+            this.most = most;
+            this.stamp = stamp;
+        }
+
+        @Override
+        public com.moddingfromamod.world.WorldLimits limits(java.util.UUID player) {
+            return new com.moddingfromamod.world.WorldLimits(
+                    Map.of(com.moddingfromamod.wishbuilder.MakeFacts.SCALE_TIMES, most), stamp);
+        }
+    }
+
+    private static ScaleWorld scaleWorld(GameTestHelper helper, double most, String stamp) {
+        ScaleWorld w = new ScaleWorld(most, stamp);
+        Plugins.shared().replaceForTest(WorldMakes.class, w);   // setUp's afterTest puts the registered ones back
+        return w;
+    }
+
+    private static BuilderSpec golem() {
+        return new BuilderSpec(BuilderSpec.CURRENT, BuilderSpec.Kind.CREATURE, "preset:bodies/rock_golem", "", 2, List.of(),
+                "friendly", 1, "", "", Map.of());
+    }
+
+    /**
+     * A kept make over this world's size limit, fired again (from his hotbar, through the real proxy; then "Make another
+     * one"), is MADE and stands at
+     * the size this world allows, never refused for being big; a later round with a higher limit fired again gives it
+     * its full size; nothing is persisted (his shelf keeps it as asked). Arena playtests found it refused ("too much
+     * for this world right now") once a make was kept as asked.
+     */
+    @GameTest(template = "empty_test", batch = "contract_world_fire_oversize", timeoutTicks = 40000)
+    public static void anOversizeCreatureFiredAgainIsMadeSmallerNotRefused(GameTestHelper helper) {
+        ServerPlayer p = setUp(helper, "gtcontractfirebig");
+        ScaleWorld world = scaleWorld(helper, 1.0, "scale-1");   // a rock golem stands 2.2 times its body's size
+        Set<String> had = Set.copyOf(BuilderSpecStore.all(RuntimeConfig.playersDir(), p.getStringUUID()).keySet());
+        AtomicReference<BuilderMake.Result> made = new AtomicReference<>();
+        BuilderMake.make(p, golem(), BuilderAllowlist.REVIEWED).thenAcceptAsync(made::set);
+        AtomicReference<String> id = new AtomicReference<>();
+        AtomicReference<Map<java.util.UUID, Double>> seen = new AtomicReference<>();
+        AtomicReference<Integer> step = new AtomicReference<>(0);
+        com.moddingfromamod.test.RealTime.succeedWhen(helper, () -> {
+            BuilderMake.Result r = made.get();
+            helper.assertTrue(r != null && r.outcome() == BuilderMake.Outcome.MADE, Component.literal("the golem: " + r));
+            if (id.get() == null) {
+                var kept = newest(p, had);
+                helper.assertTrue(kept != null, Component.literal("the golem is on his shelf"));
+                id.set(kept.id());
+            }
+            Map<java.util.UUID, Double> now = rigScales(helper, p, id.get());
+            var species = SpeciesRegistry.get(id.get());
+            helper.assertTrue(species != null, Component.literal("its species"));
+            switch (step.get()) {
+                case 0 -> {
+                    helper.assertTrue(now.size() == 1, Component.literal("one cat stands: " + now));
+                    seen.set(Map.copyOf(now));
+                    // the first round: fired from his HOTBAR, the real proxy and the real use, over the size limit as
+                    // he asked it: made and fitted where it stands, not LOCKED
+                    String recipe = com.moddingfromamod.wishbuilder.BuilderAgain.recipeId(id.get());
+                    var proxy = com.moddingfromamod.wish.WishHotbar.proxy(new com.moddingfromamod.marshal.WatchPanel.Cell(0,
+                            com.moddingfromamod.marshal.WatchPanel.Family.CREATION, com.moddingfromamod.marshal.WatchPanel.Action.CARD,
+                            "Rock Golem", "Rock Golem", recipe, "Rock Golem", com.moddingfromamod.marshal.WatchIcons.UNKNOWN,
+                            List.of()), p.getUUID());
+                    var fired = com.moddingfromamod.wish.WishHotbar.use(p, proxy);
+                    helper.assertTrue(fired.used() == com.moddingfromamod.wish.WishHotbar.Used.WISHED
+                                    && fired.outcome() == WishService.Outcome.FULFILLING,
+                            Component.literal("fired from the hotbar over the size limit, it is made, not refused: " + fired));
+                    step.set(1);
+                    helper.fail(Component.literal("waiting for the second cat"));
+                }
+                case 1 -> {
+                    helper.assertTrue(now.size() == 2, Component.literal("the cat fired again stands: " + now));
+                    double small = seen.get().values().iterator().next();
+                    for (var e : now.entrySet()) {
+                        // the drawn size is inside the limit; its carrier's own scale attribute is the carrier fitted under
+                        // the body (DisplayRig: the hit-proxy plan), not the drawn size, so it may read more
+                        var carrier = helper.getLevel().getEntity(e.getKey());
+                        var attr = carrier instanceof net.minecraft.world.entity.LivingEntity le
+                                ? le.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.SCALE) : null;
+                        org.slf4j.LoggerFactory.getLogger("moddingfromamod/contract").info(
+                                "fire-oversize: drawn {} under a limit of {}; carrier {} scale attribute {}", e.getValue(),
+                                world.most, carrier == null ? "?" : carrier.getType().toShortString(),
+                                attr == null ? "none" : attr.getValue());
+                        helper.assertTrue(e.getValue() <= world.most + 1e-6,
+                                Component.literal("drawn inside this world's most size: " + e.getValue()));
+                        if (!seen.get().containsKey(e.getKey())) {
+                            helper.assertTrue(Math.abs(e.getValue() - small) < 1e-6 && e.getValue() < species.scale() - 1e-6,
+                                    Component.literal("it stands at this world's size, smaller than asked: " + e.getValue()
+                                            + " (asked " + species.scale() + ")"));
+                        }
+                    }
+                    seen.set(Map.copyOf(now));
+                    world.most = 8;   // every size from here
+                    world.stamp = "scale-8";
+                    WorldMakes.limitsChanged(p.getUUID());
+                    WishService.Outcome o = WishService.submit(p, "gt contract fire big again", WishSource.PRESET,
+                            com.moddingfromamod.wishbuilder.BuilderAgain.recipeId(id.get()));
+                    helper.assertTrue(o == WishService.Outcome.FULFILLING, Component.literal("fired again: " + o));
+                    step.set(2);
+                    helper.fail(Component.literal("waiting for the third cat"));
+                }
+                default -> {
+                    // the golem fired after the raise: a carrier not standing before it (an older one may be gone)
+                    Double fresh = null;
+                    for (var e : now.entrySet()) {
+                        if (!seen.get().containsKey(e.getKey())) {
+                            fresh = e.getValue();
+                        }
+                    }
+                    helper.assertTrue(fresh != null, Component.literal("the golem fired after the raise stands: " + now));
+                    helper.assertTrue(Math.abs(fresh - species.scale()) < 1e-6,
+                            Component.literal("after the limit rose it is its full asked size: " + fresh + " of " + species.scale()));
+                    for (double standing : now.values()) {
+                        helper.assertTrue(Math.abs(standing - species.scale()) < 1e-6,
+                                Component.literal("and the ones standing grew too: " + now));
+                    }
+                    var kept = BuilderSpecStore.get(p.getStringUUID(), id.get());
+                    helper.assertTrue(kept != null && kept.read().size() == golem().size() && kept.read().opt("mobsize").isEmpty()
+                                    && kept.read().from().equals(golem().from()),
+                            Component.literal("nothing was persisted: still kept as asked: " + (kept == null ? null : kept.spec())));
+                }
+            }
+        });
+    }
+
+    /**
+     * A world that does not change its stamp when its limits change (the core cannot rely on it): told its limits
+     * changed, a standing creature's SIZE is drawn again too, not only its health (arena: a rock golem's health went
+     * 40, 60, 80 while it stood at the size of the first step).
+     */
+    @GameTest(template = "empty_test", batch = "contract_world_redraw_samestamp", timeoutTicks = 40000)
+    public static void aStandingCreatureGrowsEvenWhenTheWorldsStampStaysTheSame(GameTestHelper helper) {
+        ServerPlayer p = setUp(helper, "gtcontractsamestamp");
+        ScaleWorld world = scaleWorld(helper, 1.0, "the-same-stamp");
+        Set<String> had = Set.copyOf(BuilderSpecStore.all(RuntimeConfig.playersDir(), p.getStringUUID()).keySet());
+        AtomicReference<BuilderMake.Result> made = new AtomicReference<>();
+        BuilderMake.make(p, golem(), BuilderAllowlist.REVIEWED).thenAcceptAsync(made::set);
+        AtomicReference<String> id = new AtomicReference<>();
+        AtomicReference<Integer> step = new AtomicReference<>(0);
+        com.moddingfromamod.test.RealTime.succeedWhen(helper, () -> {
+            BuilderMake.Result r = made.get();
+            helper.assertTrue(r != null && r.outcome() == BuilderMake.Outcome.MADE, Component.literal("the golem: " + r));
+            if (id.get() == null) {
+                var kept = newest(p, had);
+                helper.assertTrue(kept != null, Component.literal("the golem is on his shelf"));
+                id.set(kept.id());
+            }
+            Map<java.util.UUID, Double> now = rigScales(helper, p, id.get());
+            helper.assertTrue(now.size() == 1, Component.literal("one golem stands: " + now));
+            double scale = now.values().iterator().next();
+            var species = SpeciesRegistry.get(id.get());
+            if (step.get() == 0) {
+                helper.assertTrue(scale < species.scale() - 1e-6, Component.literal("first round: smaller: " + scale));
+                world.most = 8;   // every size, the same stamp
+                WorldMakes.limitsChanged(p.getUUID());
+                step.set(1);
+                helper.fail(Component.literal("waiting for it to grow"));
+            }
+            helper.assertTrue(Math.abs(scale - species.scale()) < 1e-6,
+                    Component.literal("raised with the same stamp, it still grows to its asked size: " + scale + " of "
+                            + species.scale()));
+        });
+    }
+
     @GameTest(template = "empty_test", batch = "contract_world_redraw", timeoutTicks = 40000)
     public static void aStandingCreatureGrowsOnARaiseAndShrinksBackOnALower(GameTestHelper helper) {
         ServerPlayer p = setUp(helper, "gtcontractredraw");

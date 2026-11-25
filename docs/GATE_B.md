@@ -153,7 +153,9 @@ and a table of every method's source file and line ranges. `gate.py covmap-merge
 
 - **A method's id** is `package/Class#name`, with what a recompile renumbers folded away: a lambda counts as the method
   that holds it, an anonymous class is `Outer$anon`, overloads share a name. Folding only makes a method bigger, so a
-  change can only select more.
+  change can only select more. A method's lines are its first to its last; an initialiser's (`<clinit>`, `<init>`) are
+  exactly the lines holding its code, because its code is spread over the file's field declarations (first-to-last,
+  `BuilderMenus`' static initialiser claimed lines 36 to 384, the whole file).
 - **Ambient methods** are what runs with no test of ours running: start-up, a 400-tick idle window, shutdown. They are
   kept apart from every class's set; a change to one of them runs the whole tier.
 - **Weekly, FULL**: every class, mapped twice by two replicas of the same split (the determinism check, below).
@@ -193,17 +195,18 @@ service whose period falls inside one run's window for a class and not the other
 twice and `gate.py covmap-compare` holds the two maps to what was measured (`covmap.py` NOISE_*):
 
 - a class may differ by at most 5 methods, or by under 5% of its methods;
-- beyond that, up to 2% of the classes (at least 3) may differ in one run, each named in the refresh's summary,
-  provided the maps agree on at least 99% of all class-method entries. The noise is spread, not a property of a class:
-  two full maps put a different handful of classes over the per-class allowance each time (9 in one local pair, 6 on
-  GitHub's runners, none in common);
+- beyond that, up to 5% of the classes (at least 3) may differ in one run, each named in the refresh's summary,
+  provided the maps agree on at least 98.5% of all class-method entries. The noise is spread, not a property of a
+  class: three full pairs put a different handful of classes over the per-class allowance each time (9 of 360 at 99.14%
+  agreement locally; 6 of 365 at 99.25% and 13 of 365 at 99.06% on GitHub's runners; no class twice), and some of it
+  is work the server thread runs from its queue after a class ends, which no wait can see;
 - the ambient sets may differ by 0.5%;
 - costs are never compared (wall clock varies by runner).
 
 A class that keeps going over is listed, with what was measured, in `corpus/gate-covmap-unstable.json` (empty today).
-Anything more fails the refresh and opens `covmap-red`. Measured: with the batch order fixed and the settle window
-waiting for quiet, two maps on GitHub's runners agree on 99.25% of 226,908 entries (median class 0.997). With the
-batch order random (the game's own), they agreed on 90% and 327 of 360 classes differed, which the check fails at once.
+Anything more fails the refresh and opens `covmap-red`. With the batch order random (the game's own), two maps
+agreed on 90% and 327 of 360 classes differed: the check fails that at once, 25 times past the worst noise measured.
+The published map is the union of the two, so what one run saw a class execute is never lost.
 
 ```bash
 ./gradlew covmapTools

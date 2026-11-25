@@ -39,7 +39,7 @@ class StoreMigrationsDocTest {
     static final Map<String, String[]> OWN_VERSION = new LinkedHashMap<>();
 
     static {
-        OWN_VERSION.put("species/Species", new String[]{"species (record)", "RECORD_VERSION"});
+        OWN_VERSION.put("species/Species", new String[]{"species (record)", "species/StatLineRepair.VERSION"});   // #104: RECORD_VERSION = StatLineRepair.VERSION
         OWN_VERSION.put("mob/MobState", new String[]{"mob undo record", "RECORD_VERSION"});
         OWN_VERSION.put("mob/MobHandleStore", new String[]{"mob handles", "VERSION"});
         OWN_VERSION.put("lite/MintStore", new String[]{"mint marks", "lite/MintMarks.VERSION"});
@@ -136,6 +136,12 @@ class StoreMigrationsDocTest {
                         + " (it writes v" + writes + ")");
             }
         }
+    }
+
+    @Test
+    void theMobStoreIsNeverWrittenOverByAnOlderBuild() {
+        assertTrue(com.moddingfromamod.mob.MobHandleStore.VERSION >= com.moddingfromamod.mob.MobState.RECORD_VERSION,
+                "mobs.json's version moves with its records, so an older build's writeBlocker refuses a newer file");
     }
 
     @Test

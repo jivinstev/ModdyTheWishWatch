@@ -261,5 +261,31 @@ class MakeFitTest {
         Map<String, Double> l = new LinkedHashMap<>();
         l.put(MakeFacts.COUNT_MADE, 0.0);
         assertNull(MakeFit.fitCommands(List.of("wishmob spawn d 2"), l, store));
+        // a creature over a SIZE limit is made too, its command as it is: its size is fitted where it stands
+        // (LiveFit.drawnScale), never refused for being big, never written into its record
+        JsonObject giant = JsonParser.parseString("{\"id\":\"g\",\"name\":\"G\",\"powers\":[\"friendly\"],\"scale\":6}")
+                .getAsJsonObject();
+        MakeFacts.Artifacts giants = (k, id) -> id.equals("g") ? giant : null;
+        assertEquals(List.of("wishmob spawn g"),
+                MakeFit.fitCommands(List.of("wishmob spawn g"), Map.of(MakeFacts.SCALE_TIMES, 2.0), giants));
+        assertEquals(6.0, giant.get("scale").getAsDouble(), 1e-9, "its record is untouched");
+    }
+
+    @Test
+    void aCreatureOverOnlyItsSizeIsMadeHereAndAnItemIsNot() {
+        MakeFacts dragon = new MakeFacts(BuilderSpec.Kind.CREATURE.id(),
+                Map.of(MakeFacts.SCALE_TIMES, 4.0, MakeFacts.BUILDER_SIZE_STEP, 4.0, MakeFacts.HEALTH_HALF_HEARTS, 300.0),
+                java.util.Set.of(), true);
+        Map<String, Double> low = Map.of(MakeFacts.SCALE_TIMES, 2.0, MakeFacts.BUILDER_SIZE_STEP, 2.0,
+                MakeFacts.HEALTH_HALF_HEARTS, 40.0);
+        assertTrue(MakeFit.satisfiesHere(dragon, low), "size and health are both fitted where it stands");
+        assertFalse(MakeFit.satisfies(dragon, low), "though it is over them as asked");
+        MakeFacts tooMany = new MakeFacts(BuilderSpec.Kind.CREATURE.id(), Map.of(MakeFacts.COUNT_MADE, 9.0),
+                java.util.Set.of(), true);
+        assertFalse(MakeFit.satisfiesHere(tooMany, Map.of(MakeFacts.COUNT_MADE, 3.0)), "how many is not fitted where it stands");
+        MakeFacts bigBuilding = new MakeFacts(BuilderSpec.Kind.BUILDING.id(), Map.of(MakeFacts.BUILDER_SIZE_STEP, 4.0),
+                java.util.Set.of(), true);
+        assertFalse(MakeFit.satisfiesHere(bigBuilding, Map.of(MakeFacts.BUILDER_SIZE_STEP, 2.0)),
+                "a building is not a creature: its size is its make's");
     }
 }
