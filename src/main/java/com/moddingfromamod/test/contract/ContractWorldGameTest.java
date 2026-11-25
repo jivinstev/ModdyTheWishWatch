@@ -829,7 +829,8 @@ public final class ContractWorldGameTest {
                 helper.assertTrue(slot >= 0, Component.literal("it is a wish on his hotbar"));
                 var told = ContractWorld.handedOver(p.getUUID());
                 helper.assertTrue(told.size() == 1 && told.get(0).makeId().equals(kept.id()) && told.get(0).slot() == slot
-                                && !told.get(0).realItem() && told.get(0).kind().equals("creature"),
+                                && !told.get(0).realItem() && told.get(0).kind().equals("creature")
+                                && told.get(0).recipe().equals(recipe) && told.get(0).facts().known(),
                         Component.literal("the world is told where it went: " + told));
                 helper.assertTrue(said(p, chat).contains("is on your hotbar"), Component.literal("he is told: " + chat));
                 id.set(kept.id());

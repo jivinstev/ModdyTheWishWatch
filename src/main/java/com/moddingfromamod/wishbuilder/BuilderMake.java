@@ -505,7 +505,8 @@ public final class BuilderMake {
             return done(Outcome.REFUSED, null, "", e.getMessage());
         }
         // WHERE IT GOES (#70): a world may keep a new make and hand it over as a hotbar wish instead of it appearing.
-        // Asked before the first placing step; a kept creature is sculpted and not spawned.
+        // Asked EXACTLY ONCE, here, before the first placing step, and locked into the make (as its aim is): never asked
+        // again while it is made. A kept creature is sculpted and not spawned; nothing is charged until it is fired.
         final com.moddingfromamod.world.Landing landing = editOf != null || !keepable(spec)
                 ? com.moddingfromamod.world.Landing.LANDS
                 : com.moddingfromamod.wish.MakeGate.landing(MakeFacts.of(spec), askOf(who, textOf(spec), null, apprentice));
@@ -837,7 +838,7 @@ public final class BuilderMake {
         }
         LOGGER.info("builder make {}: handed over ({}, slot {})", madeId, real ? "the real item" : "a hotbar wish", slot);
         com.moddingfromamod.wish.MakeGate.handedOver(new com.moddingfromamod.world.HandedOver(who, madeId,
-                BuilderLowering.kindOf(spec), name, real ? -1 : slot, real));
+                BuilderLowering.kindOf(spec), BuilderAgain.recipeId(madeId), MakeFacts.of(spec), real ? -1 : slot, real));
     }
 
     /**
