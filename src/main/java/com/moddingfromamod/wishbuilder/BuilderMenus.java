@@ -291,6 +291,16 @@ public final class BuilderMenus {
             + "can't change it any more. You can make a new one in the Builder, or wish for the change!";
 
     /**
+     * The spec an Apprentice tile's pick makes for {@code p}: pressed on a real flow, as a child's hands would. Throws
+     * when the pick does not press on this world's Builder. What a tile shows and what pressing it makes are this one.
+     */
+    public static BuilderSpec apprenticeSpec(ServerPlayer p, BuilderSettings settings, BuilderTree tree, Apprentice.Pick pick) {
+        Apprentice.Pick full = Apprentice.filled(tree, pick);
+        return ApprenticeMake.pressed(settings.allow(), LibraryPresets.SHIPPED, full)
+                .shelf(shelfNames(p.getUUID().toString(), null)).spec(ApprenticeMake.values(full));
+    }
+
+    /**
      * An Apprentice tile, pressed: MAKE what it says, at once, for the Builder's half a wish. No
      * tune dialog first, because a wish has none; the spec is the one the tune dialog would have started on (the
      * size, count and colours his words named, Moddy's name for it). When it stands he is told it can be changed in
@@ -315,9 +325,7 @@ public final class BuilderMenus {
         }
         BuilderSpec spec;
         try {
-            Apprentice.Pick full = Apprentice.filled(tree, pick);
-            spec = ApprenticeMake.pressed(settings.allow(), LibraryPresets.SHIPPED, full)
-                    .shelf(shelfNames(p.getUUID().toString(), null)).spec(ApprenticeMake.values(full));
+            spec = apprenticeSpec(p, settings, tree, pick);
         } catch (RuntimeException e) {
             LOGGER.warn("apprentice pick {} does not press on this world's Builder: {}", Apprentice.key(pick), e.toString());
             p.sendSystemMessage(Component.literal("That one didn't work. Try the Wish Builder on your watch."));

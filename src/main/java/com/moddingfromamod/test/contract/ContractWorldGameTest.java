@@ -389,6 +389,124 @@ public final class ContractWorldGameTest {
         });
     }
 
+    /** Typed words that reach a hidden, a locked and a kept make in {@link #BY_SIZE}. */
+    static final List<String> APPRENTICE_WORDS = List.of("five cats", "a giant frog", "a frog", "a pet wolf", "five giant cats",
+            "a lightning sword");
+
+    /** A second world, for the Apprentice: it has no items and locks a big creature, by the facts. */
+    static final class BySize implements WorldMakes {
+        @Override
+        public com.moddingfromamod.world.MakeView view(com.moddingfromamod.wishbuilder.MakeFacts f,
+                                                       com.moddingfromamod.wish.WishAsk ask) {
+            if ("item".equals(f.kind())) {
+                return com.moddingfromamod.world.MakeView.HIDDEN;
+            }
+            if (f.number(com.moddingfromamod.wishbuilder.MakeFacts.SCALE_TIMES).orElse(1) >= 1.6) {
+                return com.moddingfromamod.world.MakeView.locked(ContractWorld.LOCKED_WORDS);
+            }
+            return com.moddingfromamod.world.MakeView.ALLOWED;
+        }
+    }
+
+    static final BySize BY_SIZE = new BySize();
+
+    /** The Apprentice's tiles for {@code words}: its picks, in its tiles' order. */
+    private static List<com.moddingfromamod.wishbuilder.Apprentice.Pick> offered(ServerPlayer p, String words) {
+        com.moddingfromamod.wish.ApprenticeService.forget(p.getUUID());
+        com.moddingfromamod.wish.ApprenticeService.offer(p, words, WishSource.BUILDER);
+        return com.moddingfromamod.wish.ApprenticeService.pendingPicksForTest(p.getUUID());
+    }
+
+    @GameTest(template = "empty_test", batch = "contract_world_apprentice", timeoutTicks = 40000)
+    public static void theApprenticesRankedMakesAreFittedAfterRanking(GameTestHelper helper) {
+        ServerPlayer p = setUp(helper, "gtcontractapp");
+        com.moddingfromamod.apprentice.LayerHost.useForTest(null, 0);   // the keyword matcher alone: the same ranking twice
+        var settings = BuilderSettings.forPlayer(p.getUUID());
+        var tree = com.moddingfromamod.wishbuilder.BuilderTree.of(settings.allow(),
+                com.moddingfromamod.wishbuilder.LibraryPresets.SHIPPED);
+        int dropped = 0;
+        int locked = 0;
+        int kept = 0;
+        StringBuilder seen = new StringBuilder();
+        Plugins.shared().replaceForTest(WorldMakes.class, BY_SIZE);
+        for (String words : APPRENTICE_WORDS) {
+            // the ranking with no world answering: today's tiles
+            Plugins.shared().replaceForTest(WorldMakes.class, null);
+            Plugins.shared().hideForTest(WorldMakes.class, true);
+            List<com.moddingfromamod.wishbuilder.Apprentice.Pick> ranked;
+            try {
+                helper.assertTrue(!com.moddingfromamod.wish.MakeGate.anyWorld(), Component.literal("no world answers"));
+                ranked = offered(p, words);
+            } finally {
+                Plugins.shared().hideForTest(WorldMakes.class, false);
+                Plugins.shared().replaceForTest(WorldMakes.class, BY_SIZE);
+            }
+            // what the world says of each, by the facts of the make its tile presses
+            List<com.moddingfromamod.wishbuilder.Apprentice.Pick> expect = new ArrayList<>();
+            List<Integer> lockedAt = new ArrayList<>();
+            for (var pick : ranked) {
+                BuilderSpec spec = com.moddingfromamod.wishbuilder.BuilderMenus.apprenticeSpec(p, settings, tree, pick);
+                var v = BY_SIZE.view(com.moddingfromamod.wishbuilder.MakeFacts.of(settings.allow().capped(spec)), null);
+                seen.append(v.state()).append(' ');
+                switch (v.state()) {
+                    case HIDDEN -> dropped++;
+                    case LOCKED -> {
+                        lockedAt.add(expect.size());
+                        locked++;
+                        expect.add(pick);
+                    }
+                    default -> {
+                        kept++;
+                        expect.add(pick);
+                    }
+                }
+            }
+            // the same words, the world answering: the same ranking, fitted after it
+            List<com.moddingfromamod.wishbuilder.Apprentice.Pick> shown = offered(p, words);
+            seen.append(words).append(": ").append(ranked.size()).append(" → ").append(shown.size()).append("; ");
+            helper.assertTrue(shown.equals(expect), Component.literal("'" + words + "': the ranked makes the world keeps, in order: "
+                    + shown + " vs " + expect));
+            if (!shown.isEmpty()) {
+                helper.assertTrue(p.containerMenu instanceof com.moddingfromamod.ui.MenuKit.PickMenu,
+                        Component.literal("the page opened for '" + words + "'"));
+                var page = ((com.moddingfromamod.ui.MenuKit.PickMenu) p.containerMenu).page();
+                for (int i = 0; i < shown.size(); i++) {
+                    String id = com.moddingfromamod.wishbuilder.ApprenticeWords.OFFER + i;
+                    var tile = page.tiles().stream().filter(t -> t.id().equals(id)).findFirst().orElseThrow();
+                    boolean isLocked = tile.label().endsWith("🔒");
+                    helper.assertTrue(isLocked == lockedAt.contains(i), Component.literal("'" + words + "' tile " + i
+                            + " locked: " + isLocked + " (" + tile.lore() + ")"));
+                    if (isLocked) {
+                        helper.assertTrue(tile.lore().get(0).equals(ContractWorld.LOCKED_WORDS),
+                                Component.literal("in the world's words: " + tile.lore()));
+                    }
+                }
+            }
+        }
+        helper.assertTrue(dropped > 0 && locked > 0 && kept > 0, Component.literal("the words reach every answer: dropped "
+                + dropped + ", locked " + locked + ", kept " + kept + " — " + seen));
+        // the contract world: five giant cats are fitted, and pressed, made within its limits and told once
+        Plugins mine = new Plugins();
+        new ContractWorld().register(mine);
+        Plugins.shared().replaceForTest(WorldMakes.class, mine.first(WorldMakes.class).orElseThrow());
+        List<com.moddingfromamod.wishbuilder.Apprentice.Pick> cats = offered(p, "five giant cats");
+        helper.assertTrue(!cats.isEmpty(), Component.literal("the cats are offered"));
+        AtomicReference<BuilderSpec> made = new AtomicReference<>();
+        BuilderSpec pressed = com.moddingfromamod.wishbuilder.BuilderMenus.apprenticeSpec(p, settings, tree, cats.get(0));
+        var built = BuilderMake.askApprentice(p.getUUID(), pressed, settings.allow());
+        helper.assertTrue(built.makes() && built.spec().count() <= ContractWorld.MOST_AT_ONCE
+                        && built.spec().size() <= ContractWorld.BIGGEST_STEP && !built.lowered().isEmpty(),
+                Component.literal("five giant cats are fitted: " + built.spec().toJson() + " from " + pressed.toJson()));
+        StringBuilder chat = new StringBuilder();
+        said(p, chat);
+        int before = count(chat.toString(), "for this world");
+        com.moddingfromamod.wish.ApprenticeService.pressForTest(p, com.moddingfromamod.wishbuilder.ApprenticeWords.OFFER + 0);
+        com.moddingfromamod.test.RealTime.succeedWhen(helper, () -> {
+            String now = said(p, chat);
+            helper.assertTrue(count(now, "for this world") == before + 1, Component.literal("told once: " + now));
+        });
+    }
+
     private static int count(String in, String what) {
         int n = 0;
         for (int i = in.indexOf(what); i >= 0; i = in.indexOf(what, i + 1)) {
