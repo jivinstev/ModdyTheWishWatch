@@ -180,6 +180,14 @@ public final class BuilderMake {
                 .withText(text).withRecipe(editOf == null ? "" : BuilderAgain.recipeId(editOf));
     }
 
+    /**
+     * What this world makes of an Apprentice make of {@code spec} for {@code who}: the one gate and fitting its press
+     * goes through ({@code MakeGate.build}, asked as the Apprentice). A VIEW, for drawing its tile: nothing is made.
+     */
+    public static com.moddingfromamod.wish.MakeGate.Built askApprentice(UUID who, BuilderSpec spec, BuilderAllowlist allow) {
+        return com.moddingfromamod.wish.MakeGate.build(spec, allow, askOf(who, textOf(spec), null, true));
+    }
+
     /** A Builder change on a thing the Magician made, asked of the world's charge: the refusal to return, or null. */
     private static CompletableFuture<Result> refusedChange(ServerPlayer player, String text) {
         var refusal = com.moddingfromamod.wish.ChargeGate.ask(

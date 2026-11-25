@@ -236,7 +236,7 @@ the limits the world gave.
   creature made here: Builder, Apprentice, "Make another one" and the Magician's. The player is told once, as for any
   fitted make.
 - **Where the core asks:** every Builder and Apprentice make and every Builder change (`BuilderMake.make`, whatever page
-  drew its tile); every tile of the Builder's pages and its tune dialog, per draw; a recipe, "Make another one" and a
+  drew its tile); every tile of the Builder's pages and its tune dialog, per draw; each ranked make on the Apprentice's page, as it opens; a recipe, "Make another one" and a
   hotbar fire (`WishService.submit`, by the facts of what the recipe makes, fitted at fire); "Give me one"; each thing on
   his watch (so a Magician result the world locks stays on his shelf and is shown locked, and one it hides is not on
   this world's watch).
@@ -244,9 +244,12 @@ the limits the world gave.
   never fitted into an allowed one; nothing is charged for a make that is hidden or locked; **a child in distress is
   never stopped or fitted** (as with the charge); the answer is a VIEW, worked out when asked and never written to his
   shelf or any store, because the shelf follows him to every world.
-- **Not yet** (later changes): the Apprentice's tiles are fitted after ranking (today an Apprentice make is asked and
-  fitted when pressed, like any Builder make); the Magician's tool arguments are fitted from limits carried in its
-  brief.
+- **The Apprentice's tiles** (`wishbuilder/ApprenticeFit`): fitted AFTER ranking and outside the matcher, so its
+  ranking, gold-set floors and tree fingerprint are the same in every world. Each ranked make is asked through the
+  same gate and fitting its press goes through: one this world hides, or that no fit could bring within its limits, is
+  dropped; one it locks is shown locked with its words; one it fits is drawn as it is, made fitted when pressed and told
+  once. The order is the matcher's. With no world answering the page is exactly today's.
+- **Not yet** (a later change): the Magician's tool arguments are fitted from limits carried in its brief.
 - **Cheap, and free of side effects:** a menu asks once per tile per draw, on the server thread. Default methods only.
 - **Example:** `ContractWorld` (the contract test world below): hostile makes hidden, a make its own toy rating puts at
   4 or more locked, everything else fitted to three at once, size step 3, 40 health and 6 attack damage.

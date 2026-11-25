@@ -111,7 +111,7 @@ public final class BuilderPageFit {
         return new PickPage(page.title(), tiles, page.back(), page.next(), page.nextLabel(), page.picks());
     }
 
-    private static PickPage.Tile locked(PickPage.Tile t, String line) {
+    static PickPage.Tile locked(PickPage.Tile t, String line) {
         List<String> lore = new ArrayList<>();
         lore.add(line);
         lore.addAll(t.lore());
