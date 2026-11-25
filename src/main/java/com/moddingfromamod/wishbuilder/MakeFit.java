@@ -253,6 +253,13 @@ public final class MakeFit {
      * not fitted at all (locked), never made wrong.
      */
     static List<BuilderSpec> steps(BuilderSpec s) {
+        if (creatureLike(s)) {
+            // #103: a creature's size and How strong now move its health and damage, but a limit on those is still
+            // fitted on the LIVE creature (LIVE), never by making it smaller or gentler: a world that raises its limits
+            // later must get the creature back at its full strength (LiveFit). Its size and strength are lowered only
+            // by a limit on them (builderSizeStep, scaleTimes, builderStrengthStep).
+            return List.of();
+        }
         List<BuilderSpec> tiers = new ArrayList<>();
         tiers.add(s);
         tiers.addAll(lowerTiers(s));

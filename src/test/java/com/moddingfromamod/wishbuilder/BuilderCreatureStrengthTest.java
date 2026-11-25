@@ -104,9 +104,11 @@ class BuilderCreatureStrengthTest {
                 List.of(), "friendly", 1, "", "", Map.of());
         MakeFit.Fitted gentle = MakeFit.fit(bear, Map.of(MakeFacts.BUILDER_STRENGTH_STEP, 1.0));
         assertTrue(gentle.fits() && gentle.changed() && gentle.spec().opt("strength").equals("1"), gentle.toString());
+        // a limit on its damage is fitted on the live creature, the make unchanged, so a later raise gives it all back
         double was = MakeFacts.of(bear).number(MakeFacts.ATTACK_DAMAGE_HALF_HEARTS).orElse(-1);
         MakeFit.Fitted held = MakeFit.fit(bear, Map.of(MakeFacts.ATTACK_DAMAGE_HALF_HEARTS, was - 1));
-        assertTrue(held.fits() && held.changed(), "a lower damage is fitted by a step of the make: " + held);
+        assertTrue(held.fits() && held.spec().equals(bear) && held.lowered().equals(List.of(MakeFacts.ATTACK_DAMAGE_HALF_HEARTS)),
+                "fitted live: " + held);
     }
 
     private static JsonObject sculptOf(BuilderSpec spec) {

@@ -153,19 +153,20 @@ class MakeFitTest {
         // within the limit: made as it is
         MakeFit.Fitted within = MakeFit.fit(cat, Map.of(MakeFacts.HEALTH_HALF_HEARTS, health));
         assertTrue(within.fits() && !within.changed());
-        // over it: every size and strength step is tried, highest first, each re-derived. #103: a creature's size and
-        // How strong move its health, so a step of the make itself lowers it, the most kept first
+        // over it: a creature's health and damage are fitted on the LIVE creature, never by making it smaller or
+        // gentler (#103: its size and strength move them now, but a world that raises its limits later must get it
+        // back at full strength); the make itself is not changed
         MakeFit.Fitted over = MakeFit.fit(cat, Map.of(MakeFacts.HEALTH_HALF_HEARTS, health - 1));
-        assertTrue(over.fits() && over.changed() && over.lowered().contains(MakeFacts.HEALTH_HALF_HEARTS)
-                && MakeFacts.of(over.spec()).number(MakeFacts.HEALTH_HALF_HEARTS).orElse(999) <= health - 1, over.toString());
-        // below every step (a Teeny gentle cat still has more): the make is not changed, it is fitted on the live creature
-        MakeFit.Fitted live = MakeFit.fit(cat, Map.of(MakeFacts.HEALTH_HALF_HEARTS, 1.0));
-        assertTrue(live.fits() && live.spec().equals(cat) && live.lowered().equals(List.of(MakeFacts.HEALTH_HALF_HEARTS)),
-                live.toString());
-        // the search tries every lower combination, the most kept first
-        List<BuilderSpec> tried = MakeFit.steps(cat);
-        assertTrue(tried.size() >= 3, tried.size() + " steps");
-        assertTrue(tried.stream().noneMatch(s -> s.equals(cat)), "the make as it is is no candidate");
+        assertTrue(over.fits() && over.spec().equals(cat) && over.lowered().equals(List.of(MakeFacts.HEALTH_HALF_HEARTS)),
+                over.toString());
+        // a limit on its strength is its own knob: that one makes it gentler
+        MakeFit.Fitted gentle = MakeFit.fit(cat, Map.of(MakeFacts.BUILDER_STRENGTH_STEP, 1.0));
+        assertTrue(gentle.fits() && gentle.changed() && gentle.spec().opt("strength").equals("1"), gentle.toString());
+        BuilderSpec sword = sword(3);
+        // a creature offers no steps for health and damage; an item's search tries every lower combination
+        assertTrue(MakeFit.steps(cat).isEmpty(), "a creature's health and damage are fitted live");
+        List<BuilderSpec> tried = MakeFit.steps(sword);
+        assertTrue(tried.stream().noneMatch(s -> s.equals(sword)), "the make as it is is no candidate");
         BuilderSpec imp = new BuilderSpec(BuilderSpec.CURRENT, BuilderSpec.Kind.CREATURE, "preset:species/fire_imp", "", 2,
                 List.of(), "friendly", 1, "", "", Map.of());
         double damage = MakeFacts.of(imp).number(MakeFacts.ATTACK_DAMAGE_HALF_HEARTS).orElse(-1);
