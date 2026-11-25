@@ -1,0 +1,24 @@
+# Store migrations
+
+Every change Moddy makes to data a player already has on disk is listed here: what it changes, how it is versioned,
+how many records it changed is counted, and whether it ever stops. A downstream census declares a migration by its row
+here. A new migration adds its row in the same change.
+
+Moddy runs in a player's own single-player game, and the saves are theirs, so a read-time path that puts an old record
+right is **permanent**: it is never removed. (This repository has no compat-shim register; this page is where such a
+path is recorded, with its end condition.)
+
+## How a store is versioned
+
+- **The store** (its file) carries `"store"` and `"v"` in an envelope (`store/WishStoreFile`). A file written by a newer
+  Moddy than this one is **refused** and never written over (a downgrade never loses a newer player's data).
+- **A species record** carries its own `"v"`, inline in the record (`Species.RECORD_VERSION`; a record without one is
+  v1). A migration that applies to records saved before it applies only to records below its version, never to a
+  record inferred from its values, and the record is written back at the current version at the next save, so it runs
+  once per record. An older build ignores the field and reads the record as it always did.
+
+## The register
+
+| Store | Version | Change | Which records | Written back | Counted | Ends |
+|---|---|---|---|---|---|---|
+| species (record) | v2 | **The library-copy rule** (#99): an UNOWNED copy of a library creature takes its shipped health, attack damage, armour and knockback resistance whenever it is read (`species/LibraryCopies`, run in `SpeciesRegistry.load`). Nothing else about it moves | every unowned record whose id the library serves; never an owned creature or a fork (`marshal.ForkPolicy`: editing a library creature always forks it, so an unowned copy holds nothing a player chose) | yes, at the next save of the store; each record is then written at v2 | `SpeciesRegistry.load` logs how many copies took their shipped line | never, because a library creature's shipped line may change again in any release, and the copies a world made on first spawn must follow it |

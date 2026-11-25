@@ -126,6 +126,10 @@ test world below does, with a toy formula of its own).
   | `armorPoints` | the game's armour points (a full iron suit is 15) | a Builder creature or ride (as health), a stored creature |
   | `knockbackResistanceFraction` | 0 (pushed as anyone) to 1 (never pushed) | a Builder creature or ride (as health), a stored creature |
 
+  A stored creature's numbers are its record's. One exception, the library-copy rule (`docs/STORE_MIGRATIONS.md`): a
+  world's unowned copy of a library creature (the shared one its first spawn registered) always reads its shipped
+  health, attack damage, armour and knockback, so a stock creature's facts are the same in every world.
+
   `combine` (several things one recipe makes) keeps each number's largest value; a number none of them carries stays
   absent.
 - **`known`** is false when the thing could not be read (gone from its store, a newer Moddy's spec, a command the core

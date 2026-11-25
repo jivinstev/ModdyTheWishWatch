@@ -240,6 +240,32 @@ class StockStatLinesTest {
         assertTrue(copy.withShippedStats(null).equals(copy));
     }
 
+    @Test
+    @DisplayName("the library-copy rule: an unowned copy takes the shipped line; an owned creature or a fork is never touched")
+    void anOwnedCopyOrAForkIsNeverTouched() {
+        JsonObject shipped = JsonParser.parseString("{\"health\":60,\"damage\":6,\"armor\":2,\"knockbackResistance\":0.5}")
+                .getAsJsonObject();
+        Species shared = Species.fromJson(JsonParser.parseString("{\"id\":\"pet_dragon\",\"health\":60,\"damage\":0}")
+                .getAsJsonObject());
+        assertTrue(LibraryCopies.takeShipped(shared, shipped).damage() == 6, "an unowned library copy takes the shipped line");
+        Species owned = Species.fromJson(JsonParser.parseString("{\"id\":\"pet_dragon\",\"health\":60,\"damage\":0,"
+                + "\"ownerId\":\"1f2e3d4c-0000-0000-0000-00000000000a\"}").getAsJsonObject());
+        assertTrue(LibraryCopies.takeShipped(owned, shipped) == owned, "an owned creature is never touched");
+        Species fork = Species.fromJson(JsonParser.parseString("{\"id\":\"pet_dragon~1f2e3d4c\",\"health\":60,\"damage\":0}")
+                .getAsJsonObject());
+        assertTrue(LibraryCopies.takeShipped(fork, shipped) == fork, "a fork is never touched, even with its stamp lost");
+        assertTrue(LibraryCopies.takeShipped(shared, null) == shared, "a creature the library does not serve is never touched");
+    }
+
+    @Test
+    @DisplayName("every species record is written with its version inline; one without reads as v1")
+    void theRecordCarriesItsVersion() {
+        Species s = Species.fromJson(JsonParser.parseString("{\"id\":\"a\",\"health\":20,\"damage\":3}").getAsJsonObject());
+        assertTrue(s.toJson().get("v").getAsInt() == Species.RECORD_VERSION);
+        assertTrue(Species.recordVersion(JsonParser.parseString("{\"id\":\"a\"}").getAsJsonObject()) == 1);
+        assertTrue(Species.fromJson(s.toJson()).equals(s), "the stamp changes nothing about the creature it reads as");
+    }
+
     private static void check(List<String> wrong, String where, JsonObject o, String key, double want) {
         if (!o.has(key) || !o.get(key).isJsonPrimitive()) {
             // armour and knockback of 0 may be left out of a sculpt; a species file states every number
