@@ -54,7 +54,7 @@ public final class MagicianDoor {
             + "Moddy's Apprentice will help, or open the 🛠 Wish Builder on your watch!";
 
     /** The book's note on such a wish. */
-    static final String TURNED_BACK_NOTE = "The Magician no longer answers this player, so the wish was not put back in line.";
+    static final String TURNED_BACK_NOTE = "The Magician no longer answers this player, so the wish was not handed back to a worker.";
 
     /**
      * End a wish that was about to go back in line to a Magician who no longer answers its player (#81), the way the
@@ -77,7 +77,7 @@ public final class MagicianDoor {
             }
         }
         org.slf4j.LoggerFactory.getLogger(MagicianDoor.class).info(
-                "wish {}: not put back in line at {}: the Magician no longer answers its player (#81)", wish.shortId(), where);
+                "wish {}: not handed back to a worker at {}: the Magician no longer answers its player (#81)", wish.shortId(), where);
     }
 
     /** The Magician is off and this player is the one who may turn it on (the watch's "✪ Turn on the Magician"). */
