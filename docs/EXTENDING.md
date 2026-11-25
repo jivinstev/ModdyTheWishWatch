@@ -256,7 +256,7 @@ the limits the world gave.
 
 | Number | Fitted by |
 |---|---|
-| `scaleTimes`, `builderSizeStep` | a smaller size (a creature's named sizes, else the 1–4 step) |
+| `scaleTimes`, `builderSizeStep` | a smaller size (a creature's named sizes, else the 1–4 step). A creature or ride MADE AGAIN from a kept make (a hotbar fire, "Make another one", a recipe) is made as it was asked and stands at the size this world allows where it stands (`LiveFit`), never refused for its size, so a later, higher limit gives it its full size |
 | `builderStrengthStep`, `durationTicks`, `radiusBlocks` | a lower strength |
 | `countMade` | fewer at once (a Builder make; a recipe's `wishmob spawn <id> <count>`) |
 | `amountItems` | fewer in a bundle of supplies |
