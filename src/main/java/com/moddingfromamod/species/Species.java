@@ -464,9 +464,10 @@ public record Species(String id, String name, Body body, String texture, int tin
      * ignores the field and reads the record as before.
      * <ul>
      *   <li>v2 (#99): read under the library-copy rule ({@link LibraryCopies}).</li>
+     *   <li>v3 (#104): made under #101's tool wording, or put right by the stat-line repair ({@link StatLineRepair}).</li>
      * </ul>
      */
-    public static final int RECORD_VERSION = 2;
+    public static final int RECORD_VERSION = StatLineRepair.VERSION;
 
     /** The version a stored record was written at: its {@code "v"}, or 1 when it has none. */
     public static int recordVersion(JsonObject o) {
