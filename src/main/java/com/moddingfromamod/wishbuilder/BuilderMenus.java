@@ -438,7 +438,7 @@ public final class BuilderMenus {
      * ({@code MakeGate.ask}): kept within its limits, locked with its line, or dropped (hidden, or more than any fit
      * could make it).
      */
-    static BuilderPageFit.World world(ServerPlayer p, BuilderFlow flow) {
+    public static BuilderPageFit.World world(ServerPlayer p, BuilderFlow flow) {
         com.moddingfromamod.wish.WishAsk ask = askAbout(p, flow);
         return facts -> {
             var v = com.moddingfromamod.wish.MakeGate.ask(facts, ask);

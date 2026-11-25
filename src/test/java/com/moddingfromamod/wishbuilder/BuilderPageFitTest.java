@@ -31,7 +31,7 @@ class BuilderPageFitTest {
     @BeforeAll
     static void build() {
         long t0 = System.nanoTime();
-        index = BuilderPageFacts.buildNow(BuilderAllowlist.REVIEWED, LibraryPresets.SHIPPED);
+        index = BuilderPageFacts.buildNow(BuilderAllowlist.REVIEWED, LibraryPresets.SHIPPED, 120);
         buildNanos = System.nanoTime() - t0;
     }
 

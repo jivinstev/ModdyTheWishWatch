@@ -218,4 +218,56 @@ public final class ContractWorldGameTest {
             helper.assertTrue(words.contains("fewer for this world"), Component.literal("he is told: " + words));
         });
     }
+
+    @GameTest(template = "empty_test", batch = "contract_world_no_world_pages", timeoutTicks = 400)
+    public static void withNoWorldTheBuilderPagesCostNothing(GameTestHelper helper) {
+        MockPlayerNetwork.clearStaleMocks(helper);
+        ServerPlayer p = MockPlayerNetwork.inLevel(helper, "gtcontractnone");
+        String before = System.getProperty(BuilderSettings.ENABLED_PROPERTY);
+        System.setProperty(BuilderSettings.ENABLED_PROPERTY, "true");
+        Plugins.shared().hideForTest(WorldMakes.class, true);
+        MockPlayerNetwork.afterTest(helper, () -> {
+            Plugins.shared().hideForTest(WorldMakes.class, false);
+            p.closeContainer();
+            if (before == null) {
+                System.clearProperty(BuilderSettings.ENABLED_PROPERTY);
+            } else {
+                System.setProperty(BuilderSettings.ENABLED_PROPERTY, before);
+            }
+        });
+        helper.assertTrue(!com.moddingfromamod.wish.MakeGate.anyWorld(), Component.literal("no world answers here"));
+        long derived = com.moddingfromamod.wishbuilder.MakeFacts.derivations();
+        helper.assertTrue(com.moddingfromamod.wishbuilder.BuilderMenus.open(p), Component.literal("the Builder opens"));
+        com.moddingfromamod.wishbuilder.BuilderMenus.press(p, "creature");
+        com.moddingfromamod.wishbuilder.BuilderMenus.press(p, "species/cat");
+        helper.assertValueEqual(com.moddingfromamod.wishbuilder.MakeFacts.derivations(), derived,
+                Component.literal("makes read while drawing three Builder pages with no world"));
+        helper.succeed();
+    }
+
+    @GameTest(template = "empty_test", batch = "contract_world_pages", timeoutTicks = 40000)
+    public static void aWorldsPagesAreWorkedOutInTheBackgroundAndADrawReadsNothing(GameTestHelper helper) {
+        ServerPlayer p = setUp(helper, "gtcontractpages");
+        var flow = new com.moddingfromamod.wishbuilder.BuilderFlow(
+                BuilderSettings.forPlayer(p.getUUID()).allow(), com.moddingfromamod.wishbuilder.LibraryPresets.SHIPPED);
+        var page = flow.page();
+        var world = com.moddingfromamod.wishbuilder.BuilderMenus.world(p, flow);
+        com.moddingfromamod.test.RealTime.succeedWhen(helper, () -> {
+            var index = com.moddingfromamod.wishbuilder.BuilderPageFacts.forWorld(BuilderSettings.forPlayer(p.getUUID()).allow());
+            helper.assertTrue(index != null && index.page(com.moddingfromamod.wishbuilder.BuilderPageFacts.stateKey(flow)) != null,
+                    Component.literal("the first page is still being worked out"));
+            helper.assertTrue(com.moddingfromamod.wishbuilder.BuilderPageFacts.started(),
+                    Component.literal("a world answers, so the worker runs"));
+            com.moddingfromamod.wishbuilder.BuilderPageFit.draw(flow, page, index, world);   // warm
+            // (the worker is still deriving the rest of the tree beside this, so a draw's own work is counted in Gate A,
+            // BuilderPageFitTest; here the real server's draw is timed)
+            long t0 = System.nanoTime();
+            var drawn = com.moddingfromamod.wishbuilder.BuilderPageFit.draw(flow, page, index, world);
+            long took = System.nanoTime() - t0;
+            helper.assertTrue(!com.moddingfromamod.wishbuilder.BuilderPageFit.gettingReady(drawn),
+                    Component.literal("drawn from its facts"));
+            org.slf4j.LoggerFactory.getLogger(ModdingFromAModMod.MODID).info("[contract world] a page draw took {} ms",
+                    String.format("%.2f", took / 1e6));
+        });
+    }
 }

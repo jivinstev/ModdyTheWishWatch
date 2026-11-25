@@ -77,8 +77,8 @@ public final class BuilderPageFacts {
         }
     }
 
-    /** How many pages ahead a tile's way on is followed. */
-    static final int DEPTH = 10;
+    /** How many pages ahead a tile's way on is followed (further than that is taken as viable). */
+    static final int DEPTH = 4;
     /** At most this many makes ahead are kept per state; more is "too many to list" (viable). */
     static final int AHEAD_MOST = 24;
     /** At most this many page states are walked per tree; the rest are worked out when asked for. */
@@ -170,7 +170,11 @@ public final class BuilderPageFacts {
                 ways.add(on);
             }
         }
-        for (PickPage.Tile t : page.tiles()) {
+        // a pick on a multi-pick page only adds to the make, so its least way on is the one left as it is (Done);
+        // a one-of page's way on is each of its tiles
+        // (unless it cannot be left with no pick: then each pick, then Done)
+        boolean leaves = !ways.isEmpty();
+        for (PickPage.Tile t : multi && leaves ? List.<PickPage.Tile>of() : page.tiles()) {
             BuilderFlow next = flow.after(t.id());
             if (next != null && multi && next.step() == flow.step()) {
                 next = next.after(PickPage.NEXT_ID);
@@ -201,12 +205,13 @@ public final class BuilderPageFacts {
      * and a test calls it to build an index without the thread. {@code between} runs after each page (the worker
      * serves queued pages there first).
      */
-    static void walk(Walk w, BuilderAllowlist allow, LibraryPresets presets, Runnable between) {
+    static void walk(Walk w, BuilderAllowlist allow, LibraryPresets presets, Runnable between, int most) {
+        // breadth first: every kind's first pages are worked out before any page deep in one of them
         Deque<BuilderFlow> todo = new ArrayDeque<>();
         Set<String> seen = new java.util.HashSet<>();
-        todo.push(new BuilderFlow(allow, presets));
-        while (!todo.isEmpty() && seen.size() < MOST_STATES) {
-            BuilderFlow f = todo.pop();
+        todo.addLast(new BuilderFlow(allow, presets));
+        while (!todo.isEmpty() && seen.size() < most) {
+            BuilderFlow f = todo.pollFirst();
             if (f.step() == BuilderFlow.Step.TUNE || !seen.add(stateKey(f))) {
                 continue;
             }
@@ -224,7 +229,7 @@ public final class BuilderPageFacts {
             if (multi || page.next()) {
                 BuilderFlow on = f.after(PickPage.NEXT_ID);
                 if (on != null) {
-                    todo.push(on);
+                    todo.addLast(on);
                 }
             }
             for (PickPage.Tile t : page.tiles()) {
@@ -235,7 +240,7 @@ public final class BuilderPageFacts {
                     next = next.after(PickPage.NEXT_ID);
                 }
                 if (next != null) {
-                    todo.push(next);
+                    todo.addLast(next);
                 }
             }
         }
@@ -243,9 +248,9 @@ public final class BuilderPageFacts {
     }
 
     /** An index for {@code allow}'s tree, built here and now: the test's way, never the server thread's. */
-    public static Index buildNow(BuilderAllowlist allow, LibraryPresets presets) {
+    public static Index buildNow(BuilderAllowlist allow, LibraryPresets presets, int most) {
         Index idx = new Index(BuilderTree.of(allow, presets).fingerprint());
-        walk(new Walk(idx), allow, presets, null);
+        walk(new Walk(idx), allow, presets, null, most);
         return idx;
     }
 
@@ -348,7 +353,7 @@ public final class BuilderPageFacts {
                     LOG.warn("page facts: a page asked for failed: {}", t.toString());
                 }
             }
-        });
+        }, MOST_STATES);
         LOG.info("page facts: tree {} walked, {} pages in {} s", fp.substring(0, 12), w.index.size(),
                 String.format("%.1f", (System.nanoTime() - t0) / 1e9));
     }

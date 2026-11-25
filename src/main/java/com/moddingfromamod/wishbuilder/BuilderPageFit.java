@@ -179,7 +179,8 @@ public final class BuilderPageFit {
                 if (top > s.start()) {
                     in.add(new TuneDialog.Slider(s.key(), s.label(), s.start(), top, s.step(), Math.min(s.initial(), top)));
                 }
-            } else if (i instanceof TuneDialog.Choice c && c.key().equals("mobsize")) {
+            } else if (i instanceof TuneDialog.Choice c && c.key().equals("mobsize")
+                    && (limits.containsKey(MakeFacts.SCALE_TIMES) || limits.containsKey(MakeFacts.BUILDER_SIZE_STEP))) {
                 List<TuneDialog.Option> keep = new ArrayList<>();
                 for (TuneDialog.Option o : c.options()) {
                     if (keptAs(flow, c.key(), o.id(), limits)) {
