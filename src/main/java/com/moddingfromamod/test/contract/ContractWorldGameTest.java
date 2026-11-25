@@ -1039,6 +1039,69 @@ public final class ContractWorldGameTest {
         });
     }
 
+    @GameTest(template = "empty_test", batch = "contract_world_magician_unleashed", timeoutTicks = 40000)
+    public static void aMagicianCreatureKeepsItsAskedHealthAndIsUnleashedOnARaise(GameTestHelper helper) {
+        ServerPlayer p = setUp(helper, "gtcontractmagician");
+        MockPlayerNetwork.afterTest(helper, ContractWorld::forgetRounds);
+        var server = helper.getLevel().getServer();
+        // a body to wear: a Builder cat's model (a species with no model cannot stand)
+        Set<String> had = new java.util.HashSet<>();
+        SpeciesRegistry.all().forEach(sp -> had.add(sp.id()));
+        AtomicReference<BuilderMake.Result> made = new AtomicReference<>();
+        BuilderMake.make(p, cats("friendly", 1, 1), BuilderAllowlist.REVIEWED).thenAcceptAsync(made::set);
+        String tag = UUID.randomUUID().toString().substring(0, 6);
+        AtomicReference<String> beast0 = new AtomicReference<>("");
+        AtomicReference<Integer> step = new AtomicReference<>(0);
+        com.moddingfromamod.test.RealTime.succeedWhen(helper, () -> {
+            BuilderMake.Result r = made.get();
+            helper.assertTrue(r != null && r.outcome() == BuilderMake.Outcome.MADE, Component.literal("the cat: " + r));
+            if (step.get() == 0) {
+                Species cat = null;
+                for (Species sp : SpeciesRegistry.all()) {
+                    if (!had.contains(sp.id())) {
+                        cat = sp;
+                    }
+                }
+                helper.assertTrue(cat != null, Component.literal("the cat's species"));
+                // the Magician sculpts it again under a tight limit: sculpt_creature is given 120 health, which the dispatch
+                // keeps as asked (ContractWorldMagicianGameTest), so its record now holds 120 (its model stays the cat's)
+                var json = cat.toJson();
+                json.addProperty("health", 120);
+                json.addProperty("ownerId", p.getStringUUID());
+                Species asked = Species.fromJson(json);
+                beast0.set(cat.id());
+                MockPlayerNetwork.afterTest(helper, SpeciesRegistry.putForTest(List.of(asked)));
+                var ran = com.moddingfromamod.mob.SpawnScope.during("gt-contract-magician-" + tag,
+                        com.moddingfromamod.item.delivery.DeliveryPlan.Kind.HANDOVER,
+                        () -> com.moddingfromamod.wish.WishExecutor.runOne(server, helper.getLevel(), p.position(), p,
+                                "wishmob spawn " + beast0.get() + " 1"));
+                helper.assertTrue(ran.success(), Component.literal("the beast spawns: " + ran.joined()));
+                step.set(1);
+            }
+            // the one spawned from the record of 120 (the cat made first stood before its record changed)
+            net.minecraft.world.entity.LivingEntity beast = null;
+            for (var e : helper.getLevel().getAllEntities()) {
+                if (e instanceof net.minecraft.world.entity.LivingEntity le && le.distanceTo(p) < 64
+                        && beast0.get().equals(com.moddingfromamod.wish.LiveFit.speciesOf(le))
+                        && (beast == null || le.getId() > beast.getId())) {
+                    beast = le;
+                }
+            }
+            helper.assertTrue(beast != null, Component.literal("the beast stands"));
+            var record = SpeciesRegistry.get(beast0.get());
+            helper.assertTrue(record != null && Math.abs(record.health() - 120) < 1e-6,
+                    Component.literal("its record keeps the health it was asked for: " + (record == null ? "none" : record.health())));
+            if (step.get() == 1) {
+                helper.assertTrue(Math.abs(beast.getMaxHealth() - ContractWorld.TOUGHEST) < 0.01,
+                        Component.literal("held to this world's most where it stands: " + beast.getMaxHealth()));
+                ContractWorld.round(p.getUUID(), 2);
+                step.set(2);
+            }
+            helper.assertTrue(Math.abs(beast.getMaxHealth() - ContractWorld.TOUGHEST_LATER) < 0.01,
+                    Component.literal("a later round unleashes it: " + beast.getMaxHealth()));
+        });
+    }
+
     /** Every stamped stack he holds (inventory and Wish Bag): which wish made it, by wish id. */
     private static Map<String, com.moddingfromamod.world.WishedItem.Made> stampedHeld(ServerPlayer p) {
         Map<String, com.moddingfromamod.world.WishedItem.Made> out = new java.util.HashMap<>();
