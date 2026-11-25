@@ -1765,7 +1765,7 @@ public final class MakeItemTool implements McpTool {
         long renderedMs = (System.nanoTime() - t0) / 1_000_000;
 
         if (!CbScriptCompiler.available() && !com.moddingfromamod.datapack.PrecompiledPacks.covers(DatapackForge.dialect(skeleton))) {
-            return failed(unstore, "no CBScript compiler is available (it needs Python 3), and this ready-made "
+            return failed(unstore, "the CBScript compiler is turned off here (a test), and this ready-made "
                     + "item is not one of the precompiled ones, so it cannot be built here.");
         }
         try {

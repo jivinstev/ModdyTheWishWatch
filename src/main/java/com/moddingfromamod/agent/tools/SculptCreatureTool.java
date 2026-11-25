@@ -1378,6 +1378,9 @@ public final class SculptCreatureTool implements McpTool {
         JsonObject speciesJson = inheritSpecies(args);
         speciesJson.addProperty("id", key);
         speciesJson.addProperty("modelKey", key);
+        // its shape, read off its own parts (#132), for the stand-in if its model is ever not to hand
+        speciesJson.addProperty("body",
+                com.moddingfromamod.vanilla.SculptBody.of(parts).name().toLowerCase(java.util.Locale.ROOT));
         speciesJson.remove("parts");
         if (speciesJson.has("knockback_resistance")) {   // the tool's word for the record's field
             speciesJson.add("knockbackResistance", speciesJson.remove("knockback_resistance"));

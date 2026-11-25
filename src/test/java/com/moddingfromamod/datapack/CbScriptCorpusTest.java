@@ -110,12 +110,8 @@ class CbScriptCorpusTest {
     @Test
     @DisplayName("REPLAY: every program the agent wrote, through the real compiler")
     void everyMinedProgramStillBehavesTheSameWay(@TempDir Path work) {
-        // LOUD skip. On a machine with the fork this must actually run; ratchet.sh refuses to
-        // call a run green when the compiler is missing, for the same reason it refuses to call
-        // the train gates green without the Create jar.
-        Assumptions.assumeTrue(CbScriptCompiler.available(),
-                "SKIPPED — no CBScript compiler/python here. This proves NOTHING about the "
-                        + "compiler; ./tools/ratchet.sh will fail rather than report it green.");
+        // The compiler is in the jar, so this always runs (it used to skip where there was no Python).
+        assertTrue(CbScriptCompiler.available(), "the CBScript compiler is part of the mod");
 
         List<Case> all = corpus();
         List<String> regressions = Collections.synchronizedList(new ArrayList<>());
@@ -123,18 +119,14 @@ class CbScriptCorpusTest {
         Map<String, Integer> changedMode = new ConcurrentHashMap<>();
         long started = System.currentTimeMillis();
 
-        // COMPILE THE CORPUS IN PARALLEL. Each case is an independent `python compile_once.py` in
-        // its OWN work directory, so there is nothing to share and nothing to order — and this one
-        // test was 36s of Gate A's 59s of test-body time, run one subprocess at a time on a 4-core
-        // box.
+        // COMPILE THE CORPUS IN PARALLEL. Each case is an independent compile in its OWN work
+        // directory, so there is nothing to share and nothing to order (when each was a Python
+        // subprocess this one test was 36s of Gate A's 59s of test-body time, run one at a time).
         //
         // Deliberately NOT a @ParameterizedTest, which is the obvious move and does not work:
         // Gradle distributes tests across forks BY CLASS, so 276 invocations of one class all land
         // in one fork and the wall clock is unchanged. Threads inside the class are what actually
-        // overlap the subprocesses.
-        //
-        // The compiler checkout is extracted lazily by ToolDeploy on first use; `available()` in
-        // the assumption above has already forced that, so no thread races to extract it here.
+        // overlap the compiles.
         int threads = Math.max(1, Integer.getInteger(
                 ModdingFromAModMod.MODID + ".corpusthreads", Runtime.getRuntime().availableProcessors()));
         ExecutorService pool = Executors.newFixedThreadPool(threads);
@@ -206,7 +198,7 @@ class CbScriptCorpusTest {
     @Test
     @DisplayName("the compiler still rejects SOMETHING — a yes-machine cannot pass this file")
     void theCompilerStillRejectsSomething(@TempDir Path work) {
-        Assumptions.assumeTrue(CbScriptCompiler.available(), "SKIPPED — no compiler here");
+        assertTrue(CbScriptCompiler.available(), "the CBScript compiler is part of the mod");
         // Deliberately "at least one", not a named case. The first cut asserted on
         // corpus().findFirst(), which happened to be the compiler-crash case -- and the fork has
         // since been FIXED so that one compiles. A correct improvement upstream broke the test,
@@ -233,7 +225,7 @@ class CbScriptCorpusTest {
     @Test
     @DisplayName("a compiled pack declares THIS build's pack_format ")
     void aCompiledPackDeclaresThisBuildsPackFormat(@TempDir Path work) throws Exception {
-        Assumptions.assumeTrue(CbScriptCompiler.available(), "SKIPPED — no compiler here");
+        assertTrue(CbScriptCompiler.available(), "the CBScript compiler is part of the mod");
         // The fork wrote 48 (1.21.1) for every target until it learned CBSCRIPT_MC; on 1.21.4 such
         // a pack loads as "made for an older version" and the install path had to rewrite it.
         // Expected numbers are Minecraft's own (DatapackDialect.packFormat() at runtime).

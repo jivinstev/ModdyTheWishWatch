@@ -142,4 +142,31 @@ public final class SculptOnePieceGameTest {
                     Component.literal("the SAVED creature is one piece: " + SculptConnectivity.islands(parts)));
         });
     }
+
+    /**
+     * #132: a sculpt is stored with its own shape, not {@code humanoid} whatever it is, so its stand-in (if its model is
+     * ever not to hand) is a four-legged animal, not a zombie two blocks tall. Through the real {@code sculpt_creature}.
+     */
+    @GameTest(template = "empty_test", batch = BATCH, timeoutTicks = 6000)
+    public static void aFourLeggedSculptIsStoredAsAFourLeggedBody(GameTestHelper helper) {
+        String id = "gt_shape_dog_" + helper.getLevel().getGameTime();
+        JsonObject dog = JsonParser.parseString("""
+            {"id":"%s","spawn":false,"parts":[
+              {"name":"body","from":[-4,6,-8],"to":[4,13,8],"colour":"brown"},
+              {"name":"head","from":[-4,9,-14],"to":[4,16,-8],"colour":"brown"},
+              {"name":"legFL","from":[-4,0,-7],"to":[-2,6,-5],"colour":"brown"},
+              {"name":"legFR","from":[2,0,-7],"to":[4,6,-5],"colour":"brown"},
+              {"name":"legBL","from":[-4,0,5],"to":[-2,6,7],"colour":"brown"},
+              {"name":"legBR","from":[2,0,5],"to":[4,6,7],"colour":"brown"}]}
+            """.formatted(id)).getAsJsonObject();
+        AtomicReference<String> made = new AtomicReference<>();
+        asAgent("dog", () -> made.set(said(new SculptCreatureTool().call(dog))));
+        com.moddingfromamod.test.RealTime.succeedWhen(helper, () -> {
+            helper.assertTrue(made.get() != null, Component.literal("still sculpting"));
+            helper.assertFalse(made.get().startsWith("ERROR"), Component.literal("the dog: " + made.get()));
+            var species = com.moddingfromamod.species.SpeciesRegistry.get(id);
+            helper.assertTrue(species != null && species.body() == com.moddingfromamod.species.Species.Body.QUADRUPED,
+                    Component.literal("a four-legged sculpt is stored as one: " + (species == null ? "none" : species.body())));
+        });
+    }
 }

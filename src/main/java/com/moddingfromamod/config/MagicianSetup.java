@@ -26,9 +26,9 @@ import net.minecraft.server.level.ServerPlayer;
  * <p><b>The first page is one button per program found</b>: "Use my Claude subscription", "Use my Muse Code
  * subscription", "Use API keys" ({@link MagicianPresets}). One press sets the four choices, checks that program is
  * installed and signed in, runs the full check and turns the Magician on, with progress on the action bar and one
- * result line; on a failure it says the one thing to do. Python 3 for the Magician's own powers is checked beside the
- * program ({@link com.moddingfromamod.datapack.PythonCheck}): missing, the Magician still turns on and one more
- * line says what to install. "Choose models myself" opens the per-choice pages, where:
+ * result line; on a failure it says the one thing to do. (The Magician's own powers need nothing more: their
+ * compiler is part of the mod, so there is no Python to check.) "Choose models myself" opens the per-choice pages,
+ * where:
  *
  * <ol>
  *   <li><b>The programs are checked by themselves</b>: Claude Code and Muse Code, installed, signed in, answering
@@ -83,8 +83,6 @@ public final class MagicianSetup {
     private static volatile boolean checking;
 
     private static volatile HarnessProbe probe = new CliHarnessProbe();
-    /** What the last Python check found, or null before one. */
-    private static volatile com.moddingfromamod.datapack.PythonCheck.Verdict python;
     private static volatile Function<String, String> env = System::getenv;
     private static volatile java.util.function.BiFunction<ServerPlayer, MagicianPicks, MagicianCheck.Steps> steps =
             (p, picks) -> new LiveCheckSteps(p.getServer(), () -> p.getServer().getPlayerList().getPlayer(p.getUUID()),
@@ -103,7 +101,6 @@ public final class MagicianSetup {
         steps = s == null ? (pl, picks) -> new LiveCheckSteps(pl.getServer(),
                 () -> pl.getServer().getPlayerList().getPlayer(pl.getUUID()), picks) : s;
         probed.clear();
-        python = null;
         probing = false;
         checking = false;
     }
@@ -113,10 +110,6 @@ public final class MagicianSetup {
         return Map.copyOf(probed);
     }
 
-    /** What the last Python check found, or null before one. */
-    public static com.moddingfromamod.datapack.PythonCheck.Verdict python() {
-        return python;
-    }
 
     public static boolean busy() {
         return probing || checking;
@@ -619,10 +612,6 @@ public final class MagicianSetup {
     static void autoProbe(ServerPlayer p, java.util.Set<SupportedModels.Harness> which) {
         probe(p, which, (back, found) -> {
             found.values().forEach(r -> say(back, r.line(), r.installed()));
-            if (python != null) {
-                say(back, com.moddingfromamod.datapack.PythonCheck.statusLine(python,
-                        com.moddingfromamod.datapack.PythonCheck.windows()), python.works());
-            }
             if (back.containerMenu instanceof MenuKit.PickMenu pm && DETAIL_TITLE.equals(pm.page().title())) {
                 MenuKit.pick(back, MENU, detailPage(back), MagicianSetup::press);
             }
@@ -641,7 +630,6 @@ public final class MagicianSetup {
         Function<String, String> e = env;
         Thread t = new Thread(() -> {
             Map<SupportedModels.Harness, HarnessProbe.Result> found = new EnumMap<>(SupportedModels.Harness.class);
-            com.moddingfromamod.datapack.PythonCheck.Verdict[] py = {null};
             try {
                 Magician.during(() -> {
                     for (SupportedModels.Harness h : list) {
@@ -651,20 +639,11 @@ public final class MagicianSetup {
                             found.put(h, HarnessProbe.Result.missing(h));
                         }
                     }
-                    // The powers' Python: checked beside the programs, never blocking the Magician.
-                    try {
-                        py[0] = pr.python();
-                    } catch (RuntimeException ex) {
-                        py[0] = null;
-                    }
                     return null;
                 });
             } finally {
                 server.execute(() -> {
                     probed.putAll(found);
-                    if (py[0] != null) {
-                        python = py[0];
-                    }
                     probing = false;
                     ServerPlayer back = server.getPlayerList().getPlayer(who);
                     if (back != null) {
@@ -707,9 +686,6 @@ public final class MagicianSetup {
         if (Magician.enabled() && MagicianCheckRecord.shared().passedFor(want)) {
             p.closeContainer();
             say(p, MagicianPresets.turnedOn(preset), true);
-            if (python != null && !python.works()) {
-                recheckPython(p);   // pressed again after installing Python: look again, the full check is not needed
-            }
             return;
         }
         turnOn(p, preset);
@@ -748,53 +724,6 @@ public final class MagicianSetup {
             }
             runCheck(back, preset);
         });
-    }
-
-    /** Look for Python again and say what was found: the Python line, or that powers work now. */
-    static void recheckPython(ServerPlayer p) {
-        probing = true;
-        var server = p.getServer();
-        java.util.UUID who = p.getUUID();
-        HarnessProbe pr = probe;
-        Thread t = new Thread(() -> {
-            com.moddingfromamod.datapack.PythonCheck.Verdict[] py = {null};
-            try {
-                py[0] = pr.python();
-            } catch (RuntimeException ex) {
-                py[0] = null;
-            } finally {
-                server.execute(() -> {
-                    if (py[0] != null) {
-                        python = py[0];
-                    }
-                    probing = false;
-                    ServerPlayer back = server.getPlayerList().getPlayer(who);
-                    if (back != null && py[0] != null) {
-                        sayPython(back, true);
-                    }
-                });
-            }
-        }, "mfam-magician-python");
-        t.setDaemon(true);
-        t.start();
-    }
-
-    /**
-     * The Python result line: the one thing to do when Python is missing, never blocking the Magician. With
-     * {@code sayGood}, a working Python says so too (after a re-check); otherwise a working Python says nothing.
-     */
-    static void sayPython(ServerPlayer p, boolean sayGood) {
-        com.moddingfromamod.datapack.PythonCheck.Verdict v = python;
-        if (v == null) {
-            return;
-        }
-        Optional<String> line = com.moddingfromamod.datapack.PythonCheck.setupLine(v,
-                com.moddingfromamod.datapack.PythonCheck.windows());
-        if (line.isPresent()) {
-            say(p, line.get(), false);
-        } else if (sayGood) {
-            say(p, "✔ Python " + v.version() + " found: the Magician can give things powers now.", true);
-        }
     }
 
     /** The action-bar line for a step of the setup. */
@@ -858,9 +787,6 @@ public final class MagicianSetup {
             progress(back, 3, c.done() ? "on ✔" : "stopped.");
             say(back, c.done() ? (preset != null ? MagicianPresets.turnedOn(preset)
                     : "✪ The Magician is on: " + picks.describe() + ". " + report.summary()) : c.line(), c.done());
-            if (c.done()) {
-                sayPython(back, false);
-            }
         } else if (report.pass()) {
             progress(back, 2, "stopped.");
             say(back, "✖ A choice changed while the check ran. Press Turn on again.", false);

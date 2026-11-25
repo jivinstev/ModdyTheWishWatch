@@ -8,7 +8,7 @@ a rule for your world) and it makes it, right there in your game.
 - **The Apprentice and the Builder** work with no AI and no account: you pick from ready-made parts, or type a
   wish in your own words and the Apprentice matches it to things it can make. Both run on your computer, offline.
 - **Requirements:** NeoForge for Minecraft 1.21.8 and nothing else. Builder and Apprentice powers are compiled when
-  the mod is built; Python 3 is needed only for the Magician's own powers.
+  the mod is built, and the Magician's own powers are compiled inside the game: nothing else to install.
 - **Moving a world to a newer Minecraft version isn't supported yet.** Wishes made in a world (its buildings, wished
   items and their powers, rules and saved plans) are saved for the Minecraft version they were made in. Open them in a
   newer version of Minecraft and some may come out wrong or not work. Start a new world when you change versions.
@@ -46,11 +46,9 @@ Or install it by hand: NeoForge for your Minecraft version, then the jar from [R
    grader and one small test wish, about 3 minutes, once) and turns the Magician on. If something is missing, it says
    the one thing to do.
 
-The Magician writes its own **powers** (what an item or creature does) as small datapacks, compiled by a bundled
-compiler that runs **Python 3**. The setup checks for a working Python 3 (it recognises Python 2 and the Windows
-Microsoft Store shortcut that only opens the Store). Without one the Magician still turns on and makes creatures,
-buildings, items and pictures, and one line says what to do: install Python 3 from python.org (on Windows, tick "Add
-python.exe to PATH"), then press the button again.
+The Magician writes its own **powers** (what an item or creature does) as small datapacks, compiled inside the game
+by the CBScript compiler built into the mod (moddy-cbscript's Java port; see `THIRD_PARTY_NOTICES.md`). It needs
+nothing installed: no Python.
 
 **Choose models myself** on the same page picks each model, how it is paid for and its fallbacks.
 
@@ -134,6 +132,8 @@ hooks a plug-in fills, and the settings.
 The code is licensed under the [Mozilla Public License 2.0](LICENSE). Art and presets are
 [CC BY 4.0](LICENSE-ASSETS.md). "Moddy" and "Moddy the Wish Watch" are trademarks of Moddy LLC; see
 [TRADEMARKS.md](TRADEMARKS.md) for what a fork may call itself. Bundled third-party components and their terms
-are in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) and [NOTICE.md](NOTICE.md).
+are in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) and [NOTICE.md](NOTICE.md); every committed file from
+someone else is registered in [THIRD_PARTY.md](THIRD_PARTY.md), and what may come in is in [CLAUDE.md](CLAUDE.md)
+("Third-party code and text").
 
 Questions and bug reports go to GitHub Issues.
