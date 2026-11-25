@@ -420,6 +420,23 @@ public final class BuilderFlow {
     }
 
     /** step 6: a creature or a ride the Builder sculpts (not a real farm animal) has a "How fast". */
+    /** #103: a creature's three strengths, in his words, the same on Java and Bedrock. */
+    static final List<TuneDialog.Option> STRENGTH_WORDS = List.of(new TuneDialog.Option("1", "Gentle"),
+            new TuneDialog.Option("2", "Just right"), new TuneDialog.Option("3", "Super strong"));
+
+    /**
+     * #103: how many of a Builder creature to make, now that its dialog asks "How strong" in that place: no control,
+     * but a count the typed words still say ("five giant cats", the Apprentice), as the dialog's slider would have
+     * offered it (up to this world's most). Null where the dialog asks it itself, on an edit, or where only one may be.
+     */
+    public TuneDialog.Slider typedOnlyCount() {
+        if (step != Step.TUNE || editOf != null || kind != BuilderSpec.Kind.CREATURE || !paced()) {
+            return null;
+        }
+        int most = BuilderCounts.most(allow, kind, from);
+        return most > 1 ? new TuneDialog.Slider("count", "How many", 1, most, 1, 1) : null;
+    }
+
     private boolean paced() {
         return (kind == BuilderSpec.Kind.CREATURE || kind == BuilderSpec.Kind.RIDE) && !realAnimal();
     }
@@ -2280,9 +2297,10 @@ public final class BuilderFlow {
                     : prior.opt("mobsize").isEmpty() ? BuilderMobSizes.fromOldSize(prior.size()).id() : prior.opt("mobsize");
             in.add(new TuneDialog.Choice("mobsize", "Size", levels, BuilderMobSizes.of(was).id()));
         }
-        // An edit changes the one he has and adds none, so it asks no "how many".
+        // An edit changes the one he has and adds none, so it asks no "how many". #103: a Builder creature's dialog
+        // asks "How strong" in its place (a tune dialog holds four), and its count is typed (typedOnlyCount).
         boolean counted = editOf == null && (kind == BuilderSpec.Kind.CREATURE || kind == BuilderSpec.Kind.ITEM
-                || kind == BuilderSpec.Kind.EVENT);
+                || kind == BuilderSpec.Kind.EVENT) && !paced();
         // as many as this world's spawn rules let the Magician bring (BuilderCounts), never a fixed five
         int most = BuilderCounts.most(allow, kind, from);
         in.add(counted && most > 1
@@ -2374,8 +2392,9 @@ public final class BuilderFlow {
                 prior == null ? start("speed", 2, 1, 3) : Math.max(1, Math.min(3, num(prior.opt("speed"), 2)))) : null);
         // #103: how strong a creature or a ride is (gentle, its own, strong): its health and its hit. After How fast,
         // so no older control moves.
-        in.add(paced() ? new TuneDialog.Slider("strength", "How strong", 1, 3, 1,
-                prior == null ? start("strength", 2, 1, 3) : Math.max(1, Math.min(3, num(prior.opt("strength"), 2)))) : null);
+        in.add(paced() ? new TuneDialog.Choice("strength", "How strong", STRENGTH_WORDS,
+                String.valueOf(prior == null ? start("strength", 2, 1, 3) : Math.max(1, Math.min(3, num(prior.opt("strength"), 2)))))
+                : null);
         in.removeIf(java.util.Objects::isNull);
         String title = editOf != null ? "Change your " + (prior.name().isEmpty() ? pickedLabel() : prior.name())
                 : kind == BuilderSpec.Kind.RULE ? "Your new rule"

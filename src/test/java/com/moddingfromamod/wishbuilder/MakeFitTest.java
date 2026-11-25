@@ -93,7 +93,7 @@ class MakeFitTest {
                 if (f.changed()) {
                     fitted++;
                     if (f.spec().size() > s.size() || f.spec().count() > s.count()
-                            || num(f.spec().opt("strength")) > num(s.opt("strength"))
+                            || strength(f.spec()) > strength(s)
                             || f.spec().kind() != s.kind() || !f.spec().from().equals(s.from())) {
                         bad.add("a fit made more or something else: " + s.toJson() + " → " + f.spec().toJson());
                     }
@@ -108,6 +108,12 @@ class MakeFitTest {
         assertTrue(bad.isEmpty(), bad.size() + " failures, e.g.\n" + String.join("\n", bad.subList(0, Math.min(10, bad.size()))));
         assertTrue(fitted > 100, "only " + fitted + " fits changed anything: the spread does not reach the knobs");
         assertTrue(live > 0, "no make was fitted live: the spread does not reach a tough creature");
+    }
+
+    /** Its strength step: a creature's or ride's unstated one is its own (#103, BuilderCreatureStrength.OWN). */
+    private static int strength(BuilderSpec s) {
+        boolean creature = s.kind() == BuilderSpec.Kind.CREATURE || s.kind() == BuilderSpec.Kind.RIDE;
+        return creature && s.opt("strength").isEmpty() ? BuilderCreatureStrength.OWN : num(s.opt("strength"));
     }
 
     private static int num(String v) {
@@ -147,12 +153,15 @@ class MakeFitTest {
         // within the limit: made as it is
         MakeFit.Fitted within = MakeFit.fit(cat, Map.of(MakeFacts.HEALTH_HALF_HEARTS, health));
         assertTrue(within.fits() && !within.changed());
-        // over it: every size and strength step is tried, highest first, each re-derived; the cat's health is its
-        // ready-made's whatever its size, so no step lowers it: the last step fits it on the live creature, and the
-        // make itself is not changed
+        // over it: every size and strength step is tried, highest first, each re-derived. #103: a creature's size and
+        // How strong move its health, so a step of the make itself lowers it, the most kept first
         MakeFit.Fitted over = MakeFit.fit(cat, Map.of(MakeFacts.HEALTH_HALF_HEARTS, health - 1));
-        assertTrue(over.fits() && over.spec().equals(cat) && over.lowered().equals(List.of(MakeFacts.HEALTH_HALF_HEARTS)),
-                over.toString());
+        assertTrue(over.fits() && over.changed() && over.lowered().contains(MakeFacts.HEALTH_HALF_HEARTS)
+                && MakeFacts.of(over.spec()).number(MakeFacts.HEALTH_HALF_HEARTS).orElse(999) <= health - 1, over.toString());
+        // below every step (a Teeny gentle cat still has more): the make is not changed, it is fitted on the live creature
+        MakeFit.Fitted live = MakeFit.fit(cat, Map.of(MakeFacts.HEALTH_HALF_HEARTS, 1.0));
+        assertTrue(live.fits() && live.spec().equals(cat) && live.lowered().equals(List.of(MakeFacts.HEALTH_HALF_HEARTS)),
+                live.toString());
         // the search tries every lower combination, the most kept first
         List<BuilderSpec> tried = MakeFit.steps(cat);
         assertTrue(tried.size() >= 3, tried.size() + " steps");

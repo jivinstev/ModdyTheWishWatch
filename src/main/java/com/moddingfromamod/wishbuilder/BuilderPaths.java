@@ -42,7 +42,7 @@ public final class BuilderPaths {
         row("creature/animal/mobsize", false, true, "a real farm animal is a real mob: nothing of it is kept to change");
         row("creature/animal/acts", false, false, "a real mob is not kept to change; how it acts is read when made (#2402), and a typed change of it is #2352's backlog");
         row("creature/ready/abilities", true, true, "");
-        row("creature/ready/count", false, false, "how many to make is a new make, never a change of the ones he has");
+        row("creature/ready/count", false, false, "not on the make dialog since #103 (How strong took its place); said in typed words at make time (the Apprentice); how many to make is a new make, never a change of the ones he has");
         row("creature/ready/from", true, false, "a new make, not a change of his");
         row("creature/ready/mobsize", true, true, "");
         row("creature/ready/parts", true, true, "");
