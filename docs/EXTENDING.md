@@ -153,6 +153,26 @@ child's own spawn egg, carries neither marker. Note the last row: a mob **your w
 is inside the same scope and is marked too; a world that spawns mobs from its own functions tags them itself and checks
 its own tag first.
 
+## Telling a wished item stack from any other: `WishedItem`
+
+`com.moddingfromamod.world.WishedItem.madeBy(stack)` is the item twin of `Wished`: the one documented way to ask "did
+a player's wish make this item stack, and whose wish was it?". It returns `Optional<Made>`, where `Made` holds
+`wishId` (the wish's id) and `maker` (the UUID of the player whose wish it was); it is empty for anything else. Read
+it rather than the component, whose shape may change. `WishedItem.of(wishId, maker)` is the same decision on the two
+stamped strings.
+
+- **Stamped at hand-over** (`WishDelivery.give`, the one path every wish's items take): a Builder or Apprentice make,
+  "Make another one", a hotbar fire, and the Magician's `make_item` and give. It lives in the stack's
+  `minecraft:custom_data` (which a stock client accepts) under `ModdyMadeBy`. **Ids only, never the player's words**
+  nor any name he typed.
+- **"Give me one"** makes no new wish: its stack names the kept thing it was given again, `wishId` `again:<its key>`,
+  with the player it was given to as the maker (a copy that already says which wish made it keeps that).
+- **A plain vanilla gift is not stamped, so `madeBy` answers "not wish-made" for it** (a wish's 32 melon slices): a
+  mark would stop it stacking with his own melon slices, which the owner decided against (`WishedItems.TAG_PLAIN_GIFTS`,
+  false). Only an item a wish MADE is stamped; it already carries the wish's own data and never stacks with a vanilla
+  one. If that switch is turned on, plain gifts are stamped too.
+- It does not fit items to a world's limits; that is the make facts' and the fit's job.
+
 ## Documented extension points
 
 ### `WishCharge`

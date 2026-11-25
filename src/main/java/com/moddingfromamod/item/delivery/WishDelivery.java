@@ -156,6 +156,20 @@ public final class WishDelivery {
 
     // ── handing over ────────────────────────────────────────────────────────────────────────
 
+    /** Whose wish {@code wishKey} is: its record's player, else the one it is handed to. */
+    static java.util.UUID makerOf(ServerPlayer player, String wishKey) {
+        try {
+            var wish = com.moddingfromamod.wish.WishBook.get(player.level().getServer())
+                    .byId(java.util.UUID.fromString(wishKey));
+            if (wish.isPresent() && wish.get().playerId() != null) {
+                return wish.get().playerId();
+            }
+        } catch (RuntimeException notAWish) {
+            // a key that is no wish's id (a test's, an event's): the one it is handed to made it
+        }
+        return player.getUUID();
+    }
+
     /** Hand {@code stack} over as the running wish's: a {@link Kind#HANDOVER}, said at the end of the tick. */
     public static List<Landed> give(ServerPlayer player, ItemStack stack) {
         return give(player, stack, currentWishKey(), Kind.HANDOVER, true);
@@ -188,6 +202,11 @@ public final class WishDelivery {
         }
         List<Landed> out = new ArrayList<>();
         WishedItems.markIfPlain(stack);
+        // (D) a made thing says which wish made it, and whose: ids only, never his words (WishedItem). A plain gift is
+        // left unmarked unless the owner's switch marks it above, so it keeps stacking with his own.
+        if (wishKey != null && !wishKey.isEmpty() && WishedItems.isWished(stack)) {
+            com.moddingfromamod.world.WishedItem.stamp(stack, wishKey, makerOf(player, wishKey));
+        }
         ItemStack like = stack.copyWithCount(1);
         String name = stack.getHoverName().getString();
         int total = stack.getCount();
