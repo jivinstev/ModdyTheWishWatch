@@ -197,23 +197,36 @@ class BuildFootingTest {
     }
 
     @Test
-    void aCliffEdgeStaysOnTheClifftopAndTheOverhangIsReportedNotFilled() {
+    void aCliffEdgeStaysOnTheClifftopAndTheOverhangStandsOnABaseNotATower() {
         // Three of five columns east are on the cliff; the last two hang over a 20-block drop.
         Decision d = decide((x, z) -> x < 103 ? Column.ground(63, "minecraft:stone")
                 : Column.ground(43, "minecraft:stone"), house(), 64);
         assertEquals(64, d.anchorY(), "most of it is on the clifftop: it stays");
         assertFalse(d.moved());
         assertEquals(10, d.hanging());
-        assertTrue(d.fills().isEmpty(), "no tower of fill under the overhang");
-        assertTrue(BuildFooting.forTheAgent(d, 0, 0, 0).contains("still over a drop"));
+        assertEquals(10, d.based(), "#114: every overhanging column stands on a base");
+        assertEquals(10, d.fills().size(), "one layer, never a tower of fill under the overhang");
+        assertTrue(d.fills().stream().allMatch(f -> f.y() == 63 && f.x() >= 103), "right under it: " + d.fills());
+        assertTrue(BuildFooting.forTheAgent(d, 0, 0, 0).contains("one-block base"));
     }
 
     @Test
-    void theVoidIsNothingBelowAndNothingMoves() {
+    void theVoidIsNothingBelowNothingMovesAndItStandsOnABase() {
         Decision d = decide((x, z) -> Column.nothing(), house(), 64);
         assertEquals(Action.NOTHING_BELOW, d.action());
+        assertEquals(64, d.anchorY(), "#46: it stays level where it was put");
+        assertEquals(25, d.fills().size(), "#114: one block of base under every column");
+        assertTrue(d.fills().stream().allMatch(f -> f.y() == 63 && f.block().equals(BuildFooting.STONE)));
+        assertEquals(25, d.based());
+    }
+
+    @Test
+    void anIslandEdgeBuildsItsBaseFromTheIslandsOwnGround() {
+        // the west half on the island's grass, the east half over the void past its edge
+        Decision d = decide((x, z) -> x < 102 ? Column.ground(63, "minecraft:grass_block") : Column.nothing(), house(), 64);
         assertEquals(64, d.anchorY());
-        assertTrue(d.fills().isEmpty());
+        assertTrue(d.based() > 0 && d.fills().stream().allMatch(f -> f.block().equals(BuildFooting.material("minecraft:grass_block"))),
+                "the base reads as the island: " + d.fills());
     }
 
     @Test
