@@ -118,8 +118,15 @@ class Register(unittest.TestCase):
     def test_a_recorded_permission(self):
         rows = ns["register_rows"]("| `*.py` | SethBling | PERMISSION cbscript | the compiler |\n"
                                    "| `x.py` | someone | PERMISSION nobody | unrecorded |\n")
-        found, _ = ns["audit_register"](POLICY, rows, ["a.py", "x.py"], {}, "R")
+        raw = json.loads((TOOLS / "licence-rules.json").read_text(encoding="utf-8"))
+        raw["permissions"] = {"cbscript": {"record": "a test's record"}}     # this repository records none yet
+        with tempfile.TemporaryDirectory() as t:
+            (Path(t) / "r.json").write_text(json.dumps(raw), encoding="utf-8")
+            policy = ns["Policy"](Path(t) / "r.json")
+        found, _ = ns["audit_register"](policy, rows, ["a.py", "x.py"], {}, "R")
         self.assertEqual([(f[2], "nobody" in f[3]) for f in found], [("register-licence", True)])
+        found, _ = ns["audit_register"](POLICY, rows, ["a.py", "x.py"], {}, "R")
+        self.assertEqual(len(found), 2, "with no recorded permission, every PERMISSION row is refused")
 
     def test_our_own_notice(self):
         self.assertIsNone(POLICY.foreign_notice("# Copy" + J + "right (c) 2026 Moddy LLC"))

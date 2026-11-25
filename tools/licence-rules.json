@@ -32,8 +32,7 @@
   ],
 
   "permissions": {
-    "_comment": "Code used by its author's permission with no open-source licence. A register row says `PERMISSION <name>`; each name says where the permission is recorded. Adding one is the owner's decision.",
-    "cbscript": {"record": "THIRD_PARTY_NOTICES.md and licenses/cbscript.NOTICE.txt: SethBling's verbal permission (November 2026) for CBScript to be used in Moddy and modified for it"}
+    "_comment": "Code used by its author's permission with no open-source licence. A register row says `PERMISSION <name>`; each name says where the permission is recorded. Adding one is the owner's decision; none is recorded yet (CBScript waits on #142)."
   },
 
   "own_copyright": ["\\bModdy\\s+LLC\\b"],
