@@ -104,6 +104,9 @@ is the `neoforge-1.21.8` branch. A tag `moddingfromamod-<version>-mc1.21.8` (or 
 `release = true`) builds, gates and cuts a GitHub **pre-release** with the jar. A person plays the pre-release; then
 **promote** (`promote = <tag>`, `played_by = <login>`) makes it a full Release, and **publish** uploads a promoted
 release to Modrinth and CurseForge (`.github/port-publish.json`). Nothing is published that a person has not played.
+A release also needs a **green full-tier GameTest run of the exact code it ships** (`tools/gate/gate.py release-gate`: a
+nightly or release run on record, or it runs the tier itself; [`docs/RELEASING.md`](docs/RELEASING.md)), and every rung
+of the ladder needs its own.
 `tools/store-release.sh <version>` builds and checks the same jar locally.
 
 **`main` is the upstream of a weekly version ladder** ([`docs/RELEASING.md`](docs/RELEASING.md)).

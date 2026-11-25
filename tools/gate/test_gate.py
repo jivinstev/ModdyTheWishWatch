@@ -18,6 +18,7 @@ import nightly  # noqa: E402
 import run  # noqa: E402
 import covmap  # noqa: E402
 import selection  # noqa: E402
+import release  # noqa: E402
 
 
 def write(root: str, rel: str, text: str) -> None:
@@ -584,6 +585,64 @@ class CoverageMap(unittest.TestCase):
         self.assertEqual(covmap.to_remap("partial", prev, TIER3, blobs), ["CGameTest", "DGameTest"])
         self.assertEqual(covmap.to_remap("full", prev, TIER3, blobs), sorted(TIER3))
 
+
+def full(tree, verdict="green", kind="nightly", fulltier=True, shard="ci,default", excluded=()):
+    return {"kind": kind, "tree": tree, "commit": "c-" + tree, "verdict": verdict, "fullTier": fulltier,
+            "shard": shard, "excluded": list(excluded), "runUrl": "u"}
+
+
+class ReleaseEvidence(unittest.TestCase):
+    REG = {"agametest.t0": {"test": "AGameTest.t0", "issue": "#1"}}
+
+    def test_only_a_green_full_tier_run_of_the_same_code_is_evidence(self):
+        self.assertIsNone(release.is_evidence(full("T"), "T", {}))
+        self.assertIsNone(release.is_evidence(full("T", kind="release"), "T", {}))
+        for rec, why in [(full("U"), "other code"), (full("T", verdict="red"), "red"),
+                         (full("T", kind="pr"), "not a full-tier"), (full("T", shard="ci"), "shard"),
+                         (full("T", fulltier=False), "whole tier"), (full("T", kind="covmap"), "not a full-tier")]:
+            self.assertIn(why, release.is_evidence(rec, "T", {}) or "", rec)
+
+    def test_a_record_names_its_code_by_todays_definition_of_the_tree(self):
+        # written when the tree still counted .port/: recomputed from its commit, it covers the same code today
+        old = full("OLD")
+        self.assertIsNotNone(release.is_evidence(old, "T", {}))
+        self.assertIsNone(release.is_evidence(old, "T", {}, tree_of=lambda r: "T"))
+
+    def test_a_run_may_leave_out_only_the_registers_tests(self):
+        self.assertIsNone(release.is_evidence(full("T", excluded=["AGameTest.t0"]), "T", self.REG))
+        self.assertIn("not on the flake register",
+                      release.is_evidence(full("T", excluded=["BGameTest.t0"]), "T", self.REG))
+
+    def drive(self, before, after, run):
+        calls = {"dispatch": 0}
+        recs = [before, after]
+        old_tree = g.gate_tree
+        g.gate_tree = lambda rev="HEAD", root=g.ROOT: "T"
+        clock = [1000.0]
+        try:
+            code = release.gate("o/r", "HEAD", "neoforge-1.21.8", "/nowhere", 60,
+                                dispatch=lambda: calls.__setitem__("dispatch", calls["dispatch"] + 1),
+                                latest_run=lambda since: run, refetch=lambda: recs.pop(0) if recs else [],
+                                sleep=lambda s: clock.__setitem__(0, clock[0] + s), now=lambda: clock[0])
+        finally:
+            g.gate_tree = old_tree
+        return code, calls["dispatch"]
+
+    def test_a_covering_run_releases_without_running_the_tier(self):
+        self.assertEqual(self.drive([full("T")], [], None), (0, 0))
+
+    def test_no_covering_run_runs_the_tier_and_releases_only_if_it_is_green(self):
+        done = {"status": "completed", "conclusion": "success", "html_url": "u"}
+        self.assertEqual(self.drive([full("U")], [full("T", kind="release")], done), (0, 1))
+        red = {"status": "completed", "conclusion": "failure", "html_url": "u"}
+        self.assertEqual(self.drive([], [full("T", kind="release", verdict="red")], red), (1, 1))
+
+    def test_a_targeted_or_ci_run_never_stands_in_for_the_tier(self):
+        done = {"status": "completed", "conclusion": "success", "html_url": "u"}
+        self.assertEqual(self.drive([full("T", kind="pr"), full("T", shard="ci")], [], done), (1, 1))
+
+    def test_a_tier_that_does_not_finish_in_time_refuses(self):
+        self.assertEqual(self.drive([], [], {"status": "in_progress", "html_url": "u"}), (1, 1))
 
 if __name__ == "__main__":
     unittest.main(verbosity=1)

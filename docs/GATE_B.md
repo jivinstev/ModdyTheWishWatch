@@ -64,11 +64,19 @@ without anyone looking at Actions.
 A failure that passed alone is `flaky`, not red. A failure of a test on the flake register is `known-flaky`: reported,
 not red, because its issue already says so.
 
+## A release needs a full tier
+
+A release needs a green full-tier run of the exact code it ships, found in the run history or run on the spot:
+`gate.py evidence --data <gate-data checkout>` says whether one is on record, `gate.py release-gate` is the check Port CI
+runs before a pre-release, and the Nightly workflow with `kind = release` is the tier it starts. Only a record of kind
+`nightly` or `release` that ran the whole tier (`fullTier`: every class, each with all its tests, nothing left out but
+the flake register's) at the same gate tree counts. docs/RELEASING.md, "The release gate", says how a release uses it.
+
 ## Which tree a result belongs to
 
 A result belongs to the code it tested, not to a commit message. `gate.py tree [REV]` hashes the `(path, blob)` pairs
-of every file Gate B can read: everything except `docs/`, `.github/`, `art/`, `src/test/`, `tools/client-validation/`
-and the top-level `*.md` files (`gatelib.NOT_GATE_B`). It is a deny list on purpose: a path wrongly left in costs a
+of every file Gate B can read: everything except `docs/`, `.github/`, `art/`, `src/test/`, `tools/client-validation/`,
+the port ledger `.port/` and the top-level `*.md` files (`gatelib.NOT_GATE_B`). It is a deny list on purpose: a path wrongly left in costs a
 re-run, while an allow list that forgot one would let a stale green stand for code it never ran. A commit that changes
 only docs has the same gate tree as its parent, so its night is skipped.
 
