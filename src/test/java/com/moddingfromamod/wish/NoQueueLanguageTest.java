@@ -49,6 +49,8 @@ class NoQueueLanguageTest {
             "src/main/java/com/moddingfromamod/wish/WishService.java",
             "src/main/java/com/moddingfromamod/wish/ChargeGate.java",   //: a world's charge's refusal line
             "src/main/java/com/moddingfromamod/wish/ChargeRefusal.java",
+            "src/main/java/com/moddingfromamod/wish/MakeGate.java",      //: a world's view of a make (#14)
+            "src/main/java/com/moddingfromamod/wish/MakeVerdict.java",
             // step 5: a Wish Crafter's welcome, nudges, rank-ups and promotion (its words are Crafters')
             "src/main/java/com/moddingfromamod/wish/CrafterService.java",
             // the Apprentice says its own lines (its words are ApprenticeWords'), and /moddy apprentice one.

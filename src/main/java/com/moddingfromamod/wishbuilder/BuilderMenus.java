@@ -342,7 +342,7 @@ public final class BuilderMenus {
             }
             String say = switch (r.outcome()) {
                 case REFUSED -> "The Builder can't make that here: " + r.detail();
-                case BANK_EMPTY -> r.detail();
+                case BANK_EMPTY, NOT_HERE -> r.detail();
                 case BUSY -> "Your last Builder make is still on its way.";
                 default -> "";
             };
@@ -390,7 +390,11 @@ public final class BuilderMenus {
         if (flow.step() == BuilderFlow.Step.TUNE) {
             p.closeContainer();
             LOGGER.info("builder tune {} {}", flow.kind().id(), p.getGameProfile().getName());
-            MenuKit.tune(p, flow.tune());
+            com.moddingfromamod.ui.TuneDialog dialog = flow.tune();
+            if (com.moddingfromamod.wish.MakeGate.anyWorld()) {
+                dialog = BuilderPageFit.tune(flow, dialog, judge(p, flow));   // #14: as far as this world's limits go
+            }
+            MenuKit.tune(p, dialog);
             return;
         }
         if (flow.wantsView()) {
@@ -400,7 +404,31 @@ public final class BuilderMenus {
             flow.recentTo(recentTo(p.getUUID().toString()));
         }
         LOGGER.info("builder page {} {}", flow.step().name().toLowerCase(java.util.Locale.ROOT), p.getGameProfile().getName());
-        MenuKit.pick(p, "builder", flow.page(), (sp, id) -> press(sp, id));
+        PickPage page = flow.page();
+        if (com.moddingfromamod.wish.MakeGate.anyWorld()) {
+            page = BuilderPageFit.page(flow, page, judge(p, flow), BuilderPageFit.aheadKey(
+                    BuilderSettings.forPlayer(p.getUUID()).allow(), com.moddingfromamod.wish.MakeGate.limits(p.getUUID()).stamp()));   // #14
+        }
+        MenuKit.pick(p, "builder", page, (sp, id) -> press(sp, id));
+    }
+
+    /**
+     * This world's answer about a make on {@code p}'s Builder pages (#14), through the one gate a make itself passes
+     * ({@code MakeGate.build}): kept, fitted, locked with its line, or dropped. Remembered for one draw only.
+     */
+    static BuilderPageFit.Judge judge(ServerPlayer p, BuilderFlow flow) {
+        BuilderAllowlist allow = BuilderSettings.forPlayer(p.getUUID()).allow();
+        Map<String, BuilderPageFit.Judged> seen = new java.util.HashMap<>();
+        return spec -> seen.computeIfAbsent(spec.toJson().toString(), k -> {
+            var built = com.moddingfromamod.wish.MakeGate.build(spec, allow,
+                    BuilderMake.askOf(p.getUUID(), BuilderMake.textOf(spec), flow.editOf(), false));
+            if (built.makes()) {
+                return built.lowered().isEmpty() ? BuilderPageFit.Judged.KEEP : BuilderPageFit.Judged.FIT;
+            }
+            return built.verdict().locked() && !built.unfit()
+                    ? new BuilderPageFit.Judged(BuilderPageFit.Seen.LOCK, built.verdict().line())
+                    : new BuilderPageFit.Judged(BuilderPageFit.Seen.DROP, built.verdict().line());
+        });
     }
 
     /** One press on a pick page. Public for the GameTest, which presses as a client would. */
@@ -411,6 +439,17 @@ public final class BuilderMenus {
             return;
         }
         LOGGER.info("builder press {} {}", id, p.getGameProfile().getName());
+        if (com.moddingfromamod.wish.MakeGate.anyWorld() && id != null && !id.startsWith("@")) {
+            // #14: a tile this world locks or does not offer is never pressed into a make, whatever page sent it
+            BuilderFlow next = flow.after(id);
+            BuilderSpec draft = next == null ? null : next.draft();
+            BuilderPageFit.Judged j = draft == null ? BuilderPageFit.Judged.KEEP : judge(p, flow).judge(draft);
+            if (!j.makes()) {
+                p.sendSystemMessage(Component.literal(j.line().isEmpty() ? com.moddingfromamod.wish.MakeVerdict.HIDDEN_LINE : j.line()));
+                show(p, flow);
+                return;
+            }
+        }
         BuilderFlow.Outcome o = flow.press(id);
         if (o.close()) {
             FLOWS.remove(p.getUUID());
@@ -493,7 +532,7 @@ public final class BuilderMenus {
         BuilderMake.make(p, spec, BuilderSettings.forPlayer(p.getUUID()).allow(), flow.editOf()).thenAccept(r -> {
             String say = switch (r.outcome()) {
                 case REFUSED -> "The Builder can't make that here: " + r.detail();
-                case BANK_EMPTY -> r.detail();
+                case BANK_EMPTY, NOT_HERE -> r.detail();
                 case BUSY -> "Your last Builder make is still on its way.";
                 default -> "";
             };
@@ -523,7 +562,7 @@ public final class BuilderMenus {
         BuilderMake.magicianBuilding(p, flow.magicianBuilding(), calls).thenAccept(r -> {
             String say = switch (r.outcome()) {
                 case REFUSED -> "The Builder can't change that here: " + r.detail();
-                case BANK_EMPTY -> r.detail();
+                case BANK_EMPTY, NOT_HERE -> r.detail();
                 case BUSY -> "Your last Builder make is still on its way.";
                 default -> "";
             };
@@ -553,7 +592,7 @@ public final class BuilderMenus {
         BuilderMake.magician(p, flow.magician(), calls).thenAccept(r -> {
             String say = switch (r.outcome()) {
                 case REFUSED -> "The Builder can't change that here: " + r.detail();
-                case BANK_EMPTY -> r.detail();
+                case BANK_EMPTY, NOT_HERE -> r.detail();
                 case BUSY -> "Your last Builder make is still on its way.";
                 default -> "";
             };

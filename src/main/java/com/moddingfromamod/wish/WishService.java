@@ -1,7 +1,10 @@
 package com.moddingfromamod.wish;
 
 import com.moddingfromamod.marshal.WorldCatalogue;
+import java.util.List;
 import java.util.Optional;
+import com.moddingfromamod.wishbuilder.MakeFacts;
+import com.moddingfromamod.wishbuilder.MakeFit;
 
 import com.moddingfromamod.ModdingFromAModMod;
 import net.minecraft.server.level.ServerPlayer;
@@ -58,6 +61,11 @@ public final class WishService {
          * mod look like it throttles children it did not.
          */
         DRAINING,
+        /**
+         * This world does not make that thing here, or not yet ({@code WorldMakes}, #14): said in the world's words,
+         * nothing charged or started.
+         */
+        NOT_HERE,
         /**
          * Moddy is tired (D8): the grader cannot be reached, the agent is not answering, or
          * the spend ceiling is reached — so this NEW wish was not started. Cached wishes and
@@ -318,6 +326,10 @@ public final class WishService {
         TypedMatch typed = named.isEmpty() && route != WishRoute.Route.APPRENTICE && !readerTakes
                 ? typedMatch(player, text, source) : null;
         WishAsk ask = askFor(player, source, text, distress, named, namedTemplateId, route, readerTakes, typed);
+        WorldSays world = askWorld(player, ask, text, source, named.isPresent() ? named : typed == null ? Optional.empty() : typed.matched());
+        if (world.refused()) {
+            return Outcome.NOT_HERE;
+        }
         if (refusedByCharge(player, ask, text, source)) {
             return Outcome.BANK_EMPTY;
         }
@@ -335,6 +347,10 @@ public final class WishService {
             // what answers them now.
             typed = typedMatch(player, text, source);
             ask = askFor(player, source, text, distress, named, namedTemplateId, route, false, typed);
+            world = askWorld(player, ask, text, source, named.isPresent() ? named : typed.matched());
+            if (world.refused()) {
+                return Outcome.NOT_HERE;
+            }
             if (refusedByCharge(player, ask, text, source)) {
                 return Outcome.BANK_EMPTY;
             }
@@ -347,6 +363,7 @@ public final class WishService {
             return Outcome.APPRENTICE;
         }
         final WishAsk asked = ask;
+        final WorldSays worldSaid = world;
 
         // Memoised on the sanitised text, so the three re-wish paths that skip this method join
         // the grade already in flight rather than starting a second one.
@@ -461,6 +478,13 @@ public final class WishService {
         final Optional<com.moddingfromamod.health.ModdyTired.Tired> tired = tiredNow(now);
         // his words' match was decided above, before the charge was asked (typedMatch), and is used as it was decided.
         Optional<WishTemplates.Match> matched = named.isPresent() ? named : typed.matched();
+        if (matched.isPresent() && worldSaid.fitted() != null) {
+            // fitted to this world's limits at fire (#14): the same recipe, fewer at once
+            CommandPlan was = matched.get().plan();
+            matched = Optional.of(new WishTemplates.Match(matched.get().templateId(),
+                    new CommandPlan(worldSaid.fitted(), was.sayToPlayer(), was.budget())));
+            MakeGate.sayFitted(player, worldSaid.lowered());
+        }
         boolean question = named.isEmpty() && typed.question();
         boolean contextual = named.isEmpty() && typed.contextual();
         if (matched.isPresent()) {
@@ -676,6 +700,48 @@ public final class WishService {
             return base.withMagic(WishAsk.Magic.REPLAY).withRecipe(typed.matched().get().templateId());
         }
         return base;
+    }
+
+    /**
+     * A recipe made again (a button, "Make another one", a hotbar fire, a cached recipe his words matched): ask the world
+     * whether that thing is made here ({@link MakeGate}, #14), by the facts of what the recipe makes. Hidden or locked is
+     * said (once) and logged, and the wish goes no further: nothing is charged or started. Asked after the safety lexicon
+     * and before the charge; a child in distress is never stopped. Typed words the Magician or the Apprentice will answer
+     * are asked where their make is known (the Apprentice's tiles and make, the Magician's result).
+     */
+    /** What the world said about a recipe: refused (said and logged), or its commands fitted to its limits (or null). */
+    private record WorldSays(boolean refused, List<String> fitted, List<String> lowered) {
+        static final WorldSays GO = new WorldSays(false, null, List.of());
+    }
+
+    private static WorldSays askWorld(ServerPlayer player, WishAsk ask, String text, WishSource source,
+                                      Optional<WishTemplates.Match> recipe) {
+        if (ask.magic() != WishAsk.Magic.REPLAY || ask.recipe().isEmpty() || !MakeGate.anyWorld()) {
+            return WorldSays.GO;
+        }
+        var server = player.level().getServer();
+        MakeFacts facts = MakeFactsLookup.forRecipe(server, player.getUUID(), ask.recipe());
+        MakeVerdict v = MakeGate.ask(facts, ask);
+        List<String> fitted = null;
+        List<String> lowered = List.of();
+        if (v.makes() && !v.limits().isEmpty() && !MakeFit.satisfies(facts, v.limits())) {
+            List<String> commands = recipe.map(m -> m.plan().commands()).orElse(List.of());
+            fitted = commands.isEmpty() ? null
+                    : MakeFit.fitCommands(commands, v.limits(), MakeFactsLookup.artifacts(server));
+            if (fitted == null) {
+                v = v.tooMuch();
+            } else {
+                lowered = MakeFit.over(facts, v.limits());
+            }
+        }
+        if (v.makes()) {
+            return new WorldSays(false, fitted, lowered);
+        }
+        MakeGate.say(player, v);
+        LOGGER.info("not making '{}' here: the world says {}", ask.recipe(), v.state());
+        com.moddingfromamod.agent.ActionLog.wish(CrafterService.isCrafter(player) ? "" : text, "NOT_HERE",
+                source.name(), "", player.getStringUUID());
+        return new WorldSays(true, null, List.of());
     }
 
     /** Ask the world's charge; a refusal is said (once) and logged, and the wish goes no further. */

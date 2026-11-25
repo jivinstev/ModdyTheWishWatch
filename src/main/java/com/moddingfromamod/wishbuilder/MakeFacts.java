@@ -289,8 +289,30 @@ public record MakeFacts(String kind, Map<String, Double> numbers, Set<String> ta
      * {@code builder:<id>} make's stored spec. The ready-mades are read from the shipped library.
      */
     public static MakeFacts of(BuilderSpec spec) {
-        return of(spec, LibraryPresets.SHIPPED);
+        if (spec == null) {
+            return cautious(OTHER);
+        }
+        // the shipped library's facts of a spec never change at run time: a bounded memo, so a menu drawn under a
+        // world's limits (every tile's make, read and fitted) does not lower the same spec again and again
+        String key = spec.toJson().toString();
+        MakeFacts hit = MEMO.get(key);
+        if (hit != null) {
+            return hit;
+        }
+        MakeFacts f = of(spec, LibraryPresets.SHIPPED);
+        MEMO.put(key, f);
+        return f;
     }
+
+    /** At most this many specs' facts are remembered; the oldest goes first. */
+    static final int MEMO_SIZE = 4096;
+
+    private static final Map<String, MakeFacts> MEMO = Collections.synchronizedMap(new LinkedHashMap<>(256, 0.75f, true) {
+        @Override
+        protected boolean removeEldestEntry(Map.Entry<String, MakeFacts> eldest) {
+            return size() > MEMO_SIZE;
+        }
+    });
 
     /**
      * …with the ready-mades read through {@code presets}. A spec still being picked (a menu page's tile: a kind with

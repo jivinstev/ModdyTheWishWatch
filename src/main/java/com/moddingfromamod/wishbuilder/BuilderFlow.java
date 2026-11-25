@@ -144,6 +144,78 @@ public final class BuilderFlow {
     }
 
     /**
+     * This flow as it would be after pressing {@code id}, or null when the press goes nowhere (a control, a press it
+     * refuses, one that closes). THIS flow is never changed: the press runs on a copy. What a page's tile leads to, so a
+     * world's view of a tile is the view of the make that pressing it heads for (#14).
+     */
+    public BuilderFlow after(String id) {
+        if (id == null || id.isBlank() || id.startsWith("@") && !id.equals(PickPage.NEXT_ID)) {
+            return null;
+        }
+        BuilderFlow c = copy();
+        try {
+            Outcome o = c.press(id);
+            return o.close() || !o.say().isEmpty() || c.kind == null ? null : c;
+        } catch (RuntimeException e) {
+            return null;
+        }
+    }
+
+    /** The make this flow holds so far, with the tune dialog's defaults, or null when it holds none yet. Never throws. */
+    public BuilderSpec draft() {
+        if (kind == null) {
+            return null;
+        }
+        try {
+            return spec(Map.of());
+        } catch (RuntimeException e) {
+            return null;
+        }
+    }
+
+    /**
+     * A copy holding every pick this one holds. Every instance field is copied (a collection into a fresh one of the
+     * same kind), so a field added later is copied with no change here; {@code BuilderFlowCopyTest} proves a copy
+     * pages and specs as its original does.
+     */
+    private BuilderFlow copy() {
+        BuilderFlow c = new BuilderFlow(allow, presets);
+        for (java.lang.reflect.Field f : BuilderFlow.class.getDeclaredFields()) {
+            if (java.lang.reflect.Modifier.isStatic(f.getModifiers()) || f.getName().equals("token")) {
+                continue;
+            }
+            try {
+                f.setAccessible(true);
+                Object v = f.get(this);
+                if (java.lang.reflect.Modifier.isFinal(f.getModifiers())) {
+                    Object mine = f.get(c);
+                    if (mine instanceof java.util.Collection<?> col && v instanceof java.util.Collection<?> src) {
+                        @SuppressWarnings("unchecked") java.util.Collection<Object> to = (java.util.Collection<Object>) col;
+                        to.clear();
+                        to.addAll(src);
+                    } else if (mine instanceof Map<?, ?> m && v instanceof Map<?, ?> src) {
+                        @SuppressWarnings("unchecked") Map<Object, Object> to = (Map<Object, Object>) m;
+                        to.clear();
+                        to.putAll(src);
+                    }
+                    continue;   // allow and presets: the constructor's
+                }
+                if (v instanceof Set<?> set) {
+                    v = new LinkedHashSet<>(set);
+                } else if (v instanceof List<?> list) {
+                    v = new ArrayList<>(list);
+                } else if (v instanceof Map<?, ?> map) {
+                    v = new LinkedHashMap<>(map);
+                }
+                f.set(c, v);
+            } catch (IllegalAccessException e) {
+                throw new IllegalStateException("cannot copy BuilderFlow." + f.getName(), e);
+            }
+        }
+        return c;
+    }
+
+    /**
      * "Change one thing": a flow reopened from a kept make, every pick he made already made — at the
      * powers page for a creature or a ride (where most changes are), a rule at its "when" page, else straight at
      * the tune dialog with his
