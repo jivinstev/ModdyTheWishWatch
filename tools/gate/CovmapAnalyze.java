@@ -33,7 +33,8 @@ import org.jacoco.core.tools.ExecFileLoader;
  * commit still names the same methods at the next: a lambda counts as the method that holds it
  * ({@code lambda$tick$3} is {@code tick}; in a static initialiser {@code <clinit>}, in a constructor {@code <init>}), an
  * anonymous class is {@code Outer$anon}, and overloads share their name. Folding only ever makes a method bigger, so a
- * change selects more, never less.
+ * change selects more, never less. A method's lines are its first to its last, but for an initialiser ({@code <clinit>},
+ * {@code <init>}), whose code is spread over the file's field declarations: its lines are exactly those holding code.
  */
 public final class CovmapAnalyze {
 
@@ -69,7 +70,14 @@ public final class CovmapAnalyze {
                     fileOf.putIfAbsent(id, src);
                 }
                 if (m.getFirstLine() > 0) {
-                    linesOf.computeIfAbsent(id, k -> new TreeSet<>()).add(m.getFirstLine() + "-" + m.getLastLine());
+                    TreeSet<String> ranges = linesOf.computeIfAbsent(id, k -> new TreeSet<>());
+                    if (id.endsWith("#<clinit>") || id.endsWith("#<init>")) {
+                        // an initialiser's code is spread over the file (every field initialiser, and its lambdas): its
+                        // first and last lines would claim everything between them, so record the lines that hold code
+                        exactLines(m, ranges);
+                    } else {
+                        ranges.add(m.getFirstLine() + "-" + m.getLastLine());
+                    }
                 }
             }
         }
@@ -142,6 +150,25 @@ public final class CovmapAnalyze {
         }
         System.out.println("covmap: " + units.size() + " units, " + linesOf.size() + " methods, from " + classFiles.size()
                 + " classes");
+    }
+
+    /** The lines of {@code m} that hold code, as {@code a-b} ranges of consecutive lines. */
+    static void exactLines(IMethodCoverage m, TreeSet<String> out) {
+        int start = -1;
+        int prev = -1;
+        for (int line = m.getFirstLine(); line <= m.getLastLine() + 1; line++) {
+            boolean code = line <= m.getLastLine() && m.getLine(line).getStatus() != org.jacoco.core.analysis.ICounter.EMPTY;
+            if (code && start < 0) {
+                start = line;
+            }
+            if (!code && start >= 0) {
+                out.add(start + "-" + prev);
+                start = -1;
+            }
+            if (code) {
+                prev = line;
+            }
+        }
     }
 
     private static TreeSet<String> union(java.util.Set<String> a, java.util.Set<String> b) {

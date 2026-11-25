@@ -144,7 +144,9 @@ and a table of every method's source file and line ranges. `gate.py covmap-merge
 
 - **A method's id** is `package/Class#name`, with what a recompile renumbers folded away: a lambda counts as the method
   that holds it, an anonymous class is `Outer$anon`, overloads share a name. Folding only makes a method bigger, so a
-  change can only select more.
+  change can only select more. A method's lines are its first to its last; an initialiser's (`<clinit>`, `<init>`) are
+  exactly the lines holding its code, because its code is spread over the file's field declarations (first-to-last,
+  `BuilderMenus`' static initialiser claimed lines 36 to 384, the whole file).
 - **Ambient methods** are what runs with no test of ours running: start-up, a 400-tick idle window, shutdown. They are
   kept apart from every class's set; a change to one of them runs the whole tier.
 - **Weekly, FULL**: every class, mapped twice by two replicas of the same split (the determinism check, below).
