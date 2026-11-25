@@ -289,8 +289,38 @@ public record MakeFacts(String kind, Map<String, Double> numbers, Set<String> ta
      * {@code builder:<id>} make's stored spec. The ready-mades are read from the shipped library.
      */
     public static MakeFacts of(BuilderSpec spec) {
-        return of(spec, LibraryPresets.SHIPPED);
+        if (spec == null) {
+            return cautious(OTHER);
+        }
+        // the shipped library's facts of a spec never change at run time: a bounded memo, so a menu drawn under a
+        // world's limits (every tile's make, read and fitted) does not lower the same spec again and again
+        String key = spec.toJson().toString();
+        MakeFacts hit = MEMO.get(key);
+        if (hit != null) {
+            return hit;
+        }
+        MakeFacts f = of(spec, LibraryPresets.SHIPPED);
+        MEMO.put(key, f);
+        return f;
     }
+
+    private static final java.util.concurrent.atomic.AtomicLong DERIVED = new java.util.concurrent.atomic.AtomicLong();
+
+    /** How many specs have been read into facts so far (a memo hit is not one): what a test counts to prove a menu
+     *  draw derives nothing. */
+    public static long derivations() {
+        return DERIVED.get();
+    }
+
+    /** At most this many specs' facts are remembered; the oldest goes first. */
+    static final int MEMO_SIZE = 4096;
+
+    private static final Map<String, MakeFacts> MEMO = Collections.synchronizedMap(new LinkedHashMap<>(256, 0.75f, true) {
+        @Override
+        protected boolean removeEldestEntry(Map.Entry<String, MakeFacts> eldest) {
+            return size() > MEMO_SIZE;
+        }
+    });
 
     /**
      * …with the ready-mades read through {@code presets}. A spec still being picked (a menu page's tile: a kind with
@@ -301,6 +331,7 @@ public record MakeFacts(String kind, Map<String, Double> numbers, Set<String> ta
         if (spec == null) {
             return cautious(OTHER);
         }
+        DERIVED.incrementAndGet();
         BuilderSpec.Kind k = spec.kind();
         Acc a = new Acc(k.id());
         boolean creature = k == BuilderSpec.Kind.CREATURE || k == BuilderSpec.Kind.RIDE;

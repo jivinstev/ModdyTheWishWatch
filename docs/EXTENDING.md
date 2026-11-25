@@ -175,6 +175,65 @@ afford it, charging and refunding, and the words a menu, the guide book and `/mo
   the core then starts nothing and says the line.
 - **Example:** `EmeraldWishCharge` above, about forty lines.
 
+### `WorldMakes`
+*`com.moddingfromamod.world.WorldMakes`, read with `first`.* **What a world lets be made here, what it keeps for
+later, and how big** (#14). Asked about one make at a time, given its `MakeFacts` (above) and the same `WishAsk` a
+charge is told, and decided by the world alone: the core rates nothing and compares no number except to fit a make to
+the limits the world gave.
+
+- **Default (nothing registered):** every make is allowed and nothing is fitted: the game exactly as before.
+- **Which one is asked:** the running world module's own, when `WorldModule.makes()` returns one, else the first
+  registered `WorldMakes`, else the default (as with `WishCharge`).
+- **The answer** is a `MakeView` (a record, so a later answer is a new state or field, never a new signature):
+
+| Answer | Build it with | What the player sees |
+|---|---|---|
+| allowed | `MakeView.ALLOWED` | the make, as it is |
+| hidden | `MakeView.HIDDEN` | nothing: the tile is not on this world's Builder pages or watch (it stays on his shelf for every other world); pressed anyway (a replay, a hotbar fire, a stale page) it says "✨ That can't be made in this world. Try something else!" and makes nothing |
+| locked | `MakeView.locked("Unlocks after you finish the lighthouse")` | a grey tile with your words under its name, and the same words when pressed, made nothing, charged nothing. Your words are swept as a chat line is; words that do not pass (or none) become "🔒 That one is locked in this world for now." |
+| fit | `MakeView.fit(Map.of("countMade", 3.0, "builderSizeStep", 3.0))` | the make, fitted within the limits (fewer at once, a smaller size, a gentler strength) and one short line from the core: "✨ Made a bit smaller for this world.", "✨ Made fewer for this world." or "✨ Made a bit gentler for this world." The tune dialog's sliders and size names stop at the limit; a page whose tiles cannot be fitted drops them, and a tile whose way on leads to nothing allowed is culled from its page |
+
+- **Limits are data**: a `MakeFacts.NUMBERS` key → the most this world allows of it, numbers only. A key the core does
+  not know is ignored; a limit on a number a make does not carry does nothing. `limits(player)` may also state limits
+  up front for every make (`new WorldLimits(map, stamp)`); they join each answer's own, the tighter of each winning.
+  The `stamp` is any short string that changes whenever your limits change, so a reader can tell two sets apart
+  cheaply.
+- **What it costs:** nothing on a server where no world answers (no walk, no thread, nothing kept). Where one does, the
+  facts of every Builder tile (the make pressing it heads for, that make at its lowest knobs, what lies ahead of it) are
+  worked out once per Builder tree (keyed by the tree's own fingerprint) on one background daemon thread started when
+  the server has started; a page draw then only compares your answer and limits with them, reading no make. A page the
+  walk has not reached yet (a second pick on a multi-pick page) shows its tiles locked with "⏳ Getting this page
+  ready…" for a moment and is drawn again when it is ready; it is never drawn unfitted.
+- **How a make is fitted**: through `BuilderAllowlist.capped(spec, limits)`, the one path a Builder make is "made as
+  THIS world makes it". Each number is declared once beside the knob that lowers it (`MakeFit.FACTS`), and a clamp is
+  never trusted: the next smaller value of the knob is tried and kept only when the make's own facts then fit. A number
+  no knob lowers cannot be fitted: a make over it is locked in the core's words, "🔒 That one is too much for this world
+  right now.", never made wrong.
+
+| Number | Fitted by |
+|---|---|
+| `scaleTimes`, `builderSizeStep` | a smaller size (a creature's named sizes, else the 1–4 step) |
+| `builderStrengthStep`, `durationTicks`, `radiusBlocks` | a lower strength |
+| `countMade` | fewer at once (a Builder make; a recipe's `wishmob spawn <id> <count>`) |
+| `amountItems` | fewer in a bundle of supplies |
+| `healthHalfHearts`, `attackDamageHalfHearts`, `movementSpeedAttribute`, `extentBlocks` | nothing: not clampable, so over the limit is locked |
+
+- **Where the core asks:** every Builder and Apprentice make and every Builder change (`BuilderMake.make`, whatever page
+  drew its tile); every tile of the Builder's pages and its tune dialog, per draw; a recipe, "Make another one" and a
+  hotbar fire (`WishService.submit`, by the facts of what the recipe makes, fitted at fire); "Give me one"; each thing on
+  his watch (so a Magician result the world locks stays on his shelf and is shown locked, and one it hides is not on
+  this world's watch).
+- **Order and the rules that do not bend:** the safety layers and a world's rules file run first, so a refused wish is
+  never fitted into an allowed one; nothing is charged for a make that is hidden or locked; **a child in distress is
+  never stopped or fitted** (as with the charge); the answer is a VIEW, worked out when asked and never written to his
+  shelf or any store, because the shelf follows him to every world.
+- **Not yet** (later changes): the Apprentice's tiles are fitted after ranking (today an Apprentice make is asked and
+  fitted when pressed, like any Builder make); the Magician's tool arguments are fitted from limits carried in its
+  brief.
+- **Cheap, and free of side effects:** a menu asks once per tile per draw, on the server thread. Default methods only.
+- **Example:** `ContractWorld` (the contract test world below): hostile makes hidden, a make its own toy rating puts at
+  4 or more locked, everything else fitted to three at once and size step 3.
+
 ### `WorldModuleType`
 *`com.moddingfromamod.world.WorldModuleType`, read with `all`.* **A kind of world**: code that runs for one world and
 that no world-rules entry can express (its own bases, onboarding on join, a tick, extra help lines). The module
@@ -187,7 +246,7 @@ itself implements `com.moddingfromamod.world.WorldModule`.
   packs in the world's data configuration, a marker in its saved data; asked per world, so one game can hold a level's
   world and a plain one); then the first whose `impliedWhenUnnamed()` is true. An id nobody registered is logged as unknown and the
   world runs with none. Two types with the same `id()`: the first registered wins.
-- **The module's methods** (`start`, `stop`, `onLogin`, `onLogout`, `onTick`, `keepTicking`, `helpLines`, `fallbackRules`, `charge`) are all
+- **The module's methods** (`start`, `stop`, `onLogin`, `onLogout`, `onTick`, `keepTicking`, `helpLines`, `fallbackRules`, `charge`, `makes`) are all
   called on the server thread, by one set of handlers in the core, so a module is a plain object a GameTest can
   drive. `start` returns the world's `Bases` (where each player's home is) or `null`; `helpLines(player)` adds
   lines after 💡 Help & links and after the respawn-loop rescue offer.

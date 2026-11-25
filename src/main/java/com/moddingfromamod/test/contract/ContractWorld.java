@@ -1,30 +1,68 @@
 package com.moddingfromamod.test.contract;
 
+import java.util.Map;
+import java.util.UUID;
+
+import com.moddingfromamod.plugin.ModdyPlugin;
+import com.moddingfromamod.plugin.Plugins;
+import com.moddingfromamod.wish.WishAsk;
 import com.moddingfromamod.wishbuilder.MakeFacts;
+import com.moddingfromamod.world.MakeView;
+import com.moddingfromamod.world.WorldLimits;
+import com.moddingfromamod.world.WorldMakes;
 
 /**
  * <b>The contract test world</b> (#63): a tiny stand-in for a world jar, built ONLY from what a world jar may use (the
- * documented hooks and {@link MakeFacts}), so a core change that would break a world jar goes red in the core's own CI.
- * It names no Builder id, no ready-made and no catalogue entry: it decides by the facts alone, so a core upgrade that
- * adds Builder content needs no change here.
+ * documented hooks, {@link WorldMakes} and {@link MakeFacts}), so a core change that would break a world jar goes red
+ * in the core's own CI. It names no Builder id, no ready-made and no catalogue entry: it decides by the facts alone, so
+ * a core upgrade that adds Builder content needs no change here.
  *
  * <p>The core rates nothing. This world makes its OWN rating from the facts ({@link #rating}, a toy formula of its own
  * that no other world need share), and copes with a number it is not given: absent is unknown, read as nothing here.
- * Its rules: a {@link MakeFacts#HOSTILE hostile} make is not for this world; a make it rates {@link #LOCKED_FROM} or
- * more waits until the player has earned it; anything else, including a tag, number or kind it has never heard of, is
- * allowed. A make whose facts could not be read is locked too: this world does not let through what it cannot see.
+ * Its rules, every answer a world can give:
+ * <ul>
+ *   <li>a {@link MakeFacts#HOSTILE hostile} make is not for this world: {@code HIDDEN};</li>
+ *   <li>a make it rates {@link #LOCKED_FROM} or more, or whose facts could not be read, waits until the player has
+ *       earned it: {@code LOCKED} with {@link #LOCKED_WORDS};</li>
+ *   <li>everything else is made, but at most {@link #MOST_AT_ONCE} at once and no bigger than size step
+ *       {@link #BIGGEST_STEP}: {@code FIT}, stated up front ({@link Answers#limits}, stamp {@link #STAMP}) and in each
+ *       answer;</li>
+ *   <li>a tag, number or kind it has never heard of is simply allowed.</li>
+ * </ul>
  *
  * <p>Test code: under {@code test/}, never in the jar.
  */
-public final class ContractWorld {
+public final class ContractWorld implements ModdyPlugin {
 
-    /** What this world says about one make. */
+    /** What this world says about one make, as its own rule (the hook's answer is {@link Answers#view}). */
     public enum Verdict { ALLOWED, HIDDEN, LOCKED }
 
     /** From this rating up, a make is locked here. */
     public static final int LOCKED_FROM = 4;
+    /** The lock's words, which the core sweeps before a child reads them. */
+    public static final String LOCKED_WORDS = "🔒 That one unlocks after you finish the lighthouse.";
+    /** The most of a thing made at once here. */
+    public static final double MOST_AT_ONCE = 3;
+    /** The biggest Builder size step here. */
+    public static final double BIGGEST_STEP = 3;
+    /** The limits' stamp: it would change if the limits did. */
+    public static final String STAMP = "contract-v1";
 
-    private ContractWorld() {
+    /** This world's limits, every make. */
+    public static final Map<String, Double> LIMITS = Map.of(MakeFacts.COUNT_MADE, MOST_AT_ONCE,
+            MakeFacts.BUILDER_SIZE_STEP, BIGGEST_STEP);
+
+    public ContractWorld() {
+    }
+
+    @Override
+    public String name() {
+        return "contract-world";
+    }
+
+    @Override
+    public void register(Plugins plugins) {
+        plugins.add(WorldMakes.class, new Answers());
     }
 
     /**
@@ -51,5 +89,22 @@ public final class ContractWorld {
             return Verdict.HIDDEN;
         }
         return !facts.known() || rating(facts) >= LOCKED_FROM ? Verdict.LOCKED : Verdict.ALLOWED;
+    }
+
+    /** The hook, as a world jar fills it. */
+    public static final class Answers implements WorldMakes {
+        @Override
+        public MakeView view(MakeFacts facts, WishAsk ask) {
+            return switch (verdict(facts)) {
+                case HIDDEN -> MakeView.HIDDEN;
+                case LOCKED -> MakeView.locked(LOCKED_WORDS);
+                case ALLOWED -> MakeView.fit(LIMITS);
+            };
+        }
+
+        @Override
+        public WorldLimits limits(UUID player) {
+            return new WorldLimits(LIMITS, STAMP);
+        }
     }
 }

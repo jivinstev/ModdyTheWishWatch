@@ -50,7 +50,11 @@ public final class BuilderMake {
     private BuilderMake() {
     }
 
-    public enum Outcome { MADE, PARTIAL, REFUSED, BANK_EMPTY, BUSY, FAILED }
+    /**
+     * What came of a make. {@code NOT_HERE}: this world does not make it here, or not yet ({@code WorldMakes}); the
+     * detail is the line he reads, and nothing was charged or made.
+     */
+    public enum Outcome { MADE, PARTIAL, REFUSED, BANK_EMPTY, BUSY, FAILED, NOT_HERE }
 
     /**
      * How long the pillar stands before the make's first tool runs: a served wish's full rise,
@@ -206,6 +210,20 @@ public final class BuilderMake {
     public static CompletableFuture<Result> make(ServerPlayer player, BuilderSpec spec, BuilderAllowlist allow,
                                                  String editOf, boolean apprentice) {
         String text = textOf(spec);
+        // THE WORLD'S VIEW FIRST (#14): a make this world hides or keeps locked is said in its words and made nowhere,
+        // charged nothing; one it limits is fitted (BuilderAllowlist.capped with the limits, the one fitting path) and
+        // told once. Every Builder and Apprentice make and every Builder change comes through here, whatever page drew
+        // its tile, so a stale page or a typed command cannot get round it. No world answering: as it always was.
+        var built = com.moddingfromamod.wish.MakeGate.build(spec, allow, askOf(player.getUUID(), text, editOf, apprentice));
+        if (!built.makes()) {
+            LOGGER.info("builder make not here for {}: {}", player.getScoreboardName(), built.verdict().state());
+            return done(Outcome.NOT_HERE, null, "", built.verdict().line());
+        }
+        BuilderSpec capped = built.spec();
+        if (!built.lowered().isEmpty()) {
+            LOGGER.info("builder make fitted for {}: {}", player.getScoreboardName(), built.lowered());
+            com.moddingfromamod.wish.MakeGate.sayFitted(player, built.lowered());
+        }
         boolean free = editOf != null && FreeEdit.isFree(player.getUUID(), editOf);
         if (!free) {
             var refusal = com.moddingfromamod.wish.ChargeGate.ask(askOf(player.getUUID(), text, editOf, apprentice),
@@ -214,7 +232,7 @@ public final class BuilderMake {
                 return done(Outcome.BANK_EMPTY, null, "", refusal.line());
             }
         }
-        return runCapped(player.getServer(), Who.of(player), allow == null ? spec : allow.capped(spec), allow, protocol(),
+        return runCapped(player.level().getServer(), Who.of(player), capped, allow, protocol(),
                 true, takeCard, editOf, apprentice);
     }
 
