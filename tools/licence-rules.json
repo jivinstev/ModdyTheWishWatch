@@ -47,7 +47,7 @@
     {"glob": "THIRD_PARTY_NOTICES*", "why": "a third-party notice file"},
     {"glob": "CONTRIBUTING.md", "why": "states the licence policy"},
     {"glob": "*.NOTICE.txt", "why": "a third-party notice kept beside what it covers (each one has a THIRD_PARTY.md row)"},
-    {"glob": "third_party/*", "why": "the full licence texts of what the jar bundles (each one has a THIRD_PARTY.md row)"},
+    {"glob": "third_party/*.txt", "why": "the full licence texts of what the jar bundles (each one has a THIRD_PARTY.md row); never source code"},
     {"glob": "THIRD_PARTY_NOTICES.md", "why": "the table of what the jar bundles and each component's licence"}
   ],
 

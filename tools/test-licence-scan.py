@@ -87,7 +87,7 @@ class WaysThrough(unittest.TestCase):
         for p in ("LICENSE", "LICENSE-ASSETS.md", "THIRD_PARTY_NOTICES.md", "a/b/starter.LICENSE.txt", "THIRD_PARTY.md",
                   "third_party/scowl.LICENSE.txt", "src/main/resources/apprentice/onnxruntime.NOTICE.txt"):
             self.assertTrue(POLICY.exempt_path(p), p)
-        for p in ("src/main/java/X.java", "tools/port.py", "docs/third_party.md"):
+        for p in ("src/main/java/X.java", "tools/port.py", "docs/third_party.md", "third_party/vendored/src/X.java"):
             self.assertFalse(POLICY.exempt_path(p), p)
         self.assertEqual(rules("// " + LGPL, exempt=True), [])
 
