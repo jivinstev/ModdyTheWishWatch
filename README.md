@@ -24,13 +24,13 @@ plan before it changes anything; it installs the newest full release.
 Mac and Linux:
 
 ```bash
-curl -fsSL https://github.com/jivinstev/mc-mod-version-upgrade/releases/download/player-install-v2/install.sh | bash -s -- jivinstev/ModdyTheWishWatch
+curl -fsSL https://github.com/jivinstev/mc-mod-version-upgrade/releases/download/player-install-v3/install.sh | bash -s -- jivinstev/ModdyTheWishWatch
 ```
 
 Windows (PowerShell):
 
 ```powershell
-& ([scriptblock]::Create((irm https://github.com/jivinstev/mc-mod-version-upgrade/releases/download/player-install-v2/install.ps1))) jivinstev/ModdyTheWishWatch
+& ([scriptblock]::Create((irm https://github.com/jivinstev/mc-mod-version-upgrade/releases/download/player-install-v3/install.ps1))) jivinstev/ModdyTheWishWatch
 ```
 
 Or install it by hand: NeoForge for your Minecraft version, then the jar from [Releases](../../releases) in your
