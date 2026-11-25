@@ -770,7 +770,7 @@ public record MakeFacts(String kind, Map<String, Double> numbers, Set<String> ta
 
     /**
      * What one recipe command makes, or null when it makes no thing (a {@code say}, {@code time set}…). The replay
-     * commands ({@code ReplayContract.ALL}): {@code wishmob spawn <id> [n]}, {@code wishdatapack <id> <entry>},
+     * commands ({@code ReplayContract.ALL}): {@code wishmob spawn <id> [count] [at …]} (count: how many it spawns), {@code wishdatapack <id> <entry>},
      * {@code wishbuild <id>}, {@code wishpaint <id>}, {@code moddyevent stage <id>}; and the two plain ones a recipe may
      * carry, {@code summon <mob>} and {@code give <who> <item>}.
      */
@@ -784,7 +784,7 @@ public record MakeFacts(String kind, Map<String, Double> numbers, Set<String> ta
         }
         return switch (w[0]) {
             case "wishmob" -> w.length >= 3 && w[1].equals("spawn")
-                    ? new Ref(BuilderSpec.Kind.CREATURE.id(), w[2], 1 + (w.length >= 4 ? Math.max(0, num(w[3], 0)) : 0)) : null;
+                    ? new Ref(BuilderSpec.Kind.CREATURE.id(), w[2], w.length >= 4 ? Math.max(1, num(w[3], 1)) : 1) : null;
             case "wishdatapack" -> w.length >= 2 ? new Ref(BuilderSpec.Kind.ITEM.id(), w[1], 1) : null;
             case "wishbuild" -> w.length >= 2 ? new Ref(BuilderSpec.Kind.BUILDING.id(), w[1], 1) : null;
             case "wishpaint" -> w.length >= 2 ? new Ref(BuilderSpec.Kind.PICTURE.id(), w[1], 1) : null;

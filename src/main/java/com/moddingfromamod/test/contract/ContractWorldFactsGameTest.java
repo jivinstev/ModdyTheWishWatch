@@ -71,7 +71,7 @@ public final class ContractWorldFactsGameTest {
         List<String> had = LearnedTemplates.savedJsonForTest();
         List<String> with = new ArrayList<>(had);
         with.add("{\"id\":\"" + recipe + "\",\"all\":[\"gtcontract" + tag + "\"],\"ownerId\":\"" + p.getStringUUID()
-                + "\",\"commands\":[\"wishmob spawn " + s.id() + " 5\"]}");
+                + "\",\"commands\":[\"wishmob spawn " + s.id() + " 6\"]}");
         with.add("{\"id\":\"" + gone + "\",\"all\":[\"gtcontractgone" + tag + "\"],\"ownerId\":\"" + p.getStringUUID()
                 + "\",\"commands\":[\"wishmob spawn gt_nobody_" + tag + "\"]}");
         LearnedTemplates.restoreForTest(with, server);
