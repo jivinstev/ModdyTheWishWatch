@@ -128,6 +128,48 @@ class Register(unittest.TestCase):
         found, _ = ns["audit_register"](POLICY, rows, ["a.py", "x.py"], {}, "R")
         self.assertEqual(len(found), 2, "with no recorded permission, every PERMISSION row is refused")
 
+    def scoped_policy(self):
+        raw = json.loads((TOOLS / "licence-rules.json").read_text(encoding="utf-8"))
+        raw["scoped"] = {"Fooware": {"aliases": ["the fooware notice"], "globs": ["vendor/foo/*.c", "foo.NOTICE.txt"],
+                                     "why": "a test's scoped approval"}}
+        raw["permissions"] = {"bar": {"record": "a test's record", "globs": ["vendor/bar/*"]}}
+        with tempfile.TemporaryDirectory() as t:
+            (Path(t) / "r.json").write_text(json.dumps(raw), encoding="utf-8")
+            return ns["Policy"](Path(t) / "r.json")
+
+    def test_a_scoped_licence_holds_only_inside_its_globs(self):
+        policy = self.scoped_policy()
+        tracked = ["vendor/foo/a.c", "vendor/foo/b.c", "foo.NOTICE.txt", "src/x.c"]
+        ok = ns["register_rows"]("| `vendor/foo/*.c` | foo | Fooware | ported |\n| `foo.NOTICE.txt` | foo | the fooware notice | n |\n")
+        self.assertEqual(ns["audit_register"](policy, ok, tracked, {}, "R")[0], [])
+        bad = ns["register_rows"]("| `src/x.c` | foo | Fooware | copied |\n| `*.c` | foo | Fooware | too wide |\n")
+        found, _ = ns["audit_register"](policy, bad, tracked, {}, "R")
+        self.assertEqual(sorted(f[2] for f in found), ["register-licence", "register-licence"])
+        self.assertIsNone(POLICY.allowed_at("Fooware", ["vendor/foo/a.c"]), "the shipped rules allow it nowhere")
+
+    def test_a_scoped_spdx_id_only_where_scoped(self):
+        policy = self.scoped_policy()
+        line = "// " + SPDX + "Fooware"
+        self.assertEqual(ns["judge_line"](policy, "vendor/foo/a.c", 1, line, False), [])
+        self.assertEqual([f[2] for f in ns["judge_line"](policy, "src/x.c", 1, line, False)], ["spdx"])
+
+    def test_a_path_scoped_permission(self):
+        policy = self.scoped_policy()
+        tracked = ["vendor/bar/a.py", "src/b.py"]
+        ok = ns["register_rows"]("| `vendor/bar/*` | bar | PERMISSION bar | by permission |\n")
+        self.assertEqual(ns["audit_register"](policy, ok, tracked, {}, "R")[0], [])
+        wide = ns["register_rows"]("| `*.py` | bar | PERMISSION bar | too wide |\n")
+        self.assertEqual([f[2] for f in ns["audit_register"](policy, wide, tracked, {}, "R")[0]], ["register-licence"])
+
+    def test_a_scoped_entry_needs_globs_and_a_why_and_is_not_also_general(self):
+        raw = json.loads((TOOLS / "licence-rules.json").read_text(encoding="utf-8"))
+        for bad in ({"X": {"globs": [], "why": "w"}}, {"X": {"globs": ["a"]}}, {"MIT": {"globs": ["a"], "why": "w"}}):
+            raw["scoped"] = bad
+            with tempfile.TemporaryDirectory() as t:
+                (Path(t) / "r.json").write_text(json.dumps(raw), encoding="utf-8")
+                with self.assertRaises(ValueError, msg=str(bad)):
+                    ns["Policy"](Path(t) / "r.json")
+
     def test_our_own_notice(self):
         self.assertIsNone(POLICY.foreign_notice("# Copy" + J + "right (c) 2026 Moddy LLC"))
         self.assertIsNotNone(POLICY.foreign_notice("# " + COPR + " Someone"))
