@@ -525,11 +525,22 @@ public final class ContractWorldGameTest {
         var server = level.getServer();
         net.minecraft.world.phys.Vec3 at = p.position();
         // a natural spawn, and a spawn egg's: neither is wished
-        var natural = net.minecraft.world.entity.EntityType.PIG.create(level, net.minecraft.world.entity.EntitySpawnReason.NATURAL);
-        natural.setPos(at.add(3, 0, 0));
-        natural.setNoAi(true);
-        level.addFreshEntity(natural);
-        helper.assertFalse(com.moddingfromamod.world.Wished.isWished(natural), Component.literal("a natural pig is nobody's wish"));
+        // (a plain server command: no wish, no event, no function, so no spawn scope)
+        try {
+            server.getCommands().getDispatcher().execute("summon minecraft:pig " + (at.x + 3) + " " + at.y + " " + at.z
+                    + " {NoAI:1b,Tags:[\"gtcontract_natural\"]}", server.createCommandSourceStack().withSuppressedOutput());
+        } catch (com.mojang.brigadier.exceptions.CommandSyntaxException e) {
+            helper.fail(Component.literal("the natural pig: " + e.getMessage()));
+        }
+        net.minecraft.world.entity.Entity natural = null;
+        for (var e : level.getAllEntities()) {
+            if (e.distanceTo(p) < 16 && e.getTags().contains("gtcontract_natural")) {
+                natural = e;
+            }
+        }
+        helper.assertTrue(natural != null, Component.literal("the natural pig stands"));
+        final net.minecraft.world.entity.Entity naturalPig = natural;
+        helper.assertFalse(com.moddingfromamod.world.Wished.isWished(naturalPig), Component.literal("a natural pig is nobody's wish"));
         // the Magician: a plain mob its command summons, inside its wish's scope
         String wish = "gtcontract-wished-" + System.nanoTime();
         Set<java.util.UUID> before = wishedNear(helper, p);
@@ -587,7 +598,7 @@ public final class ContractWorldGameTest {
                     helper.assertFalse(com.moddingfromamod.world.Wished.isWished(e), Component.literal("a display part is not a body"));
                 }
             }
-            helper.assertFalse(com.moddingfromamod.world.Wished.isWished(natural), Component.literal("the natural pig still is not"));
+            helper.assertFalse(com.moddingfromamod.world.Wished.isWished(naturalPig), Component.literal("the natural pig still is not"));
         });
     }
 
