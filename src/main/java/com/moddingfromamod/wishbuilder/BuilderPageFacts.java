@@ -52,6 +52,8 @@ public final class BuilderPageFacts {
     public static final class Index {
         private final String fingerprint;
         private final Map<String, Map<String, TileFacts>> pages = new ConcurrentHashMap<>();
+        /** The states in the order they were worked out: what a player meets first is first. */
+        private final List<String> order = java.util.Collections.synchronizedList(new ArrayList<>());
         private volatile boolean walked;
 
         Index(String fingerprint) {
@@ -69,6 +71,13 @@ public final class BuilderPageFacts {
 
         public int size() {
             return pages.size();
+        }
+
+        /** The states in the order they were worked out. */
+        public List<String> order() {
+            synchronized (order) {
+                return List.copyOf(order);
+            }
         }
 
         /** Has the whole walk from the first page finished? */
@@ -119,7 +128,9 @@ public final class BuilderPageFacts {
         try {
             page = flow.page();
         } catch (RuntimeException e) {
-            w.index.pages.put(key, Map.of());
+            if (w.index.pages.putIfAbsent(key, Map.of()) == null) {
+                w.index.order.add(key);
+            }
             return Map.of();
         }
         boolean multi = page.picks() != null;
@@ -134,7 +145,9 @@ public final class BuilderPageFacts {
             tiles.put(t.id(), new TileFacts(facts(d), d == null ? null : facts(MakeFit.floor(d)), ahead));
         }
         Map<String, TileFacts> done = Map.copyOf(tiles);
-        w.index.pages.put(key, done);
+        if (w.index.pages.putIfAbsent(key, done) == null) {
+            w.index.order.add(key);
+        }
         return done;
     }
 
@@ -256,7 +269,24 @@ public final class BuilderPageFacts {
 
     // ── the worker ────────────────────────────────────────────────────────────────────────────
 
-    private record Need(BuilderAllowlist allow, BuilderFlow flow, Runnable ready) {
+    /** A page a player opened that is not worked out yet: its flow (a copy), and what to run once it is. */
+    record Need(BuilderAllowlist allow, BuilderFlow flow, Runnable ready) {
+    }
+
+    /**
+     * Serve every page asked for, now, ahead of the walk: the worker runs this between two pages of its own walk, so a
+     * page a player opens waits for at most the one page being worked out, never for the rest of the tree.
+     */
+    static void drain(Walk w, java.util.Queue<Need> needs) {
+        Need need;
+        while ((need = needs.poll()) != null) {
+            try {
+                page(w, need.flow());
+                need.ready().run();
+            } catch (Throwable t) {
+                LOG.warn("page facts: a page asked for failed: {}", t.toString());
+            }
+        }
     }
 
     private static final Map<BuilderAllowlist, String> TREE_OF = new ConcurrentHashMap<>();
@@ -344,18 +374,22 @@ public final class BuilderPageFacts {
         if (w.index.walked()) {
             return;   // the same tree as a world already walked
         }
-        walk(w, allow, LibraryPresets.SHIPPED, () -> {
-            Need need;
-            while ((need = NEEDS.poll()) != null) {
-                try {
-                    serve(need);
-                } catch (Throwable t) {
-                    LOG.warn("page facts: a page asked for failed: {}", t.toString());
-                }
-            }
-        }, MOST_STATES);
+        walk(w, allow, LibraryPresets.SHIPPED, () -> drainFor(w), MOST_STATES);
         LOG.info("page facts: tree {} walked, {} pages in {} s", fp.substring(0, 12), w.index.size(),
                 String.format("%.1f", (System.nanoTime() - t0) / 1e9));
+    }
+
+    /** The pages asked for while walking {@code w}'s tree: its own served at once, another tree's left queued. */
+    private static void drainFor(Walk w) {
+        java.util.Deque<Need> mine = new ArrayDeque<>();
+        java.util.Deque<Need> others = new ArrayDeque<>();
+        Need need;
+        while ((need = NEEDS.poll()) != null) {
+            (w.index.fingerprint().equals(TREE_OF.get(need.allow())) ? mine : others).add(need);
+        }
+        others.descendingIterator().forEachRemaining(NEEDS::offerFirst);
+        drain(w, mine);
+        // another tree's page waits for this walk's next step, served by serve() then
     }
 
     private static void serve(Need need) {

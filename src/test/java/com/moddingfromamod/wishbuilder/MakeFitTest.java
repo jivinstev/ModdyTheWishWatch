@@ -37,6 +37,10 @@ class MakeFitTest {
         out.add(Map.of(MakeFacts.DURATION_TICKS, 100.0));
         out.add(Map.of(MakeFacts.RADIUS_BLOCKS, 0.0));
         out.add(Map.of(MakeFacts.AMOUNT_ITEMS, 8.0));
+        for (double h : new double[] {10, 25, 70}) {
+            out.add(Map.of(MakeFacts.HEALTH_HALF_HEARTS, h));
+        }
+        out.add(Map.of(MakeFacts.ATTACK_DAMAGE_HALF_HEARTS, 3.0));
         out.add(Map.of(MakeFacts.BUILDER_SIZE_STEP, 2.0, MakeFacts.COUNT_MADE, 2.0, MakeFacts.BUILDER_STRENGTH_STEP, 2.0,
                 MakeFacts.AMOUNT_ITEMS, 16.0, "notAFact", 0.0));
         return out;
@@ -90,20 +94,44 @@ class MakeFitTest {
 
     @Test
     void aNumberNoKnobLowersIsNeverFitted() {
-        // a spec carries no health: a limit on it does nothing
         BuilderSpec cat = new BuilderSpec(BuilderSpec.CURRENT, BuilderSpec.Kind.CREATURE, "preset:species/cat", "", 4,
                 List.of(), "friendly", 6, "", "", Map.of());
-        assertTrue(MakeFit.fit(cat, Map.of(MakeFacts.HEALTH_HALF_HEARTS, 1.0)).fits());
-        assertFalse(MakeFit.fit(cat, Map.of(MakeFacts.HEALTH_HALF_HEARTS, 1.0)).changed());
+        // a limit on a number a make does not carry does nothing (a cat's spec carries no reach)
+        assertTrue(MakeFit.fit(cat, Map.of(MakeFacts.RADIUS_BLOCKS, 0.0)).fits());
+        assertFalse(MakeFit.fit(cat, Map.of(MakeFacts.RADIUS_BLOCKS, 0.0)).changed());
         // a limit lower than the knob's lowest value cannot be fitted
         assertFalse(MakeFit.fit(cat, Map.of(MakeFacts.COUNT_MADE, 0.5)).fits());
         MakeFit.Fitted three = MakeFit.fit(cat, Map.of(MakeFacts.COUNT_MADE, 3.0));
         assertTrue(three.fits() && three.changed() && three.spec().count() == 3, three.toString());
         assertEquals(List.of(MakeFacts.COUNT_MADE), three.lowered());
         for (var e : MakeFit.FACTS.values()) {
-            assertEquals(e.clampable(), !List.of(MakeFacts.HEALTH_HALF_HEARTS, MakeFacts.ATTACK_DAMAGE_HALF_HEARTS,
-                    MakeFacts.MOVEMENT_SPEED_ATTRIBUTE, MakeFacts.EXTENT_BLOCKS).contains(e.key()), e.key());
+            assertEquals(e.clampable(), !List.of(MakeFacts.MOVEMENT_SPEED_ATTRIBUTE, MakeFacts.EXTENT_BLOCKS)
+                    .contains(e.key()), e.key());
         }
+    }
+
+    @Test
+    void healthAndDamageAreFittedByADiscreteSearchOrNotAtAll() {
+        BuilderSpec cat = new BuilderSpec(BuilderSpec.CURRENT, BuilderSpec.Kind.CREATURE, "preset:species/cat", "", 4,
+                List.of(), "friendly", 1, "", "", Map.of());
+        double health = MakeFacts.of(cat).number(MakeFacts.HEALTH_HALF_HEARTS).orElse(-1);
+        assertTrue(health > 0, "a Builder creature carries its ready-made's health: " + MakeFacts.of(cat));
+        // within the limit: made as it is
+        MakeFit.Fitted within = MakeFit.fit(cat, Map.of(MakeFacts.HEALTH_HALF_HEARTS, health));
+        assertTrue(within.fits() && !within.changed());
+        // over it: every size and strength step is tried, highest first, each re-derived; the cat's health is its
+        // ready-made's whatever its size, so no step lowers it and it is not fitted (locked), never made wrong
+        MakeFit.Fitted over = MakeFit.fit(cat, Map.of(MakeFacts.HEALTH_HALF_HEARTS, health - 1));
+        assertFalse(over.fits(), over.toString());
+        // the search tries every lower combination, the most kept first
+        List<BuilderSpec> tried = MakeFit.steps(cat);
+        assertTrue(tried.size() >= 3, tried.size() + " steps");
+        assertTrue(tried.stream().noneMatch(s -> s.equals(cat)), "the make as it is is no candidate");
+        BuilderSpec imp = new BuilderSpec(BuilderSpec.CURRENT, BuilderSpec.Kind.CREATURE, "preset:species/fire_imp", "", 2,
+                List.of(), "friendly", 1, "", "", Map.of());
+        double damage = MakeFacts.of(imp).number(MakeFacts.ATTACK_DAMAGE_HALF_HEARTS).orElse(-1);
+        assertTrue(damage > 0, MakeFacts.of(imp).toString());
+        assertFalse(MakeFit.fit(imp, Map.of(MakeFacts.ATTACK_DAMAGE_HALF_HEARTS, damage - 1)).fits());
     }
 
     @Test
