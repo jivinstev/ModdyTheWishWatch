@@ -1,7 +1,6 @@
 {
   "schema": 1,
-  "about": "Port CI's release-gate hook runs this before it cuts a pre-release, and refuses to release on a non-zero exit: a green full-tier GameTest run must cover the exact code the release ships (docs/RELEASING.md, 'The release gate'). It needs a token that may read Actions and gate-data and start a workflow (actions: write, contents: read).",
-  "command": "python3 tools/gate/gate.py release-gate --repo \"$GITHUB_REPOSITORY\" --rev \"$GITHUB_SHA\" --ref \"$GITHUB_REF_NAME\" --wait 150",
-  "timeout_minutes": 180,
-  "permissions": {"actions": "write", "contents": "read"}
+  "script": "tools/gate/gate.py",
+  "args": ["release-gate", "--wait", "150"],
+  "timeout_minutes": 180
 }

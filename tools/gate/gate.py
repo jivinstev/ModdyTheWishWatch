@@ -131,9 +131,13 @@ def main(argv=None) -> int:
 
     rg = sub.add_parser("release-gate", help="pass a release only with a green full-tier run of its code, running "
                                              "the tier if none is on record (Port CI's release-gate hook)")
+    # Port CI's release-gate job (the MMVU kit's optional hook, .github/port-release-gate.json) runs this with no
+    # expanded flags: the commit being released and its ref arrive as GATE_SHA and GATE_REF, the repository and token
+    # as GITHUB_REPOSITORY and GH_TOKEN
     rg.add_argument("--repo", default=os.environ.get("GITHUB_REPOSITORY", ""))
-    rg.add_argument("--rev", default=os.environ.get("GITHUB_SHA", "HEAD"))
-    rg.add_argument("--ref", default=os.environ.get("GITHUB_REF_NAME", ""), help="the branch or tag the tier runs on")
+    rg.add_argument("--rev", default=os.environ.get("GATE_SHA") or os.environ.get("GITHUB_SHA") or "HEAD")
+    rg.add_argument("--ref", default=os.environ.get("GATE_REF") or os.environ.get("GITHUB_REF_NAME", ""),
+                    help="the branch or tag the tier runs on")
     rg.add_argument("--data", default=os.path.join(os.environ.get("RUNNER_TEMP", "/tmp"), "gate-data"))
     rg.add_argument("--workflow", default="nightly.yml")
     rg.add_argument("--wait", type=float, default=150.0, help="minutes to wait for the tier")
