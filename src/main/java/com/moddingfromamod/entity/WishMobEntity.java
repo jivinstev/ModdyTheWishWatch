@@ -194,6 +194,8 @@ public class WishMobEntity extends PathfinderMob {
         rebuildGoals(s);
         applyIdentityTags(s);
         this.refreshDimensions();
+        // #14: within this world's limits, on this creature only (never its species or any store)
+        com.moddingfromamod.wish.LiveFit.apply(this, s.id(), freshSpawn);
     }
 
     /**

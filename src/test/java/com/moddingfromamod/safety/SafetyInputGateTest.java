@@ -22,13 +22,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * <b>The INPUT decision, with no model, no queue, no marshal and no child.</b>
  *
  * <p>The whole INPUT column of {@code docs/CHILD_SAFETY_PLAN.md} §2 in milliseconds — including the
- * three rows that are otherwise reachable only through a real agent and a real ten-second grade:
- * the redirect a child reads, the distress wish that must never be refused, and shadow mode, which
- * by definition does nothing observable.
+ * two rows that are otherwise reachable only through a real agent and a real ten-second grade:
+ * the redirect a child reads, and shadow mode, which by definition does nothing observable.
  *
  * <p>Written first, because CS-S1b's own finding is that the expensive mistake in this layer is a
- * false positive and the unforgivable one is refusing a child in distress — and neither of those is
- * something a live run can be asked about cheaply enough to ask twice.
+ * false positive — and that is not something a live run can be asked about cheaply enough to ask
+ * twice.
  */
 class SafetyInputGateTest {
 
@@ -67,19 +66,13 @@ class SafetyInputGateTest {
 
     /** A model verdict with one axis at a band. */
     private static SafetyVerdict model(Band violence, String redirect, Reason... reasons) {
-        return new SafetyVerdict(violence, Band.FINE, Band.FINE, Band.FINE, false,
+        return new SafetyVerdict(violence, Band.FINE, Band.FINE, Band.FINE,
                 List.of(reasons), redirect, Provenance.HAIKU, SafetyVerdict.NO_STAGE);
-    }
-
-    /** What the lexicon returns for a self-harm phrasing: the flag, and NO band (§1). */
-    private static SafetyVerdict wellbeingOnly() {
-        return new SafetyVerdict(Band.FINE, Band.FINE, Band.FINE, Band.FINE, true,
-                List.of(Reason.SELF_HARM), "", Provenance.LEXICON, SafetyVerdict.NO_STAGE);
     }
 
     /** What the lexicon returns for an explicit term. */
     private static SafetyVerdict lexiconClearly(Band sexual) {
-        return new SafetyVerdict(Band.FINE, sexual, Band.FINE, Band.FINE, false,
+        return new SafetyVerdict(Band.FINE, sexual, Band.FINE, Band.FINE,
                 List.of(Reason.SEXUAL), "", Provenance.LEXICON, SafetyVerdict.NO_STAGE);
     }
 
@@ -114,9 +107,9 @@ class SafetyInputGateTest {
 
     @Test
     void theGuidanceIsAboutTheAxisThatEarnedTheBand() {
-        SafetyVerdict hate = new SafetyVerdict(Band.FINE, Band.FINE, Band.MAYBE, Band.FINE, false,
+        SafetyVerdict hate = new SafetyVerdict(Band.FINE, Band.FINE, Band.MAYBE, Band.FINE,
                 List.of(), "", Provenance.HAIKU, SafetyVerdict.NO_STAGE);
-        SafetyVerdict danger = new SafetyVerdict(Band.FINE, Band.FINE, Band.FINE, Band.MAYBE, false,
+        SafetyVerdict danger = new SafetyVerdict(Band.FINE, Band.FINE, Band.FINE, Band.MAYBE,
                 List.of(), "", Provenance.HAIKU, SafetyVerdict.NO_STAGE);
         assertTrue(SafetyInputGate.guidanceFor(hate).contains("kind"));
         assertTrue(SafetyInputGate.guidanceFor(danger).contains("Minecraft"));
@@ -170,19 +163,6 @@ class SafetyInputGateTest {
         assertFalse(d.redirectShown(), "nothing was substituted, so nothing was shown");
         assertEquals(WISH, d.runText(), "the agent must not be handed the refused string either");
         assertEquals(SafetyWords.sayBlocked(), d.childMessage());
-    }
-
-    @Test
-    void aRedirectCARRYINGDISTRESSIsAlsoRefused() {
-        // The half that is not obvious and matters more. §1's rule is that a child in distress is
-        // never BLOCKED; it says nothing about putting a self-harm phrasing in front of him as a
-        // SUGGESTION. A redirect is the one place this layer speaks rather than judges.
-        Decision d = SafetyInputGate.decide(null,
-                model(Band.LIKELY, "a zombie that will hurt myself", Reason.GORE), WISH);
-        assertEquals(Act.BLOCK, d.act(),
-                "'never blocked' is about the CHILD's wish, and must not be read as 'safe to "
-                        + "echo back at him'");
-        assertFalse(d.redirectShown());
     }
 
     @Test
@@ -269,18 +249,15 @@ class SafetyInputGateTest {
         // combine() hands back the lexicon's own verdict here, so the combined answer is NOT
         // unavailable — and without the model check this wish would sail through a tired Moddy.
         SafetyVerdict lexMaybe = new SafetyVerdict(Band.MAYBE, Band.FINE, Band.FINE, Band.FINE,
-                false, List.of(Reason.GORE), "", Provenance.LEXICON, SafetyVerdict.NO_STAGE);
+                List.of(Reason.GORE), "", Provenance.LEXICON, SafetyVerdict.NO_STAGE);
         Decision d = SafetyInputGate.decide(lexMaybe, SafetyVerdict.unavailable(), WISH, true);
         assertEquals(Act.UNAVAILABLE_CLOSED, d.act());
     }
 
     @Test
-    void tirednessNeverOverridesABlockAWellbeingFlagOrShadow() {
+    void tirednessNeverOverridesABlockOrShadow() {
         assertEquals(Act.BLOCK, SafetyInputGate.decide(lexiconClearly(Band.CLEARLY),
                 SafetyVerdict.unavailable(), WISH, true).act(), "a refusal is a refusal");
-        Decision distress = SafetyInputGate.decide(wellbeingOnly(), SafetyVerdict.unavailable(),
-                "i want to die for real", true);
-        assertFalse(distress.refuses(), "§1: a child in distress is never turned away");
         // A model that DID answer is not tiredness, however the caller flags it.
         assertEquals(Act.PASS, SafetyInputGate.decide(null,
                 SafetyVerdict.fine(Provenance.HAIKU), WISH, true).act());
@@ -300,47 +277,7 @@ class SafetyInputGateTest {
         assertEquals(Act.PASS, SafetyInputGate.actionOf(SafetyVerdict.fine(Provenance.HAIKU)));
     }
 
-    // ── the precedence rule (CS-S1b's binding finding) ────────────────────────────────────────
-
-    @Test
-    void aLexiconWellbeingHitBeatsAModelCLEARLY() {
-        // THE ROW THIS CHUNK EXISTS FOR. CS-S1b measured the model calling a distress wish CLEARLY
-        // one time in three after three prompt iterations, and §1 says that must never end in a
-        // refusal. The deterministic layer decides it, because no prompt can be relied on for the
-        // one case that must not fail.
-        Decision d = SafetyInputGate.decide(wellbeingOnly(),
-                model(Band.CLEARLY, "", Reason.SELF_HARM), "make me a knife to hurt myself");
-        assertFalse(d.refuses(), "a child in distress is never refused (§1)");
-        assertNotEquals(Act.REDIRECT, d.act(), "and never redirected on the flag's account either");
-        assertTrue(d.verdict().wellbeing(), "the grown-up note is written from this flag");
-        assertEquals(Band.MAYBE, d.verdict().overall(),
-                "capped rather than erased: MAYBE passes the wish and still guides the builder");
-    }
-
-    @Test
-    void theCapIsOnTheMODELAndNotOnTheLexiconsOwnBands() {
-        // The scoping, stated as a test because it is the line an owner might want moved (§12.1).
-        // A lexicon hit that EARNS a band is the floor firing on an explicit word, not a model
-        // misreading distress -- so it still blocks, flag or no flag.
-        SafetyVerdict both = new SafetyVerdict(Band.FINE, Band.CLEARLY, Band.FINE, Band.FINE, true,
-                List.of(Reason.SEXUAL, Reason.SELF_HARM), "", Provenance.LEXICON,
-                SafetyVerdict.NO_STAGE);
-        Decision d = SafetyInputGate.decide(both, SafetyVerdict.fine(Provenance.HAIKU), WISH);
-        assertEquals(Act.BLOCK, d.act());
-        assertTrue(d.verdict().wellbeing(), "and the note is still written");
-    }
-
-    @Test
-    void aWellbeingWishIsNeverRefusedForAnOUTAGEEither() {
-        // `closed` refuses an ungradeable wish, and on this one row refusing IS the unsafe answer.
-        // "The CLI hiccupped" is not a reason to turn a child in distress away.
-        set(UNAVAILABLE, "closed");
-        Decision d = SafetyInputGate.decide(wellbeingOnly(), SafetyVerdict.unavailable(),
-                "i want to die for real");
-        assertEquals(Act.UNAVAILABLE_OPEN, d.act());
-        assertFalse(d.refuses());
-        assertTrue(d.verdict().wellbeing());
-    }
+    // ── the two graders, merged ─────────────────────────────────────────────────────────────
 
     @Test
     void aLexiconCLEARLYBeatsAModelFINE() {
@@ -521,72 +458,5 @@ class SafetyInputGateTest {
         assertEquals(Act.UNAVAILABLE_OPEN, d.act());
         assertEquals("", d.runText());
         assertEquals(SafetyVerdict.unavailable(), SafetyInputGate.combine(null, null));
-    }
-
-    @Test
-    void aWellbeingFlagOnAnOtherwiseFineWishIsAPassWithANote() {
-        Decision d = SafetyInputGate.decide(wellbeingOnly(),
-                SafetyVerdict.fine(Provenance.HAIKU), "i want to die for real");
-        assertEquals(Act.WELLBEING, d.act());
-        assertFalse(d.refuses());
-        assertEquals("", d.childMessage(), "he is answered kindly, not told anything about it");
-        assertEquals("WELLBEING", d.logAction());
-    }
-
-    // ── §12.1 decision 1B: who gets to make the watch say a kind word ─────────────────────────
-
-    @Test
-    void theLexiconsWellbeingFlagIsWhatSaysTheWarmLine() {
-        assertTrue(SafetyInputGate.saysTheWellbeingLine(wellbeingOnly(),
-                        SafetyVerdict.unavailable()),
-                "a lexicon hit is the whole trigger — deterministic, so there is no false alarm");
-        // …and still when the model has also answered, whatever it said.
-        assertTrue(SafetyInputGate.saysTheWellbeingLine(wellbeingOnly(),
-                SafetyVerdict.fine(Provenance.HAIKU)));
-        assertTrue(SafetyInputGate.saysTheWellbeingLine(wellbeingOnly(),
-                model(Band.CLEARLY, "")));
-    }
-
-    @Test
-    void theMODELsWellbeingFlagAloneNeverReachesTheChild() {
-        // The owner's answer to §12.1 was A + B: the grown-up NOTE on any flag, the CHILD's line
-        // on a lexicon hit only. CS-S1b measured the model calling the "knife to hurt myself" row
-        // CLEARLY one time in three after three prompt iterations, and a false wellbeing flag
-        // costs a child a message about a feeling he was not having.
-        SafetyVerdict modelFlagged = new SafetyVerdict(Band.FINE, Band.FINE, Band.FINE, Band.FINE,
-                true, List.of(Reason.SELF_HARM), "", Provenance.HAIKU, SafetyVerdict.NO_STAGE);
-        assertFalse(SafetyInputGate.saysTheWellbeingLine(null, modelFlagged),
-                "the model's flag said something to the child");
-        // And the note is still owed on that verdict — the two halves are independent.
-        assertTrue(SafetyInputGate.combine(null, modelFlagged).wellbeing(),
-                "the flag must survive into the verdict, or nothing would write the note");
-    }
-
-    @Test
-    void anOrdinaryWishSaysNothing() {
-        assertFalse(SafetyInputGate.saysTheWellbeingLine(null, SafetyVerdict.fine(Provenance.HAIKU)));
-        assertFalse(SafetyInputGate.saysTheWellbeingLine(lexiconClearly(Band.CLEARLY),
-                        SafetyVerdict.fine(Provenance.HAIKU)),
-                "a floor hit that is not a wellbeing flag is a different conversation");
-        assertFalse(SafetyInputGate.saysTheWellbeingLine(null, null));
-    }
-
-    @Test
-    void shadowSaysNothingToTheChildEvenThoughTheNoteIsStillWritten() {
-        // §8: shadow changes nothing the child SEES. The grown-up note is different and
-        // WishService writes it in every mode — a line in a file a grown-up reads is not an action
-        // taken against a child, and a line in his chat is.
-        set(MODE, "shadow");
-        assertFalse(SafetyInputGate.saysTheWellbeingLine(wellbeingOnly(),
-                        SafetyVerdict.unavailable()),
-                "shadow spoke to the child, so every base rate measured under it is a rate about "
-                        + "a different product");
-        // The PREDICTION is still recorded, which is what makes the arm readable afterwards.
-        assertEquals("SHADOW_WELLBEING", SafetyInputGate.decide(wellbeingOnly(),
-                SafetyVerdict.fine(Provenance.HAIKU), WISH).logAction());
-        set(MODE, "off");
-        assertFalse(SafetyInputGate.saysTheWellbeingLine(wellbeingOnly(),
-                        SafetyVerdict.unavailable()),
-                "the control arm must be an absence, not a quieter treatment");
     }
 }

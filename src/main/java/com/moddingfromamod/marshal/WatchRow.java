@@ -102,6 +102,15 @@ public final class WatchRow {
                     inFlight, photos, recipeId, seedPhrase, newIcon, updatedAt, partOf);
         }
 
+        /** The same creation with this line first under its name (a world's lock words, #14). */
+        public Creation withFirstLine(String line) {
+            List<String> v = new java.util.ArrayList<>();
+            v.add(line);
+            v.addAll(vitals);
+            return new Creation(id, kind, name, aliases, v, tier, powers, intent, timesWished,
+                    inFlight, photos, recipeId, seedPhrase, icon, updatedAt, partOf);
+        }
+
         /** The same creation, a PART of these wishes — their names, newest first. */
         public Creation withPartOf(List<String> wishes) {
             return new Creation(id, kind, name, aliases, vitals, tier, powers, intent, timesWished,

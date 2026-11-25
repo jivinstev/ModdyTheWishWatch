@@ -178,7 +178,7 @@ public class SafetyPlanGameTest {
 
     private static SafetyVerdict likely(int stage) {
         return new SafetyVerdict(SafetyVerdict.Band.LIKELY, SafetyVerdict.Band.FINE,
-                SafetyVerdict.Band.FINE, SafetyVerdict.Band.FINE, false,
+                SafetyVerdict.Band.FINE, SafetyVerdict.Band.FINE,
                 List.of(SafetyVerdict.Reason.GORE),
                 "a cartoon fright — a green glow and a wobble, no blood",
                 SafetyVerdict.Provenance.HAIKU, stage);

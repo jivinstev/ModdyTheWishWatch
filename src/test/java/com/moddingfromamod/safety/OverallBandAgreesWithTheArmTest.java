@@ -152,7 +152,7 @@ class OverallBandAgreesWithTheArmTest {
         return switch (act) {
             case BLOCK -> "block";
             case REDIRECT -> "redirect";
-            case PASS, NOTE, WELLBEING -> "allow";
+            case PASS, NOTE -> "allow";
             // The arm keeps UNAVAILABLE as its own column on purpose: "the grader was down" is
             // neither an allow nor a block, and whether it REFUSES is a config decision the arm
             // deliberately does not model.
@@ -182,7 +182,7 @@ class OverallBandAgreesWithTheArmTest {
     void aLikelyWithNoRedirectIsABlockOnBothSides() {
         SafetyVerdict stripped = new SafetyVerdict(
                 SafetyVerdict.Band.LIKELY, SafetyVerdict.Band.FINE, SafetyVerdict.Band.FINE,
-                SafetyVerdict.Band.FINE, false, List.of(), "", SafetyVerdict.Provenance.HAIKU,
+                SafetyVerdict.Band.FINE, List.of(), "", SafetyVerdict.Provenance.HAIKU,
                 SafetyVerdict.NO_STAGE);
         assertEquals(SafetyInputGate.Act.BLOCK, SafetyInputGate.actionOf(stripped));
         assertEquals("block", armDecide(stripped));
@@ -191,34 +191,21 @@ class OverallBandAgreesWithTheArmTest {
     }
 
     /**
-     * The merge, on the two cases the arm's numbers now depend on.
+     * The merge, on the case the arm's numbers depend on.
      *
-     * <p>Both are properties of {@link SafetyInputGate#combine} rather than of either grader, so
-     * before CS-D5 the arm could not see them at all: the lexicon RESCUING an outage (which is why
-     * {@code blocked_recall} was a lower bound) and the wellbeing flag CAPPING the model (which is
-     * why the false-positive rate was an UPPER bound — the direction the plan did not predict).
+     * <p>A property of {@link SafetyInputGate#combine} rather than of either grader, so before
+     * CS-D5 the arm could not see it at all: the lexicon RESCUING an outage (which is why
+     * {@code blocked_recall} was a lower bound).
      */
     @Test
-    @DisplayName("the merge rescues an outage and caps a distress wish, as the arm now reports")
+    @DisplayName("the merge rescues an outage, as the arm now reports")
     void theMergeIsWhatTheArmNowMeasures() {
         SafetyVerdict floorHit = new SafetyVerdict(
                 SafetyVerdict.Band.FINE, SafetyVerdict.Band.CLEARLY, SafetyVerdict.Band.FINE,
-                SafetyVerdict.Band.FINE, false, List.of(), "",
+                SafetyVerdict.Band.FINE, List.of(), "",
                 SafetyVerdict.Provenance.LEXICON, SafetyVerdict.NO_STAGE);
         SafetyVerdict rescued = SafetyInputGate.combine(floorHit, SafetyVerdict.unavailable());
         assertTrue(!rescued.isUnavailable(), "a floor that fired is a measurement, not an outage");
         assertEquals("block", armDecide(rescued));
-
-        SafetyVerdict distress = new SafetyVerdict(
-                SafetyVerdict.Band.FINE, SafetyVerdict.Band.FINE, SafetyVerdict.Band.FINE,
-                SafetyVerdict.Band.FINE, true, List.of(), "",
-                SafetyVerdict.Provenance.LEXICON, SafetyVerdict.NO_STAGE);
-        SafetyVerdict overCalled = new SafetyVerdict(
-                SafetyVerdict.Band.CLEARLY, SafetyVerdict.Band.FINE, SafetyVerdict.Band.FINE,
-                SafetyVerdict.Band.FINE, false, List.of(), "",
-                SafetyVerdict.Provenance.HAIKU, SafetyVerdict.NO_STAGE);
-        SafetyVerdict capped = SafetyInputGate.combine(distress, overCalled);
-        assertEquals("allow", armDecide(capped), "a child in distress is never refused (\u00a71)");
-        assertEquals("block", armDecide(overCalled), "...and the model alone would have refused him");
     }
 }

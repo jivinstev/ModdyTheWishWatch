@@ -241,8 +241,20 @@ public final class WishSweeper {
             // first one did.
             String note = book.byId(r.run().wishId()).map(com.moddingfromamod.wish.Wish::result)
                     .orElse("");
-            book.complete(r.run().wishId(), WishStatus.PENDING, note)
-                    .ifPresent(w -> WishQueue.global().offer(w));
+            book.complete(r.run().wishId(), WishStatus.PENDING, note).ifPresent(w -> putBack(server, w));
+        }
+    }
+
+    /**
+     * Put a wish back in line, as a fresh one would be routed (#81): to the workers' queue while the Magician answers
+     * its player, ended kindly otherwise ({@link com.moddingfromamod.wish.MagicianDoor#turnBack}). Public: the
+     * sweeper's own step, driven by a GameTest without killing a real worker.
+     */
+    public static void putBack(MinecraftServer server, com.moddingfromamod.wish.Wish w) {
+        if (com.moddingfromamod.wish.MagicianDoor.answersNow(server, w.playerId())) {
+            WishQueue.global().offer(w);
+        } else {
+            com.moddingfromamod.wish.MagicianDoor.turnBack(server, w, "the sweeper");
         }
     }
 

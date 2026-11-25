@@ -28,6 +28,10 @@ public final class ThingPage {
     private ThingPage() {
     }
 
+    /** "Wish about this": the Magician's mark only where he would answer the wish ({@link MagicianDoor#offered}, #78). */
+    public static final String WISH_ABOUT_MAGICIAN = "✪ Wish about this";
+    public static final String WISH_ABOUT = "✨ Wish about this";
+
     /** The Builder verb's lore while the change is the free one ({@code FreeEdit}). */
     public static final String FREE_CHANGE_LORE = "Free until you wish again";
 
@@ -70,7 +74,9 @@ public final class ThingPage {
         out.add(new Verb("go", "minecraft:spyglass", "🔍 Go see it", "Moddy takes you there",
                 ChildCommands.go(""), null));
         // SEED, not the display name: the recipe's own terms are what separate his things.
-        out.add(new Verb("wish", "minecraft:writable_book", "✪ Wish about this", "Change it with a wish",
+        // ✪ is the Magician's mark: only where he would answer the wish (#78); else the Apprentice's ✨
+        boolean magician = holder != null ? MagicianDoor.offered(holder) : MagicianDoor.on(owner);
+        out.add(new Verb("wish", "minecraft:writable_book", magician ? WISH_ABOUT_MAGICIAN : WISH_ABOUT, "Change it with a wish",
                 null, "I want my " + seedOf(cell) + " to "));
         // 🎁 GIVE ME ONE: a copy of one that exists, a DIFFERENT verb from making another — the
         // labels have different shapes on purpose. Only when the catalogue can serve it.
