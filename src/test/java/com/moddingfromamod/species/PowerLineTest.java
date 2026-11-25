@@ -29,7 +29,7 @@ class PowerLineTest {
         Species dragon = sp("{\"id\":\"d\",\"health\":60,\"damage\":6,\"armor\":4,\"knockbackResistance\":0.5,"
                 + "\"powers\":[\"friendly\"],\"base\":\"companion\"}");
         String line = PowerLine.of(dragon, 1.6);
-        assertTrue(line.startsWith("Power: 60 health, 6 damage, 4 armour, knockback resistance 0.5: like a "), line);
+        assertTrue(line.startsWith("Power: 60 health, 6 damage, 4 armour, knockback resistance 0.5: like an elder guardian"), line);
         PowerBand.Band band = PowerBand.forVolume(1.6);
         assertTrue(line.contains("Its size is " + band.name() + ": about " + (long) band.health() + " health, "
                 + (long) band.damage() + " damage."), line);
