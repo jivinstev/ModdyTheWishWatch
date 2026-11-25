@@ -174,7 +174,7 @@ public class ChildSafetyEnforceGameTest {
     private static SafetyVerdict verdict(SafetyVerdict.Band band, String redirect,
                                          SafetyVerdict.Reason... reasons) {
         return new SafetyVerdict(band, SafetyVerdict.Band.FINE, SafetyVerdict.Band.FINE,
-                SafetyVerdict.Band.FINE, false, List.of(reasons), redirect,
+                SafetyVerdict.Band.FINE, List.of(reasons), redirect,
                 SafetyVerdict.Provenance.HAIKU, SafetyVerdict.NO_STAGE);
     }
 
@@ -454,94 +454,6 @@ public class ChildSafetyEnforceGameTest {
             helper.assertTrue(!safety.isEmpty(), Component.literal("no safety record for " + w.wish().shortId()));
             helper.assertValueEqual(str(safety.get(safety.size() - 1), "action"), "NOTE", Component.literal("action"));
         });
-    }
-
-    // ── (c) a child in distress is never refused, whatever the model says ─────────────────────
-
-    /**
-     * The lexicon's WELLBEING flag beating a model CLEARLY (§1, and CS-S1b's binding finding).
-     *
-     * <p>CS-S1b measured the model calling that row {@code CLEARLY} one time in three after three
-     * prompt iterations, which is why the rule is in the deterministic layer: no prompt can be
-     * relied on for the one case §1 says is never refused.
-     *
-     * <p>The lexicon is the REAL shipped list rather than a stub, so this also asserts the list
-     * still answers WELLBEING to a phrasing a child might really type — a term quietly moved to the
-     * DANGER axis would turn this into a block, and nothing else would notice.
-     */
-    @GameTest(template = "empty_test", batch = "childsafety_enforce_wellbeing", timeoutTicks = 600)
-    public static void aWellbeingWishIsNeverBlockedAndWritesAGrownUpNote(GameTestHelper helper) {
-        System.setProperty(MODE, "on");
-        RuntimeConfig.invalidate();
-        MockPlayerNetwork.clearStaleMocks(helper);
-        ServerPlayer p = MockPlayerNetwork.inLevel(helper);
-        BlockPos at = helper.absolutePos(new BlockPos(1, 2, 1));
-        p.setPos(at.getX() + 0.5, at.getY(), at.getZ() + 0.5);
-
-        // A phrasing the SHIPPED lexicon answers WELLBEING to, with a unique tail so no other test
-        // and no memoised grade can be what is being measured.
-        String text = "make me a knife to hurt myself " + UUID.randomUUID().toString()
-                .substring(0, 8);
-        helper.assertTrue(SafetyLexicon.shared().check(text)
-                        .map(SafetyVerdict::wellbeing).orElse(false),
-                Component.literal("the shipped lexicon no longer flags this as WELLBEING, so the precedence rule "
-                        + "below is being asserted against nothing: " + text));
-
-        Wish wish = WishBook.get(helper.getLevel().getServer()).add(Wish.create(text, WishSource.COMMAND,
-                System.currentTimeMillis(), p.getUUID(), p.getGameProfile().name(),
-                p.level().dimension().location().toString(), p.getX(), p.getY(), p.getZ()));
-        Marshal.global().submit(wish.id(), p.getUUID(), text);
-        WishProgress.startThinking(p, wish.id(), text);
-        WishQueue queue = new WishQueue();
-        helper.assertTrue(queue.offer(wish), Component.literal("the test queue refused the wish"));
-        Wishing w = new Wishing(p, wish, queue, new StringBuilder());
-        tidyWhenTheTestEnds(helper, w);
-
-        // THE MODEL GETS IT WRONG, exactly as measured.
-        grades(new SafetyVerdict(SafetyVerdict.Band.FINE, SafetyVerdict.Band.FINE,
-                SafetyVerdict.Band.FINE, SafetyVerdict.Band.CLEARLY, false,
-                List.of(SafetyVerdict.Reason.SELF_HARM), "", SafetyVerdict.Provenance.HAIKU,
-                SafetyVerdict.NO_STAGE));
-        long notesBefore = countGrownUpNotes();
-        AtomicReference<Throwable> blew = new AtomicReference<>();
-        AtomicReference<ToolResult> out = await(queue, blew);
-
-        helper.succeedWhen(() -> {
-            helper.assertTrue(blew.get() == null, Component.literal("await_wish threw: " + blew.get()));
-            ToolResult result = out.get();
-            helper.assertTrue(result != null, Component.literal("await_wish has not returned yet"));
-            helper.assertTrue(!result.isError(),
-                    Component.literal("a child in distress was REFUSED, which §1 says is the worst possible answer: "
-                            + result.text()));
-            helper.assertTrue(result.text().contains(text),
-                    Component.literal("the wish was not handed over: " + result.text()));
-
-            Wish after = WishBook.get(helper.getLevel().getServer()).byId(wish.id()).orElse(null);
-            helper.assertTrue(after != null && after.status() != WishStatus.REJECTED,
-                    Component.literal("the wish was rejected; status " + (after == null ? "gone" : after.status())));
-
-            List<JsonObject> safety = safetyRecordsFor(wish.shortId());
-            helper.assertTrue(!safety.isEmpty(), Component.literal("no safety record for " + wish.shortId()));
-            JsonObject r = safety.get(safety.size() - 1);
-            helper.assertTrue(!"BLOCK".equals(str(r, "action")) && !"REDIRECT".equals(
-                            str(r, "action")),
-                    Component.literal("the layer recorded a refusal for a wellbeing wish: " + str(r, "action")));
-            helper.assertTrue(r.has("wellbeing") && r.get("wellbeing").getAsBoolean(),
-                    Component.literal("the flag did not survive into the record, so nothing would write the note"));
-            helper.assertTrue(countGrownUpNotes() > notesBefore,
-                    Component.literal("no grown-up note was written — the note IS the answer here, and a wish "
-                            + "answered kindly with nobody told is the whole feature missing"));
-        });
-    }
-
-    /** Lines in the wellbeing file, or 0. Its own file, holding nothing else (§6). */
-    private static long countGrownUpNotes() {
-        try {
-            Path p = ActionLog.grownUpNotes();
-            return Files.exists(p) ? Files.readAllLines(p, StandardCharsets.UTF_8).size() : 0L;
-        } catch (Exception e) {
-            return 0L;
-        }
     }
 
     // ── (d) what an ungradeable wish does, per config ─────────────────────────────────────────

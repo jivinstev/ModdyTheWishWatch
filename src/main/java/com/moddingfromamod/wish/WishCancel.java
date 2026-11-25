@@ -210,7 +210,7 @@ public final class WishCancel {
         // #81: the same route decision a fresh wish gets. A player the Magician no longer answers has the re-aimed
         // words routed as a fresh wish (the Apprentice's, in practice); the stopped wish stays stopped and is never
         // put back in line for a worker.
-        if (!MagicianDoor.answersNow(player.getServer(), player.getUUID())) {
+        if (!MagicianDoor.answersNow(player.level().getServer(), player.getUUID())) {
             org.slf4j.LoggerFactory.getLogger(WishCancel.class).info(
                     "wish {}: re-aimed, routed as a fresh wish: the Magician no longer answers its player (#81)", run.shortId());
             WishService.submit(player, WishText.reaimed(before.text(), redirectTo), WishSource.TYPED);
