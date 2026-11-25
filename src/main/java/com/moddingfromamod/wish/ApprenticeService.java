@@ -171,14 +171,13 @@ public final class ApprenticeService {
         boolean prefers = prefersApprentice(p) && BuilderSettings.forPlayer(p.getUUID()).enabled();
         // Magician off means the Apprentice answers every typed wish (allowsAi: on, its check, or a developer's
         // forced pool).
-        boolean magician = com.moddingfromamod.config.Magician.allowsAi()
-                || com.moddingfromamod.wish.AlwaysMagician.anyone(p.getUUID());
+        boolean magician = MagicianDoor.on(p.getUUID());
         return WishRoute.choose(magician, CrafterService.role(p), prefers, hint, question);
     }
 
     /** Would words sent to the Magician reach him, or come back to the Apprentice (Magician mode off)? */
     static boolean magicianAnswers(ServerPlayer p) {
-        return route(p, WishRoute.Hint.MAGICIAN, false) == WishRoute.Route.MAGICIAN;
+        return MagicianDoor.offered(p);
     }
 
     // ── the wish ─────────────────────────────────────────────────────────────────────────────────
@@ -282,6 +281,13 @@ public final class ApprenticeService {
                 nudge(p);
                 return false;
             }
+            if (!MagicianDoor.offered(p)) {
+                // #78: with the Magician off there is nobody to wish it from scratch, so no "✪" tile that would only send
+                // the words back here. Instead: other words, or the Builder; and for the host, where the setup is.
+                p.sendSystemMessage(Component.literal(ApprenticeWords.NO_MAGICIAN_TRY).withStyle(ChatFormatting.AQUA));
+                hostTurnOn(p);
+                return false;
+            }
             // A Magician chose Apprentice magic, often for its price: his words are never sent to the agent for a
             // whole wish without his say. The page opens with its one honest tile, "Ask Moddy instead".
             PENDING.put(p.getUUID(), new Pending(List.of(), words, source, settings, null));
@@ -290,6 +296,8 @@ public final class ApprenticeService {
             return true;
         }
         PENDING.put(p.getUUID(), new Pending(answer.offers(), crafter ? "" : words, source, settings, crafter ? null : name));
+        // the last tile is "✪ Moddy wishes it from scratch" only where the Magician would answer (#78); else "None of these"
+        boolean offered = MagicianDoor.offered(p);
         p.sendSystemMessage(Component.literal(ApprenticeWords.hello(tree(settings.allow()), answer)).withStyle(ChatFormatting.AQUA));
         // each tile names what it leaves out, from the words he typed (held in memory for this page only,
         // as the words already are; never logged or stored). The words passed the safety floor before the matcher.
@@ -301,7 +309,7 @@ public final class ApprenticeService {
             }
         }
         PickPage page = ApprenticeWords.page(settings.allow(), LibraryPresets.SHIPPED, tree(settings.allow()),
-                answer.offers(), tagged ? answer : null, tagged ? notes : null, !crafter, priced, !crafter);
+                answer.offers(), tagged ? answer : null, tagged ? notes : null, offered, priced, offered);
         MenuKit.pick(p, "apprentice", page, ApprenticeService::press);
         return true;
     }
@@ -337,7 +345,8 @@ public final class ApprenticeService {
         }
         if (ApprenticeWords.NONE.equals(id)) {
             p.closeContainer();
-            if (pending.words().isEmpty()) {
+            if (pending.words().isEmpty() || !MagicianDoor.offered(p)) {
+                // a Crafter, or anyone while the Magician is off (#78): the Builder has every Part; nothing goes on
                 p.sendSystemMessage(Component.literal(ApprenticeWords.NONE_SAID).withStyle(ChatFormatting.AQUA));
                 nudge(p);
             } else {
@@ -368,6 +377,17 @@ public final class ApprenticeService {
         if (CrafterService.takeNudge(p)) {
             p.sendSystemMessage(Component.literal(ApprenticeWords.UPSELL).withStyle(ChatFormatting.GRAY)
                     .append(CrafterService.link(CrafterService.signupUrl())));
+        }
+    }
+
+    /** The host, while the Magician is off: one line that names the setup, its words a link that opens it (#78). */
+    private static void hostTurnOn(ServerPlayer p) {
+        if (MagicianDoor.hostMayTurnOn(p)) {
+            String cmd = "/" + ChildCommands.MODDY + " " + com.moddingfromamod.config.MagicianSetup.VERB;
+            p.sendSystemMessage(Component.literal(ApprenticeWords.HOST_MAGICIAN_OFF).withStyle(ChatFormatting.GRAY)
+                    .append(Component.literal(ApprenticeWords.HOST_TURN_ON).withStyle(s -> s.withColor(ChatFormatting.AQUA)
+                            .withUnderlined(true).withClickEvent(com.moddingfromamod.compat.ChatEvents.click(
+                                    net.minecraft.network.chat.ClickEvent.Action.RUN_COMMAND, cmd)))));
         }
     }
 
