@@ -51,7 +51,11 @@ import com.moddingfromamod.species.Species;
  *   <li>{@link #AMOUNT_ITEMS}: how many items supplies hand over;</li>
  *   <li>{@link #RADIUS_BLOCKS}: the largest radius, in blocks, an effect of it takes;</li>
  *   <li>{@link #DURATION_TICKS}: the longest time, in ticks (20 a second), an effect of it lasts;</li>
- *   <li>{@link #EXTENT_BLOCKS}: a stored building's longest side, in blocks.</li>
+ *   <li>{@link #EXTENT_BLOCKS}: a stored building's longest side, in blocks;</li>
+ *   <li>{@link #ARMOR_POINTS}: a creature's armour, in the game's armour points (a full iron suit is 15), where it
+ *       carries one;</li>
+ *   <li>{@link #KNOCKBACK_RESISTANCE_FRACTION}: a creature's knockback resistance, 0 (none) to 1 (never pushed), where
+ *       it carries one.</li>
  * </ul>
  *
  * <h2>Tags</h2>
@@ -91,6 +95,8 @@ public record MakeFacts(String kind, Map<String, Double> numbers, Set<String> ta
     public static final String RADIUS_BLOCKS = "radiusBlocks";
     public static final String DURATION_TICKS = "durationTicks";
     public static final String EXTENT_BLOCKS = "extentBlocks";
+    public static final String ARMOR_POINTS = "armorPoints";
+    public static final String KNOCKBACK_RESISTANCE_FRACTION = "knockbackResistanceFraction";
 
     /**
      * Every number's name, as shipped. Additive only: a name here is never renamed, removed or given another unit
@@ -98,7 +104,7 @@ public record MakeFacts(String kind, Map<String, Double> numbers, Set<String> ta
      */
     public static final List<String> NUMBERS = List.of(HEALTH_HALF_HEARTS, ATTACK_DAMAGE_HALF_HEARTS,
             MOVEMENT_SPEED_ATTRIBUTE, SCALE_TIMES, BUILDER_SIZE_STEP, BUILDER_STRENGTH_STEP, COUNT_MADE, AMOUNT_ITEMS,
-            RADIUS_BLOCKS, DURATION_TICKS, EXTENT_BLOCKS);
+            RADIUS_BLOCKS, DURATION_TICKS, EXTENT_BLOCKS, ARMOR_POINTS, KNOCKBACK_RESISTANCE_FRACTION);
 
     public static final String FIGHTS = "fights";
     public static final String HOSTILE = "hostile";
@@ -510,6 +516,14 @@ public record MakeFacts(String kind, Map<String, Double> numbers, Set<String> ta
                     if (!Double.isNaN(damage)) {
                         a.most(ATTACK_DAMAGE_HALF_HEARTS, damage);
                     }
+                    double armor = numeric(from == null ? null : from.get("armor"));
+                    double knockback = numeric(from == null ? null : from.get("knockbackResistance"));
+                    if (!Double.isNaN(armor)) {
+                        a.most(ARMOR_POINTS, armor);
+                    }
+                    if (!Double.isNaN(knockback)) {
+                        a.most(KNOCKBACK_RESISTANCE_FRACTION, knockback);
+                    }
                     creatureLives(a, strings(args.get("powers")));
                 }
                 if ("guardian".equals(str(args, "base"))) {
@@ -787,6 +801,8 @@ public record MakeFacts(String kind, Map<String, Double> numbers, Set<String> ta
         a.most(HEALTH_HALF_HEARTS, s.health());
         a.most(ATTACK_DAMAGE_HALF_HEARTS, s.damage());
         a.most(MOVEMENT_SPEED_ATTRIBUTE, s.speed());
+        a.most(ARMOR_POINTS, s.armor());
+        a.most(KNOCKBACK_RESISTANCE_FRACTION, s.knockbackResistance());
         return a.done();
     }
 

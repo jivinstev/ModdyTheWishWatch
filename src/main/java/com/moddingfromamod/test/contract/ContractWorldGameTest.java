@@ -602,6 +602,94 @@ public final class ContractWorldGameTest {
         });
     }
 
+    /** The living creatures near {@code p} that carry this world's health fit, each with its own UUID. */
+    private static List<net.minecraft.world.entity.LivingEntity> fittedNear(GameTestHelper helper, ServerPlayer p) {
+        List<net.minecraft.world.entity.LivingEntity> out = new ArrayList<>();
+        for (var e : helper.getLevel().getAllEntities()) {
+            if (e instanceof net.minecraft.world.entity.LivingEntity le && !(e instanceof ServerPlayer) && le.distanceTo(p) < 64
+                    && com.moddingfromamod.wish.LiveFit.modifierOn(le, net.minecraft.world.entity.ai.attributes.Attributes.MAX_HEALTH,
+                    com.moddingfromamod.wish.LiveFit.MAX_HEALTH_ID) != null) {
+                out.add(le);
+            }
+        }
+        out.sort(java.util.Comparator.comparing(e -> e.getUUID().toString()));
+        return out;
+    }
+
+    @GameTest(template = "empty_test", batch = "contract_world_rounds", timeoutTicks = 40000)
+    public static void aRoundThatChangesTheLimitsRefitsHisCreaturesAndTellsHimOnce(GameTestHelper helper) {
+        ServerPlayer p = setUp(helper, "gtcontractrounds");
+        MockPlayerNetwork.afterTest(helper, ContractWorld::forgetRounds);
+        // two giant long-neck dinosaurs (120 health each) in the first round: held to 40
+        BuilderSpec two = new BuilderSpec(BuilderSpec.CURRENT, BuilderSpec.Kind.CREATURE, "preset:bodies/long_neck_dinosaur", "",
+                3, List.of(), "friendly", 2, "", "", Map.of());
+        AtomicReference<BuilderMake.Result> made = new AtomicReference<>();
+        BuilderMake.make(p, two, BuilderAllowlist.REVIEWED).thenAcceptAsync(made::set);
+        StringBuilder chat = new StringBuilder();
+        AtomicReference<Integer> step = new AtomicReference<>(0);
+        com.moddingfromamod.test.RealTime.succeedWhen(helper, () -> {
+            BuilderMake.Result r = made.get();
+            helper.assertTrue(r != null && r.outcome() == BuilderMake.Outcome.MADE, Component.literal("the dinosaurs: " + r));
+            List<net.minecraft.world.entity.LivingEntity> them = fittedNear(helper, p);
+            helper.assertTrue(them.size() == 2, Component.literal("two creatures carry the fit: " + them.size()));
+            var hurt = them.get(0);
+            var whole = them.get(1);
+            if (step.get() == 0) {
+                helper.assertTrue(Math.abs(hurt.getMaxHealth() - ContractWorld.TOUGHEST) < 0.01
+                        && Math.abs(whole.getMaxHealth() - ContractWorld.TOUGHEST) < 0.01,
+                        Component.literal("the first round holds them to 40: " + hurt.getMaxHealth() + ", " + whole.getMaxHealth()));
+                hurt.setHealth(20);   // half its hearts
+                whole.setHealth(whole.getMaxHealth());
+                said(p, chat);
+                // RAISE: a later round lets them have 80
+                int before = count(chat.toString(), com.moddingfromamod.wish.LiveFit.UNLEASHED);
+                ContractWorld.round(p.getUUID(), 2);
+                helper.assertTrue(Math.abs(hurt.getMaxHealth() - ContractWorld.TOUGHEST_LATER) < 0.01
+                                && Math.abs(hurt.getHealth() - 40) < 0.01,
+                        Component.literal("raised, as hurt as it was (half): " + hurt.getHealth() + "/" + hurt.getMaxHealth()));
+                helper.assertTrue(Math.abs(whole.getHealth() - ContractWorld.TOUGHEST_LATER) < 0.01,
+                        Component.literal("raised, a whole one stays whole: " + whole.getHealth() + "/" + whole.getMaxHealth()));
+                helper.assertTrue(count(said(p, chat), com.moddingfromamod.wish.LiveFit.UNLEASHED) == before + 1,
+                        Component.literal("told once for two creatures: " + chat));
+                // LOWER: back to the first round
+                int held = count(chat.toString(), com.moddingfromamod.wish.LiveFit.HELD_DOWN);
+                ContractWorld.round(p.getUUID(), 1);
+                helper.assertTrue(Math.abs(hurt.getMaxHealth() - ContractWorld.TOUGHEST) < 0.01
+                                && Math.abs(hurt.getHealth() - 40) < 0.01,
+                        Component.literal("lowered, it keeps what it has up to 40: " + hurt.getHealth() + "/" + hurt.getMaxHealth()));
+                helper.assertTrue(Math.abs(whole.getHealth() - ContractWorld.TOUGHEST) < 0.01,
+                        Component.literal("lowered, held to its new most: " + whole.getHealth() + "/" + whole.getMaxHealth()));
+                helper.assertTrue(count(said(p, chat), com.moddingfromamod.wish.LiveFit.HELD_DOWN) == held + 1,
+                        Component.literal("held down, told once: " + chat));
+                // RAISE BACK, from a hurt creature again
+                hurt.setHealth(10);
+                int again = count(chat.toString(), com.moddingfromamod.wish.LiveFit.UNLEASHED);
+                ContractWorld.round(p.getUUID(), 2);
+                helper.assertTrue(Math.abs(hurt.getMaxHealth() - ContractWorld.TOUGHEST_LATER) < 0.01
+                                && Math.abs(hurt.getHealth() - 20) < 0.01,
+                        Component.literal("raised back, a quarter stays a quarter: " + hurt.getHealth() + "/" + hurt.getMaxHealth()));
+                helper.assertTrue(count(said(p, chat), com.moddingfromamod.wish.LiveFit.UNLEASHED) == again + 1,
+                        Component.literal("told once again: " + chat));
+                long mods = hurt.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.MAX_HEALTH).getModifiers()
+                        .stream().filter(m -> m.id().equals(com.moddingfromamod.wish.LiveFit.MAX_HEALTH_ID)).count();
+                helper.assertTrue(mods == 1, Component.literal("one fit after three changes, never stacked: " + mods));
+                // armour and knockback resistance: a creature that carries them is held to this world's most, on its stats holder
+                var armor = whole.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.ARMOR);
+                var steady = whole.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.KNOCKBACK_RESISTANCE);
+                helper.assertTrue(armor != null && steady != null, Component.literal("the stats holder holds armour and knockback"));
+                armor.setBaseValue(10);
+                steady.setBaseValue(1);
+                ContractWorld.round(p.getUUID(), 2);
+                helper.assertTrue(Math.abs(armor.getValue() - ContractWorld.HARDEST_SHELL) < 0.01
+                                && Math.abs(steady.getValue() - ContractWorld.STEADIEST) < 0.01
+                                && armor.getModifier(com.moddingfromamod.wish.LiveFit.ARMOR_ID) != null
+                                && steady.getModifier(com.moddingfromamod.wish.LiveFit.KNOCKBACK_RESISTANCE_ID) != null,
+                        Component.literal("armour " + armor.getValue() + ", knockback " + steady.getValue()));
+                step.set(1);
+            }
+        });
+    }
+
     private static int count(String in, String what) {
         int n = 0;
         for (int i = in.indexOf(what); i >= 0; i = in.indexOf(what, i + 1)) {
