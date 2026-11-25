@@ -139,6 +139,12 @@ class StoreMigrationsDocTest {
     }
 
     @Test
+    void theMobStoreIsNeverWrittenOverByAnOlderBuild() {
+        assertTrue(com.moddingfromamod.mob.MobHandleStore.VERSION >= com.moddingfromamod.mob.MobState.RECORD_VERSION,
+                "mobs.json's version moves with its records, so an older build's writeBlocker refuses a newer file");
+    }
+
+    @Test
     void everyRowNamesAClassThatExists() throws Exception {
         for (String r : Files.readAllLines(DOC)) {
             if (!r.matches("^\\| [^|]+ \\| v\\d+ \\|.*")) {
