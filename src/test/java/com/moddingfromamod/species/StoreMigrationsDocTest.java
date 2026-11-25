@@ -12,18 +12,24 @@ import java.util.regex.Pattern;
 import org.junit.jupiter.api.Test;
 
 /**
- * <b>docs/STORE_MIGRATIONS.md cannot drift</b>: every species record version this build writes (2 up to
- * {@link Species#RECORD_VERSION}) has its row in the register, and every row names a migration class (a backticked
- * {@code package/Class}) that exists in the source.
+ * <b>docs/STORE_MIGRATIONS.md cannot drift</b>: for every versioned record ({@link #RECORDS}: the species record and,
+ * from #115, a mob's undo record), every version this build writes (2 up to its current one) has its row in the
+ * register and no row names a version it does not write; and every row names a migration class (a backticked
+ * {@code package/Class}) that exists in the source. A new versioned record adds its entry to {@link #RECORDS}.
  */
 class StoreMigrationsDocTest {
 
     private static final Path DOC = Path.of("docs", "STORE_MIGRATIONS.md");
 
-    private static List<String> rows() throws Exception {
+    /** Each versioned record's register name (its first column) → the version this build writes. */
+    static final java.util.Map<String, Integer> RECORDS = java.util.Map.of(
+            "species (record)", Species.RECORD_VERSION,
+            "mob undo record", com.moddingfromamod.mob.MobState.RECORD_VERSION);
+
+    private static List<String> rows(String record) throws Exception {
         List<String> out = new ArrayList<>();
         for (String line : Files.readAllLines(DOC)) {
-            if (line.startsWith("| species (record) |")) {
+            if (line.startsWith("| " + record + " |")) {
                 out.add(line);
             }
         }
@@ -32,22 +38,35 @@ class StoreMigrationsDocTest {
 
     @Test
     void everyRecordVersionHasItsRow() throws Exception {
-        List<String> rows = rows();
-        for (int v = 2; v <= Species.RECORD_VERSION; v++) {
-            String want = "| species (record) | v" + v + " |";
-            assertTrue(rows.stream().anyMatch(r -> r.startsWith(want)),
-                    "docs/STORE_MIGRATIONS.md has no row for species record v" + v + ": a migration with no row is undeclared");
-        }
-        for (String r : rows) {
-            Matcher m = Pattern.compile("^\\| species \\(record\\) \\| v(\\d+) \\|").matcher(r);
-            assertTrue(m.find() && Integer.parseInt(m.group(1)) <= Species.RECORD_VERSION,
-                    "a row for a record version this build does not write: " + r);
+        for (var e : RECORDS.entrySet()) {
+            String record = e.getKey();
+            List<String> rows = rows(record);
+            for (int v = 2; v <= e.getValue(); v++) {
+                String want = "| " + record + " | v" + v + " |";
+                assertTrue(rows.stream().anyMatch(r -> r.startsWith(want)),
+                        "docs/STORE_MIGRATIONS.md has no row for " + record + " v" + v + ": a migration with no row is undeclared");
+            }
+            for (String r : rows) {
+                Matcher m = Pattern.compile("^\\| " + Pattern.quote(record) + " \\| v(\\d+) \\|").matcher(r);
+                assertTrue(m.find() && Integer.parseInt(m.group(1)) <= e.getValue(),
+                        "a row for a record version this build does not write: " + r);
+            }
         }
     }
 
     @Test
+    void theMobStoreIsNeverWrittenOverByAnOlderBuild() {
+        assertTrue(com.moddingfromamod.mob.MobHandleStore.VERSION >= com.moddingfromamod.mob.MobState.RECORD_VERSION,
+                "mobs.json's version moves with its records, so an older build's writeBlocker refuses a newer file");
+    }
+
+    @Test
     void everyRowNamesAMigrationClassThatExists() throws Exception {
-        for (String r : rows()) {
+        List<String> all = new ArrayList<>();
+        for (String record : RECORDS.keySet()) {
+            all.addAll(rows(record));
+        }
+        for (String r : all) {
             Matcher m = Pattern.compile("`([a-z]+/[A-Z][A-Za-z]+)`").matcher(r);
             boolean named = false;
             while (m.find()) {
