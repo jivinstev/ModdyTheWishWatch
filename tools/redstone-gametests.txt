@@ -1,1 +1,2 @@
 # The redstone GameTest classes the branch jar workflow runs (one per line).
+PistonDoorGameTest
