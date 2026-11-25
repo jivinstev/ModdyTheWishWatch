@@ -458,8 +458,28 @@ public record Species(String id, String name, Body body, String texture, int tin
 
     // ===================== JSON =====================
 
+    /**
+     * The version a species RECORD is written at (docs/STORE_MIGRATIONS.md), inline in each record as {@code "v"} so a
+     * migration is applied to, and counted on, the records written before it. A record with none is v1. An older build
+     * ignores the field and reads the record as before.
+     * <ul>
+     *   <li>v2 (#99): read under the library-copy rule ({@link LibraryCopies}).</li>
+     * </ul>
+     */
+    public static final int RECORD_VERSION = 2;
+
+    /** The version a stored record was written at: its {@code "v"}, or 1 when it has none. */
+    public static int recordVersion(JsonObject o) {
+        try {
+            return o != null && o.has("v") && o.get("v").isJsonPrimitive() ? o.get("v").getAsInt() : 1;
+        } catch (RuntimeException e) {
+            return 1;
+        }
+    }
+
     public JsonObject toJson() {
         JsonObject o = new JsonObject();
+        o.addProperty("v", RECORD_VERSION);
         o.addProperty("id", id);
         o.addProperty("name", name);
         o.addProperty("body", body.name().toLowerCase(Locale.ROOT));
@@ -568,6 +588,23 @@ public record Species(String id, String name, Body body, String texture, int tin
         } catch (IllegalArgumentException e) {
             return Voice.NONE;
         }
+    }
+
+    /**
+     * <b>The same creature with its shipped stat line</b> (#99): health, attack damage, armour and knockback resistance
+     * from {@code shipped} (a library creature's own {@code species.json}), each only where the record states it.
+     * Everything else (its look, name, powers, moves, instinct, owner) is kept. A world's copy of a library creature
+     * is a pure copy (an edit of one always forks it, {@code ForkPolicy}), so reading its numbers again from the
+     * shipped record changes nothing a player chose.
+     */
+    public Species withShippedStats(JsonObject shipped) {
+        if (shipped == null) {
+            return this;
+        }
+        return new Species(id, name, body, texture, tint, scale, dbl(shipped, "health", health), speed,
+                dbl(shipped, "damage", damage), dbl(shipped, "armor", armor),
+                dbl(shipped, "knockbackResistance", knockbackResistance), powers, modelKey, base, abilities,
+                abilityPacks, ownerId, voice, throwsItem, behaves);
     }
 
     /** The same creature with this voice. */

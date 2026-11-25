@@ -1,7 +1,7 @@
 {
  "behaves_like": "buzzer",
- "damage": 0,
- "health": 30,
+ "damage": 1,
+ "health": 8,
  "id": "butterfly",
  "name": "Rainbow Butterfly",
  "note": "Big friendly butterfly: thin dark body, four large wings each a different bright colour with spotted pattern for 'colourful'; flies like a bee, scale 2.5 for 'big'.",

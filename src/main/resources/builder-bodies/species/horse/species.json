@@ -3,7 +3,7 @@
   "armor": 0.0,
   "body": "humanoid",
   "createdAt": 1793163484770,
-  "damage": 0.0,
+  "damage": 3.0,
   "health": 30.0,
   "id": "horse",
   "knockbackResistance": 0.0,
