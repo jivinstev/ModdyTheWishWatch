@@ -54,6 +54,22 @@ public interface WorldMakes {
         com.moddingfromamod.wish.LiveFit.refit(net.neoforged.neoforge.server.ServerLifecycleHooks.getCurrentServer(), player);
     }
 
+    /**
+     * <b>Where a finished make goes</b> (#70), asked before its first placing step: {@link Landing#LANDS} (the default,
+     * the plain game), or KEPT: made and kept on his shelf as usual, not placed, and put on his hotbar as a wish (or in
+     * his Wish Bag when the hotbar is full), to be aimed and fired like any hotbar wish. {@link Landing#KEPT_AS_ITEM}
+     * hands an item make over as the real item. Asked with the make's facts (as this world fits it) and the same
+     * {@link WishAsk}; cheap and free of side effects. Today the core keeps a Builder or Apprentice creature, ride or
+     * item; any other make lands as before (see {@code docs/EXTENDING.md}).
+     */
+    default Landing landing(MakeFacts facts, WishAsk ask) {
+        return Landing.LANDS;
+    }
+
+    /** A kept make was handed over (#70): what it is and where it went, so the world can show it its own way. */
+    default void handedOver(HandedOver what) {
+    }
+
     /** The one this world answers with. */
     static WorldMakes get() {
         WorldModule m = WorldModuleHost.liveModule();

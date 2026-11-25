@@ -301,6 +301,20 @@ public final class WishRun {
         builderMade = true;
     }
 
+    private volatile boolean kept;
+
+    /**
+     * A world keeps what this run makes and hands it over (#70, {@code WorldMakes.landing}): its creature is designed
+     * and not spawned, and no preview of it stands ({@code WishEarlyReveal}), because nothing appears until he fires it.
+     */
+    public boolean kept() {
+        return kept;
+    }
+
+    public void markKept() {
+        kept = true;
+    }
+
     private volatile com.moddingfromamod.world.WorldRefusal worldRefusal;
 
     /**

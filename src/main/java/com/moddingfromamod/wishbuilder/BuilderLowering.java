@@ -405,20 +405,25 @@ public final class BuilderLowering {
         return out;
     }
 
-    private static Call plan(BuilderSpec spec, Edit edit) {
-        JsonObject a = new JsonObject();
-        JsonArray steps = new JsonArray();
-        steps.add(BuilderWords.step(spec, edit != null));   //: a wish's plan, not "make Its raining chickens from the Builder"
-        a.add("steps", steps);
-        a.addProperty("about", edit == null || edit.about() == null || edit.about().isBlank() ? "new" : edit.about());
-        a.addProperty("kind", switch (spec.kind()) {
+    /** The plan kind a spec is: creature, item, building, picture, event or other. */
+    static String kindOf(BuilderSpec spec) {
+        return switch (spec.kind()) {
             case CREATURE, RIDE -> "creature";
             case ITEM, MACHINE, MAGIC_BLOCK, SUPPLIES -> "item";
             case BUILDING -> "building";
             case PICTURE -> "picture";
             case EVENT -> "event";
             default -> "other";
-        });
+        };
+    }
+
+    private static Call plan(BuilderSpec spec, Edit edit) {
+        JsonObject a = new JsonObject();
+        JsonArray steps = new JsonArray();
+        steps.add(BuilderWords.step(spec, edit != null));   //: a wish's plan, not "make Its raining chickens from the Builder"
+        a.add("steps", steps);
+        a.addProperty("about", edit == null || edit.about() == null || edit.about().isBlank() ? "new" : edit.about());
+        a.addProperty("kind", kindOf(spec));
         return new Call("plan_wish", a);
     }
 

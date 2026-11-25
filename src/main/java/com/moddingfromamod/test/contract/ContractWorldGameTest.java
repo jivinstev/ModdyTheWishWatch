@@ -785,6 +785,103 @@ public final class ContractWorldGameTest {
         });
     }
 
+    /** The newest make on his shelf that was not there in {@code had}, or null. */
+    private static BuilderSpecStore.Made newest(ServerPlayer p, Set<String> had) {
+        BuilderSpecStore.Made kept = null;
+        for (var m : BuilderSpecStore.all(RuntimeConfig.playersDir(), p.getStringUUID()).values()) {
+            if (!had.contains(m.id())) {
+                kept = m;
+            }
+        }
+        return kept;
+    }
+
+    /** The hotbar slot holding a wish for {@code recipe}, or -1. */
+    private static int hotbarSlotOf(ServerPlayer p, String recipe) {
+        for (int i = 0; i < 9; i++) {
+            if (recipe.equals(com.moddingfromamod.wish.WishHotbar.recipeOf(p.getInventory().getItem(i)))) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    @GameTest(template = "empty_test", batch = "contract_world_kept_creature", timeoutTicks = 40000)
+    public static void aKeptCreatureIsHandedOverAsAHotbarWishAndAppearsWhenFired(GameTestHelper helper) {
+        ServerPlayer p = setUp(helper, "gtcontractkept");
+        ContractWorld.keepFor(p.getUUID(), com.moddingfromamod.world.Landing.KEPT);
+        MockPlayerNetwork.afterTest(helper, () -> ContractWorld.keepFor(p.getUUID(), null));
+        p.getInventory().clearContent();
+        Set<String> had = Set.copyOf(BuilderSpecStore.all(RuntimeConfig.playersDir(), p.getStringUUID()).keySet());
+        AtomicReference<BuilderMake.Result> made = new AtomicReference<>();
+        BuilderMake.make(p, cats("friendly", 2, 1), BuilderAllowlist.REVIEWED).thenAcceptAsync(made::set);
+        AtomicReference<String> id = new AtomicReference<>();
+        StringBuilder chat = new StringBuilder();
+        com.moddingfromamod.test.RealTime.succeedWhen(helper, () -> {
+            BuilderMake.Result r = made.get();
+            helper.assertTrue(r != null && r.outcome() == BuilderMake.Outcome.MADE, Component.literal("the cat: " + r));
+            if (id.get() == null) {
+                BuilderSpecStore.Made kept = newest(p, had);
+                helper.assertTrue(kept != null, Component.literal("the kept cat is on his shelf, as any make"));
+                helper.assertTrue(tagged(helper, kept.id()) == 0, Component.literal("a kept cat does not appear"));
+                String recipe = com.moddingfromamod.wishbuilder.BuilderAgain.recipeId(kept.id());
+                int slot = hotbarSlotOf(p, recipe);
+                helper.assertTrue(slot >= 0, Component.literal("it is a wish on his hotbar"));
+                var told = ContractWorld.handedOver(p.getUUID());
+                helper.assertTrue(told.size() == 1 && told.get(0).makeId().equals(kept.id()) && told.get(0).slot() == slot
+                                && !told.get(0).realItem() && told.get(0).kind().equals("creature")
+                                && told.get(0).recipe().equals(recipe) && told.get(0).facts().known(),
+                        Component.literal("the world is told where it went: " + told));
+                helper.assertTrue(said(p, chat).contains("is on your hotbar"), Component.literal("he is told: " + chat));
+                id.set(kept.id());
+                // fired, it appears where he aims it, like any hotbar wish
+                WishService.Outcome o = WishService.submit(p, "gt contract kept", WishSource.PRESET, recipe);
+                helper.assertTrue(o == WishService.Outcome.FULFILLING, Component.literal("fired: " + o));
+            }
+            helper.assertTrue(tagged(helper, id.get()) == 1, Component.literal("fired, the cat appears"));
+        });
+    }
+
+    @GameTest(template = "empty_test", batch = "contract_world_kept_item", timeoutTicks = 40000)
+    public static void aKeptItemIsAHotbarWishOrTheRealItemAsTheWorldAsks(GameTestHelper helper) {
+        ServerPlayer p = setUp(helper, "gtcontractkeptitem");
+        ContractWorld.keepFor(p.getUUID(), com.moddingfromamod.world.Landing.KEPT);
+        MockPlayerNetwork.afterTest(helper, () -> ContractWorld.keepFor(p.getUUID(), null));
+        p.getInventory().clearContent();
+        Map<String, String> o = new java.util.LinkedHashMap<>();
+        o.put("stock", "sword");
+        o.put("power", "lightning");
+        BuilderSpec sword = new BuilderSpec(BuilderSpec.CURRENT, BuilderSpec.Kind.ITEM, "", "", 2, List.of(), "", 1, "",
+                "", o);
+        Set<String> had = Set.copyOf(BuilderSpecStore.all(RuntimeConfig.playersDir(), p.getStringUUID()).keySet());
+        AtomicReference<BuilderMake.Result> first = new AtomicReference<>();
+        AtomicReference<BuilderMake.Result> second = new AtomicReference<>();
+        AtomicReference<String> firstId = new AtomicReference<>();
+        BuilderMake.make(p, sword, BuilderAllowlist.REVIEWED).thenAcceptAsync(first::set);
+        com.moddingfromamod.test.RealTime.succeedWhen(helper, () -> {
+            BuilderMake.Result r = first.get();
+            helper.assertTrue(r != null && r.outcome() == BuilderMake.Outcome.MADE, Component.literal("the sword: " + r));
+            if (firstId.get() == null) {
+                BuilderSpecStore.Made kept = newest(p, had);
+                helper.assertTrue(kept != null, Component.literal("the kept sword is on his shelf"));
+                helper.assertTrue(stampedHeld(p).isEmpty(), Component.literal("KEPT: no sword in his hands yet"));
+                helper.assertTrue(hotbarSlotOf(p, com.moddingfromamod.wishbuilder.BuilderAgain.recipeId(kept.id())) >= 0,
+                        Component.literal("it is a wish on his hotbar"));
+                firstId.set(kept.id());
+                // a world may ask for the real item instead; an Apprentice make takes the same path
+                ContractWorld.keepFor(p.getUUID(), com.moddingfromamod.world.Landing.KEPT_AS_ITEM);
+                BuilderMake.make(p, sword, BuilderAllowlist.REVIEWED, null, true).thenAcceptAsync(second::set);
+            }
+            BuilderMake.Result r2 = second.get();
+            helper.assertTrue(r2 != null && r2.outcome() == BuilderMake.Outcome.MADE, Component.literal("the second: " + r2));
+            helper.assertTrue(!stampedHeld(p).isEmpty(), Component.literal("KEPT_AS_ITEM: the real sword is his"));
+            var told = ContractWorld.handedOver(p.getUUID());
+            helper.assertTrue(told.size() == 2 && !told.get(0).realItem() && told.get(0).slot() >= 0
+                            && told.get(1).realItem() && told.get(1).kind().equals("item"),
+                    Component.literal("the world is told of both: " + told));
+        });
+    }
+
     @GameTest(template = "empty_test", batch = "contract_world_redraw", timeoutTicks = 40000)
     public static void aStandingCreatureGrowsOnARaiseAndShrinksBackOnALower(GameTestHelper helper) {
         ServerPlayer p = setUp(helper, "gtcontractredraw");
