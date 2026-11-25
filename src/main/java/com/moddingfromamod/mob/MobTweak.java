@@ -25,7 +25,16 @@ import com.google.gson.JsonObject;
 public record MobTweak(String targetQuery, double radius, int count,
                        Double scale, Double health, Double damage, Double speed,
                        String glow, String name, Boolean invulnerable, Boolean persistent,
-                       PetBehaviour pet, BehaviourProfile behaviour) {
+                       PetBehaviour pet, BehaviourProfile behaviour, Double armor, Double knockbackResistance) {
+
+    /** Every caller from before armour and knockback (#101): neither is changed. */
+    public MobTweak(String targetQuery, double radius, int count,
+                    Double scale, Double health, Double damage, Double speed,
+                    String glow, String name, Boolean invulnerable, Boolean persistent,
+                    PetBehaviour pet, BehaviourProfile behaviour) {
+        this(targetQuery, radius, count, scale, health, damage, speed, glow, name, invulnerable, persistent,
+                pet, behaviour, null, null);
+    }
 
     /** Every caller from: no temperament, powers or abilities. */
     public MobTweak(String targetQuery, double radius, int count,
@@ -58,6 +67,9 @@ public record MobTweak(String targetQuery, double radius, int count,
 
     public static final double MIN_SPEED = 0.05, MAX_SPEED = 0.6;
 
+    /** Armour points (a full iron suit is 15; the game's own attribute stops at 30). */
+    public static final double MAX_ARMOR = 30;
+
     public static final int MAX_NAME_LENGTH = 48;
 
     public MobTweak {
@@ -70,6 +82,8 @@ public record MobTweak(String targetQuery, double radius, int count,
         health = clampOrNull(health, MIN_HEALTH, MAX_HEALTH);
         damage = clampOrNull(damage, 0, MAX_DAMAGE);
         speed = clampOrNull(speed, MIN_SPEED, MAX_SPEED);
+        armor = clampOrNull(armor, 0, MAX_ARMOR);
+        knockbackResistance = clampOrNull(knockbackResistance, 0, 1);
         glow = glow == null ? null : GlowColour.resolve(glow);
         if (name != null) {
             name = name.trim();
@@ -84,7 +98,8 @@ public record MobTweak(String targetQuery, double radius, int count,
 
     /** Nothing to do — worth catching early so the agent gets a useful error, not a silent no-op. */
     public boolean isEmpty() {
-        return scale == null && health == null && damage == null && speed == null
+        return scale == null && health == null && damage == null && speed == null && armor == null
+                && knockbackResistance == null
                 && glow == null && name == null && invulnerable == null && persistent == null
                 && pet.isEmpty() && behaviour.isEmpty();
     }
@@ -108,6 +123,12 @@ public record MobTweak(String targetQuery, double radius, int count,
         }
         if (speed != null) {
             parts.add("speed " + trim(speed));
+        }
+        if (armor != null) {
+            parts.add(trim(armor) + " armour");
+        }
+        if (knockbackResistance != null) {
+            parts.add("knockback resistance " + trim(knockbackResistance));
         }
         if (glow != null) {
             parts.add(glowsInColour() ? "glowing " + glow.replace('_', ' ') : "glow off");
@@ -151,7 +172,9 @@ public record MobTweak(String targetQuery, double radius, int count,
                 bool(o, "invulnerable"),
                 bool(o, "persistent"),
                 PetBehaviour.fromJson(o),
-                BehaviourProfile.fromJson(o));
+                BehaviourProfile.fromJson(o),
+                dbl(o, "armor"),
+                dbl(o, "knockback_resistance") != null ? dbl(o, "knockback_resistance") : dbl(o, "knockbackResistance"));
     }
 
     private static double clamp(double v, double lo, double hi) {

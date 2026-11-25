@@ -524,7 +524,9 @@ public record MakeFacts(String kind, Map<String, Double> numbers, Set<String> ta
                         a.most(ATTACK_DAMAGE_HALF_HEARTS, damage);
                     }
                     double armor = numeric(from == null ? null : from.get("armor"));
-                    double knockback = numeric(from == null ? null : from.get("knockbackResistance"));
+                    // the tool's own word (#101: a Builder sculpt sends it), else a species record's
+                    double knockback = numeric(from == null ? null : from.has("knockback_resistance")
+                            ? from.get("knockback_resistance") : from.get("knockbackResistance"));
                     if (!Double.isNaN(armor)) {
                         a.most(ARMOR_POINTS, armor);
                     }
