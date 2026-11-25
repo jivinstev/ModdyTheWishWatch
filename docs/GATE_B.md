@@ -134,9 +134,11 @@ the agent's data each time the running class changes. Two things make the result
   by environment name: the idle window first, then each class's batches together, class after class. (Measured before
   it: two maps of one commit disagreed for 264 of 360 classes, because what a class left running landed in a
   different neighbour each run.)
-- **Each class has a settle window.** After its last batch, a synthetic test of its own waits 40 ticks and 1.5 s, so
-  what the class left running (a listener it registered, a make on a worker thread, a poll it started) counts as its
-  own, not as whichever class runs next. `tools/gate/CovmapAnalyze.java` (run as a single-file program
+- **Each class has a settle window.** After its last batch, a synthetic test of its own waits 40 ticks and 1.5 s, and
+  then until no other thread is running the mod's code (at most 15 s), so what the class left running (a listener it
+  registered, a make on a worker thread, a poll it started) counts as its own, not as whichever class runs next.
+  (Measured before the wait for quiet: a Builder make a class started finished in the next class, a block of about 105
+  methods that landed in a different class in each run.) `tools/gate/CovmapAnalyze.java` (run as a single-file program
 with the JaCoCo core jars, never compiled into the mod) turns each job's dumps into the methods each class executed,
 and a table of every method's source file and line ranges. `gate.py covmap-merge` builds the map from the jobs.
 

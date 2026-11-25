@@ -40,6 +40,40 @@ public final class CoverageMap {
      */
     static final int SETTLE_TICKS = 40;
     static final long SETTLE_MS = 1500;
+    /**
+     * ...and then until no other thread is running the mod's code (a Builder make on its worker thread, a pack being
+     * compiled, a poll it kicked), at most this long. Measured before: a make a class started finished in whichever
+     * class ran next, a block of about 105 methods that landed in a different class each run.
+     */
+    static final long SETTLE_MAX_MS = 15_000;
+
+    /**
+     * Is the mod's own work done? No thread but the caller (the server thread, which runs the settle window's check)
+     * is RUNNABLE with a frame of the mod's code. Threads parked, sleeping or waiting (an idle pool, a poll between
+     * rounds) are done; the GameTest harness's own frames do not count.
+     */
+    static boolean quiet() {
+        Thread self = Thread.currentThread();
+        for (java.util.Map.Entry<Thread, StackTraceElement[]> e : Thread.getAllStackTraces().entrySet()) {
+            Thread t = e.getKey();
+            if (t == self || t.getState() != Thread.State.RUNNABLE) {
+                continue;
+            }
+            for (StackTraceElement f : e.getValue()) {
+                String c = f.getClassName();
+                if (c.startsWith("com.moddingfromamod.") && !c.startsWith("com.moddingfromamod.testing.")) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    /** Has a settle window that started at {@code startMs} waited enough (pure: the clock and the check handed in)? */
+    static boolean settled(long startMs, long nowMs, boolean quiet) {
+        long ran = nowMs - startMs;
+        return ran >= SETTLE_MS && (quiet || ran >= SETTLE_MAX_MS);
+    }
     /** Every synthetic test of a mapping run is named {@code moddingfromamod:covmapidle.*}; none is a test of the tier. */
     public static final String SYNTHETIC_PREFIX = "covmapidle.";
     static final int IDLE_TICKS = 400;
