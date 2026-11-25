@@ -285,6 +285,17 @@ public final class WishSpotGameTest {
     // ITS OWN BATCH: the other tests here tick WishOrbs by hand with only their own run, and a tick
     // that does not list a wish takes its pillar down — so beside them this pillar was swept away
     // and redrawn, which reads as exactly the teardown this test exists to catch.
+    /** The space above the 9×9×9 test structure that the treetop case uses, emptied: x and z -1..9, y +9..+20. */
+    static void clearAbove(ServerLevel level, BlockPos o) {
+        for (int x = -1; x <= 9; x++) {
+            for (int z = -1; z <= 9; z++) {
+                for (int y = 9; y <= 20; y++) {
+                    level.setBlock(o.offset(x, y, z), net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), 2);
+                }
+            }
+        }
+    }
+
     @GameTest(template = "empty_test", batch = BATCH + "_setdown", timeoutTicks = 4000)
     public static void aBuildAimedAtATreetopIsSetDownAndItsPillarGlidesOnce(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
@@ -292,6 +303,12 @@ public final class WishSpotGameTest {
         UUID wishId = wishFor("treetop");
         String worker = startWishing(child, wishId, "a little house up in that tree");
         BlockPos o = helper.absolutePos(BlockPos.ZERO);
+        // ITS OWN SPACE (#129). The test structure is 9×9×9, so the framework clears y+0..8 and nothing above. This
+        // case reads and builds above it (the canopy's top at y+9, the house at y+10..14), where an earlier batch's
+        // build can still stand: once one did, the footing read it as ground under the house and filled instead of
+        // setting it down. Everything this case touches, from y+9 up, is cleared first, so it reads only its own world.
+        clearAbove(level, o);
+        MockPlayerNetwork.afterTest(helper, () -> clearAbove(level, o));
         // Ground at y+1, and a tree on it: a trunk to y+9 under a 7×7 canopy at y+8..9.
         for (int x = 0; x <= 8; x++) {
             for (int z = 0; z <= 8; z++) {
