@@ -407,6 +407,20 @@ public final class SpeciesRegistry {
                 : read instanceof com.moddingfromamod.store.WishStoreFile.Read.Legacy l
                 ? l.root() : null;
         JsonElement arr = root == null ? null : root.get("species");
+        // A record written by a newer Moddy than this one (its "v" above Species.RECORD_VERSION) is read as best this
+        // build can, and the store is LATCHED: this build never saves its narrower view over the newer records.
+        NEWER.reset();
+        if (arr != null && arr.isJsonArray()) {
+            for (JsonElement el : arr.getAsJsonArray()) {
+                if (el.isJsonObject() && Species.recordVersion(el.getAsJsonObject()) > Species.RECORD_VERSION) {
+                    NEWER.observe(new com.moddingfromamod.store.WishStoreFile.Read.Refused("a creature record was written "
+                            + "by a newer Moddy (record v" + Species.recordVersion(el.getAsJsonObject()) + ", this build "
+                            + "knows v" + Species.RECORD_VERSION + ")"));
+                    LOGGER.error("species: {} Nothing will be saved over it.", NEWER.refusalReason());
+                    break;
+                }
+            }
+        }
         if (arr != null && arr.isJsonArray()) {
             int bad = 0;
             for (JsonElement el : arr.getAsJsonArray()) {
@@ -510,7 +524,14 @@ public final class SpeciesRegistry {
         return out;
     }
 
+    /** Latched when a record newer than this build knows was read: see {@link #load}. */
+    private static final com.moddingfromamod.store.WishStoreFile.Guard NEWER = new com.moddingfromamod.store.WishStoreFile.Guard();
+
     private static void save(MinecraftServer server) {
+        if (!NEWER.mayWrite()) {
+            LOGGER.error("NOT saving species: {}. The file has been left alone on purpose.", NEWER.refusalReason());
+            return;
+        }
         if (!SHELF.mayWrite()) {
             LOGGER.error("NOT saving species — {} could not be read ({}). The file has been left "
                     + "alone on purpose; a grown-up should look at it.",

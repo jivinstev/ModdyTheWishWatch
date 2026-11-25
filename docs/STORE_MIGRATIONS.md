@@ -15,7 +15,11 @@ path is recorded, with its end condition.)
 - **A species record** carries its own `"v"`, inline in the record (`Species.RECORD_VERSION`; a record without one is
   v1). A migration that applies to records saved before it applies only to records below its version, never to a
   record inferred from its values, and the record is written back at the current version at the next save, so it runs
-  once per record. An older build ignores the field and reads the record as it always did.
+  once per record. An older build ignores the field and reads the record as it always did. A record NEWER than this
+  build knows is read as best it can and latches the store: nothing is saved over it (`SpeciesRegistry.load`).
+
+`StoreMigrationsDocTest` (Gate A) keeps this page in step with the code: every species record version above 1 that
+this build writes has its row, and each row names a migration class that exists.
 
 ## The register
 
