@@ -43,6 +43,23 @@ public final class LiveFit {
     /** The modifier a world's attack damage limit puts on a creature. */
     public static final ResourceLocation ATTACK_DAMAGE_ID =
             ResourceLocation.fromNamespaceAndPath(ModdingFromAModMod.MODID, "world_fit/attack_damage");
+    /** The modifier a world's armour limit puts on a creature. */
+    public static final ResourceLocation ARMOR_ID =
+            ResourceLocation.fromNamespaceAndPath(ModdingFromAModMod.MODID, "world_fit/armor");
+    /** The modifier a world's knockback resistance limit puts on a creature. */
+    public static final ResourceLocation KNOCKBACK_RESISTANCE_ID =
+            ResourceLocation.fromNamespaceAndPath(ModdingFromAModMod.MODID, "world_fit/knockback_resistance");
+
+    /** One stat fitted live: its fact, the attribute that holds it, and the fixed id of its modifier. */
+    record Stat(String fact, Holder<Attribute> attribute, ResourceLocation id) {
+    }
+
+    /** Every stat fitted live, one per {@code MakeFit.LIVE} fact. */
+    static final List<Stat> STATS = List.of(
+            new Stat(MakeFacts.HEALTH_HALF_HEARTS, Attributes.MAX_HEALTH, MAX_HEALTH_ID),
+            new Stat(MakeFacts.ATTACK_DAMAGE_HALF_HEARTS, Attributes.ATTACK_DAMAGE, ATTACK_DAMAGE_ID),
+            new Stat(MakeFacts.ARMOR_POINTS, Attributes.ARMOR, ARMOR_ID),
+            new Stat(MakeFacts.KNOCKBACK_RESISTANCE_FRACTION, Attributes.KNOCKBACK_RESISTANCE, KNOCKBACK_RESISTANCE_ID));
 
     /**
      * Fit the creature {@code mob}, of species {@code speciesId}, to this world's limits: the numbers it was fitted in
@@ -73,16 +90,17 @@ public final class LiveFit {
         MakeFacts facts = MakeFactsLookup.forThing(mob.level().getServer(), "creature", speciesId);
         MakeVerdict v = MakeGate.ask(facts, WishAsk.replay(owner, "").withText(species == null ? "" : species.name()));
         Map<String, Double> limits = v.makes() ? v.limits() : Map.of();
-        boolean had = modifierOn(mob, Attributes.MAX_HEALTH, MAX_HEALTH_ID) != null
-                || modifierOn(mob, Attributes.ATTACK_DAMAGE, ATTACK_DAMAGE_ID) != null;
+        boolean had = false;
+        for (Stat st : STATS) {
+            had |= modifierOn(mob, st.attribute(), st.id()) != null;
+        }
         List<String> fitted = new ArrayList<>();
-        if (fit(mob, Attributes.MAX_HEALTH, MAX_HEALTH_ID, limits.get(MakeFacts.HEALTH_HALF_HEARTS))) {
-            fitted.add(MakeFacts.HEALTH_HALF_HEARTS);
-            mob.setHealth(Math.min(mob.getHealth(), mob.getMaxHealth()));
+        for (Stat st : STATS) {
+            if (fit(mob, st.attribute(), st.id(), limits.get(st.fact()))) {
+                fitted.add(st.fact());
+            }
         }
-        if (fit(mob, Attributes.ATTACK_DAMAGE, ATTACK_DAMAGE_ID, limits.get(MakeFacts.ATTACK_DAMAGE_HALF_HEARTS))) {
-            fitted.add(MakeFacts.ATTACK_DAMAGE_HALF_HEARTS);
-        }
+        mob.setHealth(Math.min(mob.getHealth(), mob.getMaxHealth()));
         if (tell && !had && !fitted.isEmpty() && mob.level().getServer() != null && !MakeGate.toldLately(owner)) {
             MakeGate.sayFitted(mob.level().getServer().getPlayerList().getPlayer(owner), fitted);
         }
@@ -115,5 +133,100 @@ public final class LiveFit {
     public static AttributeModifier modifierOn(LivingEntity mob, Holder<Attribute> attribute, ResourceLocation id) {
         var inst = mob.getAttribute(attribute);
         return inst == null ? null : inst.getModifier(id);
+    }
+
+    /** What a re-fit did to one player's creatures: how many were raised, lowered, or left as they were. */
+    public record Refit(int raised, int lowered, int same) {
+        /** The one line the player is told for this change, or empty when nothing moved. */
+        public String line() {
+            if (lowered > 0) {
+                return HELD_DOWN;
+            }
+            return raised > 0 ? UNLEASHED : "";
+        }
+    }
+
+    /** Said once when a world's limits hold a player's creatures down. */
+    public static final String HELD_DOWN = "✨ Your creatures are held back a little in this world for now.";
+    /** Said once when a world's limits let a player's creatures be stronger. */
+    public static final String UNLEASHED = "✨ Your creatures are stronger now! This world lets them do more.";
+
+    /**
+     * <b>This player's limits changed</b> ({@code WorldMakes.limitsChanged}): every living creature his wishes made
+     * is fitted again, from its own UNFITTED numbers (each fit removed and worked out afresh). A creature whose
+     * health rises keeps how hurt it was (half its hearts before, half after: never healed to full, never stuck
+     * half-empty); one whose health falls keeps what it has, up to its new most. He is told once for the change, not
+     * once per creature. Server thread.
+     */
+    public static Refit refit(net.minecraft.server.MinecraftServer server, UUID player) {
+        int raised = 0;
+        int lowered = 0;
+        int same = 0;
+        if (server == null || player == null) {
+            return new Refit(0, 0, 0);
+        }
+        for (net.minecraft.server.level.ServerLevel level : server.getAllLevels()) {
+            for (net.minecraft.world.entity.Entity e : level.getAllEntities()) {
+                if (!(e instanceof LivingEntity mob) || !e.isAlive()) {
+                    continue;
+                }
+                String speciesId = speciesOf(mob);
+                if (speciesId == null || !player.equals(ownerOf(speciesId))) {
+                    continue;
+                }
+                double[] before = values(mob);
+                double oldMax = mob.getMaxHealth();
+                double oldHealth = mob.getHealth();
+                apply(mob, speciesId, false);
+                double newMax = mob.getMaxHealth();
+                mob.setHealth((float) RefitWords.healthAfter(oldHealth, oldMax, newMax));
+                double[] after = values(mob);
+                int moved = RefitWords.compare(before, after);
+                if (moved < 0) {
+                    lowered++;
+                } else if (moved > 0) {
+                    raised++;
+                } else {
+                    same++;
+                }
+            }
+        }
+        Refit r = new Refit(raised, lowered, same);
+        String line = r.line();
+        net.minecraft.server.level.ServerPlayer p = server.getPlayerList().getPlayer(player);
+        if (p != null && !line.isEmpty() && WishFeedback.sweeps(line, "")) {
+            p.sendSystemMessage(net.minecraft.network.chat.Component.literal(line));
+        }
+        LOGGER.info("world limits changed for {}: {} creature(s) raised, {} lowered, {} as they were; told: {}", player,
+                raised, lowered, same, p == null ? "not online" : line.isEmpty() ? "nothing moved" : line);
+        return r;
+    }
+
+    private static double[] values(LivingEntity mob) {
+        double[] v = new double[STATS.size()];
+        for (int i = 0; i < STATS.size(); i++) {
+            var inst = mob.getAttribute(STATS.get(i).attribute());
+            v[i] = inst == null ? Double.NaN : inst.getValue();
+        }
+        return v;
+    }
+
+    /** The species a living wish creature is, or null: a wish creature's own, or the one a rig's carrier was built from. */
+    public static String speciesOf(LivingEntity mob) {
+        if (mob instanceof com.moddingfromamod.entity.WishMobEntity w) {
+            return w.speciesId() == null || w.speciesId().isBlank() ? null : w.speciesId();
+        }
+        var built = com.moddingfromamod.vanilla.VanillaRigAnimator.builtFrom(mob.getUUID());
+        return built == null ? null : built.id();
+    }
+
+    private static UUID ownerOf(String speciesId) {
+        var species = com.moddingfromamod.species.SpeciesRegistry.get(speciesId);
+        try {
+            return species == null || species.ownerId() == null || species.ownerId().isBlank()
+                    ? null : UUID.fromString(species.ownerId());
+        } catch (IllegalArgumentException notAUuid) {
+            return null;
+        }
     }
 }

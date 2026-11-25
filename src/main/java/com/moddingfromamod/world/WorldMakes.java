@@ -44,6 +44,16 @@ public interface WorldMakes {
         return WorldLimits.NONE;
     }
 
+    /**
+     * <b>Tell the core this player's limits changed</b> (a round began, a level was earned): every living creature his
+     * wishes made is fitted again from its own unfitted numbers, its health kept as hurt as it was on a raise and held
+     * to its new most on a lower, and he is told once for the change. The core never polls {@link #limits}: call this
+     * whenever what it answers for {@code player} changes. Server thread; with no server running it does nothing.
+     */
+    static void limitsChanged(UUID player) {
+        com.moddingfromamod.wish.LiveFit.refit(net.neoforged.neoforge.server.ServerLifecycleHooks.getCurrentServer(), player);
+    }
+
     /** The one this world answers with. */
     static WorldMakes get() {
         WorldModule m = WorldModuleHost.liveModule();

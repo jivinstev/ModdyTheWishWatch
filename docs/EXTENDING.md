@@ -123,6 +123,8 @@ test world below does, with a toy formula of its own).
   | `radiusBlocks` | blocks: the largest radius an effect of it takes | an item or creature effect with a `RADIUS` |
   | `durationTicks` | ticks (20 a second): the longest an effect of it lasts | an item or creature effect with `SECONDS` |
   | `extentBlocks` | blocks: its longest side | a stored building |
+  | `armorPoints` | the game's armour points (a full iron suit is 15) | a Builder creature or ride (as health), a stored creature |
+  | `knockbackResistanceFraction` | 0 (pushed as anyone) to 1 (never pushed) | a Builder creature or ride (as health), a stored creature |
 
   `combine` (several things one recipe makes) keeps each number's largest value; a number none of them carries stays
   absent.
@@ -235,6 +237,7 @@ the limits the world gave.
 | `countMade` | fewer at once (a Builder make; a recipe's `wishmob spawn <id> <count>`) |
 | `amountItems` | fewer in a bundle of supplies |
 | `healthHalfHearts`, `attackDamageHalfHearts` | a discrete search, nothing assumed about which way they move: every lower combination of an item's material (its tier, stepped down), the size and the strength steps is tried, the most kept first, and the first whose re-derived facts fit is made. An item none fits is locked. A creature or ride none fits is made as it is and **fitted on the live creature** (below); a stored thing's own record is never changed |
+| `armorPoints`, `knockbackResistanceFraction` | no knob of a make moves them: a creature or ride over the limit is made as it is and fitted on the live creature (below) |
 | `movementSpeedAttribute`, `extentBlocks` | nothing: not clampable, so over the limit is locked |
 
 - **Fitted on the live creature** (`wish/LiveFit`): the last step for a creature's health and attack damage. At spawn
@@ -247,12 +250,25 @@ the limits the world gave.
   |---|---|
   | `minecraft:max_health` | `moddingfromamod:world_fit/max_health` |
   | `minecraft:attack_damage` | `moddingfromamod:world_fit/attack_damage` |
+  | `minecraft:armor` | `moddingfromamod:world_fit/armor` |
+  | `minecraft:knockback_resistance` | `moddingfromamod:world_fit/knockback_resistance` |
+
+  Armour toughness has no fact and no fit: no wish creature carries any (a species has no such number), so there is
+  nothing to hold down.
 
   It is never stacked (fitting again removes it first and works it out afresh), and the value is read again after it
   is put on. It is the entity's own: its save keeps it in this world, and it is never written into the make, the
   species, the shelf or any wish store, so the same make comes out at its own strength in another world. It covers every
   creature made here: Builder, Apprentice, "Make another one" and the Magician's. The player is told once, as for any
   fitted make.
+- **When this player's limits change, tell the core**: `WorldMakes.limitsChanged(player)` (a round begins, a level is
+  earned; server thread). The core never polls `limits(player)`. Every living creature that player's wishes made, a
+  wish creature or a rig's carrier, wherever it stands, is fitted again from its own UNFITTED numbers (each fit removed
+  and worked out afresh). A raise keeps how hurt it was (half its hearts before, half after: never healed to full,
+  never left half-empty); a lower keeps what it has, up to its new most. The player is told ONCE for the change, not
+  once per creature: "✨ Your creatures are stronger now! This world lets them do more." or "✨ Your creatures are held
+  back a little in this world for now.", swept like any line. So "the strongest dragon ever" made in an early round is
+  held down and comes out fully later, without being wished again.
 - **Where the core asks:** every Builder and Apprentice make and every Builder change (`BuilderMake.make`, whatever page
   drew its tile); every tile of the Builder's pages and its tune dialog, per draw; each ranked make on the Apprentice's page, as it opens; a recipe, "Make another one" and a
   hotbar fire (`WishService.submit`, by the facts of what the recipe makes, fitted at fire); "Give me one"; each thing on
