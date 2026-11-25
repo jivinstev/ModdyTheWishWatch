@@ -76,8 +76,10 @@ public final class ContractWorldGameTest {
     }
 
     private static String said(ServerPlayer p, StringBuilder into) {
+        p.connection.getConnection().flushChannel();   // what was sent this tick, not only what a tick end flushed
         var channel = p.connection.getConnection().channel();
         if (channel instanceof io.netty.channel.embedded.EmbeddedChannel embedded) {
+            embedded.runPendingTasks();
             Object o;
             while ((o = embedded.readOutbound()) != null) {
                 if (o instanceof ClientboundSystemChatPacket c) {
