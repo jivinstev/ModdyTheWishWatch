@@ -311,3 +311,35 @@ tasks.named('test') {
 // The TEST KIT, a second artifact for a mod built against this one. Its own file, because it must name the GameTests
 // it leaves out, and this file must name nothing a GameTest server reads.
 apply from: 'test-kit.gradle'
+
+// LICENCES (CLAUDE.md, "Third-party code and text"). Two tasks, both part of `check`, so of `./gradlew build`:
+//   licenceRegister  tools/licence-scan.py --tree: no tracked file adds licence wording, an id or a provenance off the
+//                    allow-list, and every foreign copyright has a THIRD_PARTY.md row whose licence is allowed or
+//                    PENDING #<issue>. It reads every tracked file, so it always runs (a few seconds).
+//   licenceCheck     tools/licence-scan.py --bundled over the FINISHED jar: every library nested in its
+//                    META-INF/jarjar/ names an allow-listed licence in its own POM (or a jar_licences row says where
+//                    it was read). Needs Python 3, as Gate B already does.
+def licenceScanner = file('tools/licence-scan.py')
+def licenceRules = file('tools/licence-rules.json')
+def licenceRepo = projectDir
+tasks.register('licenceRegister', Exec) {
+    group = 'verification'
+    description = 'No tracked file brings in third-party code or text off the licence allow-list (THIRD_PARTY.md)'
+    inputs.files(licenceScanner, licenceRules)
+    outputs.upToDateWhen { false }
+    commandLine 'python3', licenceScanner.path, '--repo', licenceRepo.path, '--tree'
+}
+def licenceStamp = layout.buildDirectory.file('licence-check.txt')
+tasks.register('licenceCheck', Exec) {
+    group = 'verification'
+    description = "What the jar nests from others (META-INF/jarjar/) is on the licence allow-list"
+    dependsOn 'licenceRegister'
+    def jarFile = tasks.named('jar').flatMap { it.archiveFile }
+    inputs.files(jarFile, licenceScanner, licenceRules)
+    outputs.file licenceStamp
+    doFirst {
+        commandLine 'python3', licenceScanner.path, '--repo', licenceRepo.path, '--bundled', jarFile.get().asFile.path
+    }
+    doLast { licenceStamp.get().asFile.text = 'licence-scan --bundled passed\n' }
+}
+tasks.named('check').configure { dependsOn 'licenceCheck' }

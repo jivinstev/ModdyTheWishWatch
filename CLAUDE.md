@@ -47,7 +47,8 @@ Moddy is made for children. Everything a player reads or types goes through the 
 - `corpus/`: small public data sets the tests read.
 - `tools/`: `store-release.sh` (builds the release jar), `precompile-ready-mades.sh` (rebuilds the precompiled
   Builder and Apprentice powers), `fetch-apprentice-model.sh` (the Apprentice's pinned sentence
-  model), `secret-scan.py` (refuses a committed credential), `leak-scan.py`, and their tests.
+  model), `secret-scan.py` (refuses a committed credential), `leak-scan.py`, `licence-scan.py` (refuses third-party
+  code off the licence allow-list; its rules in `licence-rules.json`), and their tests.
 - `art/`: source art for icons.
 
 ## Build and test
@@ -61,7 +62,8 @@ python3 tools/gate/gate.py run --shard ci --out /tmp/gt   # Gate B as CI runs it
 ```
 
 - **Gate A** is `./gradlew build`: compile, every unit test (`gate-a.gradle` configures the `test` task: one retry of a
-  failed test, recorded, and the ambient API keys removed so a test that needs one fails here rather than in CI).
+  failed test, recorded, and the ambient API keys removed so a test that needs one fails here rather than in CI), and
+  the licence checks (`licenceRegister`: `tools/licence-scan.py --tree`; `licenceCheck`: every library the jar nests).
 - **Gate B** boots a headless dedicated server and runs every `@GameTest` in the chosen shards. `-Pshard` takes a
   comma-separated list (`ci`, `default`, or `all`); `-Pgametests=ClassA,ClassB` runs only those classes
   (`ClassA.method` one test), `-Pgatenotclasses=…` every class but those. Gate B needs
@@ -76,7 +78,7 @@ python3 tools/gate/gate.py run --shard ci --out /tmp/gt   # Gate B as CI runs it
 - Where a new GameTest goes is checked by `GateShardsTest` (Gate A): it fails by file name and says which annotation
   to use. A test in no shard would never run while the gate stays green.
 
-**CI** (`.github/workflows/ci.yml`): the leak scan, Gate A and Gate B's `ci` shard on every pull request; a pull request
+**CI** (`.github/workflows/ci.yml`): the leak, secret and licence scans, Gate A and Gate B's `ci` shard on every pull request; a pull request
 merges on those three green. A pull request that only touches `tools/client-validation/` or `.github/port-publish/` (nothing a
 build or test reads) runs the scan alone; Gate A and Gate B show as skipped. Docs are not in that list: tests read them.
 
@@ -291,3 +293,17 @@ maintainer reviews and merges it. Nobody pushes to `main` directly, and nothing 
   and for the live values of the keys in your environment, and never prints a value; CI runs it too. A test that needs a
   fake token builds it by concatenation so the file is not a hit. If a real key ever reaches a commit, rotate it first.
   Never bypass a refusal with `--no-verify`.
+- **Third-party code and text.** Nothing written by someone else is copied, ported, translated or closely paraphrased
+  into this repository unless its licence is on the allow-list: MIT, BSD-2-Clause, BSD-3-Clause, Apache-2.0, MPL-2.0,
+  ISC, Zlib, the Unlicense, CC0 / public domain; CC BY 4.0 for art and presets only. Anything else stops the work and
+  goes to the owner, with the source and its licence, **before** a commit: a copyleft licence, a share-alike,
+  non-commercial or no-derivatives Creative Commons licence, a font licence, "all rights reserved", no licence at all,
+  or code whose origin you do not know (a Stack Overflow answer is share-alike). Reading copyleft code to understand a
+  problem is fine; writing ours from it is a port. **Pushing a branch to this public repository publishes it**, draft
+  or not. What we keep gets a row in [THIRD_PARTY.md](THIRD_PARTY.md) (source, licence, why) in the same pull request,
+  and its licence text travels with it (`third_party/`, and a bundled component's row in
+  [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)); a licence held for the owner's decision reads `PENDING #<issue>`.
+  `tools/licence-scan.py` checks this at commit and push (`./tools/public-hooks/install.sh`), in CI (the tree and
+  every commit's added lines), and in Gate A (`licenceRegister`, and `licenceCheck` over every library the jar nests).
+  A line that only names a licence carries `licence-scan: allow <reason>`; a file that discusses licences goes in the
+  `exempt` list of `tools/licence-rules.json` with its reason. Widening the allow-list is the owner's decision.
