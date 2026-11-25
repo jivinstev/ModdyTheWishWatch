@@ -100,6 +100,10 @@ public final class BuildMechanismTool implements McpTool {
         controls.add("items", item);
         controls.addProperty("description", "The switches that work it, one entry each (at least one).");
         s.getAsJsonObject("properties").add("controls", controls);
+        Schemas.prop(s, "material", "string", "Optional: what the door is MADE of, a block id (e.g. "
+                + "\"minecraft:iron_block\" for a bank vault, \"minecraft:gold_block\"). Leave it out and the door is the "
+                + "wall's own block, so it disappears into the wall when shut (a secret door). It must be a plain full "
+                + "block a piston can push: not glass, not obsidian, not a chest.");
         Schemas.prop(s, "width", "integer", "Only for a NEW doorway: 1 or 2 wide (default 2). An existing doorway "
                 + "keeps its own width.");
         Schemas.required(s, "mechanism", "at", "controls");
@@ -136,6 +140,7 @@ public final class BuildMechanismTool implements McpTool {
             }
             asked.add(new String[] {k, a});
         }
+        String material = str(args, "material");
         int width = args.has("width") && args.get("width").isJsonPrimitive() ? args.get("width").getAsInt() : 2;
         if (width != 1 && width != 2) {
             return ToolResult.error("width is 1 or 2.");
@@ -144,7 +149,7 @@ public final class BuildMechanismTool implements McpTool {
         // 1-3: resolve, plan and place on the server thread
         Built built;
         try {
-            built = AgentBridge.onServer(() -> buildOnServer(mechanism, at, asked, width), 30_000L);
+            built = AgentBridge.onServer(() -> buildOnServer(mechanism, at, asked, width, material), 30_000L);
         } catch (RuntimeException e) {
             return ToolResult.error("Could not build it: " + e.getMessage());
         }
@@ -197,7 +202,7 @@ public final class BuildMechanismTool implements McpTool {
         }
     }
 
-    static Built buildOnServer(String mechanism, String at, List<String[]> asked, int width) {
+    static Built buildOnServer(String mechanism, String at, List<String[]> asked, int width, String wanted) {
         var server = AgentBridge.serverOrNull();
         ServerPlayer player = com.moddingfromamod.agent.ActingChild.of(server);
         if (player == null) {
@@ -227,8 +232,20 @@ public final class BuildMechanismTool implements McpTool {
         if (!door.ok()) {
             return Built.fail(ToolResult.error("No door could go there: " + door.why() + "."));
         }
-        String material = door.wallBlock();
-        Module module = PistonDoor.plan(door.frame(), door.width(), material, material);
+        String wall = door.wallBlock();
+        String towerTop = conducts(level, wall) ? wall : "minecraft:stone";
+        String material = wall;
+        if (!wanted.isEmpty()) {
+            String why = doorBlockProblem(level, wanted);
+            if (why != null) {
+                return Built.fail(ToolResult.error("The door cannot be made of " + wanted + ": " + why
+                        + ". Leave material out for the wall's own block, or pick a plain full block."));
+            }
+            material = wanted.contains(":") ? wanted : "minecraft:" + wanted;
+        } else if (doorBlockProblem(level, wall) != null) {
+            material = towerTop;           // a glass wall: the door is stone rather than nothing
+        }
+        Module module = PistonDoor.plan(door.frame(), door.width(), material, towerTop, wall);
 
         // controls: each resolved, then the first spot the planner can wire
         Set<RsPos> foreign = view.foreignRedstone(door.frame().origin().plus(-24, -8, -24),
@@ -302,6 +319,34 @@ public final class BuildMechanismTool implements McpTool {
             }
         }
         return null;
+    }
+
+    /** Null when {@code id} is a block a door can be made of: full, solid, pushable, no block entity. */
+    static String doorBlockProblem(ServerLevel level, String id) {
+        var rl = net.minecraft.resources.ResourceLocation.tryParse(id.contains(":") ? id : "minecraft:" + id);
+        if (rl == null || !net.minecraft.core.registries.BuiltInRegistries.BLOCK.containsKey(rl)) {
+            return "there is no such block";
+        }
+        var state = net.minecraft.core.registries.BuiltInRegistries.BLOCK.getValue(rl).defaultBlockState();
+        if (state.hasBlockEntity()) {
+            return "it holds things, and a piston cannot move it";
+        }
+        if (state.getPistonPushReaction() != net.minecraft.world.level.material.PushReaction.NORMAL) {
+            return "a piston cannot push it";
+        }
+        if (!state.isCollisionShapeFullBlock(level, BlockPos.ZERO)) {
+            return "it is not a full block, so the door would have gaps";
+        }
+        return null;
+    }
+
+    static boolean conducts(ServerLevel level, String id) {
+        var rl = net.minecraft.resources.ResourceLocation.tryParse(id);
+        if (rl == null || !net.minecraft.core.registries.BuiltInRegistries.BLOCK.containsKey(rl)) {
+            return false;
+        }
+        return net.minecraft.core.registries.BuiltInRegistries.BLOCK.getValue(rl).defaultBlockState()
+                .isRedstoneConductor(level, BlockPos.ZERO);
     }
 
     static RsDir snap(double dx, double dz) {

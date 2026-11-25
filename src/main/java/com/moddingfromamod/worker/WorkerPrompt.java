@@ -473,7 +473,9 @@ public final class WorkerPrompt {
                 "its id from list_builds: \"<id>:front\" is its entrance; \"me:front\" is the wall",
                 "he is looking at) and each switch with its own at (\"<id>:front\" is outside beside",
                 "the door, \"<id>:inside\" inside). A switch he did not name is a lever outside the",
-                "door. If it says it could not be built or did not pass its test, tell him so",
+                "door. A door he describes by what it is made of (a vault: iron; gold) takes that",
+                "material; a SECRET door leaves material out so it vanishes into the wall.",
+                "If it says it could not be built or did not pass its test, tell him so",
                 "honestly; never build it by hand instead. \"Take it out\" is remove_mechanism.",
                 "",
                 // creatures, machines, trains, pictures and events each had this rule;

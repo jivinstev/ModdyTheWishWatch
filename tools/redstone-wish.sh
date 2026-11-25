@@ -16,6 +16,18 @@ wish=$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["wish"])'
 setup=$(python3 -c 'import json,sys,os; c=json.load(open(sys.argv[1])); print(os.path.join(os.path.dirname(sys.argv[1]), c["setup"]))' "$case_file")
 w64=$(printf '%s' "$wish" | base64 | tr -d '\n')
 rm -rf "run/$rundir/world" "$out/result" "$out/verdict.json"
+# the world's terrain: flat by default (RS_LEVEL_TYPE=minecraft:normal for real terrain), so runs compare and film
+mkdir -p "run/$rundir"; touch "run/$rundir/server.properties"
+python3 - "run/$rundir/server.properties" "${RS_LEVEL_TYPE:-minecraft:flat}" <<'PY'
+import sys
+p, lt = sys.argv[1:]
+props = {}
+for l in open(p):
+    if "=" in l and not l.startswith("#"):
+        k, v = l.rstrip("\n").split("=", 1); props[k] = v
+props["level-type"] = lt
+open(p, "w").write("".join(f"{k}={v}\n" for k, v in props.items()))
+PY
 echo "== wish: $wish"
 timeout "${RS_WISH_TIMEOUT:-1100}" ./gradlew runServer -Prundir="$rundir" --console=plain \
   -Ptestprops="agent=on,headlesswish=$w64,headlesswishsig=$out,headlesswishsetup=$setup,headlesswishtimeout=900" \

@@ -35,6 +35,14 @@ public final class PistonDoor {
      * @param towerTop a full solid conducting block for the top of each tower (the wall's own block where it conducts)
      */
     public static Module plan(Frame f, int width, String material, String towerTop) {
+        return plan(f, width, material, towerTop, towerTop);
+    }
+
+    /**
+     * {@code material} is what the door is made of (it fills the doorway when shut); {@code wallBlock} is the wall's
+     * own block, which every visible casing is made of so the mechanism reads as wall.
+     */
+    public static Module plan(Frame f, int width, String material, String towerTop, String wallBlock) {
         if (width < 1 || width > 2) {
             throw new IllegalArgumentException("a piston door is 1 or 2 wide, not " + width);
         }
@@ -47,9 +55,9 @@ public final class PistonDoor {
                 expects.add(new Expect(f.at(u, dy, 0), "minecraft:air", material, "the doorway"));
             }
         }
-        side(f, cells, expects, -1, f.alongPlus(), material, towerTop);
+        side(f, cells, expects, -1, f.alongPlus(), material, towerTop, wallBlock);
         if (width == 2) {
-            side(f, cells, expects, width, f.alongMinus(), material, towerTop);
+            side(f, cells, expects, width, f.alongMinus(), material, towerTop, wallBlock);
         }
         // the bridge under the doorway at channel depth, from the left tower to the right tower (or to u=0 when 1 wide)
         int bridgeTo = width == 2 ? width + 1 : 0;
@@ -68,7 +76,7 @@ public final class PistonDoor {
 
     /** One side: parked blocks, two pistons and the torch tower. {@code parkU} is the parked column's u. */
     private static void side(Frame f, List<RsCell> cells, List<Expect> expects, int parkU, RsDir toOpening,
-                             String material, String towerTop) {
+                             String material, String towerTop, String wallBlock) {
         int step = parkU < 0 ? -1 : 1;                 // away from the opening along u
         int pistonU = parkU + step;
         int towerU = pistonU + step;
@@ -89,15 +97,21 @@ public final class PistonDoor {
         // out, and a sticky piston given a short pulse spits its block (measured: the doorway built shut).
         cells.add(RsCell.of(f.at(towerU, 0, 0), "minecraft:redstone_torch", RsCell.Role.PART, "lit", "false"));
         cells.add(RsCell.of(f.at(towerU, 1, 0), towerTop, RsCell.Role.PART));
-        // casing: round the floor-level torch (so the wall reads as a wall) and round the buried torch
+        // casing: round the buried torch, and a pillar of the wall's own blocks over the pistons and the tower on
+        // both faces, so neither a piston's side nor a torch shows (measured on film: both did, and stone casing
+        // stood proud of the grass). The row at floor level -1 is the wall's material too, in case it is exposed.
         for (int w : new int[]{-1, 1}) {
-            cells.add(RsCell.of(f.at(towerU, 0, w), material, RsCell.Role.CASING));
             cells.add(RsCell.of(f.at(towerU, -2, w), "minecraft:stone", RsCell.Role.CASING));
-            cells.add(RsCell.of(f.at(towerU, -1, w), "minecraft:stone", RsCell.Role.CASING));
+            cells.add(RsCell.of(f.at(towerU, -1, w), wallBlock, RsCell.Role.CASING));
+            for (int u : new int[]{pistonU, towerU}) {
+                for (int dy = 0; dy < 2; dy++) {
+                    cells.add(RsCell.of(f.at(u, dy, w), wallBlock, RsCell.Role.CASING));
+                }
+            }
         }
         // and the block beyond the tower, so the tower's torches touch nothing but their own blocks
         for (int dy = -2; dy <= 0; dy++) {
-            cells.add(RsCell.of(f.at(towerU + step, dy, 0), dy == 0 ? material : "minecraft:stone", RsCell.Role.CASING));
+            cells.add(RsCell.of(f.at(towerU + step, dy, 0), dy >= -1 ? wallBlock : "minecraft:stone", RsCell.Role.CASING));
         }
     }
 }
