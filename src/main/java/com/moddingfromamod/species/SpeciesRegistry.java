@@ -407,6 +407,17 @@ public final class SpeciesRegistry {
                 : read instanceof com.moddingfromamod.store.WishStoreFile.Read.Legacy l
                 ? l.root() : null;
         JsonElement arr = root == null ? null : root.get("species");
+        // #104: a record saved under the old tool wording (below record v3) is repaired as it is read, declared in the
+        // log, and written back at the current record version below, so it runs once per record. Every record the
+        // repair does not change is kept exactly as read (it gains only its version when the store is next saved).
+        List<String> repaired = List.of();
+        int stale = 0;
+        if (arr != null && arr.isJsonArray()) {
+            stale = StatLineRepair.below(arr.getAsJsonArray(), Species.RECORD_VERSION);
+            StatLineRepair.Result r = StatLineRepair.repairAll(arr.getAsJsonArray(), SpeciesRegistry::bodyVolume);
+            arr = r.records();
+            repaired = r.repaired();
+        }
         if (arr != null && arr.isJsonArray()) {
             int bad = 0;
             for (JsonElement el : arr.getAsJsonArray()) {
@@ -446,7 +457,14 @@ public final class SpeciesRegistry {
                 filled++;
             }
         }
-        if (purged > 0 || filled > 0 || restatted > 0 || SHELF.needsConverge()) {
+        if (stale > 0) {
+            LOGGER.info("species record migration v{} (#104, docs/STORE_MIGRATIONS.md): {} record(s) below it; the "
+                    + "stat-line repair gave {} the damage their size says ({}); all are written back at v{}",
+                    Species.RECORD_VERSION, stale, repaired.size(),
+                    repaired.size() <= 20 ? String.join(", ", repaired) : String.join(", ", repaired.subList(0, 20)) + ", …",
+                    Species.RECORD_VERSION);
+        }
+        if (purged > 0 || filled > 0 || restatted > 0 || stale > 0 || SHELF.needsConverge()) {
             save(server);
             if (purged > 0) {
                 LOGGER.info("dropped {} superseded creature definition(s)", purged);
@@ -497,6 +515,18 @@ public final class SpeciesRegistry {
             }
         }
         return changed;
+    }
+
+    /** A stored creature's body, measured on the geometry it draws (cubic blocks at scale 1); NaN when it draws none. */
+    private static double bodyVolume(JsonObject record) {
+        String key = record.has("modelKey") && record.get("modelKey").isJsonPrimitive()
+                ? record.get("modelKey").getAsString() : "";
+        try {
+            var g = key.isEmpty() ? null : com.moddingfromamod.runtime.ModelRepository.geometry(key);
+            return g == null ? Double.NaN : g.volume();
+        } catch (RuntimeException e) {
+            return Double.NaN;
+        }
     }
 
     /** Model key to owner, for every owned creature — what {@code ModelRepository} shelves by. */
