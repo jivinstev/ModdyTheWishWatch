@@ -35,6 +35,10 @@
     "_comment": "Code used by its author's permission with no open-source licence. A register row says `PERMISSION <name>`; each name says where the permission is recorded. Adding one is the owner's decision; none is recorded yet (CBScript waits on #142)."
   },
 
+  "scoped": {
+    "_comment": "Licences the owner allowed for named files only, never as a general code licence: licence id -> {aliases, globs, why}. A register row or SPDX id passes only when every file it covers matches the globs. A `permissions` entry may carry `globs` the same way. Adding one is the owner's decision."
+  },
+
   "own_copyright": ["\\bModdy\\s+LLC\\b"],
 
   "exempt": [

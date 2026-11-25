@@ -304,4 +304,5 @@ maintainer reviews and merges it. Nobody pushes to `main` directly, and nothing 
   `tools/licence-scan.py` checks this at commit and push (`./tools/public-hooks/install.sh`), in CI (the tree and
   every commit's added lines), and in Gate A (`licenceRegister`, and `licenceCheck` over every library the jar nests).
   A line that only names a licence carries `licence-scan: allow <reason>`; a file that discusses licences goes in the
-  `exempt` list of `tools/licence-rules.json` with its reason. Widening the allow-list is the owner's decision.
+  `exempt` list of `tools/licence-rules.json` with its reason. Widening the allow-list is the owner's decision, and an
+  approval for particular files is path-scoped (`scoped`, or a `permissions` entry's `globs`), never a general licence.
