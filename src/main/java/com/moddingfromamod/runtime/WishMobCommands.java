@@ -637,7 +637,7 @@ public final class WishMobCommands {
             return existing;
         }
         JsonObject o = resolveSpeciesOverrides(key);
-        Species species = Species.fromJson(o);
+        Species species = Species.fromJson(o, drawnVolume(key));
         if (species == null) {
             return null;
         }
@@ -663,7 +663,13 @@ public final class WishMobCommands {
         if (key == null || key.isBlank() || ModelRepository.speciesOverrides(key) == null) {
             return null;
         }
-        return Species.fromJson(resolveSpeciesOverrides(key));
+        return Species.fromJson(resolveSpeciesOverrides(key), drawnVolume(key));
+    }
+
+    /** The solid volume of the body this key draws (cubic blocks at scale 1), or NaN when it draws none (#100). */
+    private static double drawnVolume(String key) {
+        BedrockGeometry g = ModelRepository.geometry(key);
+        return g == null ? Double.NaN : g.volume();
     }
 
     private static JsonObject resolveSpeciesOverrides(String key) {

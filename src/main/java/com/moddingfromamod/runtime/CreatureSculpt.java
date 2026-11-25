@@ -123,6 +123,20 @@ public final class CreatureSculpt {
     }
 
     /** A rectangle of the skin to fill with one colour. */
+    /**
+     * The sculpt's solid volume in cubic blocks at scale 1 (its boxes summed, 16 px to a block): what
+     * {@code species.PowerBand} sizes a creature by when it has no health or damage of its own (#100).
+     */
+    public static double volume(List<Part> parts) {
+        List<double[]> boxes = new java.util.ArrayList<>();
+        if (parts != null) {
+            for (Part p : parts) {
+                boxes.add(new double[] {p.from()[0], p.from()[1], p.from()[2], p.to()[0], p.to()[1], p.to()[2]});
+            }
+        }
+        return com.moddingfromamod.species.PowerBand.volume(boxes, 1.0);
+    }
+
     public record PaintRect(int x, int y, int width, int height, int colour) {
     }
 

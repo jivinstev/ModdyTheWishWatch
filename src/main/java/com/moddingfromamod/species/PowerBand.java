@@ -81,6 +81,31 @@ public final class PowerBand {
         return px / 4096.0 * k * k * k;
     }
 
+    /**
+     * The solid volume, in cubic blocks at scale 1, of each vanilla model shape a species without a sculpt is drawn
+     * with: the sum of that model's boxes (a zombie's head, body and limbs; a cow's body, head and legs; a chicken's;
+     * a slime's outer cube; a spider's body, head and legs). Read when a creature has no sculpt to measure.
+     */
+    public static double bodyVolume(Species.Body body) {
+        return switch (body == null ? Species.Body.HUMANOID : body) {
+            case HUMANOID -> 1664 / 4096.0;    // zombie: head 8x8x8, body 8x12x4, four limbs 4x12x4
+            case QUADRUPED -> 3312 / 4096.0;   // cow: body 12x18x10, head 8x8x6, four legs 4x12x4
+            case SPIDER -> 2200 / 4096.0;      // spider: body 10x8x12, head 8x8x8, neck 6x6x6, eight legs 16x2x2
+            case SLIME -> 512 / 4096.0;        // slime: its 8x8x8 outer cube
+            case BIRD -> 420 / 4096.0;         // chicken: body, head, wings and legs
+        };
+    }
+
+    /**
+     * <b>The band of a creature</b>: its body's solid volume at scale 1 ({@code volumeAtScale1}, from its sculpt; NaN
+     * when it has none, and then its vanilla model shape's) grown by its scale.
+     */
+    public static Band forCreature(double volumeAtScale1, Species.Body body, double scale) {
+        double v = Double.isNaN(volumeAtScale1) || volumeAtScale1 <= 0 ? bodyVolume(body) : volumeAtScale1;
+        double k = scale > 0 ? scale : 1.0;
+        return forVolume(v * k * k * k);
+    }
+
     /** The health a creature of this band gets when it has none of its own. */
     public static double defaultHealth(Band band, boolean boss) {
         return Math.min(Species.MAX_HEALTH, band.health() * (boss ? BOSS_HEALTH : 1.0));

@@ -132,6 +132,8 @@ hooks a plug-in fills, and the settings.
 The code is licensed under the [Mozilla Public License 2.0](LICENSE). Art and presets are
 [CC BY 4.0](LICENSE-ASSETS.md). "Moddy" and "Moddy the Wish Watch" are trademarks of Moddy LLC; see
 [TRADEMARKS.md](TRADEMARKS.md) for what a fork may call itself. Bundled third-party components and their terms
-are in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) and [NOTICE.md](NOTICE.md).
+are in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) and [NOTICE.md](NOTICE.md); every committed file from
+someone else is registered in [THIRD_PARTY.md](THIRD_PARTY.md), and what may come in is in [CLAUDE.md](CLAUDE.md)
+("Third-party code and text").
 
 Questions and bug reports go to GitHub Issues.

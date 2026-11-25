@@ -9,11 +9,16 @@
 #                    and tokens, a child's-data file by its name, and the structural markers of server-side work
 #                    that does not belong in this single-player mod; then tools/secret-scan.py over every file and
 #                    every commit in the history (the credential shapes of tools/secret_patterns.py). It prints nothing it matched.
+#                    Then tools/licence-scan.py: no third-party code or text under a licence off the allow-list, in the
+#                    tree or in the lines any commit adds, and every foreign copyright registered in THIRD_PARTY.md
+#                    (CLAUDE.md, "Third-party code and text").
 #                    Also the hermetic test of tools/refresh-cbscript-bundle.sh (a fixture repo, no network).
-#   gate-a           compile, the unit tests, the mod jar and its checks (./gradlew build).
+#   gate-a           compile, the unit tests, the mod jar and its checks (./gradlew build), the licence checks among
+#                    them (licenceRegister, and licenceCheck over every library the jar nests).
 #   gate-b-ci        a headless game server running the `ci` shard: one GameTest per wish class, MCP, two wishes at
 #                    once. Every pull request and every push to main.
-#   gate-b-tier      the whole default tier (`ci,default`). Pushes to main only: it is the long one.
+#   gate-b-tier      the whole default tier (`ci,default`) on one runner, when started by hand. The nightly
+#                    (nightly.yml, docs/GATE_B.md) runs the same tier on main every night, split across runners.
 #   rig-films        Gate C's rig films (tools/gate-c-rig.sh: a real client under Xvfb filming each creature take, a
 #                    failed film re-run once, FLAKY red). Only on a pull request that touches what they measure
 #                    (`tools/rig-films.py --needed`: the atom rig, the films, the sculpt tool, the creature lesson, the
@@ -103,6 +108,12 @@ jobs:
           git fetch --quiet --unshallow || true
           python3 tools/secret-scan.py --tree
           python3 tools/secret-scan.py --history
+      - name: The licence scanner's rules can still go red
+        run: python3 tools/test-licence-scan.py
+      - name: Licence scan, the tree, the register and the history
+        run: |
+          python3 tools/licence-scan.py --tree
+          python3 tools/licence-scan.py --range -- HEAD
       - name: The compiler bundle's refresh tool still builds, records and refuses
         run: python3 tools/test-refresh-cbscript-bundle.py
 
@@ -129,6 +140,8 @@ jobs:
           key: gradle-${{ runner.os }}-${{ hashFiles('gradle.properties', 'build.gradle', 'versions/*.properties', 'gradle/wrapper/gradle-wrapper.properties') }}
       - name: ./gradlew build
         run: ./gradlew build --console=plain
+      - name: The gate tools' own rules (tools/gate/test_gate.py, docs/GATE_B.md)
+        run: python3 tools/gate/test_gate.py
       - name: The rig films' rules (which films, when; the part-drift check can still go red)
         run: |
           python3 tools/rig-films.py --self-test
