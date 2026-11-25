@@ -156,9 +156,9 @@ and a table of every method's source file and line ranges. `gate.py covmap-merge
 - **A failed refresh** keeps the previous map and opens or updates the one issue labelled `covmap-red`; the next good
   refresh closes it.
 
-**Where it lives, and why there.** On the data-only branch `gate-covmap`: one commit holding `map.json.gz`,
+**Where it lives, and why there.** On the data-only branch `gate-map`: one commit holding `map.json.gz`,
 `costs.json` and the last run's `report.md`, replaced (force-pushed) by every refresh. Every reader fetches it by name,
-`git fetch --depth=1 origin gate-covmap`, and nothing waits on a pull request. It is not on `gate-data`, whose records
+`git fetch --depth=1 origin gate-map`, and nothing waits on a pull request. It is not on `gate-data`, whose records
 are kept forever, because a map is replaced daily: a year of maps there would be most of every clone. It is not a
 release asset, because it would sit among the mod's releases a player browses, and Port CI reads those.
 

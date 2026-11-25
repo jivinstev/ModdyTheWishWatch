@@ -7,20 +7,21 @@
 #   every day  a PARTIAL map: only the classes the map has not placed, and those whose own source file changed since
 #              the map recorded it. Merged into the current map. Skipped when there are none.
 #
-#   plan     reads the current map and its costs from the gate-covmap branch and shares the classes among runners.
+#   plan     reads the current map and its costs from the gate-map branch and shares the classes among runners.
+#   warm     resolves Gradle and the decompile once and saves the cache, so the map jobs do not all download at once.
 #   map      one runner a share: Gate B with the JaCoCo agent on (each class in batches of its own, dumped when the
 #            running class changes), then tools/gate/CovmapAnalyze.java turns the dumps into methods per class.
 #            Coverage slows the server and changes the batches, so its pass/fail is NOT a Gate B result and is ignored;
 #            what counts is that every class ran and was placed.
 #   publish  builds the map, compares the replicas, reports any class the previous map placed and this one DROPPED,
-#            and replaces the one commit on the data-only gate-covmap branch (map.json.gz, costs.json, report.md).
+#            and replaces the one commit on the data-only gate-map branch (map.json.gz, costs.json, report.md).
 #            A failed refresh keeps the previous map and opens or updates the one issue labelled covmap-red.
 #
 # A pull request that changes the map's machinery runs it too, as a dry run: a full map, twice, compared; nothing
 # published and no issue.
 #
 # Why a branch of its own, force-pushed as ONE commit: every reader fetches it by name (`git fetch --depth=1 origin
-# gate-covmap`), nothing waits on a pull request, and the map's history does not pile up in every clone (a map is a
+# gate-map`), nothing waits on a pull request, and the map's history does not pile up in every clone (a map is a
 # few hundred KB gzipped; a year of daily commits would be most of a clone). A release asset was the other choice,
 # and it would sit among the mod's releases a player browses.
 name: Coverage map
@@ -71,10 +72,10 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - &currentMap
-        name: The current map (the gate-covmap branch), if there is one
+        name: The current map (the gate-map branch), if there is one
         run: |
           mkdir -p current
-          if git fetch --quiet --depth=1 origin gate-covmap; then
+          if git fetch --quiet --depth=1 origin gate-map; then
             for f in map.json.gz costs.json; do git show "FETCH_HEAD:$f" > "current/$f" 2>/dev/null || rm -f "current/$f"; done
           fi
           ls -la current
@@ -94,9 +95,40 @@ jobs:
           echo "matrix=$(cat matrix.json)" >> "$GITHUB_OUTPUT"
           echo "plan=$(python3 -c 'import json; print(json.dumps(json.load(open("plan.json", encoding="utf-8"))))')" >> "$GITHUB_OUTPUT"
 
+  warm:
+    # one job resolves Gradle's dependencies and the Minecraft decompile, and saves the cache the map jobs restore: a
+    # dozen cold jobs resolving at once is what Maven Central answers with 429 Too Many Requests
+    name: Warm the Gradle cache
+    needs: plan
+    if: needs.plan.outputs.run == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '21'
+      - &gradleCache
+        name: Cache Gradle and the NeoForm decompile
+        uses: actions/cache@v6
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ runner.os }}-${{ hashFiles('gradle.properties', 'build.gradle', 'versions/*.properties', 'gradle/wrapper/gradle-wrapper.properties') }}
+      - &covmapTools
+        name: Compile, and the JaCoCo agent and core (retried on a busy repository)
+        run: |
+          for i in 1 2 3; do
+            ./gradlew compileJava covmapTools --console=plain && exit 0
+            echo "Gradle failed (attempt $i); waiting before the next"; sleep $((60 * i))
+          done
+          exit 1
+
   map:
     name: Map ${{ matrix.job }}.${{ matrix.replica }}
-    needs: plan
+    needs: [plan, warm]
     if: needs.plan.outputs.run == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 150
@@ -109,17 +141,10 @@ jobs:
         with:
           distribution: temurin
           java-version: '21'
-      - name: Cache Gradle and the NeoForm decompile
-        uses: actions/cache@v6
-        with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: gradle-${{ runner.os }}-${{ hashFiles('gradle.properties', 'build.gradle', 'versions/*.properties', 'gradle/wrapper/gradle-wrapper.properties') }}
+      - *gradleCache
       - name: The datapack compiler's Python dependency
         run: python3 -m pip install --break-system-packages ply
-      - name: The JaCoCo agent and core
-        run: ./gradlew covmapTools --console=plain
+      - *covmapTools
       - name: Map this share
         env:
           PLAN: ${{ needs.plan.outputs.plan }}
@@ -142,12 +167,12 @@ jobs:
 
   publish:
     name: Publish
-    needs: [plan, map]
+    needs: [plan, warm, map]
     if: always() && needs.plan.outputs.run == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     permissions:
-      contents: write   # the gate-covmap branch
+      contents: write   # the gate-map branch
       issues: write     # the covmap-red issue
     steps:
       - uses: actions/checkout@v7
@@ -168,20 +193,20 @@ jobs:
             --out new jobs/covmap-job-*
           echo "status=$?" >> "$GITHUB_OUTPUT"
           cat new/report.md >> "$GITHUB_STEP_SUMMARY"
-      - name: Replace the map on gate-covmap
+      - name: Replace the map on gate-map
         if: env.DRY != 'true' && hashFiles('new/map.json.gz') != ''
         run: |
           git worktree add --quiet --detach publish
           cd publish
-          git checkout --quiet --orphan gate-covmap-next
+          git checkout --quiet --orphan gate-map-next
           git rm -rfq .
           cp ../new/map.json.gz ../new/costs.json ../new/report.md .
-          printf '%s\n' "# gate-covmap" "" "Data only: the coverage map targeted Gate B reads, replaced by each refresh (one commit, force-pushed)." \
+          printf '%s\n' "# gate-map" "" "Data only: the coverage map targeted Gate B reads, replaced by each refresh (one commit, force-pushed)." \
             "Written by .github/workflows/covmap.yml; see docs/GATE_B.md on the default branch." > README.md
           git add -A
           git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
             commit --quiet -m "Coverage map at ${GITHUB_SHA::12}"
-          git push --force --quiet origin HEAD:refs/heads/gate-covmap
+          git push --force --quiet origin HEAD:refs/heads/gate-map
       - name: Keep the map (a dry run's, to read)
         if: always()
         uses: actions/upload-artifact@v5

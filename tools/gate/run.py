@@ -39,8 +39,30 @@ def gradle_cmd(shard: str, rundir: str, home: str, classes: List[str], not_class
     return cmd + list(extra)
 
 
+# Gradle could not resolve a dependency (a busy repository answering 429, a dropped connection): the server never started
+UNRESOLVED = ("Could not resolve all", "Received status code 429", "Could not GET ", "Connection reset")
+
+
+def never_started(log_text: str) -> bool:
+    """The attempt failed before any GameTest server ran, for want of a download: worth running again."""
+    return "gt-adapter:" not in log_text and any(u in log_text for u in UNRESOLVED)
+
+
 def attempt(name: str, out_dir: str, shard: str, classes: List[str], not_classes: List[str], exclude: List[str],
-            timeout_min: float, extra: List[str]) -> dict:
+            timeout_min: float, extra: List[str], tries: int = 3) -> dict:
+    """One server, run again (up to `tries` times, with a growing pause) only when Gradle never started it for want of a
+    download. A server that started and failed is never re-run here: that is the retry rule's business."""
+    for i in range(tries):
+        a = _attempt(name, out_dir, shard, classes, not_classes, exclude, timeout_min, extra)
+        if i == tries - 1 or not never_started(g.read_text(os.path.join(out_dir, a["logFile"]))):
+            return a
+        print("gate: %s: Gradle could not resolve a dependency; trying again in %d s" % (name, 60 * (i + 1)), flush=True)
+        time.sleep(60 * (i + 1))
+    return a
+
+
+def _attempt(name: str, out_dir: str, shard: str, classes: List[str], not_classes: List[str], exclude: List[str],
+             timeout_min: float, extra: List[str]) -> dict:
     """One server. Returns {"log": parsed log, "record": the server's run record or None, "timedOut", "seconds"}."""
     home = os.path.abspath(os.path.join(out_dir, name + "-home"))
     shutil.rmtree(home, ignore_errors=True)

@@ -144,6 +144,11 @@ class OneAttempt(unittest.TestCase):
         a = {"log": g.parse_log("2 required tests failed"), "record": rec(IDS, failed=[IDS[0]]), "timedOut": False}
         self.assertEqual(len(run.check_attempt(a, [], ["AGameTest", "BGameTest"])), 1)
 
+    def test_only_a_run_that_never_started_for_want_of_a_download_is_run_again(self):
+        self.assertTrue(run.never_started("> Could not resolve all artifacts\nReceived status code 429 from server"))
+        self.assertFalse(run.never_started("gt-adapter: 3 tests found\nCould not GET x"), "a server that ran is not")
+        self.assertFalse(run.never_started("error: cannot find symbol"), "a compile error is not a download")
+
     def test_no_result_line_no_record_or_no_test_is_a_problem(self):
         a = {"log": g.parse_log("BUILD SUCCESSFUL"), "record": None, "timedOut": True}
         p = run.check_attempt(a, ["AGameTest"], ["AGameTest"])
