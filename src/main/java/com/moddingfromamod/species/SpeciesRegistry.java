@@ -452,7 +452,8 @@ public final class SpeciesRegistry {
                 LOGGER.info("dropped {} superseded creature definition(s)", purged);
             }
             if (restatted > 0) {
-                LOGGER.info("{} library creature(s) take their shipped health, damage, armour and knockback again (#99)",
+                LOGGER.info("species record migration v{} (#99, docs/STORE_MIGRATIONS.md): {} unowned library "
+                        + "creature copy(ies) took their shipped health, damage, armour and knockback", Species.RECORD_VERSION,
                         restatted);
             }
         }
@@ -471,8 +472,8 @@ public final class SpeciesRegistry {
     private static int restatLibraryCopies() {
         int changed = 0;
         for (Species s : List.copyOf(SPECIES.values())) {
-            if (!s.ownerId().isEmpty()) {
-                continue;
+            if (!s.ownerId().isEmpty() || com.moddingfromamod.marshal.ArtifactOwner.isFork(s.id())) {
+                continue;   // owned (his own, a fork): never touched (LibraryCopies)
             }
             Path shippedFile;
             try {
@@ -486,7 +487,7 @@ public final class SpeciesRegistry {
             try {
                 JsonObject shipped = com.google.gson.JsonParser.parseString(
                         java.nio.file.Files.readString(shippedFile, java.nio.charset.StandardCharsets.UTF_8)).getAsJsonObject();
-                Species next = s.withShippedStats(shipped);
+                Species next = LibraryCopies.takeShipped(s, shipped);
                 if (!next.equals(s)) {
                     SPECIES.put(s.id(), next);
                     changed++;

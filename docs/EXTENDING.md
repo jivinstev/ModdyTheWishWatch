@@ -135,6 +135,10 @@ test world below does, with a toy formula of its own).
   effect gives a creature (a dragon's breath) lives in a datapack and is not counted, so for such a creature they read
   low, never high; it carries the `fights` tag as before.
 
+  A stored creature's numbers are its record's. One exception, the library-copy rule (`docs/STORE_MIGRATIONS.md`): a
+  world's unowned copy of a library creature (the shared one its first spawn registered) always reads its shipped
+  health, attack damage, armour and knockback, so a stock creature's facts are the same in every world.
+
   `combine` (several things one recipe makes) keeps each number's largest value; a number none of them carries stays
   absent.
 - **`known`** is false when the thing could not be read (gone from its store, a newer Moddy's spec, a command the core
