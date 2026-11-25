@@ -112,7 +112,7 @@ test world below does, with a toy formula of its own).
 
   | Number | Unit | Present for |
   |---|---|---|
-  | `healthHalfHearts` | health points (one is half a heart) | a Builder creature or ride (what it is made with: a body's own; a ready-made species' record in this world, else a new creature's), a stored creature |
+  | `healthHalfHearts` | health points (one is half a heart) | a Builder creature or ride (its ready-made's own shipped numbers, the same in every world: a pet dragon's 60; a world holds them down with its limits, never by its record of the species), a stored creature |
   | `attackDamageHalfHearts` | health points | a Builder creature or ride (as health), a stored creature; a Builder item with a base item: hitting with it in the main hand, read at run time from the item's own attribute modifiers and the player's base attack damage (nothing of the game's numbers is copied into the mod, so another version or another mod's item answers for itself) |
   | `movementSpeedAttribute` | the game's `movement_speed` attribute value (a zombie is 0.23) | a stored creature |
   | `scaleTimes` | times its normal size | a Builder creature or ride, a stored creature |
