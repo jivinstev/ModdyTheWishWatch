@@ -264,7 +264,9 @@ the limits the world gave.
 - **When this player's limits change, tell the core**: `WorldMakes.limitsChanged(player)` (a round begins, a level is
   earned; server thread). The core never polls `limits(player)`. Every living creature that player's wishes made, a
   wish creature or a rig's carrier, wherever it stands, is fitted again from its own UNFITTED numbers (each fit removed
-  and worked out afresh). A raise keeps how hurt it was (half its hearts before, half after: never healed to full,
+  and worked out afresh), and drawn again at the size it is fitted to now: it grows on a raise and shrinks back on a
+  lower. Only creatures whose size changes are reshaped, once for the change and never per tick (in place, on the
+  carrier they already have). A raise keeps how hurt it was (half its hearts before, half after: never healed to full,
   never left half-empty); a lower keeps what it has, up to its new most. The player is told ONCE for the change, not
   once per creature: "✨ Your creatures are stronger now! This world lets them do more." or "✨ Your creatures are held
   back a little in this world for now.", swept like any line. So "the strongest dragon ever" made in an early round is
@@ -282,9 +284,9 @@ the limits the world gave.
   never as this world fitted it. It is fitted afresh at every make and every fire: how many and how strong when it is
   made, and a creature's **size where it stands, at every spawn** (`LiveFit.drawnScale`: the kept make fitted through
   the same gate, and any creature held to a `scaleTimes` limit). So a creature made under tight limits and made again
-  after they rise comes out bigger, up to the new limit, without being wished again. A creature already standing keeps
-  its size until it is made again (its health, damage, armour and knockback are fitted again at once,
-  `WorldMakes.limitsChanged`). A make kept by 1.0.10, which kept the fitted spec, stays as it was kept: the asked
+  after they rise comes out bigger, up to the new limit, without being wished again. A creature already standing is
+  fitted again when its limits change (`WorldMakes.limitsChanged`): its health, damage, armour and knockback at once,
+  and its size drawn again. A make kept by 1.0.10, which kept the fitted spec, stays as it was kept: the asked
   values were never stored, so there is nothing to bring back, and it is fitted from there like any other.
 - **The Apprentice's tiles** (`wishbuilder/ApprenticeFit`): fitted AFTER ranking and outside the matcher, so its
   ranking, gold-set floors and tree fingerprint are the same in every world. Each ranked make is asked through the

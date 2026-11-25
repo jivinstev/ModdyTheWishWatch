@@ -785,6 +785,66 @@ public final class ContractWorldGameTest {
         });
     }
 
+    @GameTest(template = "empty_test", batch = "contract_world_redraw", timeoutTicks = 40000)
+    public static void aStandingCreatureGrowsOnARaiseAndShrinksBackOnALower(GameTestHelper helper) {
+        ServerPlayer p = setUp(helper, "gtcontractredraw");
+        MockPlayerNetwork.afterTest(helper, ContractWorld::forgetRounds);
+        Set<String> had = Set.copyOf(BuilderSpecStore.all(RuntimeConfig.playersDir(), p.getStringUUID()).keySet());
+        AtomicReference<BuilderMake.Result> made = new AtomicReference<>();
+        BuilderMake.make(p, cats("friendly", 4, 1), BuilderAllowlist.REVIEWED).thenAcceptAsync(made::set);
+        AtomicReference<String> id = new AtomicReference<>();
+        AtomicReference<Double> small = new AtomicReference<>();
+        AtomicReference<Integer> step = new AtomicReference<>(0);
+        StringBuilder chat = new StringBuilder();
+        AtomicReference<Integer> toldBefore = new AtomicReference<>(0);
+        com.moddingfromamod.test.RealTime.succeedWhen(helper, () -> {
+            BuilderMake.Result r = made.get();
+            helper.assertTrue(r != null && r.outcome() == BuilderMake.Outcome.MADE, Component.literal("the cat: " + r));
+            if (id.get() == null) {
+                for (var m : BuilderSpecStore.all(RuntimeConfig.playersDir(), p.getStringUUID()).values()) {
+                    if (!had.contains(m.id())) {
+                        id.set(m.id());
+                    }
+                }
+                helper.assertTrue(id.get() != null, Component.literal("the cat is on his shelf"));
+            }
+            Map<java.util.UUID, Double> now = rigScales(helper, p, id.get());
+            helper.assertTrue(now.size() == 1, Component.literal("one cat stands: " + now));
+            double scale = now.values().iterator().next();
+            var species = SpeciesRegistry.get(id.get());
+            helper.assertTrue(species != null, Component.literal("its species"));
+            switch (step.get()) {
+                case 0 -> {
+                    helper.assertTrue(scale < species.scale() - 1e-6,
+                            Component.literal("the first round: it stands at size step 3, smaller than asked: " + scale));
+                    small.set(scale);
+                    said(p, chat);
+                    toldBefore.set(count(chat.toString(), com.moddingfromamod.wish.LiveFit.UNLEASHED));
+                    ContractWorld.round(p.getUUID(), 2);   // RAISE: every size
+                    step.set(1);
+                    helper.fail(Component.literal("waiting for it to grow"));
+                }
+                case 1 -> {
+                    helper.assertTrue(Math.abs(scale - species.scale()) < 1e-6,
+                            Component.literal("raised, the cat standing there grows to its asked size: " + scale + " of "
+                                    + species.scale()));
+                    helper.assertTrue(count(said(p, chat), com.moddingfromamod.wish.LiveFit.UNLEASHED) == toldBefore.get() + 1,
+                            Component.literal("told once: " + chat));
+                    toldBefore.set(count(chat.toString(), com.moddingfromamod.wish.LiveFit.HELD_DOWN));
+                    ContractWorld.round(p.getUUID(), 1);   // LOWER: back to size step 3
+                    step.set(2);
+                    helper.fail(Component.literal("waiting for it to shrink"));
+                }
+                default -> {
+                    helper.assertTrue(Math.abs(scale - small.get()) < 1e-6,
+                            Component.literal("lowered, it shrinks back: " + scale + ", was " + small.get()));
+                    helper.assertTrue(count(said(p, chat), com.moddingfromamod.wish.LiveFit.HELD_DOWN) == toldBefore.get() + 1,
+                            Component.literal("told once: " + chat));
+                }
+            }
+        });
+    }
+
     private static int count(String in, String what) {
         int n = 0;
         for (int i = in.indexOf(what); i >= 0; i = in.indexOf(what, i + 1)) {
