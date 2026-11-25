@@ -39,6 +39,12 @@ copyright with no row, a row that matches no tracked file, and a licence that is
 `permissions` with where that permission is recorded), nor `PENDING #<issue>` (held for a decision, printed as a
 warning).
 
+Approvals can be PATH-SCOPED, so a decision about one file never becomes a general code licence:
+  * `scoped`: a licence allowed only for the files its `globs` match (an SPDX id or a register row anywhere else is
+    refused as off the list);
+  * a `permissions` entry with `globs` holds only for rows whose files all match them.
+A register row passes a scoped approval only when every tracked file the row's path matches is inside its globs.
+
 Standard library only; Python 3.9+; reads and prints UTF-8 on every platform. Copy it with its rules file.
 """
 from __future__ import annotations
@@ -95,19 +101,46 @@ class Policy:
         for k, v in self.permissions.items():
             if not str(v.get("record", "")).strip():
                 raise ValueError(f"permission {k!r} needs a 'record' saying where the permission is written down")
+            if "globs" in v and not (isinstance(v["globs"], list) and v["globs"]):
+                raise ValueError(f"permission {k!r}: 'globs', when given, lists the paths it covers")
+        self.scoped = {}                        # licence -> (globs, folded names)
+        for spdx, v in raw.get("scoped", {}).items():
+            if spdx.startswith("_"):
+                continue
+            if not (isinstance(v.get("globs"), list) and v["globs"]) or not str(v.get("why", "")).strip():
+                raise ValueError(f"scoped licence {spdx!r} needs its 'globs' and a 'why'")
+            if fold(spdx) in self.names:
+                raise ValueError(f"scoped licence {spdx!r} is also on the general allow-list")
+            self.scoped[spdx] = (list(v["globs"]), {fold(a) for a in [spdx, *v.get("aliases", [])]})
         self.python = {k.lower(): v for k, v in raw.get("python_licences", {}).items() if not k.startswith("_")}
         self.jar_licences = {k: v for k, v in raw.get("jar_licences", {}).items() if not k.startswith("_")}
         for k, v in self.jar_licences.items():
             if not self.allowed(v.get("licence")) or not v.get("source"):
                 raise ValueError(f"jar_licences {k!r} needs an allowed licence and a source")
 
-    def permission_ok(self, licence):
-        """True when LICENCE reads `PERMISSION <name>` and <name> is a recorded permission in the rules."""
+    def permission_ok(self, licence, files=None):
+        """True when LICENCE reads `PERMISSION <name>`, <name> is a recorded permission in the rules, and (when the
+        permission is path-scoped) every one of FILES is inside its globs."""
         m = re.match(r"PERMISSION\s+(\S+)", licence, re.I)
-        return bool(m and m.group(1) in self.permissions)
+        if not (m and m.group(1) in self.permissions):
+            return False
+        globs = self.permissions[m.group(1)].get("globs")
+        return globs is None or within(files or [], globs)
 
     def allowed(self, name):
         return self.names.get(fold(name)) if name else None
+
+    def allowed_at(self, name, files):
+        """The licence id NAME resolves to for FILES: a general allow, or a scoped one whose globs hold every file."""
+        if not name:
+            return None
+        general = self.allowed(name)
+        if general:
+            return general
+        for spdx, (globs, names) in self.scoped.items():
+            if fold(name) in names and within(files, globs):
+                return spdx
+        return None
 
     def exempt_path(self, path):
         path = path.replace("\\", "/")
@@ -120,7 +153,12 @@ class Policy:
         return None
 
 
-def spdx_off_list(policy, expression):
+def within(files, globs):
+    """True when FILES is non-empty and every one of them matches one of GLOBS."""
+    return bool(files) and all(any(f == g or fnmatch.fnmatchcase(f, g) for g in globs) for f in files)
+
+
+def spdx_off_list(policy, expression, path=None):
     off, after_with = [], False
     for tok in (t for t in re.split(r"[\s()]+", expression) if t):
         if tok.upper() in ("AND", "OR"):
@@ -131,7 +169,7 @@ def spdx_off_list(policy, expression):
         if after_with:                          # an exception id: the licence it modifies is what is judged
             after_with = False
             continue
-        if not policy.allowed(tok):
+        if not (policy.allowed_at(tok, [path]) if path else policy.allowed(tok)):
             off.append(tok)
     return off
 
@@ -146,7 +184,7 @@ def judge_line(policy, path, n, line, exempt):
     out = []
     spdx = SPDX_LINE.search(line)
     if spdx:
-        off = spdx_off_list(policy, spdx.group(1))
+        off = spdx_off_list(policy, spdx.group(1), path)
         if off:
             out.append((path, n, "spdx", f"SPDX-License-Identifier names {', '.join(off)}, which is not on the allow-list"))
     header = bool(COMMENTISH.match(line) or NOTICE.search(line))
@@ -188,14 +226,16 @@ def covered(rows, path):
 def audit_register(policy, rows, tracked, notices, name):
     found, held = [], []
     for key, (source, licence, why) in sorted(rows.items()):
-        if not any(t == key or fnmatch.fnmatchcase(t, key) for t in tracked):
+        files = [t for t in tracked if t == key or fnmatch.fnmatchcase(t, key)]
+        if not files:
             found.append((name, 0, "register-stale", f"`{key}` matches no tracked file: remove the row"))
         if re.match(r"PENDING\s+#\d+", licence, re.I):
             held.append(f"{key}: {licence}")
-        elif re.match(r"PERMISSION\b", licence, re.I) and policy.permission_ok(licence):
+        elif re.match(r"PERMISSION\b", licence, re.I) and policy.permission_ok(licence, files or [key]):
             pass                                 # used by the author's recorded permission (the rules' `permissions`)
-        elif not policy.allowed(re.sub(r"\s*\(.*\)\s*$", "", licence)):
-            found.append((name, 0, "register-licence", f"`{key}`: '{licence}' is not on the allow-list"))
+        elif not policy.allowed_at(re.sub(r"\s*\(.*\)\s*$", "", licence), files or [key]):
+            found.append((name, 0, "register-licence", f"`{key}`: '{licence}' is not on the allow-list"
+                                                       f"{' for these files' if policy.scoped or policy.permissions else ''}"))
         if not source or not why:
             found.append((name, 0, "register-incomplete", f"`{key}` needs a source and a why"))
     for path, (n, notice) in sorted(notices.items()):

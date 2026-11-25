@@ -55,6 +55,11 @@ public final class MakeFit {
         // no knob moves a creature's armour or knockback resistance: they are fitted on the live creature (LIVE)
         m.put(MakeFacts.ARMOR_POINTS, new Fact(MakeFacts.ARMOR_POINTS, true, NOTHING));
         m.put(MakeFacts.KNOCKBACK_RESISTANCE_FRACTION, new Fact(MakeFacts.KNOCKBACK_RESISTANCE_FRACTION, true, NOTHING));
+        // #102: what a creature's moves do a second is read, not lowered: no knob moves it, so over a limit is locked
+        for (String k : new String[] {MakeFacts.MOVE_DAMAGE_HALF_HEARTS_PER_SECOND,
+                MakeFacts.EFFECTIVE_DAMAGE_HALF_HEARTS_PER_SECOND, MakeFacts.HEAL_HALF_HEARTS_PER_SECOND}) {
+            m.put(k, new Fact(k, false, NOTHING));
+        }
         return Collections.unmodifiableMap(m);
     }
 

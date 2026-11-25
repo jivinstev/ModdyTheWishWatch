@@ -104,23 +104,26 @@ class BuilderStarterGoldenTest {
      * #99, a deliberate change this fixture predates: every stock creature has a reviewed stat line, so a body's sculpt
      * now sends its reviewed health and damage (the bear's 30/6 where it sent 30/0, the duck's 8/1 where it sent none
      * and was read as 20/3). The recorded sculpt takes the body's shipped numbers; the rest of every saved make still
-     * re-makes byte for byte. A species preset's are added by {@link #withShipped}.
+     * re-makes byte for byte. A species preset's are added by {@link #withShipped}. Since #101 a shipped armour and
+     * knockback resistance above 0 go with it too (the turtle's shell, the rock golem's footing).
      */
     static JsonArray withReviewedStats(JsonArray calls, String preset) {
         JsonArray out = calls.deepCopy();
-        if (!preset.startsWith("bodies/")) {
-            return out;
-        }
-        JsonObject sculpt = LibraryPresets.SHIPPED.read(preset);
+        JsonObject sculpt = preset.startsWith("bodies/") ? LibraryPresets.SHIPPED.read(preset) : null;
         for (JsonElement c : out) {
             JsonObject args = c.getAsJsonObject().getAsJsonObject("args");
-            if (sculpt != null && c.getAsJsonObject().get("tool").getAsString().equals("sculpt_creature") && args != null) {
+            if (!c.getAsJsonObject().get("tool").getAsString().equals("sculpt_creature") || args == null) {
+                continue;
+            }
+            if (sculpt != null) {
                 for (String k : new String[] {"health", "damage"}) {
                     if (sculpt.has(k)) {
                         args.add(k, sculpt.get(k).deepCopy());
                     }
                 }
             }
+            // #101: and its shipped armour and knockback, where it has some, now that the tool takes them
+            BuilderLowering.defence(LibraryPresets.SHIPPED.species(preset), args);
         }
         return out;
     }

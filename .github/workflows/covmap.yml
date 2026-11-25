@@ -75,7 +75,7 @@ jobs:
         name: The current map (the gate-map branch), if there is one
         run: |
           mkdir -p current
-          if git fetch --quiet --depth=1 origin gate-map; then
+          if git fetch --quiet --depth=1 origin gate-map 2>/dev/null; then
             for f in map.json.gz costs.json; do git show "FETCH_HEAD:$f" > "current/$f" 2>/dev/null || rm -f "current/$f"; done
           fi
           ls -la current
@@ -190,9 +190,10 @@ jobs:
             --run-url "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
             --out new jobs/covmap-job-*
           echo "status=$?" >> "$GITHUB_OUTPUT"
+          echo "publish=$(python3 -c 'import json; print(str(json.load(open("new/problems.json", encoding="utf-8")).get("publish", False)).lower())')" >> "$GITHUB_OUTPUT"
           cat new/report.md >> "$GITHUB_STEP_SUMMARY"
-      - name: Replace the map on gate-map
-        if: env.DRY != 'true' && hashFiles('new/map.json.gz') != ''
+      - name: Replace the map on gate-map (nothing else ever pushes to that branch)
+        if: env.DRY != 'true' && steps.merge.outputs.publish == 'true'
         run: |
           git worktree add --quiet --detach publish
           cd publish
@@ -221,4 +222,9 @@ jobs:
           python3 tools/gate/gate.py issue --record new/record.json --report new/report.md --label covmap-red \
             --title "Coverage map: the refresh failed or changed unexpectedly"
       - name: The verdict
-        run: test "${{ steps.merge.outputs.status }}" = "0"
+        run: |
+          if [ "${{ steps.merge.outputs.status }}" != "0" ]; then
+            echo "The refresh is red (the map was ${{ steps.merge.outputs.publish == 'true' && 'published' || 'NOT published' }}):"
+            python3 -c 'import json; [print("  -", p) for p in json.load(open("new/problems.json", encoding="utf-8"))["problems"]]'
+            exit 1
+          fi

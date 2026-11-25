@@ -151,9 +151,11 @@ the agent's data each time the running class changes. Two things make the result
   by environment name: the idle window first, then each class's batches together, class after class. (Measured before
   it: two maps of one commit disagreed for 264 of 360 classes, because what a class left running landed in a
   different neighbour each run.)
-- **Each class has a settle window.** After its last batch, a synthetic test of its own waits 40 ticks and 1.5 s, so
-  what the class left running (a listener it registered, a make on a worker thread, a poll it started) counts as its
-  own, not as whichever class runs next. `tools/gate/CovmapAnalyze.java` (run as a single-file program
+- **Each class has a settle window.** After its last batch, a synthetic test of its own waits 40 ticks and 1.5 s, and
+  then until no other thread is running the mod's code (at most 15 s), so what the class left running (a listener it
+  registered, a make on a worker thread, a poll it started) counts as its own, not as whichever class runs next.
+  (Measured before the wait for quiet: a Builder make a class started finished in the next class, a block of about 105
+  methods that landed in a different class in each run.) `tools/gate/CovmapAnalyze.java` (run as a single-file program
 with the JaCoCo core jars, never compiled into the mod) turns each job's dumps into the methods each class executed,
 and a table of every method's source file and line ranges. `gate.py covmap-merge` builds the map from the jobs.
 
@@ -170,11 +172,14 @@ and a table of every method's source file and line ranges. `gate.py covmap-merge
 - **A class the run DROPPED** (the previous map placed it, this one did not) is reported in the run's summary and in
   the `covmap-red` issue, never silently forgotten. It is unplaced until a run places it again, and an unplaced class
   runs on every pull request.
-- **A failed refresh** keeps the previous map and opens or updates the one issue labelled `covmap-red`; the next good
-  refresh closes it.
+- **A failed refresh** opens or updates the one issue labelled `covmap-red`; the next good refresh closes it. A refresh
+  with a mapping job missing publishes nothing (the previous map stays: a map without that job's classes is not one to
+  select by); one whose replicas disagree beyond the noise publishes their union (larger, never blind) and says so.
 
 **Where it lives, and why there.** On the data-only branch `gate-map`: one commit holding `map.json.gz`,
-`costs.json` and the last run's `report.md`, replaced (force-pushed) by every refresh. Every reader fetches it by name,
+`costs.json` and the last run's `report.md`, replaced (force-pushed) by every refresh. **Nothing else may push to
+`gate-map`**: the coverage-map workflow on `main` is its only writer (a pull request's run is a dry run and pushes
+nothing). Every reader fetches it by name,
 `git fetch --depth=1 origin gate-map`, and nothing waits on a pull request. It is not on `gate-data`, whose records
 are kept forever, because a map is replaced daily: a year of maps there would be most of every clone. It is not a
 release asset, because it would sit among the mod's releases a player browses, and Port CI reads those.
@@ -191,10 +196,22 @@ line numbers no longer hold, so every class that reached any of its methods is s
 selects the whole tier. A missing map selects the whole tier. Every way a map can be wrong or old makes a selection
 LARGER, never blind; and the nightly full tier still runs everything.
 
-**Determinism.** For one commit the method sets are deterministic, but for classes whose path depends on timing or
-randomness. The weekly run maps every share twice and `gate.py covmap-compare` requires the two maps to agree on every
-class's methods and on the ambient set; costs are not compared. The classes allowed to differ are listed, with what was
-measured, in `corpus/gate-covmap-unstable.json`; any other difference fails the refresh and opens `covmap-red`.
+**Determinism.** For one commit the method sets are deterministic, but for code whose timing varies: a server-tick
+service whose period falls inside one run's window for a class and not the other's. The weekly run maps every share
+twice and `gate.py covmap-compare` holds the two maps to what was measured (`covmap.py` NOISE_*):
+
+- a class may differ by at most 5 methods, or by under 5% of its methods;
+- beyond that, up to 2% of the classes (at least 3) may differ in one run, each named in the refresh's summary,
+  provided the maps agree on at least 99% of all class-method entries. The noise is spread, not a property of a class:
+  two full maps put a different handful of classes over the per-class allowance each time (9 in one local pair, 6 on
+  GitHub's runners, none in common);
+- the ambient sets may differ by 0.5%;
+- costs are never compared (wall clock varies by runner).
+
+A class that keeps going over is listed, with what was measured, in `corpus/gate-covmap-unstable.json` (empty today).
+Anything more fails the refresh and opens `covmap-red`. Measured: with the batch order fixed and the settle window
+waiting for quiet, two maps on GitHub's runners agree on 99.25% of 226,908 entries (median class 0.997). With the
+batch order random (the game's own), they agreed on 90% and 327 of 360 classes differed, which the check fails at once.
 
 ```bash
 ./gradlew covmapTools

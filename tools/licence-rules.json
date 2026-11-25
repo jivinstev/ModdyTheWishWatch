@@ -32,7 +32,25 @@
   ],
 
   "permissions": {
-    "_comment": "Code used by its author's permission with no open-source licence. A register row says `PERMISSION <name>`; each name says where the permission is recorded. Adding one is the owner's decision; none is recorded yet (CBScript waits on #142)."
+    "_comment": "Code used by its author's permission with no open-source licence. A register row says `PERMISSION <name>`; each name says where the permission is recorded. Adding one is the owner's decision.",
+    "cbscript": {
+      "record": "used with the author's written permission, held by the maintainer (decided in #142)",
+      "globs": ["third_party/moddy-cbscript/*", "third_party/cbscript.NOTICE.txt", "src/main/resources/licenses/cbscript.NOTICE.txt"]
+    }
+  },
+
+  "scoped": {
+    "_comment": "Licences the owner allowed for named files only, never as a general code licence: licence id -> {aliases, globs, why}. A register row or SPDX id passes only when every file it covers matches the globs. A `permissions` entry may carry `globs` the same way. Adding one is the owner's decision.",
+    "SunPro": {
+      "aliases": ["sunpro", "sunpro fdlibm notice", "fdlibm notice"],
+      "globs": ["third_party/moddy-cbscript/src/main/java/com/moddingfromamod/cbscript/py/FdHyp.java", "third_party/moddy-cbscript/THIRD_PARTY.md", "third_party/fdlibm.NOTICE.txt", "third_party/cbscript.NOTICE.txt", "src/main/resources/licenses/cbscript.NOTICE.txt"],
+      "why": "fdlibm's permissive notice (keep the notice); allowed by the owner for the CBScript compiler's sinh/cosh/tanh only (#142)"
+    },
+    "SCOWL": {
+      "aliases": ["scowl", "scowl licence", "scowl license"],
+      "globs": ["src/main/resources/apprentice/english-words.txt", "src/main/resources/apprentice/english-words.NOTICE.txt", "third_party/scowl.LICENSE.txt"],
+      "why": "SCOWL's permissive word-list licence, UKACD's notice kept; allowed by the owner for the Apprentice's word list only (#142)"
+    }
   },
 
   "own_copyright": ["\\bModdy\\s+LLC\\b"],
