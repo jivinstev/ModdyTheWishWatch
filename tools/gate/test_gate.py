@@ -159,6 +159,11 @@ class OneAttempt(unittest.TestCase):
         finally:
             shutil.rmtree(d)
 
+    def test_a_failed_build_says_what_gradle_said(self):
+        log = "x\n* What went wrong:\nCould not resolve all artifacts\n> 429\n\n* Try:\n> --stacktrace\n"
+        self.assertEqual(run.gradle_error(log), "* What went wrong:\nCould not resolve all artifacts\n> 429")
+        self.assertIn("error: cannot find symbol", run.gradle_error("A.java:3: error: cannot find symbol\n"))
+
     def test_only_a_run_that_never_started_for_want_of_a_download_is_run_again(self):
         self.assertTrue(run.never_started("> Could not resolve all artifacts\nReceived status code 429 from server"))
         self.assertFalse(run.never_started("gt-adapter: 3 tests found\nCould not GET x"), "a server that ran is not")

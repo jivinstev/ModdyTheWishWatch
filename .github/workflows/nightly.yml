@@ -3,6 +3,7 @@
 #   plan     is there anything new to test? The run is skipped when main's gate-relevant tree (tools/gate/gatelib.py:
 #            every file but docs/, .github/, art/, src/test/ and top-level *.md) already had a green night. Otherwise it
 #            shares the tier's classes among JOBS runners, weighing each class by what it cost in the last nights.
+#   warm     resolves Gradle and the decompile once and saves the cache, so the tier jobs do not all download at once.
 #   tier     one runner a share. tools/gate/gate.py run boots one GameTest server on it, checks the server ran every test
 #            it registered and every class it was given, and retries each failed test ONCE, by itself (`flaky` if it
 #            then passes). Job 0 runs every class the other jobs were not given, so a class the plan never saw still
@@ -96,9 +97,39 @@ jobs:
           echo "matrix=$(cat matrix.json)" >> "$GITHUB_OUTPUT"
           echo "plan=$(python3 -c 'import json,sys; print(json.dumps(json.load(open("plan.json", encoding="utf-8"))))')" >> "$GITHUB_OUTPUT"
 
+  warm:
+    # one job resolves Gradle's dependencies and the Minecraft decompile and saves the cache the tier jobs restore:
+    # several cold jobs resolving at once is what Maven Central answers with 429 Too Many Requests
+    name: Warm the Gradle cache
+    needs: plan
+    if: needs.plan.outputs.run == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '21'
+      - &gradleCache
+        name: Cache Gradle and the NeoForm decompile
+        uses: actions/cache@v6
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ runner.os }}-${{ hashFiles('gradle.properties', 'build.gradle', 'versions/*.properties', 'gradle/wrapper/gradle-wrapper.properties') }}
+      - name: Compile (retried on a busy repository)
+        run: |
+          for i in 1 2 3; do
+            ./gradlew compileJava --console=plain && exit 0
+            echo "Gradle failed (attempt $i); waiting before the next"; sleep $((60 * i))
+          done
+          exit 1
+
   tier:
     name: Tier ${{ matrix.job }}
-    needs: plan
+    needs: [plan, warm]
     if: needs.plan.outputs.run == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 120
@@ -111,13 +142,7 @@ jobs:
         with:
           distribution: temurin
           java-version: '21'
-      - name: Cache Gradle and the NeoForm decompile
-        uses: actions/cache@v6
-        with:
-          path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-          key: gradle-${{ runner.os }}-${{ hashFiles('gradle.properties', 'build.gradle', 'versions/*.properties', 'gradle/wrapper/gradle-wrapper.properties') }}
+      - *gradleCache
       - name: This job's share of the tier
         env:
           PLAN: ${{ needs.plan.outputs.plan }}
@@ -143,7 +168,7 @@ jobs:
 
   verdict:
     name: Verdict
-    needs: [plan, tier]
+    needs: [plan, warm, tier]
     if: always() && needs.plan.outputs.run == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 15
