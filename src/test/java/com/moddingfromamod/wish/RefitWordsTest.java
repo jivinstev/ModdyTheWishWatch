@@ -30,4 +30,14 @@ class RefitWordsTest {
         assertEquals(LiveFit.UNLEASHED, new LiveFit.Refit(2, 0, 1).line());
         assertEquals("", new LiveFit.Refit(0, 0, 4).line());
     }
+
+    @Test
+    void bothLinesPassTheTextSweepAChatLinePasses() {
+        for (String line : java.util.List.of(LiveFit.UNLEASHED, LiveFit.HELD_DOWN)) {
+            com.google.gson.JsonObject a = new com.google.gson.JsonObject();
+            a.addProperty("message", line);
+            var r = com.moddingfromamod.safety.SafetyTextSweep.sweep("notify_player", a, "");
+            org.junit.jupiter.api.Assertions.assertFalse(r.refuses(), line + " → " + r);
+        }
+    }
 }

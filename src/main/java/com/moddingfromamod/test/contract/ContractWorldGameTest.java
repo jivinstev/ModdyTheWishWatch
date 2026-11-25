@@ -339,7 +339,7 @@ public final class ContractWorldGameTest {
             for (var e : helper.getLevel().getAllEntities()) {
                 if (e instanceof net.minecraft.world.entity.LivingEntity le && !(e instanceof ServerPlayer)
                         && com.moddingfromamod.wish.LiveFit.modifierOn(le, net.minecraft.world.entity.ai.attributes.Attributes.MAX_HEALTH,
-                        com.moddingfromamod.wish.LiveFit.MAX_HEALTH_ID) != null && le.distanceTo(p) < 64) {
+                        com.moddingfromamod.wish.LiveFit.MAX_HEALTH_ID) != null && le.distanceTo(p) < 64 && his(le, p)) {
                     fitted.add(le);
                 }
             }
@@ -379,7 +379,7 @@ public final class ContractWorldGameTest {
             for (var e : helper.getLevel().getAllEntities()) {
                 if (e instanceof net.minecraft.world.entity.LivingEntity le && !(e instanceof ServerPlayer)
                         && com.moddingfromamod.wish.LiveFit.modifierOn(le, net.minecraft.world.entity.ai.attributes.Attributes.MAX_HEALTH,
-                        com.moddingfromamod.wish.LiveFit.MAX_HEALTH_ID) != null && le.distanceTo(p) < 64) {
+                        com.moddingfromamod.wish.LiveFit.MAX_HEALTH_ID) != null && le.distanceTo(p) < 64 && his(le, p)) {
                     fits++;
                 }
             }
@@ -606,7 +606,7 @@ public final class ContractWorldGameTest {
     private static List<net.minecraft.world.entity.LivingEntity> fittedNear(GameTestHelper helper, ServerPlayer p) {
         List<net.minecraft.world.entity.LivingEntity> out = new ArrayList<>();
         for (var e : helper.getLevel().getAllEntities()) {
-            if (e instanceof net.minecraft.world.entity.LivingEntity le && !(e instanceof ServerPlayer) && le.distanceTo(p) < 64
+            if (e instanceof net.minecraft.world.entity.LivingEntity le && !(e instanceof ServerPlayer) && le.distanceTo(p) < 64 && his(le, p)
                     && com.moddingfromamod.wish.LiveFit.modifierOn(le, net.minecraft.world.entity.ai.attributes.Attributes.MAX_HEALTH,
                     com.moddingfromamod.wish.LiveFit.MAX_HEALTH_ID) != null) {
                 out.add(le);
@@ -695,6 +695,13 @@ public final class ContractWorldGameTest {
                 }
             }
         });
+    }
+
+    /** Is {@code le} a creature {@code p}'s wishes made (its species is his)? Other tests' creatures may stand near. */
+    private static boolean his(net.minecraft.world.entity.LivingEntity le, ServerPlayer p) {
+        String sid = com.moddingfromamod.wish.LiveFit.speciesOf(le);
+        var sp = sid == null ? null : SpeciesRegistry.get(sid);
+        return sp != null && p.getStringUUID().equals(sp.ownerId());
     }
 
     private static int count(String in, String what) {

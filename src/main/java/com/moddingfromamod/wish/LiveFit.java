@@ -197,8 +197,8 @@ public final class LiveFit {
         if (p != null && !line.isEmpty() && WishFeedback.sweeps(line, "")) {
             p.sendSystemMessage(net.minecraft.network.chat.Component.literal(line));
         }
-        LOGGER.info("world limits changed for {}: {} creature(s) raised, {} lowered, {} as they were", player, raised,
-                lowered, same);
+        LOGGER.info("world limits changed for {}: {} creature(s) raised, {} lowered, {} as they were; told: {}", player,
+                raised, lowered, same, p == null ? "not online" : line.isEmpty() ? "nothing moved" : line);
         return r;
     }
 
@@ -212,7 +212,7 @@ public final class LiveFit {
     }
 
     /** The species a living wish creature is, or null: a wish creature's own, or the one a rig's carrier was built from. */
-    static String speciesOf(LivingEntity mob) {
+    public static String speciesOf(LivingEntity mob) {
         if (mob instanceof com.moddingfromamod.entity.WishMobEntity w) {
             return w.speciesId() == null || w.speciesId().isBlank() ? null : w.speciesId();
         }
