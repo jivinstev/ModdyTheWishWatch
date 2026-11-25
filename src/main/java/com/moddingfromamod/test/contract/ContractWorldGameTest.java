@@ -527,8 +527,8 @@ public final class ContractWorldGameTest {
         // a natural spawn, and a spawn egg's: neither is wished
         // (a plain server command: no wish, no event, no function, so no spawn scope)
         try {
-            server.getCommands().getDispatcher().execute("summon minecraft:pig " + (at.x + 3) + " " + at.y + " " + at.z
-                    + " {NoAI:1b,Tags:[\"gtcontract_natural\"]}", server.createCommandSourceStack().withSuppressedOutput());
+            server.getCommands().getDispatcher().execute("execute as " + p.getScoreboardName()
+                    + " at @s run summon minecraft:pig ~3 ~ ~ {NoAI:1b,Tags:[\"gtcontract_natural\"]}", server.createCommandSourceStack().withSuppressedOutput());
         } catch (com.mojang.brigadier.exceptions.CommandSyntaxException e) {
             helper.fail(Component.literal("the natural pig: " + e.getMessage()));
         }
