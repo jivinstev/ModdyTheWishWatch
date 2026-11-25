@@ -137,7 +137,7 @@ public class ChildSafetyWiringGameTest {
             com.moddingfromamod.runtime.RuntimeConfig.invalidate();
             SafetyGrader.forTest(text -> new SafetyVerdict(
                     SafetyVerdict.Band.CLEARLY, SafetyVerdict.Band.FINE, SafetyVerdict.Band.FINE,
-                    SafetyVerdict.Band.FINE, false, List.of(SafetyVerdict.Reason.GORE), "",
+                    SafetyVerdict.Band.FINE, List.of(SafetyVerdict.Reason.GORE), "",
                     SafetyVerdict.Provenance.HAIKU, SafetyVerdict.NO_STAGE));
             p = player(helper);
             String text = uniqueWish("clearly-graded");
@@ -174,7 +174,7 @@ public class ChildSafetyWiringGameTest {
         com.moddingfromamod.runtime.RuntimeConfig.invalidate();
         SafetyGrader.forTest(text -> new SafetyVerdict(
                 SafetyVerdict.Band.FINE, SafetyVerdict.Band.CLEARLY, SafetyVerdict.Band.FINE,
-                SafetyVerdict.Band.FINE, false, List.of(SafetyVerdict.Reason.SEXUAL), "",
+                SafetyVerdict.Band.FINE, List.of(SafetyVerdict.Reason.SEXUAL), "",
                 SafetyVerdict.Provenance.HAIKU, SafetyVerdict.NO_STAGE));
 
         WishQueue queue = new WishQueue();
@@ -331,7 +331,7 @@ public class ChildSafetyWiringGameTest {
             com.moddingfromamod.runtime.RuntimeConfig.invalidate();
             SafetyGrader.forTest(text -> new SafetyVerdict(
                     SafetyVerdict.Band.CLEARLY, SafetyVerdict.Band.CLEARLY,
-                    SafetyVerdict.Band.CLEARLY, SafetyVerdict.Band.CLEARLY, true,
+                    SafetyVerdict.Band.CLEARLY, SafetyVerdict.Band.CLEARLY,
                     List.of(SafetyVerdict.Reason.GORE), "", SafetyVerdict.Provenance.HAIKU,
                     SafetyVerdict.NO_STAGE));
             p = player(helper);

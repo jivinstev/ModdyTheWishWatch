@@ -13,13 +13,12 @@ import org.junit.jupiter.api.Test;
 import com.moddingfromamod.world.WorldPeople;
 
 /**
- * The chat sweep's decision, every branch — and the one rule that matters most, that a person
- * in distress is never held back, not even during a break from chat.
+ * The chat sweep's decision, every branch.
  */
 class SafetyChatSweepTest {
 
     private static final SafetyLexicon LEX = SafetyLexicon.load(new StringReader(
-            "SEXUAL\tporn\tSEXUAL\nDANGER\tmeth\tDRUGS\nWELLBEING\thurt myself\tSELF_HARM\n"));
+            "SEXUAL\tporn\tSEXUAL\nDANGER\tmeth\tDRUGS\n"));
     private static final UUID A = UUID.fromString("00000000-0000-0000-0000-00000000000a");
     private static final UUID B = UUID.fromString("00000000-0000-0000-0000-00000000000b");
 
@@ -30,12 +29,11 @@ class SafetyChatSweepTest {
     @Test
     void offDoesNothingAtAll() {
         ChatStrikes s = new ChatStrikes();
-        for (String t : new String[]{"hello", "porn", "I want to hurt myself"}) {
+        for (String t : new String[]{"hello", "porn", "meth"}) {
             SafetyChatSweep.Decision d = SafetyChatSweep.decide(t, WorldPeople.Sweep.OFF, LEX, s, A, 0);
             assertEquals(SafetyChatSweep.Act.PASS, d.act());
             assertTrue(d.deliver());
             assertNull(d.logAction(), "off logs nothing");
-            assertFalse(d.note());
         }
     }
 
@@ -78,23 +76,6 @@ class SafetyChatSweepTest {
     }
 
     @Test
-    void distressIsNeverHeldBackNotEvenDuringABreak() {
-        ChatStrikes s = new ChatStrikes();
-        SafetyChatSweep.Decision d = on("I just want to hurt myself", s, A, 0);
-        assertEquals(SafetyChatSweep.Act.WELLBEING, d.act());
-        assertTrue(d.deliver());
-        assertTrue(d.note());
-        assertEquals(ChatWords.WELLBEING, d.tell());
-        assertEquals("WELLBEING", d.logAction());
-        on("porn", s, A, 1);
-        on("porn", s, A, 2);
-        on("porn", s, A, 3);
-        SafetyChatSweep.Decision muted = on("I want to hurt myself", s, A, 4);
-        assertEquals(SafetyChatSweep.Act.WELLBEING, muted.act());
-        assertTrue(muted.deliver(), "a break is about manners; this is a person");
-    }
-
-    @Test
     void shadowLogsWhatItWouldHaveDoneAndChangesNothingAnybodySees() {
         ChatStrikes s = new ChatStrikes();
         for (int i = 0; i < 5; i++) {
@@ -104,10 +85,6 @@ class SafetyChatSweepTest {
             assertEquals("", d.tell());
         }
         assertEquals(0L, s.mutedUntil(A, 10), "shadow never strikes");
-        SafetyChatSweep.Decision w = SafetyChatSweep.decide("hurt myself", WorldPeople.Sweep.SHADOW, LEX, s, A, 0);
-        assertEquals("SHADOW_WELLBEING", w.logAction());
-        assertTrue(w.note(), "the grown-up note is written in shadow too, like every other layer");
-        assertEquals("", w.tell());
     }
 
     @Test

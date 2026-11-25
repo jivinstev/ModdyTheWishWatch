@@ -615,7 +615,7 @@ public final class VanillaRigAnimator {
             // The species' stats, as respawn carries them: an edit can change health or damage,
             // and must not heal him either (RigVitals keeps his health in proportion).
             DisplayRig.applyVitals(base, RigVitals.carrying(sp.health(), sp.damage(), sp.armor(),
-                    sp.knockbackResistance(), sp.speed(), base.getHealth(), base.getMaxHealth()));
+                    sp.knockbackResistance(), sp.speed(), base.getHealth(), base.getMaxHealth()), sp.id());
             // And everything the species decides, as respawn's CarrierState.putOn does on a new
             // carrier: its fire resistance, its glow (the child's own glow kept, a glow the old
             // species gave dropped if the new one has none), and its instincts, re-derived from
@@ -687,7 +687,7 @@ public final class VanillaRigAnimator {
             try {
                 DisplayRig rebuilt = DisplayRig.spawn(level, at, yaw, parts, sp.scale(), sp.id(),
                         CarrierPool.movementOf(sp, parts));
-                DisplayRig.applyVitals(rebuilt.living(), vitals);
+                DisplayRig.applyVitals(rebuilt.living(), vitals, sp.id());
                 animal.putOn(level, rebuilt.base(), sp);
                 return rebuilt;
             } catch (Exception e) {
@@ -753,7 +753,7 @@ public final class VanillaRigAnimator {
             com.moddingfromamod.mob.EntityHandles.global().repoint(
                     base.getUUID(), rebuilt.living().getUUID(),
                     com.moddingfromamod.mob.Creatures.kindId(rebuilt.living()));
-            DisplayRig.applyVitals(rebuilt.living(), vitals);
+            DisplayRig.applyVitals(rebuilt.living(), vitals, sp.id());
             animal.putOn(level, rebuilt.base(), sp);
             drive(rebuilt, RigFit.intoRigSpace(parts), clips);
             LOG.info("rebuilt the rig for '{}' {}", sp.id(), why);

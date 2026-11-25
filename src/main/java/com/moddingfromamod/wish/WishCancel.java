@@ -90,16 +90,10 @@ public final class WishCancel {
         // redirect stops the wish and then re-opens it: refusing at the re-open would leave the
         // child's wish stopped for asking to change it. So the wish carries on as it was, and he
         // is told Moddy is tired. A STOP or UNDO is not a refinement and is never refused.
-        // ⚠ A child in distress is never turned away (CHILD_SAFETY.md §1): the lexicon reads his
-        // new words first, and a wellbeing flag goes on to reaim() like any other day.
         if (asked == CancelMode.REDIRECT) {
             long now = System.currentTimeMillis();
             var tired = WishService.tiredNow(now);
-            boolean distress = tired.isPresent()
-                    && com.moddingfromamod.safety.ChildSafetyConfig.enforcing()
-                    && com.moddingfromamod.safety.SafetyLexicon.shared().check(redirectTo)
-                            .map(v -> v.wellbeing()).orElse(false);
-            if (tired.isPresent() && !distress) {
+            if (tired.isPresent()) {
                 WishFeedback.tired(player, tired.get());
                 com.moddingfromamod.agent.ActionLog.wish(redirectTo, "TIRED", "REDIRECT",
                         run.shortId(), player.getStringUUID());
@@ -199,9 +193,6 @@ public final class WishCancel {
                 com.moddingfromamod.agent.ActionLog.safety(run.shortId(), "input", lexicon.get(),
                         com.moddingfromamod.safety.SafetyInputGate.Act.BLOCK.name(), 0L, 0.0,
                         "lexicon", "", "", 0, false, false, player.getStringUUID());
-                if (lexicon.get().wellbeing()) {
-                    com.moddingfromamod.agent.ActionLog.grownUpNote(run.shortId(), redirectTo);
-                }
                 com.moddingfromamod.agent.ActionLog.wish(redirectTo, "BLOCKED", "REDIRECT",
                         run.shortId(), player.getStringUUID());
                 // CHAT, because he has just been told the wish stopped and is watching that line.
@@ -214,6 +205,15 @@ public final class WishCancel {
         WishBook book = WishBook.get(player.level().getServer());
         Wish before = book.byId(run.wishId()).orElse(null);
         if (before == null) {
+            return;
+        }
+        // #81: the same route decision a fresh wish gets. A player the Magician no longer answers has the re-aimed
+        // words routed as a fresh wish (the Apprentice's, in practice); the stopped wish stays stopped and is never
+        // put back in line for a worker.
+        if (!MagicianDoor.answersNow(player.level().getServer(), player.getUUID())) {
+            org.slf4j.LoggerFactory.getLogger(WishCancel.class).info(
+                    "wish {}: re-aimed, routed as a fresh wish: the Magician no longer answers its player (#81)", run.shortId());
+            WishService.submit(player, WishText.reaimed(before.text(), redirectTo), WishSource.TYPED);
             return;
         }
         // THE RE-AIM BECOMES THE WISH (§12.7). Both halves are kept — the original says what to do

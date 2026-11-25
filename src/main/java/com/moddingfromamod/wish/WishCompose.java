@@ -158,14 +158,23 @@ public final class WishCompose {
         player.closeContainer();
         LOGGER.info("wish box opened for {}", player.getGameProfile().name());
         OPENED.merge(player.getUUID(), 1, Integer::sum);
+        TuneDialog d = boxFor(player, prefill);
+        if (buttons != null && !com.moddingfromamod.net.PlayerClient.isBedrock(player)) {
+            MenuKit.wishBox(player, clearable ? home(d, buttons, true) : home(d, buttons));
+        } else {
+            MenuKit.tune(player, d);
+        }
+        return true;
+    }
+
+    /** The box this player is shown: who answers, and the lines above the text box (#78: no Magician offer while it is off). */
+    static TuneDialog boxFor(ServerPlayer player, String prefill) {
         boolean priced = WishCharge.get().priced(player.getUUID());
         TuneDialog d;
         if (offersChoice(player) && !ApprenticeService.magicianAnswers(player)) {
             // the Magician is off, so there is nothing to choose: the ✪ line says so, and for the host it is
             // the way in to the setup
-            d = magicianOffDialog(title(player), prefill,
-                    com.moddingfromamod.config.MagicianSetup.watchTile(player)
-                            .filter(com.moddingfromamod.config.MagicianPresets.TURN_ON::equals).isPresent());
+            d = magicianOffDialog(title(player), prefill, MagicianDoor.hostMayTurnOn(player));
         } else if (offersChoice(player)) {
             d = dialog(title(player), prefill, ApprenticeService.prefersApprentice(player), priced);
         } else if (saysBoth(player)) {
@@ -173,12 +182,7 @@ public final class WishCompose {
         } else {
             d = dialog(title(player), prefill, label(player));
         }
-        if (buttons != null && !com.moddingfromamod.net.PlayerClient.isBedrock(player)) {
-            MenuKit.wishBox(player, clearable ? home(d, buttons, true) : home(d, buttons));
-        } else {
-            MenuKit.tune(player, d);
-        }
-        return true;
+        return d;
     }
 
     /**

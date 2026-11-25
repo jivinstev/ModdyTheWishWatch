@@ -119,31 +119,13 @@ public final class SafetyDatapackSweep {
     /**
      * What the compile should do about this source.
      *
-     * <p>The same three as {@link SafetyTextSweep.Act} and named the same, because the logged
+     * <p>The same two as {@link SafetyTextSweep.Act} and named the same, because the logged
      * {@code action} has to be a word {@code tools/safety-report.py} already knows: two names for
      * one concept is how a report starts printing {@code <-- not a known action}.
      */
     public enum Act {
         /** Nothing to say; compile it. */
         PASS,
-        /**
-         * Compile it, and write a grown-up note. Deliberately <b>not</b> a refusal — §1.
-         *
-         * <p>⚠ <b>Named WELLBEING, like every other layer</b> (a maintainer's decision 12.9, "one
-         * vocabulary: WELLBEING everywhere"). This layer shipped after CS-D3 had already made that
-         * rename in {@link SafetyTextSweep} and reintroduced the asymmetry D3 closed: it was
-         * called {@code NOTE} and logged the word {@code PASS}, so a distress flag raised in a
-         * DATAPACK could not be counted with the ones raised at the input, plan and text layers —
-         * which is exactly the question ("how often is a distress flag raised, and where") that
-         * one field is supposed to answer. Three places said otherwise while the code did this:
-         * the plan's §6 ("WELLBEING is the word at every layer"), its §14 closed-item ("every
-         * layer logs WELLBEING now") and {@code safety-report.py}'s own vocabulary comment.
-         *
-         * <p>{@code NOTE} would have been the wrong word even if the log had been consistent: at
-         * the input and plan layers NOTE means the {@code MAYBE} guidance handed to the AGENT,
-         * which is a different thing from a line written for a GROWN-UP.
-         */
-        WELLBEING,
         /** Refuse the compile; the agent rewrites the line and authors it again. */
         BLOCK
     }
@@ -301,8 +283,6 @@ public final class SafetyDatapackSweep {
             return Decision.PASS;
         }
         SafetyLexicon lexicon = SafetyLexicon.shared();
-        Snippet wellbeing = null;
-        SafetyVerdict wellbeingVerdict = null;
         for (Snippet s : extract(source)) {
             Optional<SafetyVerdict> hit = lexicon.check(s.text());
             if (hit.isEmpty()) {
@@ -313,26 +293,15 @@ public final class SafetyDatapackSweep {
                 // The FIRST snippet that trips is the one reported, exactly as at the tool choke
                 // point: a refusal naming two lines invites the agent to rewrite both and re-check
                 // neither, and if a second line is also bad the next compile finds it.
-                return decide(Act.BLOCK, refusal(s), s, v, featureId, "");
+                return decide(Act.BLOCK, refusal(s), s, v, featureId);
             }
-            if (v.wellbeing() && wellbeing == null) {
-                // Remembered rather than returned: a CLEARLY later in the same source must still
-                // win, because it is the one that refuses. §1's precedence is about a WELLBEING hit
-                // never being turned INTO a refusal, not about it suppressing one.
-                wellbeing = s;
-                wellbeingVerdict = v;
-            }
-        }
-        if (wellbeing != null) {
-            return decide(Act.WELLBEING, "", wellbeing, wellbeingVerdict, featureId,
-                    wellbeing.text());
         }
         return Decision.PASS;
     }
 
     /** Log it, then say what happens. Written BEFORE the action, in every mode. */
     private static Decision decide(Act assessed, String message, Snippet where,
-                                   SafetyVerdict verdict, String featureId, String noteText) {
+                                   SafetyVerdict verdict, String featureId) {
         boolean enforcing = ChildSafetyConfig.enforcing();
         // NO `tool`, deliberately. The obvious value is "author_datapack" and it would be a small
         // lie: most compiles are not from that tool at all (the item catalogue, the effect
@@ -342,9 +311,7 @@ public final class SafetyDatapackSweep {
         // and `wishId` carries the featureId, which is the only id a compile always has.
         //
         // THE LOGGED WORD IS THE ENUM'S OWN NAME, so the constant and the `action` field cannot
-        // drift — the same change decision 12.9 made to SafetyTextSweep. It used to be spelled out
-        // here as `BLOCK` or `PASS`, which is how a WELLBEING hit at this layer came to log the
-        // one word a report cannot count it by. `Act.PASS` never reaches this method: a compile
+        // drift — the same rule as SafetyTextSweep. `Act.PASS` never reaches this method: a compile
         // with nothing to say returns Decision.PASS unlogged.
         // `currentPlayerId` is "" for the many compiles that are nobody's wish -- the item
         // catalogue, the effect templates, every GameTest -- which is the honest answer and the
@@ -353,12 +320,6 @@ public final class SafetyDatapackSweep {
                 (enforcing ? "" : "SHADOW_") + assessed.name(),
                 0L, 0.0, "lexicon", null, "", 0, false, false,
                 com.moddingfromamod.agent.AgentContext.currentPlayerId());
-        if (assessed == Act.WELLBEING && !noteText.isEmpty()) {
-            // In EVERY mode, shadow included: a line in a file a grown-up reads is not an action
-            // taken against a child, and collecting exactly this is what shadow mode is for.
-            ActionLog.grownUpNote(featureId, "A wish datapack (" + featureId + ") was about to say, "
-                    + "at " + where.label() + ": " + noteText);
-        }
         if (!enforcing) {
             // Shadow acts on nothing — the refusal included, because a compile error the agent
             // reads is an action.

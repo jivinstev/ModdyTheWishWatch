@@ -103,6 +103,11 @@ public final class ApprenticeWords {
 
     /** Nothing he named is in Moddy's Parts. Honest: no tile is stretched to fit. */
     public static final String OUT = "✨ That one isn't in Moddy's Parts, so Moddy's Apprentice has no tile for it.";
+    /** No tile fits and the Magician is off (#78): what he can do instead, in a child's words. */
+    public static final String NO_MAGICIAN_TRY = "✨ Try other words, or build it yourself in the 🛠 Wish Builder on your watch!";
+    /** …and for the host only, where the Magician is turned on; {@link #HOST_TURN_ON} is the link that opens it. */
+    public static final String HOST_MAGICIAN_OFF = "✪ The Magician is off. A grown-up can ";
+    public static final String HOST_TURN_ON = "turn it on";
     /** The last tile, for a Crafter. */
     public static final String NONE_LABEL = "None of these";
     public static final List<String> NONE_LORE = List.of("Not what you meant?", "Press to see who can");

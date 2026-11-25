@@ -323,7 +323,7 @@ public class ChildSafetyReaimGameTest {
         // THE MODEL REFUSES EVERYTHING, including the re-aimed text.
         SafetyGrader.forTest(text -> new SafetyVerdict(
                 SafetyVerdict.Band.CLEARLY, SafetyVerdict.Band.FINE, SafetyVerdict.Band.FINE,
-                SafetyVerdict.Band.FINE, false, List.of(SafetyVerdict.Reason.GORE), "",
+                SafetyVerdict.Band.FINE, List.of(SafetyVerdict.Reason.GORE), "",
                 SafetyVerdict.Provenance.HAIKU, SafetyVerdict.NO_STAGE));
 
         helper.assertTrue(WishCancel.stop(w.player(), w.wish().shortId(), CancelMode.REDIRECT, aim)

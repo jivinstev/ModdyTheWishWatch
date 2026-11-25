@@ -138,7 +138,7 @@ class WishBriefTest {
 
     static SafetyVerdict likely() {
         return new SafetyVerdict(SafetyVerdict.Band.LIKELY, SafetyVerdict.Band.FINE, SafetyVerdict.Band.FINE,
-                SafetyVerdict.Band.FINE, false, List.of(SafetyVerdict.Reason.GORE), "", SafetyVerdict.Provenance.HAIKU,
+                SafetyVerdict.Band.FINE, List.of(SafetyVerdict.Reason.GORE), "", SafetyVerdict.Provenance.HAIKU,
                 SafetyVerdict.NO_STAGE);
     }
 
