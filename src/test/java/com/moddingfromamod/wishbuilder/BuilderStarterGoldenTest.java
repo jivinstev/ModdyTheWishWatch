@@ -77,6 +77,29 @@ class BuilderStarterGoldenTest {
         return out;
     }
 
+    /**
+     * #74, a deliberate change this fixture predates: a creature made from a ready-made SPECIES carries that ready-made's
+     * shipped health and attack damage (the pet dragon's 60, in every world), where before it inherited them from the
+     * world's own record of the species (20 and 3 in a fresh world). Added to the recorded sculpt; the rest of every
+     * saved make still re-makes byte for byte. A body (bodies/...) already sent its own and is unchanged.
+     */
+    static JsonArray withShipped(JsonArray calls, String preset) {
+        JsonArray out = calls.deepCopy();
+        JsonObject shipped = LibraryPresets.SHIPPED.species(preset);
+        for (JsonElement c : out) {
+            JsonObject args = c.getAsJsonObject().getAsJsonObject("args");
+            if (shipped != null && c.getAsJsonObject().get("tool").getAsString().equals("sculpt_creature") && args != null
+                    && args.has("start_from")) {
+                for (String k : new String[] {"health", "damage"}) {
+                    if (!args.has(k) && shipped.has(k)) {
+                        args.add(k, shipped.get(k).deepCopy());
+                    }
+                }
+            }
+        }
+        return out;
+    }
+
     @Test
     void everySavedStarterMakeLowersAsItDidBefore() throws Exception {
         JsonObject before = fixture();
@@ -86,7 +109,7 @@ class BuilderStarterGoldenTest {
             BuilderSpec.Kind kind = BuilderSpec.Kind.of(key.substring(0, key.indexOf('/')));
             String preset = key.substring(key.indexOf('/') + 1);
             JsonArray now = BuilderStarterGolden.lowered(BuilderSpec.read(BuilderStarterGolden.saved(kind, preset)));
-            if (!normal(withNatural(before.getAsJsonArray(key), preset)).equals(normal(now))) {
+            if (!normal(withShipped(withNatural(before.getAsJsonArray(key), preset), preset)).equals(normal(now))) {
                 wrong.add(key + "\n  before: " + before.get(key) + "\n  now:    " + now);
             }
         }
