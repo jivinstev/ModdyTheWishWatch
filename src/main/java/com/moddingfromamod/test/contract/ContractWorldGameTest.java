@@ -536,7 +536,7 @@ public final class ContractWorldGameTest {
         }
         net.minecraft.world.entity.Entity natural = null;
         for (var e : level.getAllEntities()) {
-            if (e.distanceTo(p) < 16 && e.getTags().contains("gtcontract_natural")) {
+            if (e.distanceTo(p) < 16 && e.entityTags().contains("gtcontract_natural")) {
                 natural = e;
             }
         }

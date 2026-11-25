@@ -31,7 +31,7 @@ public final class Wished {
         if (e == null || e instanceof net.minecraft.world.entity.Display) {
             return false;   // a rig's display part: part of a body, never one
         }
-        return e instanceof com.moddingfromamod.entity.WishMobEntity || byTags(e.getTags());
+        return e instanceof com.moddingfromamod.entity.WishMobEntity || byTags(e.entityTags());
     }
 
     /** The decision on an entity's tags alone: pure. */
