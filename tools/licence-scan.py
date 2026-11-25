@@ -9,6 +9,9 @@
                                                      what we SHIP from others: every library inside a jar's
                                                      META-INF/jarjar/, and every row of a JSON lock file whose
                                                      entries carry a "license" field
+    python3 tools/licence-scan.py --bundled --requirements requirements.txt
+                                                     every Python package a user installs to run the compiler:
+                                                     its licence from the rules' python_licences
     python3 tools/licence-scan.py PATH...            only these files (no register check)
 
     --rules FILE  (default: licence-rules.json beside this script)   --register FILE  (default: THIRD_PARTY.md)
@@ -31,8 +34,10 @@ Two ways through, both reviewable:
     explain a licence. An exempt file skips the wording rules; its foreign copyright still needs a register row.
 
 The register is a markdown table, `| `path or glob` | source | licence | why |`. The tree check fails a foreign
-copyright with no row, a row that matches no tracked file, and a licence that is neither allow-listed nor
-`PENDING #<issue>` (a decision held for the maintainers, printed as a warning).
+copyright with no row, a row that matches no tracked file, and a licence that is neither allow-listed,
+`PERMISSION <name>` (code its author let us use without an open-source licence; each <name> is in the rules'
+`permissions` with where that permission is recorded), nor `PENDING #<issue>` (held for a decision, printed as a
+warning).
 
 Standard library only; Python 3.9+; reads and prints UTF-8 on every platform. Copy it with its rules file.
 """
@@ -86,10 +91,20 @@ class Policy:
             if not str(e.get("why", "")).strip():
                 raise ValueError(f"exempt glob {e.get('glob')!r} needs a 'why'")
             self.exempt.append(e["glob"])
+        self.permissions = {k: v for k, v in raw.get("permissions", {}).items() if not k.startswith("_")}
+        for k, v in self.permissions.items():
+            if not str(v.get("record", "")).strip():
+                raise ValueError(f"permission {k!r} needs a 'record' saying where the permission is written down")
+        self.python = {k.lower(): v for k, v in raw.get("python_licences", {}).items() if not k.startswith("_")}
         self.jar_licences = {k: v for k, v in raw.get("jar_licences", {}).items() if not k.startswith("_")}
         for k, v in self.jar_licences.items():
             if not self.allowed(v.get("licence")) or not v.get("source"):
                 raise ValueError(f"jar_licences {k!r} needs an allowed licence and a source")
+
+    def permission_ok(self, licence):
+        """True when LICENCE reads `PERMISSION <name>` and <name> is a recorded permission in the rules."""
+        m = re.match(r"PERMISSION\s+(\S+)", licence, re.I)
+        return bool(m and m.group(1) in self.permissions)
 
     def allowed(self, name):
         return self.names.get(fold(name)) if name else None
@@ -177,6 +192,8 @@ def audit_register(policy, rows, tracked, notices, name):
             found.append((name, 0, "register-stale", f"`{key}` matches no tracked file: remove the row"))
         if re.match(r"PENDING\s+#\d+", licence, re.I):
             held.append(f"{key}: {licence}")
+        elif re.match(r"PERMISSION\b", licence, re.I) and policy.permission_ok(licence):
+            pass                                 # used by the author's recorded permission (the rules' `permissions`)
         elif not policy.allowed(re.sub(r"\s*\(.*\)\s*$", "", licence)):
             found.append((name, 0, "register-licence", f"`{key}`: '{licence}' is not on the allow-list"))
         if not source or not why:
@@ -305,6 +322,18 @@ def bundled_in_jar(policy, jar):
     return rows
 
 
+def bundled_in_requirements(policy, req):
+    rows = []
+    for line in pathlib.Path(req).read_text(encoding="utf-8").splitlines():
+        name = re.split(r"[\s;<>=!~\[#]", line.strip(), maxsplit=1)[0].lower()
+        if not name:
+            continue
+        row = policy.python.get(name)
+        lic = policy.allowed(row["licence"]) if row else None
+        rows.append((name, "", lic, ("python_licences: " + row["source"]) if row else "no python_licences row"))
+    return rows
+
+
 def bundled_in_lock(policy, lock):
     data = json.loads(pathlib.Path(lock).read_text(encoding="utf-8"))
     entries = data.get("packs", data) if isinstance(data, dict) else {}
@@ -325,6 +354,7 @@ def main(argv=None):
     for flag in ("--tree", "--staged", "--range", "--bundled"):
         how.add_argument(flag, action="store_true")
     ap.add_argument("--lock", nargs="*", default=[])
+    ap.add_argument("--requirements", nargs="*", default=[])
     ap.add_argument("--rules", default=str(TOOLS / "licence-rules.json"))
     ap.add_argument("--register", default="THIRD_PARTY.md")
     ap.add_argument("--repo", default=str(TOOLS.parent))
@@ -345,13 +375,14 @@ def main(argv=None):
     try:
         if a.bundled:
             for label, rows in [(j, bundled_in_jar(policy, j)) for j in a.paths] + \
-                               [(l, bundled_in_lock(policy, l)) for l in a.lock]:
+                               [(l, bundled_in_lock(policy, l)) for l in a.lock] + \
+                               [(r, bundled_in_requirements(policy, r)) for r in a.requirements]:
                 print(f"{label}: {len(rows)} bundled")
                 for item, version, lic, how_read in rows:
                     print(f"  {item} {version}: {lic or 'REFUSED'} ({how_read})")
                     if not lic:
                         found.append((label, 0, "bundled-licence", f"{item} {version}: {how_read}; not on the allow-list"))
-            what = f"{len(a.paths)} jar(s), {len(a.lock)} lock file(s)"
+            what = f"{len(a.paths)} jar(s), {len(a.lock)} lock file(s), {len(a.requirements)} requirements file(s)"
         elif a.staged or a.range:
             if a.staged:
                 found, notices = judge_diff(policy, git(repo, "diff", "--cached", "--no-color", "--no-renames",

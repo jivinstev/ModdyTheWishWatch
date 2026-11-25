@@ -5,6 +5,8 @@ where it came from, its licence and why it is here. `tools/licence-scan.py --tre
 copyright in a file with no row, a row that matches no tracked file, and a licence that is not on the allow-list in
 `tools/licence-rules.json` (see "Third-party code and text" in [CLAUDE.md](CLAUDE.md)). A path may be a glob. A
 licence that reads `PENDING #<issue>` is a decision held for the owner: the scan prints it and passes.
+`PERMISSION cbscript` means the original CBScript code, which SethBling allows Moddy to use and modify but which has no
+open-source licence (the `permissions` entry in `tools/licence-rules.json` says where that is recorded).
 
 What the jar SHIPS from others, and what each component requires, is [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md);
 `./gradlew licenceCheck` (part of `check`, so of `build`) checks every library nested in the jar's `META-INF/jarjar/`.
@@ -23,9 +25,9 @@ What the jar SHIPS from others, and what each component requires, is [THIRD_PART
 | `src/main/resources/apprentice/sentence-model.*.txt` | that model's licence and attribution, carried in the jar | Apache-2.0 | the notice travels with the model |
 | `third_party/MiniLM-L6-H384-uncased.MIT.txt` | MiniLM-L6-H384-uncased (Microsoft), the model's base | MIT | the base model's licence |
 | `third_party/ply-3.11.LICENSE.txt` | PLY (Python Lex-Yacc) 3.11 by David Beazley | BSD-3-Clause | PLY is inside the CBScript zip |
-| `src/main/resources/tools/cbscript.zip` | CBScript by SethBling, via Moddy's fork moddy-cbscript (`cbscript.SOURCE`); PLY 3.11 inside (BSD-3-Clause) | PENDING #142 | the datapack compiler; no open-source licence, used with the author's verbal permission |
-| `src/main/resources/licenses/cbscript.NOTICE.txt` | CBScript's notice, carried in the jar | PENDING #142 | the notice travels with the compiler |
-| `third_party/cbscript.NOTICE.txt` | the same notice | PENDING #142 | the notice travels with the compiler |
+| `src/main/resources/tools/cbscript.zip` | CBScript by SethBling, via Moddy's fork moddy-cbscript (`cbscript.SOURCE`); PLY 3.11 inside (BSD-3-Clause) | PERMISSION cbscript | the datapack compiler, used with its author's permission |
+| `src/main/resources/licenses/cbscript.NOTICE.txt` | CBScript's notice, carried in the jar | PERMISSION cbscript | the notice travels with the compiler |
+| `third_party/cbscript.NOTICE.txt` | the same notice | PERMISSION cbscript | the notice travels with the compiler |
 | `src/main/resources/apprentice/english-words.txt` | SCOWL word list (Kevin Atkinson), Debian `wamerican-small` 2020.12.07 | PENDING #142 | the Apprentice's spelling check; SCOWL's own permissive licence, not a listed one |
 | `src/main/resources/apprentice/english-words.NOTICE.txt` | Debian's copyright file for that list, in full | PENDING #142 | the notice travels with the list |
 | `third_party/scowl.LICENSE.txt` | SCOWL's licence and the notices it includes | PENDING #142 | the notice travels with the list |

@@ -115,6 +115,12 @@ class Register(unittest.TestCase):
         found, _ = ns["audit_register"](POLICY, rows, ["v/a.js", "f/a.ttf", "c.c"], {}, "R")
         self.assertEqual(sorted(f[2] for f in found), ["register-licence", "register-stale"])
 
+    def test_a_recorded_permission(self):
+        rows = ns["register_rows"]("| `*.py` | SethBling | PERMISSION cbscript | the compiler |\n"
+                                   "| `x.py` | someone | PERMISSION nobody | unrecorded |\n")
+        found, _ = ns["audit_register"](POLICY, rows, ["a.py", "x.py"], {}, "R")
+        self.assertEqual([(f[2], "nobody" in f[3]) for f in found], [("register-licence", True)])
+
     def test_our_own_notice(self):
         self.assertIsNone(POLICY.foreign_notice("# Copy" + J + "right (c) 2026 Moddy LLC"))
         self.assertIsNotNone(POLICY.foreign_notice("# " + COPR + " Someone"))
