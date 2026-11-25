@@ -79,7 +79,9 @@ python3 tools/gate/gate.py run --shard ci --out /tmp/gt   # Gate B as CI runs it
 
 **CI** (`.github/workflows/ci.yml`): the leak, secret and licence scans, Gate A and Gate B's `ci` shard on every pull request; a pull request
 merges on those three green. A pull request that only touches `tools/client-validation/` or `.github/port-publish/` (nothing a
-build or test reads) runs the scan alone; Gate A and Gate B show as skipped. Docs are not in that list: tests read them.
+build or test reads) runs the scan alone; Gate A and Gate B show as skipped. Docs are not in that list: tests read them. CI
+reads Maven Central through Google's public mirror and runs a build that failed on a download once more
+([`docs/GATE_B.md`](docs/GATE_B.md), "Downloads in CI").
 
 **Nightly** (`.github/workflows/nightly.yml`, [`docs/GATE_B.md`](docs/GATE_B.md)): the whole `ci,default` tier on
 `main` every night, split across four runners by `tools/gate/gate.py`, skipped when `main`'s gate tree already had a

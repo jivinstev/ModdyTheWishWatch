@@ -138,8 +138,15 @@ jobs:
             ~/.gradle/caches
             ~/.gradle/wrapper
           key: gradle-${{ runner.os }}-${{ hashFiles('gradle.properties', 'build.gradle', 'versions/*.properties', 'gradle/wrapper/gradle-wrapper.properties') }}
+          # a changed build starts from the newest cache, not cold: a dozen cold jobs at once is what Maven Central
+          # answers with 429 Too Many Requests
+          restore-keys: gradle-${{ runner.os }}-
+      - &centralMirror
+        # CI only: Maven Central through Google's public mirror of it (.github/gradle/central-mirror.init.gradle)
+        name: Maven Central through its public mirror
+        run: mkdir -p ~/.gradle/init.d && cp .github/gradle/central-mirror.init.gradle ~/.gradle/init.d/
       - name: ./gradlew build
-        run: ./gradlew build --console=plain
+        run: .github/gradle/retry-on-download.sh ./gradlew build --console=plain
       - name: The gate tools' own rules (tools/gate/test_gate.py, docs/GATE_B.md)
         run: python3 tools/gate/test_gate.py
       - name: The rig films' rules (which films, when; the part-drift check can still go red)
@@ -170,6 +177,7 @@ jobs:
           distribution: temurin
           java-version: '21'
       - *gradle-cache
+      - *centralMirror
       - &noPython
         # A player's game never starts Python (the datapack compiler is in the jar; NoPythonTest, NoPythonGameTest).
         # The game server runs with `python` and `python3` on PATH replaced by stubs that record being started and
@@ -185,7 +193,7 @@ jobs:
         name: Run the game tests
         run: |
           set -o pipefail
-          PATH="$RUNNER_TEMP/no-python:$PATH" ./gradlew runGameTestServer -Pshard="$SHARD" -Prundir=gt-run --console=plain 2>&1 | tee gametest.log
+          PATH="$RUNNER_TEMP/no-python:$PATH" .github/gradle/retry-on-download.sh ./gradlew runGameTestServer -Pshard="$SHARD" -Prundir=gt-run --console=plain 2>&1 | tee gametest.log
           line="$(grep -Eo '[0-9]+ required tests (passed|failed)' gametest.log | tail -1)"
           echo "result: ${line:-no result line (the server never ran the tests)}"
           if [ -s "$RUNNER_TEMP/python-started" ]; then
@@ -207,6 +215,7 @@ jobs:
           distribution: temurin
           java-version: '21'
       - *gradle-cache
+      - *centralMirror
       - *noPython
       - *gameTests
 
@@ -223,6 +232,7 @@ jobs:
           distribution: temurin
           java-version: '21'
       - *gradle-cache
+      - *centralMirror
       - name: A virtual display and software OpenGL
         run: sudo apt-get update -qq && sudo apt-get install -y -qq xvfb libgl1-mesa-dri mesa-utils
       - name: Every rig film the scoreboard names

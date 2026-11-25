@@ -118,3 +118,19 @@ The report answers three questions without re-running anything:
   names them (`excluded`), so its green says exactly what it covered. The nightly still runs them, and reports a
   failure of one as `known-flaky` rather than red: that is how a fix is seen to hold.
 - `test_gate.py` checks every row names a real GameTest class, an issue and where it was seen.
+
+## Downloads in CI
+
+Many jobs resolving Gradle dependencies cold at once (a PR that changes `build.gradle`, a split run, a mapping run) is
+what Maven Central answers with `429 Too Many Requests`, and that reddened unrelated pull requests. So, in CI only:
+
+- **Maven Central is read through Google's public mirror of it** (`maven-central.storage-download.googleapis.com`,
+  the same artifacts and checksums). Every job copies `.github/gradle/central-mirror.init.gradle` into
+  `~/.gradle/init.d/`: it points every repository that is Maven Central at the mirror, and puts the mirror first for
+  plugins, so a plugin's own dependencies (which the Gradle Plugin Portal redirects to Maven Central) come from it
+  too. A contributor's own build never sees it.
+- **A changed build starts warm**: each Gradle cache step falls back (`restore-keys`) to the newest cache when its exact
+  key misses, instead of starting cold.
+- **A build that failed for want of a download runs once more**, a minute later
+  (`.github/gradle/retry-on-download.sh`; `gate.py run` does the same for a server that never started). Any other
+  failure is returned at once.
