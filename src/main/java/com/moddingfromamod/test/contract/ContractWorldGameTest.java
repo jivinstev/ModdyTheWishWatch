@@ -545,6 +545,8 @@ public final class ContractWorldGameTest {
         AtomicReference<Set<java.util.UUID>> replay = new AtomicReference<>();
         AtomicReference<Set<java.util.UUID>> apprentice = new AtomicReference<>();
         Set<java.util.UUID> beforeBuilder = wishedNear(helper, p);
+        Set<String> speciesHad = new java.util.HashSet<>();
+        SpeciesRegistry.all().forEach(sp -> speciesHad.add(sp.id()));
         BuilderMake.make(p, one, BuilderAllowlist.REVIEWED).thenAcceptAsync(made::set);
         com.moddingfromamod.test.RealTime.succeedWhen(helper, () -> {
             BuilderMake.Result r = made.get();
@@ -553,19 +555,10 @@ public final class ContractWorldGameTest {
                 Set<java.util.UUID> now = new java.util.HashSet<>(wishedNear(helper, p));
                 now.removeAll(beforeBuilder);
                 helper.assertTrue(now.size() == 1, Component.literal("the Builder's cat is one wished body: " + now));
-                builder.set(now);
                 // its species, spawned again as a recipe would
-                String species = "";
-                for (var e : level.getAllEntities()) {
-                    if (now.contains(e.getUUID()) && e instanceof net.minecraft.world.entity.LivingEntity) {
-                        for (String t : e.getTags()) {
-                            if (t.startsWith(com.moddingfromamod.entity.WishMobTags.PREFIX)) {
-                                species = t.substring(com.moddingfromamod.entity.WishMobTags.PREFIX.length());
-                            }
-                        }
-                    }
-                }
-                helper.assertTrue(!species.isEmpty(), Component.literal("the cat names its species"));
+                String species = SpeciesRegistry.all().stream().map(sp -> sp.id())
+                        .filter(sid -> !speciesHad.contains(sid)).findFirst().orElse("");
+                helper.assertTrue(!species.isEmpty(), Component.literal("the cat is a new species"));
                 Set<java.util.UUID> b2 = wishedNear(helper, p);
                 String sp = species;
                 var ran = com.moddingfromamod.mob.SpawnScope.during(wish + "-again",
@@ -573,8 +566,10 @@ public final class ContractWorldGameTest {
                         () -> com.moddingfromamod.wish.WishExecutor.runOne(server, level, at, null, "wishmob spawn " + sp + " 1"));
                 helper.assertTrue(ran.success(), Component.literal("the recipe's spawn ran: " + ran.joined()));
                 replay.set(b2);
+                builder.set(now);
             }
             if (apprentice.get() == null) {
+                helper.assertTrue(replay.get() != null, Component.literal("the recipe ran"));
                 Set<java.util.UUID> again = new java.util.HashSet<>(wishedNear(helper, p));
                 again.removeAll(replay.get());
                 helper.assertTrue(again.size() == 1, Component.literal("the recipe's cat is one more wished body: " + again));
