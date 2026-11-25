@@ -44,12 +44,14 @@ class NoQueueLanguageTest {
             "src/main/java/com/moddingfromamod/wish/ThingPage.java",
             "src/main/java/com/moddingfromamod/wish/WishHotbar.java",   //: the hotbar proxy's lines
             "src/main/java/com/moddingfromamod/wish/WishCancel.java",
+            "src/main/java/com/moddingfromamod/wish/MagicianDoor.java",   // #81: a wish the Magician no longer answers
             "src/main/java/com/moddingfromamod/marshal/CancelMode.java",
             "src/main/java/com/moddingfromamod/marshal/CancelOffer.java",
             "src/main/java/com/moddingfromamod/wish/WishService.java",
             "src/main/java/com/moddingfromamod/wish/ChargeGate.java",   //: a world's charge's refusal line
             "src/main/java/com/moddingfromamod/wish/ChargeRefusal.java",
             "src/main/java/com/moddingfromamod/wish/MakeGate.java",      //: a world's view of a make (#14)
+            "src/main/java/com/moddingfromamod/wish/LiveFit.java",       //: a world's limits changed for his creatures (#14)
             "src/main/java/com/moddingfromamod/wish/MakeVerdict.java",
             // step 5: a Wish Crafter's welcome, nudges, rank-ups and promotion (its words are Crafters')
             "src/main/java/com/moddingfromamod/wish/CrafterService.java",

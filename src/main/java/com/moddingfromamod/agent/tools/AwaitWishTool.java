@@ -345,6 +345,9 @@ public final class AwaitWishTool implements McpTool {
         // writing down what happened, which is what makes "stop this one" and "which wish is this
         // worker on?" answerable at all. Submitted inside take() because a wish can reach an agent by
         // paths that never went through WishService (a rejection re-offer, a reloaded journal entry).
+        // #81: once more at the claim, the same route decision a fresh wish gets. A wish whose player the Magician no
+        // longer answers is ended kindly (REJECTED) and then dropped below exactly as a stopped one is.
+        turnBackIfNotTheMagicians(wish);
         com.moddingfromamod.wish.WishStatus overNow = alreadyOver(wish);
         com.moddingfromamod.marshal.Marshal marshal = com.moddingfromamod.marshal.Marshal.global();
         com.moddingfromamod.marshal.WishRun bound = overNow != null ? null
@@ -617,6 +620,24 @@ public final class AwaitWishTool implements McpTool {
      * listed wish. Widening this predicate to cover it would drop a wish on the strength of a
      * status that another thread is in the middle of writing.
      */
+    /** #81: end the wish if the Magician no longer answers its player. No server or no player: nothing asked. */
+    private static void turnBackIfNotTheMagicians(Wish wish) {
+        if (wish == null || wish.id() == null || wish.playerId() == null) {
+            return;
+        }
+        try {
+            AgentBridge.onServer(() -> {
+                var server = AgentBridge.serverOrNull();
+                if (server != null && !com.moddingfromamod.wish.MagicianDoor.answersNow(server, wish.playerId())) {
+                    com.moddingfromamod.wish.MagicianDoor.turnBack(server, wish, "the claim");
+                }
+                return Boolean.TRUE;
+            });
+        } catch (Throwable e) {
+            LOGGER.debug("wish {}: the claim's route check could not run: {}", wish.shortId(), e.toString());
+        }
+    }
+
     private static com.moddingfromamod.wish.WishStatus alreadyOver(Wish wish) {
         if (wish == null || wish.id() == null) {
             return null;

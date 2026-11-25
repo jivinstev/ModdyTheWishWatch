@@ -207,6 +207,15 @@ public final class WishCancel {
         if (before == null) {
             return;
         }
+        // #81: the same route decision a fresh wish gets. A player the Magician no longer answers has the re-aimed
+        // words routed as a fresh wish (the Apprentice's, in practice); the stopped wish stays stopped and is never
+        // put back in line for a worker.
+        if (!MagicianDoor.answersNow(player.getServer(), player.getUUID())) {
+            org.slf4j.LoggerFactory.getLogger(WishCancel.class).info(
+                    "wish {}: re-aimed, routed as a fresh wish: the Magician no longer answers its player (#81)", run.shortId());
+            WishService.submit(player, WishText.reaimed(before.text(), redirectTo), WishSource.TYPED);
+            return;
+        }
         // THE RE-AIM BECOMES THE WISH (§12.7). Both halves are kept — the original says what to do
         // and the re-aim says which thing — and the whole string is what gets graded, named on the
         // bar, handed to the agent and written to the journal. See WishText.reaimed for why the

@@ -52,16 +52,19 @@ public final class MakeFit {
         m.put(MakeFacts.RADIUS_BLOCKS, new Fact(MakeFacts.RADIUS_BLOCKS, true, MakeFit::gentler));
         m.put(MakeFacts.DURATION_TICKS, new Fact(MakeFacts.DURATION_TICKS, true, MakeFit::gentler));
         m.put(MakeFacts.EXTENT_BLOCKS, new Fact(MakeFacts.EXTENT_BLOCKS, false, NOTHING));
+        // no knob moves a creature's armour or knockback resistance: they are fitted on the live creature (LIVE)
+        m.put(MakeFacts.ARMOR_POINTS, new Fact(MakeFacts.ARMOR_POINTS, true, NOTHING));
+        m.put(MakeFacts.KNOCKBACK_RESISTANCE_FRACTION, new Fact(MakeFacts.KNOCKBACK_RESISTANCE_FRACTION, true, NOTHING));
         return Collections.unmodifiableMap(m);
     }
 
     /**
-     * The numbers a creature can still be fitted to on the LIVE entity when no step of its make lowers them: health
-     * and attack damage, by one attribute modifier each with a fixed id, put on at spawn ({@code wish.LiveFit}) and
-     * never written into a spec, a shelf or a store.
+     * The numbers a creature can still be fitted to on the LIVE entity when no step of its make lowers them: health,
+     * attack damage, armour and knockback resistance, by one attribute modifier each with a fixed id, put on at spawn
+     * ({@code wish.LiveFit}) and never written into a spec, a shelf or a store.
      */
     public static final java.util.Set<String> LIVE = java.util.Set.of(MakeFacts.HEALTH_HALF_HEARTS,
-            MakeFacts.ATTACK_DAMAGE_HALF_HEARTS);
+            MakeFacts.ATTACK_DAMAGE_HALF_HEARTS, MakeFacts.ARMOR_POINTS, MakeFacts.KNOCKBACK_RESISTANCE_FRACTION);
 
     /** Is this a make whose creatures are fitted live ({@link #LIVE})? */
     public static boolean livesFitted(MakeFacts f) {

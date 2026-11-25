@@ -8,6 +8,7 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.moddingfromamod.ModdingFromAModMod;
+import com.moddingfromamod.world.WorldAccess;
 import com.moddingfromamod.world.WorldCrafters;
 import net.minecraft.ChatFormatting;
 import net.minecraft.advancements.AdvancementHolder;
@@ -64,16 +65,33 @@ public final class CrafterService {
         if (p == null || p.getServer() == null) {
             return Crafters.Role.MAGICIAN;
         }
-        if (com.moddingfromamod.seam.PlayerSeams.isCrafter(p.getUUID())) {
+        return role(p.getServer(), p.getUUID(), p.getGameProfile());
+    }
+
+    /**
+     * The same answer for a player by id, online or not (#81: a wish put back in line may belong to a player who has
+     * left). The server's lists are keyed by id, so an offline player is read from them just as an online one is.
+     */
+    public static Crafters.Role role(net.minecraft.server.MinecraftServer server, UUID id) {
+        if (server == null || id == null) {
+            return Crafters.Role.MAGICIAN;
+        }
+        ServerPlayer online = server.getPlayerList().getPlayer(id);
+        return online != null ? role(online) : role(server, id, new com.mojang.authlib.GameProfile(id, ""));
+    }
+
+    private static Crafters.Role role(net.minecraft.server.MinecraftServer server, UUID id,
+                                      com.mojang.authlib.GameProfile profile) {
+        if (com.moddingfromamod.seam.PlayerSeams.isCrafter(id)) {
             return Crafters.Role.CRAFTER;   // a test's bot on a shared server; nothing that ships sets it
         }
-        if (AlwaysMagician.anyone(p.getUUID())) {
+        if (AlwaysMagician.anyone(id)) {
             // a server's canary (through AlwaysMagician) asks "is Moddy still GRANTING wishes", so its wish is always the agent's. It is
             // on no world's list, so behind an open door it was a Crafter, its words went to the Apprentice, no
             // wish was made and every canary said NOT SUBMITTED. No player can hold this id.
             return Crafters.Role.MAGICIAN;
         }
-        var list = p.getServer().getPlayerList();
+        var list = server.getPlayerList();
         boolean open = WorldCrafters.current().open();
         if (!open) {
             return Crafters.Role.MAGICIAN;
@@ -81,8 +99,8 @@ public final class CrafterService {
         // A client test's player is the singleplayer OWNER, which vanilla counts as an operator — and
         // an operator is always a Magician. IGNORE_OP_PROPERTY is the A/B seam that photographs the
         // Crafter's view on a real client (CrafterShotsClientTest); nothing ships setting it.
-        boolean op = list.isOp(p.getGameProfile()) && !"true".equals(System.getProperty(IGNORE_OP_PROPERTY));
-        return Crafters.role(true, list.getWhiteList().isWhiteListed(p.getGameProfile()), op);
+        boolean op = list.isOp(profile) && !"true".equals(System.getProperty(IGNORE_OP_PROPERTY));
+        return Crafters.role(true, list.getWhiteList().isWhiteListed(profile), op);
     }
 
     public static boolean isCrafter(ServerPlayer p) {
@@ -214,6 +232,22 @@ public final class CrafterService {
             return;
         }
         greet(p);
+    }
+
+    /**
+     * #82: once at server start, whether this world's access settings could be read, said in ONE warning line when
+     * they could not (or the door is open with the server's allow list off). A warning only: nothing changes.
+     * {@link WorldAccess#current()} keeps the answer for a server plug-in's health report.
+     */
+    @SubscribeEvent
+    public static void onServerStarted(net.neoforged.neoforge.event.server.ServerStartedEvent event) {
+        String id = com.moddingfromamod.world.WorldFacts.manifestId();
+        WorldAccess a = WorldAccess.classify(id, () -> com.moddingfromamod.world.WorldFacts.manifestText(id),
+                event.getServer().getPlayerList().isUsingWhitelist());
+        WorldAccess.publish(a);
+        if (a.warns()) {
+            LOGGER.warn(a.line());
+        }
     }
 
     /** What a joining player is sent: the pause menu's links, and a Crafter's welcome. Public for a client test. */

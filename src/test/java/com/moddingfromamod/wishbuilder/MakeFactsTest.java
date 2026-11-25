@@ -45,7 +45,7 @@ class MakeFactsTest {
         // the numbers' names are a shipped vocabulary: additive only, never renamed or given another unit
         assertEquals(List.of("healthHalfHearts", "attackDamageHalfHearts", "movementSpeedAttribute", "scaleTimes",
                 "builderSizeStep", "builderStrengthStep", "countMade", "amountItems", "radiusBlocks", "durationTicks",
-                "extentBlocks"), MakeFacts.NUMBERS.subList(0, 11),
+                "extentBlocks", "armorPoints", "knockbackResistanceFraction"), MakeFacts.NUMBERS.subList(0, 13),
                 "a shipped number was renamed, removed or reordered: add new ones at the end, never change these");
         for (String n : MakeFacts.NUMBERS) {
             assertTrue(doc.contains("`" + n + "`"), "docs/EXTENDING.md does not describe the number " + n);

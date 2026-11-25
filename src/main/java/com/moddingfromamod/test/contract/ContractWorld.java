@@ -25,7 +25,8 @@ import com.moddingfromamod.world.WorldMakes;
  *   <li>a make it rates {@link #LOCKED_FROM} or more, or whose facts could not be read, waits until the player has
  *       earned it: {@code LOCKED} with {@link #LOCKED_WORDS};</li>
  *   <li>everything else is made, but at most {@link #MOST_AT_ONCE} at once, no bigger than size step
- *       {@link #BIGGEST_STEP}, no tougher than {@link #TOUGHEST} health and hitting no harder than {@link #HARDEST}:
+ *       {@link #BIGGEST_STEP}, no tougher than {@link #TOUGHEST} health, hitting no harder than {@link #HARDEST}, with no more than
+ *       {@link #HARDEST_SHELL} armour and {@link #STEADIEST} knockback resistance (raised by a later {@link #round}):
  *       {@code FIT}, stated up front ({@link Answers#limits}, stamp {@link #STAMP}) and in each answer;</li>
  *   <li>a tag, number or kind it has never heard of is simply allowed.</li>
  * </ul>
@@ -49,13 +50,48 @@ public final class ContractWorld implements ModdyPlugin {
     public static final double TOUGHEST = 40;
     /** The most damage a hit deals here, in health points. */
     public static final double HARDEST = 6;
+    /** The most armour a creature has here, in armour points. */
+    public static final double HARDEST_SHELL = 4;
+    /** The least a creature here can be pushed: its most knockback resistance. */
+    public static final double STEADIEST = 0.5;
     /** The limits' stamp: it would change if the limits did. */
-    public static final String STAMP = "contract-v2";
+    public static final String STAMP = "contract-v3";
 
     /** This world's limits, every make. */
     public static final Map<String, Double> LIMITS = Map.of(MakeFacts.COUNT_MADE, MOST_AT_ONCE,
             MakeFacts.BUILDER_SIZE_STEP, BIGGEST_STEP, MakeFacts.HEALTH_HALF_HEARTS, TOUGHEST,
-            MakeFacts.ATTACK_DAMAGE_HALF_HEARTS, HARDEST);
+            MakeFacts.ATTACK_DAMAGE_HALF_HEARTS, HARDEST, MakeFacts.ARMOR_POINTS, HARDEST_SHELL,
+            MakeFacts.KNOCKBACK_RESISTANCE_FRACTION, STEADIEST);
+
+    /** A later round's most health: the same creature, let out further. */
+    public static final double TOUGHEST_LATER = 80;
+
+    private static final Map<UUID, Integer> ROUNDS = new java.util.concurrent.ConcurrentHashMap<>();
+
+    /**
+     * Start round {@code round} for {@code player} (1 is the first) and tell the core, as a world does when what it
+     * answers changes: from round 2 his creatures may have {@link #TOUGHEST_LATER} health.
+     */
+    public static void round(UUID player, int round) {
+        ROUNDS.put(player, round);
+        WorldMakes.limitsChanged(player);
+    }
+
+    /** This world's limits for {@code player}, in the round he is in. */
+    public static Map<String, Double> limitsFor(UUID player) {
+        int round = player == null ? 1 : ROUNDS.getOrDefault(player, 1);
+        if (round <= 1) {
+            return LIMITS;
+        }
+        Map<String, Double> later = new java.util.HashMap<>(LIMITS);
+        later.put(MakeFacts.HEALTH_HALF_HEARTS, TOUGHEST_LATER);
+        return Map.copyOf(later);
+    }
+
+    /** Back to the first round for every player (a test's tidy-up). */
+    public static void forgetRounds() {
+        ROUNDS.clear();
+    }
 
     public ContractWorld() {
     }
@@ -103,13 +139,14 @@ public final class ContractWorld implements ModdyPlugin {
             return switch (verdict(facts)) {
                 case HIDDEN -> MakeView.HIDDEN;
                 case LOCKED -> MakeView.locked(LOCKED_WORDS);
-                case ALLOWED -> MakeView.fit(LIMITS);
+                case ALLOWED -> MakeView.fit(limitsFor(ask == null ? null : ask.player()));
             };
         }
 
         @Override
         public WorldLimits limits(UUID player) {
-            return new WorldLimits(LIMITS, STAMP);
+            int round = player == null ? 1 : ROUNDS.getOrDefault(player, 1);
+            return new WorldLimits(limitsFor(player), round <= 1 ? STAMP : STAMP + "-round" + round);
         }
     }
 }
