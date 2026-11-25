@@ -84,7 +84,13 @@ public final class UndoContract {
             // A hand-over: every item it gives goes through WishDelivery, which
             // records it against the wish, and an undo takes exactly those back — from his hands,
             // anywhere in his inventory, and his Wish Bag. Until then it had no inverse at all.
-            "give_items");
+            "give_items",
+            // A redstone mechanism: its journal (every position it placed and what was there before) is
+            // stored, and remove_mechanism puts exactly those back, so the inverse is real and the agent can
+            // run it. Like modify_player it has no undo RECORD on the wish yet: an [undo] does not take it out
+            // by itself. That is the next step for the redstone branch, not a reason to block undo.
+            "build_mechanism",
+            "remove_mechanism");
 
     /**
      * Tools that change nothing a child could see afterwards — looking, listing, verifying,

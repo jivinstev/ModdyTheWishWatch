@@ -171,6 +171,10 @@ public final class WishAgent {
                 .add(new com.moddingfromamod.agent.tools.InspectEventTool())
                 .add(new com.moddingfromamod.agent.tools.StageEventTool())
                 .add(new com.moddingfromamod.agent.tools.RemoveEventTool())
+                // REDSTONE MECHANISMS: a door that opens and closes with a switch. The agent says what and where;
+                // the planner wires it and the tool proves it works before reporting.
+                .add(new com.moddingfromamod.agent.tools.BuildMechanismTool())
+                .add(new com.moddingfromamod.agent.tools.RemoveMechanismTool())
                 // And LOOK at the result. Every other check is a number, and none of them can tell
                 // whimsical from terrifying; asked for Chucko McBurger this system produced a
                 // blood-red zombie and reported success, because nothing ever looked at it.
