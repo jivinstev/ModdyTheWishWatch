@@ -285,15 +285,18 @@ the limits the world gave.
 - **The Magician** (`agent/ToolArgFit`, #69). Its brief carries this world's limits for the wish's player **as data
   only**: the fact keys from the closed vocabulary and their numbers (`THIS WORLD'S LIMITS (numbers only, by make
   fact): healthHalfHearts=40, …`), never a word a world wrote. Each making tool's arguments that a fact measures (today
-  `sculpt_creature`'s `health`, `damage`, `scale`, `armor`, `knockbackResistance`) are fitted when they are over it,
+  `sculpt_creature`'s and `define_species`'s `health`, `damage`, `scale`, `armor`, `knockbackResistance`;
+  `define_species`'s and `stage_event`'s `count` as `countMade`; `give_items`'s and `make_item`'s `count` as
+  `amountItems`) are fitted when they are over it,
   in the one dispatch every tool call passes (`McpProtocol`, after the safety layers and the world's rules, so a
   refused call is never fitted into an allowed one), and the tool result ends with a note the core writes from the fact
   and the limit alone, so the agent tells the player in its own words, which the text sweep reads as it reads all of
   them. A creature's stats and size are fitted where it stands, at every spawn (the live fit), so the tool keeps what
   was asked and the note says "health is held to 40 where it stands: this world's limit": lowering it in the arguments
-  would write this world's limit into the creature's record for good, and a later round could never let it out. A fact
-  the core cannot fit live is set to the limit in the arguments ("… was set to …: this world's limit"). A Builder make
-  is fitted by the Builder itself and is left alone here. What no fact measures (a custom datapack power) is kept as it is:
+  would write this world's limit into the creature's record for good, and a later round could never let it out. **The
+  rule: a world's limit is never persisted into a creature.** Only a fact the core cannot fit live (how many at once,
+  how many items) is set to the limit in the arguments ("count was set to 3: this world's limit"). A Builder make goes
+  through the same dispatch but is fitted by the Builder itself, so it is left alone here. What no fact measures (a custom datapack power) is kept as it is:
   the thing is made, and a world that cannot measure it shows it as it chooses on his watch (locked, in the contract
   world), never refused at the tool. A lesson the agent reads before it builds a creature or an item tells it to make
   the strongest version the limits allow ("the strongest sword ever" is the strongest sword allowed); a test pins it.

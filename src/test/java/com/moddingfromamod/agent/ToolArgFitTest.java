@@ -62,4 +62,18 @@ class ToolArgFitTest {
         }
         assertTrue(Files.readString(Path.of("src/main/resources/lessons/item.md")).contains("the strongest sword ever"));
     }
+
+    @Test
+    void aFactTheCoreCannotFitLiveIsSetToTheLimitInTheArguments() {
+        JsonObject args = JsonParser.parseString("{\"id\":\"blorp\",\"count\":12,\"health\":300}").getAsJsonObject();
+        List<ToolArgFit.Lowered> lowered = ToolArgFit.fit("define_species", args,
+                Map.of(MakeFacts.COUNT_MADE, 3.0, MakeFacts.HEALTH_HALF_HEARTS, 40.0));
+        assertEquals(3, args.get("count").getAsInt(), "how many at once has no live fit: set to the limit");
+        assertEquals(300.0, args.get("health").getAsDouble(), "health is held where it stands: kept as asked");
+        assertEquals(List.of("health is held to 40 where it stands: this world's limit",
+                "count was set to 3: this world's limit"), lowered.stream().map(ToolArgFit.Lowered::note).toList());
+        JsonObject give = JsonParser.parseString("{\"item\":\"minecraft:apple\",\"count\":64}").getAsJsonObject();
+        ToolArgFit.fit("give_items", give, Map.of(MakeFacts.AMOUNT_ITEMS, 8.0));
+        assertEquals(8, give.get("count").getAsInt());
+    }
 }

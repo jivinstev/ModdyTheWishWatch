@@ -41,8 +41,14 @@ public final class ToolArgFit {
         creature.put("armor", MakeFacts.ARMOR_POINTS);
         creature.put("knockbackResistance", MakeFacts.KNOCKBACK_RESISTANCE_FRACTION);
         Map<String, Map<String, String>> m = new LinkedHashMap<>();
-        m.put("sculpt_creature", Map.copyOf(creature));
-        return Map.copyOf(m);
+        m.put("sculpt_creature", java.util.Collections.unmodifiableMap(creature));
+        Map<String, String> species = new LinkedHashMap<>(creature);
+        species.put("count", MakeFacts.COUNT_MADE);   // how many spawn at once: no live fit, set to the limit
+        m.put("define_species", java.util.Collections.unmodifiableMap(species));
+        m.put("stage_event", Map.of("count", MakeFacts.COUNT_MADE));
+        m.put("give_items", Map.of("count", MakeFacts.AMOUNT_ITEMS));
+        m.put("make_item", Map.of("count", MakeFacts.AMOUNT_ITEMS));
+        return java.util.Collections.unmodifiableMap(m);
     }
 
     /**
