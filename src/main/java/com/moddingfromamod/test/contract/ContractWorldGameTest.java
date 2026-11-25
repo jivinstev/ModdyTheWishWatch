@@ -753,7 +753,7 @@ public final class ContractWorldGameTest {
         AtomicReference<BuilderMake.Result> made = new AtomicReference<>();
         BuilderMake.make(p, cats("friendly", 1, 1), BuilderAllowlist.REVIEWED).thenAcceptAsync(made::set);
         String tag = UUID.randomUUID().toString().substring(0, 6);
-        String beastId = "gt_magician_beast_" + tag;
+        AtomicReference<String> beast0 = new AtomicReference<>("");
         AtomicReference<Integer> step = new AtomicReference<>(0);
         com.moddingfromamod.test.RealTime.succeedWhen(helper, () -> {
             BuilderMake.Result r = made.get();
@@ -766,31 +766,32 @@ public final class ContractWorldGameTest {
                     }
                 }
                 helper.assertTrue(cat != null, Component.literal("the cat's species"));
-                // a creature the Magician sculpted under a tight limit: sculpt_creature is given 120 health, which the
-                // dispatch keeps as asked (ContractWorldMagicianGameTest), so its record holds 120
+                // the Magician sculpts it again under a tight limit: sculpt_creature is given 120 health, which the dispatch
+                // keeps as asked (ContractWorldMagicianGameTest), so its record now holds 120 (its model stays the cat's)
                 var json = cat.toJson();
-                json.addProperty("id", beastId);
-                json.addProperty("name", "Beast");
                 json.addProperty("health", 120);
                 json.addProperty("ownerId", p.getStringUUID());
                 Species asked = Species.fromJson(json);
+                beast0.set(cat.id());
                 MockPlayerNetwork.afterTest(helper, SpeciesRegistry.putForTest(List.of(asked)));
                 var ran = com.moddingfromamod.mob.SpawnScope.during("gt-contract-magician-" + tag,
                         com.moddingfromamod.item.delivery.DeliveryPlan.Kind.HANDOVER,
                         () -> com.moddingfromamod.wish.WishExecutor.runOne(server, helper.getLevel(), p.position(), p,
-                                "wishmob spawn " + beastId + " 1"));
+                                "wishmob spawn " + beast0.get() + " 1"));
                 helper.assertTrue(ran.success(), Component.literal("the beast spawns: " + ran.joined()));
                 step.set(1);
             }
+            // the one spawned from the record of 120 (the cat made first stood before its record changed)
             net.minecraft.world.entity.LivingEntity beast = null;
             for (var e : helper.getLevel().getAllEntities()) {
                 if (e instanceof net.minecraft.world.entity.LivingEntity le && le.distanceTo(p) < 64
-                        && beastId.equals(com.moddingfromamod.wish.LiveFit.speciesOf(le))) {
+                        && beast0.get().equals(com.moddingfromamod.wish.LiveFit.speciesOf(le))
+                        && (beast == null || le.getId() > beast.getId())) {
                     beast = le;
                 }
             }
             helper.assertTrue(beast != null, Component.literal("the beast stands"));
-            var record = SpeciesRegistry.get(beastId);
+            var record = SpeciesRegistry.get(beast0.get());
             helper.assertTrue(record != null && Math.abs(record.health() - 120) < 1e-6,
                     Component.literal("its record keeps the health it was asked for: " + (record == null ? "none" : record.health())));
             if (step.get() == 1) {
