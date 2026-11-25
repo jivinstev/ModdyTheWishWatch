@@ -482,6 +482,16 @@ public final class DisplayRig {
         return applied;
     }
 
+    /**
+     * …and fitted to this world's limits on the carrier, the entity that holds the stats (#14, {@code LiveFit}): after
+     * the creature's own numbers, never on a display part, never in its species or any store.
+     */
+    public static int applyVitals(net.minecraft.world.entity.LivingEntity mob, RigVitals v, String speciesId) {
+        int applied = applyVitals(mob, v);
+        com.moddingfromamod.wish.LiveFit.apply(mob, speciesId);
+        return applied;
+    }
+
     private static int set(net.minecraft.world.entity.LivingEntity mob,
                            net.minecraft.core.Holder<net.minecraft.world.entity.ai.attributes.Attribute> a,
                            double value) {

@@ -738,10 +738,9 @@ public final class McpProtocol {
                         // ⚠ THE SWEEP RUNS INSIDE THE `else`, which is what makes the third
                         // bullet above true of the code rather than only of the comment. It was
                         // computed above this branch, unconditionally — and `SafetyTextSweep`
-                        // LOGS what it finds and writes a grown-up note reading "Moddy was about
-                        // to say …", so a DIVERTED plan whose own `status` or `steps[]` also
-                        // tripped the lexicon left a `layer:"text"` record and a note about a
-                        // sentence the tool body never ran and no child ever read. Narrow, and
+                        // LOGS what it finds, so a DIVERTED plan whose own `status` or `steps[]`
+                        // also tripped the lexicon left a `layer:"text"` record about a sentence
+                        // the tool body never ran and no child ever read. Narrow, and
                         // exactly the sort of record §6 cannot afford: an action log that
                         // describes things which did not happen cannot be counted.
                         if (safety.refuses()) {

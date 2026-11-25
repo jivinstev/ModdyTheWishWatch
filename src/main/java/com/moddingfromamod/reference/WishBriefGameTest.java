@@ -220,7 +220,7 @@ public class WishBriefGameTest {
         // disagreed would fall back to the structured look, which is built from closed sets and not graded).
         String look = "A round pink ball covered in dripping wounds. Pink covers about 80% of it.";
         Wishing w = begin(helper, look, new SafetyVerdict(SafetyVerdict.Band.LIKELY, SafetyVerdict.Band.FINE,
-                SafetyVerdict.Band.FINE, SafetyVerdict.Band.FINE, false, List.of(SafetyVerdict.Reason.GORE), "",
+                SafetyVerdict.Band.FINE, SafetyVerdict.Band.FINE, List.of(SafetyVerdict.Reason.GORE), "",
                 SafetyVerdict.Provenance.HAIKU, SafetyVerdict.NO_STAGE));
         AtomicReference<Throwable> blew = new AtomicReference<>();
         handedTheChildsOwnWords(helper, w, await(w.queue(), blew), blew, "UNSAFE", "dripping wounds");
@@ -351,7 +351,7 @@ public class WishBriefGameTest {
             }
             String b = text != null && text.contains(w.name()) ? band : "FINE";
             String json = "{\"violence\":\"" + b + "\",\"sexual\":\"FINE\",\"hate\":\"FINE\",\"danger\":\"FINE\","
-                    + "\"wellbeing\":false,\"reasons\":[" + ("FINE".equals(b) ? "" : "\"GORE\"") + "],"
+                    + "\"reasons\":[" + ("FINE".equals(b) ? "" : "\"GORE\"") + "],"
                     + "\"redirect\":\"" + ("FINE".equals(b) ? "" : redirect) + "\",\"stageIndex\":-1}";
             return new SafetyGrader.Reply(json, 1_500, 0.0, "test-late", json);
         });

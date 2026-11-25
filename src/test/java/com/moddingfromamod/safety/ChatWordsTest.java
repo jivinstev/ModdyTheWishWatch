@@ -43,13 +43,6 @@ class ChatWordsTest {
     }
 
     @Test
-    void theWellbeingLineMentionsNoWishAndPromisesNothing() {
-        String s = ChatWords.WELLBEING.toLowerCase(Locale.ROOT);
-        assertFalse(s.contains("wish"), "he made no wish: " + s);
-        assertFalse(s.contains("told") || s.contains("grown-up has"), "promises a tell-tale: " + s);
-    }
-
-    @Test
     void theThanksNamesWhoWasReportedAndPromisesNoAction() {
         String s = ChatWords.sayReportThanks("Some_Player");
         assertTrue(s.contains("Some_Player"));

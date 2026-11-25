@@ -92,7 +92,7 @@ class SafetyPlanGateTest {
     private static SafetyVerdict band(SafetyVerdict.Band violence, int stage, String redirect,
                                       SafetyVerdict.Reason... reasons) {
         return new SafetyVerdict(violence, SafetyVerdict.Band.FINE, SafetyVerdict.Band.FINE,
-                SafetyVerdict.Band.FINE, false, List.of(reasons), redirect,
+                SafetyVerdict.Band.FINE, List.of(reasons), redirect,
                 SafetyVerdict.Provenance.HAIKU, stage);
     }
 
@@ -207,15 +207,15 @@ class SafetyPlanGateTest {
                 .contains("cartoon"));
         assertTrue(SafetyPlanGate.guidanceFor(new SafetyVerdict(
                 SafetyVerdict.Band.FINE, SafetyVerdict.Band.MAYBE, SafetyVerdict.Band.FINE,
-                SafetyVerdict.Band.FINE, false, List.of(), "",
+                SafetyVerdict.Band.FINE, List.of(), "",
                 SafetyVerdict.Provenance.HAIKU, -1)).contains("gross-out"));
         assertTrue(SafetyPlanGate.guidanceFor(new SafetyVerdict(
                 SafetyVerdict.Band.FINE, SafetyVerdict.Band.FINE, SafetyVerdict.Band.MAYBE,
-                SafetyVerdict.Band.FINE, false, List.of(), "",
+                SafetyVerdict.Band.FINE, List.of(), "",
                 SafetyVerdict.Provenance.HAIKU, -1)).contains("kind"));
         assertTrue(SafetyPlanGate.guidanceFor(new SafetyVerdict(
                 SafetyVerdict.Band.FINE, SafetyVerdict.Band.FINE, SafetyVerdict.Band.FINE,
-                SafetyVerdict.Band.MAYBE, false, List.of(), "",
+                SafetyVerdict.Band.MAYBE, List.of(), "",
                 SafetyVerdict.Provenance.HAIKU, -1)).contains("Minecraft"));
     }
 
