@@ -56,8 +56,6 @@ class SafetyDatapackSweepTest {
     /** A term from the shipped lexicon that is CLEARLY on one axis. */
     private static final String CLEARLY = "cocaine";
 
-    /** A term from the shipped lexicon that is WELLBEING — a flag, never a band. */
-    private static final String WELLBEING = "hurt myself";
 
     /**
      * The smallest number of readable snippets the committed corpus must yield.
@@ -458,63 +456,6 @@ class SafetyDatapackSweepTest {
                 SafetyDatapackSweep.sweep("dp", "# a note about " + CLEARLY + "\nfunction f()\nend")
                         .act(),
                 "a CBScript comment is never shown to the child, so it is not a channel");
-    }
-
-    // ── WELLBEING: a note, never a refusal ──────────────────────────────────────────────────
-
-    @Test
-    @DisplayName("a wellbeing phrasing PASSES and writes a grown-up note — §1, and the novelty is "
-            + "that the distress is in something the DATAPACK will say")
-    void wellbeingPassesAndIsNoted() {
-        SafetyDatapackSweep.Decision d = SafetyDatapackSweep.sweep("sad_pack",
-                "function f()\n    /say I want to " + WELLBEING + "\nend");
-        assertEquals(SafetyDatapackSweep.Act.WELLBEING, d.assessed(),
-                "a wellbeing phrasing must be assessed as WELLBEING — decision 12.9's one "
-                        + "vocabulary, which this layer shipped after and did not follow");
-        assertEquals(SafetyDatapackSweep.Act.PASS, d.act(), "a child in distress is never refused");
-        assertFalse(d.refuses());
-        assertTrue(d.verdict().wellbeing());
-        assertEquals(SafetyVerdict.Band.FINE, d.verdict().overall(),
-                "WELLBEING sets no band — SafetyLexicon's own rule");
-        assertTrue(readAll(ActionLog.grownUpNotes()).contains(WELLBEING),
-                "the grown-up note was not written");
-    }
-
-    @Test
-    @DisplayName("and it LOGS the word WELLBEING, so a distress flag in a datapack can be counted "
-            + "with the ones at every other layer — decision 12.9")
-    void theLoggedWordIsWellbeingAndNotPass() throws Exception {
-        SafetyDatapackSweep.sweep("sad_pack",
-                "function f()\n    /say I want to " + WELLBEING + "\nend");
-        // ⚠ THE REGRESSION. This layer landed after CS-D3 renamed the text sweep's NOTE to
-        // WELLBEING and reintroduced exactly the asymmetry D3 closed: it wrote `PASS`, so
-        // "how often is a distress flag raised, and where" could not be answered by counting one
-        // field — which is the whole content of the decision. The plan's §6 and §14 and
-        // safety-report.py's own vocabulary comment all said every layer wrote WELLBEING while
-        // this one did not.
-        String log = readAll(ActionLog.path());
-        assertTrue(log.contains("\"action\":\"WELLBEING\""),
-                "the action must be the enum's own name, so the constant and the field cannot "
-                        + "drift; log was: " + clip(log));
-        assertFalse(log.contains("\"action\":\"PASS\""),
-                "PASS is the word that made this layer's distress flags uncountable; log was: "
-                        + clip(log));
-        assertTrue(log.contains("\"layer\":\"datapack\""), "log was: " + clip(log));
-        assertTrue(log.contains("\"wellbeing\":true"),
-                "the flag stays beside it — it is still what a consumer filters on");
-    }
-
-    @Test
-    @DisplayName("a CLEARLY later in the source still wins over an earlier wellbeing hit")
-    void clearlyBeatsAnEarlierWellbeingHit() {
-        SafetyDatapackSweep.Decision d = SafetyDatapackSweep.sweep("dp", String.join("\n",
-                "function f()",
-                "    /say I want to " + WELLBEING,
-                "    /say and a bag of " + CLEARLY,
-                "end"));
-        assertEquals(SafetyDatapackSweep.Act.BLOCK, d.act(),
-                "§1's precedence is about a WELLBEING hit never being turned INTO a refusal, not "
-                        + "about it suppressing one");
     }
 
     // ── THE ARMS ────────────────────────────────────────────────────────────────────────────

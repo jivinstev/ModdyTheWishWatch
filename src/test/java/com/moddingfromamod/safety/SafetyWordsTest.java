@@ -59,54 +59,9 @@ class SafetyWordsTest {
                     "too long to read at a glance in chat (" + s.length() + "): " + s);
             assertFalse(s.isBlank());
         }
-        assertEquals(5, SafetyWords.all().size(),
+        assertEquals(4, SafetyWords.all().size(),
                 "a new child-facing string was added without being listed in all(), so nothing "
                         + "above is checking it");
-    }
-
-    @Test
-    void theWellbeingLineSaysTheWishIsSTILLHAPPENING() {
-        // §12.1 decision 1B: this is the one message here that is NOT a refusal, and nothing is
-        // being withheld. A warm sentence followed by silence would read as the wish having been
-        // taken away for saying it, which is the single lesson this must not teach — so the
-        // promise has to be in the sentence itself rather than in what happens next.
-        String s = SafetyWords.sayWellbeingNoticed();
-        String lower = s.toLowerCase(Locale.ROOT);
-        assertTrue(lower.contains("still"), "it must say the wish goes on: " + s);
-        assertTrue(lower.contains("wish"), "…and name the wish while saying it: " + s);
-        assertFalse(lower.contains("can't") || lower.contains("cannot")
-                        || lower.contains("instead"),
-                "this is not a refusal and must not read like one: " + s);
-    }
-
-    @Test
-    void theWellbeingLinePointsAtAGROWNUPAndNotAtAService() {
-        // A seven-year-old's answer to distress is a person in the room. A helpline number, a
-        // website or "talk to someone" is adult vocabulary aimed at an adult reader, and this is
-        // read by the child.
-        String lower = SafetyWords.sayWellbeingNoticed().toLowerCase(Locale.ROOT);
-        assertTrue(lower.contains("grown-up"), "no grown-up is named");
-        for (String adult : List.of("helpline", "hotline", "http", "www", "counsel", "therap",
-                "professional", "crisis")) {
-            assertFalse(lower.contains(adult),
-                    "a child is being handed adult vocabulary: " + adult);
-        }
-    }
-
-    @Test
-    void theWellbeingLineNamesNoCategoryAndAsksNoQuestion() {
-        // §5's rule survives even here: the exception is that it acknowledges him, not that it
-        // explains him to himself. And a question a child owes no answer to is worse than none —
-        // an unanswered prompt from a game reads as being ignored by the thing that asked.
-        String s = SafetyWords.sayWellbeingNoticed();
-        String lower = s.toLowerCase(Locale.ROOT);
-        for (String category : List.of("hurt", "harm", "suicide", "safe", "worried", "danger",
-                "kill")) {
-            assertFalse(lower.contains(category),
-                    "the line names what he typed, which is a vocabulary lesson he did not ask "
-                            + "for: " + category);
-        }
-        assertFalse(s.contains("?"), "it asks him something: " + s);
     }
 
     @Test

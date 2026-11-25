@@ -38,11 +38,6 @@ import java.util.regex.Pattern;
  *       "no letter or digit either side", so a term can never fire from inside a longer word.</li>
  *   <li><b>NFKC folding first</b>, so a lookalike codepoint cannot dodge a term the way it cannot
  *       dodge {@link com.moddingfromamod.wish.WishText#sanitize}.</li>
- *   <li><b>WELLBEING is not a band.</b> A self-harm phrasing sets the flag that writes a grown-up
- *       note and leaves every band FINE — because §1's rule is that a child in distress is never
- *       blocked, and blocking is the worst possible answer there. A caller that treats a
- *       non-empty {@link #check} as "refuse" would get that exactly backwards, which is why the
- *       verdict it returns is a whole {@link SafetyVerdict} and not a boolean.</li>
  * </ul>
  *
  * <p>The list is DATA ({@code /safety/lexicon.txt} in the jar), overridable at
@@ -60,8 +55,11 @@ public final class SafetyLexicon {
 
     private static final String BUNDLED = "/safety/" + FILE_NAME;
 
-    /** Which axis an entry speaks to, plus the one that is not an axis. */
-    public enum Axis { VIOLENCE, SEXUAL, HATE, DANGER, WELLBEING }
+    /**
+     * Which axis an entry speaks to. A line naming any other axis (an override written for an older
+     * release, say) is ignored, never guessed at.
+     */
+    public enum Axis { VIOLENCE, SEXUAL, HATE, DANGER }
 
     /** One term, compiled once. */
     private record Entry(Axis axis, String term, Pattern pattern, SafetyVerdict.Reason reason) { }
@@ -239,8 +237,7 @@ public final class SafetyLexicon {
      * Does this text trip the floor?
      *
      * <p>Empty is the answer for the overwhelming majority of wishes and is the answer this class
-     * is tuned for. A present verdict is <b>not</b> automatically a refusal: see the WELLBEING note
-     * on the class — ask {@link SafetyVerdict#overall()} and {@link SafetyVerdict#wellbeing()}.
+     * is tuned for. Ask {@link SafetyVerdict#overall()} what a present verdict means.
      */
     public Optional<SafetyVerdict> check(String text) {
         if (text == null || text.isBlank() || entries.isEmpty()) {
@@ -251,7 +248,6 @@ public final class SafetyLexicon {
         SafetyVerdict.Band sexual = SafetyVerdict.Band.FINE;
         SafetyVerdict.Band hate = SafetyVerdict.Band.FINE;
         SafetyVerdict.Band danger = SafetyVerdict.Band.FINE;
-        boolean wellbeing = false;
         List<SafetyVerdict.Reason> reasons = new ArrayList<>();
         boolean hit = false;
         for (Entry e : entries) {
@@ -265,7 +261,6 @@ public final class SafetyLexicon {
                 case SEXUAL -> sexual = SafetyVerdict.Band.CLEARLY;
                 case HATE -> hate = SafetyVerdict.Band.CLEARLY;
                 case DANGER -> danger = SafetyVerdict.Band.CLEARLY;
-                case WELLBEING -> wellbeing = true;
                 default -> { }
             }
             if (!reasons.contains(e.reason())) {
@@ -276,8 +271,8 @@ public final class SafetyLexicon {
             return Optional.empty();
         }
         // No redirect, ever. §2 gives a redirect to LIKELY alone, and this list only ever produces
-        // CLEARLY or a wellbeing note.
-        return Optional.of(new SafetyVerdict(violence, sexual, hate, danger, wellbeing, reasons,
+        // CLEARLY.
+        return Optional.of(new SafetyVerdict(violence, sexual, hate, danger, reasons,
                 "", SafetyVerdict.Provenance.LEXICON, SafetyVerdict.NO_STAGE));
     }
 

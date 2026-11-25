@@ -94,9 +94,6 @@ public final class WishChargeAskGameTest {
         @Override
         public boolean refusesAtSubmit(ServerPlayer player, boolean distress, String text, boolean recipe) {
             texts.add(text + (recipe ? " [recipe]" : ""));
-            if (distress) {
-                return false;
-            }
             player.sendSystemMessage(Component.literal(OWN));
             return true;
         }
@@ -240,7 +237,6 @@ public final class WishChargeAskGameTest {
         WishAsk a = last(charge.asked);
         assertAsk(helper, a, p, WishSource.TYPED, "", WishAsk.Magic.APPRENTICE, "typed words the Apprentice answers");
         helper.assertValueEqual(a.text(), "a green dino i can ride", Component.literal("the words the charge was told"));
-        helper.assertTrue(!a.distress(), Component.literal("no distress in these words"));
         helper.assertTrue(charge.charged.isEmpty(), Component.literal("a refused wish is charged nothing"));
         helper.succeed();
     }
@@ -310,36 +306,6 @@ public final class WishChargeAskGameTest {
         List<String> said = chatSince(p, mark);
         helper.assertValueEqual(said, List.of(ChargeRefusal.FALLBACK), Component.literal("the fixed line, once"));
         helper.assertFalse(p.containerMenu instanceof MenuKit.PickMenu, Component.literal("still refused"));
-        helper.succeed();
-    }
-
-    /** A child in distress is never refused, whatever the charge answers; the charge is told he is. */
-    @GameTest(template = "empty_test", batch = "chargeAskDistress", timeoutTicks = 200)
-    public static void aChildInDistressIsNeverRefused(GameTestHelper helper) {
-        String mode = ModdingFromAModMod.MODID + ".childsafety";
-        System.setProperty(mode, "on");
-        RuntimeConfig.invalidate();
-        MockPlayerNetwork.afterTest(helper, () -> {
-            System.clearProperty(mode);
-            RuntimeConfig.invalidate();
-        });
-        String no = "Nothing for you today.";
-        Told charge = standIn(helper, new Told(a -> Optional.of(no)));
-        builderOn(helper);
-        ServerPlayer p = child(helper, "gtcharge4");
-        apprenticeAnswers(helper, p);
-        String text = "make me a knife to hurt myself " + UUID.randomUUID().toString().substring(0, 6);
-        helper.assertTrue(SafetyLexicon.shared().check(text).map(SafetyVerdict::wellbeing).orElse(false),
-                Component.literal("the shipped lexicon no longer reads this as distress: " + text));
-        int mark = MockPlayerNetwork.chat(p).size();
-
-        WishService.Outcome out = WishService.submit(p, text, WishSource.TYPED);
-
-        helper.assertTrue(out != WishService.Outcome.BANK_EMPTY && out != WishService.Outcome.BLOCKED,
-                Component.literal("a child in distress was refused: " + out));
-        WishAsk a = last(charge.asked);
-        helper.assertTrue(a != null && a.distress(), Component.literal("the charge was not told of distress: " + a));
-        helper.assertValueEqual(count(chatSince(p, mark), no), 0L, Component.literal("the refusal line was said"));
         helper.succeed();
     }
 

@@ -195,8 +195,7 @@ public final class ChildSafetyConfig {
      * through on the lexicon alone. §12.2 was a maintainer's decision, taken 2026-09-23 (D8 →
      * closed): nothing a child types reaches the agent unless the grader read it. Only the
      * documented word {@code open} opens it — a typo, or no value at all, stays closed, because the
-     * safe failure of a safety switch is the closed one. A child in distress is still never refused
-     * for an outage ({@link SafetyInputGate#actionOf}). The lexicon runs either way.
+     * safe failure of a safety switch is the closed one. The lexicon runs either way.
      *
      * <p>⚠ <b>Unset in a GATE means {@code open}</b>, for the reason {@code ModdyTired.armed()} gives
      * and measured the same way: a gate has no grader — and on a runner no {@code claude} CLI — so

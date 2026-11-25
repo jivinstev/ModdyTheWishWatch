@@ -21,9 +21,6 @@ import com.moddingfromamod.safety.SafetyVerdict;
  *       needs exactly one of them.</li>
  * </ul>
  *
- * <p>A wellbeing phrasing is NOT refused here (CHILD_SAFETY.md §1: blocking a child in distress is the
- * worst answer) — {@link #check} reports it so the caller can write the grown-up note.
- *
  * <p>Pure, no Minecraft: {@code PlacedTextTest} is the Gate A surface; the three mixins only call it.
  */
 public final class PlacedText {
@@ -34,8 +31,8 @@ public final class PlacedText {
     /** What to do with one piece of placed text. */
     public enum Act { KEEP, REFUSE_WORDS, REFUSE_CONTACT }
 
-    /** The answer: what to do, and whether a grown-up note is owed. */
-    public record Verdict(Act act, boolean wellbeing) {
+    /** The answer: what to do. */
+    public record Verdict(Act act) {
         public boolean refused() {
             return act != Act.KEEP;
         }
@@ -67,17 +64,16 @@ public final class PlacedText {
     /** One piece of placed text, judged. Pure but for the list it is handed. */
     public static Verdict check(String text, SafetyLexicon lexicon) {
         if (text == null || text.isBlank()) {
-            return new Verdict(Act.KEEP, false);
+            return new Verdict(Act.KEEP);
         }
         Optional<SafetyVerdict> v = lexicon == null ? Optional.empty() : lexicon.check(text);
-        boolean wellbeing = v.map(SafetyVerdict::wellbeing).orElse(false);
         if (v.map(x -> x.overall() == SafetyVerdict.Band.CLEARLY).orElse(false)) {
-            return new Verdict(Act.REFUSE_WORDS, wellbeing);
+            return new Verdict(Act.REFUSE_WORDS);
         }
         if (contact(text)) {
-            return new Verdict(Act.REFUSE_CONTACT, wellbeing);
+            return new Verdict(Act.REFUSE_CONTACT);
         }
-        return new Verdict(Act.KEEP, wellbeing);
+        return new Verdict(Act.KEEP);
     }
 
     /** What the player is told, in Moddy's voice. Never repeats the words. */

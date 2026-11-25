@@ -477,30 +477,6 @@ public final class WishFeedback {
     }
 
     /**
-     * <b>He said something about himself, and the watch heard it</b> (§12.1, decision 1B).
-     *
-     * <p>Chat rather than the action bar, and this is the one place in the safety layer where that
-     * choice is not about timing. The action bar is for instant, disposable answers — the rate
-     * limiter, "I didn't catch that", the pre-acknowledgement block — and it vanishes in a few
-     * seconds whether or not anybody read it. This line is the one message here that is worth
-     * leaving on screen, because it is the only one aimed at the child rather than at the wish.
-     *
-     * <p><b>No sound at all.</b> The redirect keeps its chime because it is good news about a
-     * build that is starting; the block has none because a cheerful noise over a refusal is worse
-     * than silence. This one has none for a third reason: a chime would make a kind word feel like
-     * an achievement popping, and it is not an event — it is somebody noticing.
-     *
-     * <p>Not bold, unlike {@link #blockedAfterThinking}. That one has to compete with a promise
-     * already in chat; this one arrives beside an ordinary acknowledgement and shouting it would
-     * turn "I heard you" into "LOOK WHAT YOU SAID".
-     */
-    public static void wellbeingNoticed(ServerPlayer player) {
-        tell(player, 
-                Component.literal(com.moddingfromamod.safety.SafetyWords.sayWellbeingNoticed())
-                        .setStyle(Style.EMPTY.withColor(ChatFormatting.LIGHT_PURPLE)));
-    }
-
-    /**
      * The grader could not run and this machine is configured {@code closed} (§8).
      *
      * <p>Deliberately the "Moddy is resting" register {@link #tooFast} already uses: an outage is a

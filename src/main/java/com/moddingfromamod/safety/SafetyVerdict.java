@@ -46,7 +46,10 @@ import com.moddingfromamod.wish.WishText;
  * @param sexual     sexual content, nudity, adult romance — and NOT gross-out humour
  * @param hate       slurs, demeaning a group, cruelty aimed at a real person
  * @param danger     real drugs, real weapon-making, self-harm, personal information, strangers
- * @param wellbeing  real-life distress. <b>Never a block</b>: it writes a grown-up note (§1)
+ *                   <p>(The grader's schema still offers a {@code wellbeing} field and a
+ *                   {@code DISTRESS} reason, so its prompts and every measured floor stay as they
+ *                   were. Neither is acted on: {@link #parse} does not read {@code wellbeing}, and
+ *                   {@code DISTRESS} is only an annotation in the log.)
  * @param reasons    a closed vocabulary, at most {@link #MAX_REASONS}, so a log can be counted
  * @param redirect   the one free-text field; only meaningful at {@link Band#LIKELY}, see
  *                   {@link #redirectIfUsable()}
@@ -54,7 +57,7 @@ import com.moddingfromamod.wish.WishText;
  * @param stageIndex PLAN grading only: which step earned the band, or {@link #NO_STAGE}
  */
 public record SafetyVerdict(Band violence, Band sexual, Band hate, Band danger,
-                            boolean wellbeing, List<Reason> reasons, String redirect,
+                            List<Reason> reasons, String redirect,
                             Provenance provenance, int stageIndex)
         implements com.moddingfromamod.agent.ActionLog.SafetyVerdictView {
 
@@ -114,7 +117,7 @@ public record SafetyVerdict(Band violence, Band sexual, Band hate, Band danger,
 
     /** Nothing objectionable, from a named source. */
     public static SafetyVerdict fine(Provenance provenance) {
-        return new SafetyVerdict(Band.FINE, Band.FINE, Band.FINE, Band.FINE, false,
+        return new SafetyVerdict(Band.FINE, Band.FINE, Band.FINE, Band.FINE,
                 List.of(), "", provenance, NO_STAGE);
     }
 
@@ -174,13 +177,7 @@ public record SafetyVerdict(Band violence, Band sexual, Band hate, Band danger,
      * <p>The redirect is the one free-text field a MODEL writes and a CHILD reads — shown to him as
      * his own next wish, and handed to the agent as the thing to build. Everything else the model
      * says is an enum. So it goes through the same floor every other piece of text does: a
-     * {@code CLEARLY} on any axis, or a wellbeing phrase, and it is <b>not a usable redirect</b>.
-     *
-     * <p>Both halves are deliberate. A banded hit is the obvious one. The wellbeing half is not
-     * obvious and matters more: §1's rule is that a child in distress is never <i>blocked</i>, and
-     * that says nothing about putting a self-harm phrasing in front of him as a suggestion. A
-     * redirect is the one place this layer SPEAKS rather than judges, and "never blocked" must not
-     * be read as "safe to echo".
+     * {@code CLEARLY} on any axis, and it is <b>not a usable redirect</b>.
      *
      * <p>Note what falls out of doing it here rather than at the two call sites:
      * {@link SafetyInputGate#actionOf} already turns a {@code LIKELY} with no usable redirect into
@@ -200,7 +197,7 @@ public record SafetyVerdict(Band violence, Band sexual, Band hate, Band danger,
             return false;
         }
         return SafetyLexicon.shared().check(redirect)
-                .filter(v -> v.overall() == Band.CLEARLY || v.wellbeing())
+                .filter(v -> v.overall() == Band.CLEARLY)
                 .isPresent();
     }
 
@@ -221,7 +218,7 @@ public record SafetyVerdict(Band violence, Band sexual, Band hate, Band danger,
         }
         return new SafetyVerdict(shift(violence, strictness), shift(sexual, strictness),
                 shift(hate, strictness), shift(danger, strictness),
-                wellbeing, reasons, redirect, provenance, stageIndex);
+                reasons, redirect, provenance, stageIndex);
     }
 
     private static Band shift(Band b, Strictness s) {
@@ -276,7 +273,7 @@ public record SafetyVerdict(Band violence, Band sexual, Band hate, Band danger,
             Band hate = band(o, "hate", reasons);
             Band danger = band(o, "danger", reasons);
             return new SafetyVerdict(violence, sexual, hate, danger,
-                    bool(o, "wellbeing"), reasons, str(o, "redirect"), Provenance.HAIKU,
+                    reasons, str(o, "redirect"), Provenance.HAIKU,
                     integer(o, "stageIndex"));
         } catch (RuntimeException e) {
             return unavailable();
@@ -327,14 +324,6 @@ public record SafetyVerdict(Band violence, Band sexual, Band hate, Band danger,
 
     private static String str(JsonObject o, String key) {
         return o.has(key) && o.get(key).isJsonPrimitive() ? o.get(key).getAsString() : "";
-    }
-
-    private static boolean bool(JsonObject o, String key) {
-        try {
-            return o.has(key) && o.get(key).isJsonPrimitive() && o.get(key).getAsBoolean();
-        } catch (RuntimeException e) {
-            return false;
-        }
     }
 
     private static int integer(JsonObject o, String key) {

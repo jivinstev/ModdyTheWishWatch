@@ -145,8 +145,7 @@ public interface WishCharge {
      * said its own words, as {@link #refusesAtSubmit} does, and a Builder make adds the core's default line.
      *
      * <p>{@code ask} names whose wish, where it came from, its recipe id, the kind of magic that will grant it, its
-     * words and whether the child is in distress. <b>A child in distress is never refused</b>: the core lets such a
-     * wish through whatever this answers (and then asks {@link #waiveIfEmpty}).
+     * words.
      *
      * <p><b>Cheap, and free of side effects</b>: answering must never charge, start a rest or change anything. The core
      * may ask it more than once for one wish (again when what answers turns out different from what it first knew), and
@@ -161,22 +160,31 @@ public interface WishCharge {
         if (player == null) {
             return Optional.empty();
         }
-        return refusesAtSubmit(player, ask.distress(), ask.text(), ask.namedRecipe())
+        return refusesAtSubmit(player, false, ask.text(), ask.namedRecipe())
                 ? Optional.of("") : Optional.empty();
     }
 
     /**
      * At submit: refuse (and say why) when there is nothing to pay with. {@code recipe} is a wish served with no
-     * model (a button, an "again", a Builder make). Never refuses a child in {@code distress}. False = go on.
+     * model (a button, an "again", a Builder make). False = go on.
      *
      * <p>Still supported, and asked by the default {@link #refuses}; a new charge implements {@link #refuses} instead,
      * which is told what is being wished and whose answer is the line the player reads.
+     *
+     * <p>{@code distress} is <b>always {@code false}</b>: the core no longer reads a wish as "a child in distress".
+     * The parameter stays so a charge compiled against an older release still overrides this method.
      */
     default boolean refusesAtSubmit(ServerPlayer player, boolean distress, String text, boolean recipe) {
         return false;
     }
 
-    /** A wish that went through on nothing because the child was in distress: never charge it. */
+    /**
+     * <b>Removed; kept so older world jars still load; deleted in a later release.</b> The core never calls it: it
+     * was asked after a wish from "a child in distress" went through on nothing, and the core no longer reads a wish
+     * that way. A charge that overrides it still loads; its override simply never runs. See {@code docs/EXTENDING.md}
+     * ("Removed, kept for older world jars") for when it goes.
+     */
+    @Deprecated(forRemoval = true)
     default void waiveIfEmpty(ServerPlayer player, UUID wishId) {
     }
 

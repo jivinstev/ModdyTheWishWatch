@@ -8,6 +8,7 @@ import com.moddingfromamod.wishbuilder.ApprenticeWords;
 import com.moddingfromamod.wishbuilder.BuilderAllowlist;
 import com.moddingfromamod.wishbuilder.BuilderMenus;
 import com.moddingfromamod.wishbuilder.BuilderSettings;
+import com.moddingfromamod.wishbuilder.BuilderSpec;
 import com.moddingfromamod.wishbuilder.BuilderTree;
 import com.moddingfromamod.wishbuilder.LibraryPresets;
 import java.io.IOException;
@@ -171,14 +172,13 @@ public final class ApprenticeService {
         boolean prefers = prefersApprentice(p) && BuilderSettings.forPlayer(p.getUUID()).enabled();
         // Magician off means the Apprentice answers every typed wish (allowsAi: on, its check, or a developer's
         // forced pool).
-        boolean magician = com.moddingfromamod.config.Magician.allowsAi()
-                || com.moddingfromamod.wish.AlwaysMagician.anyone(p.getUUID());
+        boolean magician = MagicianDoor.on(p.getUUID());
         return WishRoute.choose(magician, CrafterService.role(p), prefers, hint, question);
     }
 
     /** Would words sent to the Magician reach him, or come back to the Apprentice (Magician mode off)? */
     static boolean magicianAnswers(ServerPlayer p) {
-        return route(p, WishRoute.Hint.MAGICIAN, false) == WishRoute.Route.MAGICIAN;
+        return MagicianDoor.offered(p);
     }
 
     // ── the wish ─────────────────────────────────────────────────────────────────────────────────
@@ -274,12 +274,24 @@ public final class ApprenticeService {
                 return true;
             }
         }
+        // #68: what this world shows of the ranked makes, AFTER ranking and outside the matcher: kept, fitted (made
+        // fitted at the press, said once), locked, or dropped. No world answering: exactly the ranked answer.
+        com.moddingfromamod.wishbuilder.ApprenticeFit.Shown shown = com.moddingfromamod.wishbuilder.ApprenticeFit.fit(answer,
+                MakeGate.anyWorld() ? pick -> judge(p, settings, pick) : null);
+        answer = shown.answer();
         if (answer.offers().isEmpty()) {
             PENDING.remove(p.getUUID());
             p.closeContainer();
             p.sendSystemMessage(Component.literal(ApprenticeWords.OUT).withStyle(ChatFormatting.AQUA));
             if (crafter) {
                 nudge(p);
+                return false;
+            }
+            if (!MagicianDoor.offered(p)) {
+                // #78: with the Magician off there is nobody to wish it from scratch, so no "✪" tile that would only send
+                // the words back here. Instead: other words, or the Builder; and for the host, where the setup is.
+                p.sendSystemMessage(Component.literal(ApprenticeWords.NO_MAGICIAN_TRY).withStyle(ChatFormatting.AQUA));
+                hostTurnOn(p);
                 return false;
             }
             // A Magician chose Apprentice magic, often for its price: his words are never sent to the agent for a
@@ -290,6 +302,8 @@ public final class ApprenticeService {
             return true;
         }
         PENDING.put(p.getUUID(), new Pending(answer.offers(), crafter ? "" : words, source, settings, crafter ? null : name));
+        // the last tile is "✪ Moddy wishes it from scratch" only where the Magician would answer (#78); else "None of these"
+        boolean offered = MagicianDoor.offered(p);
         p.sendSystemMessage(Component.literal(ApprenticeWords.hello(tree(settings.allow()), answer)).withStyle(ChatFormatting.AQUA));
         // each tile names what it leaves out, from the words he typed (held in memory for this page only,
         // as the words already are; never logged or stored). The words passed the safety floor before the matcher.
@@ -301,9 +315,30 @@ public final class ApprenticeService {
             }
         }
         PickPage page = ApprenticeWords.page(settings.allow(), LibraryPresets.SHIPPED, tree(settings.allow()),
-                answer.offers(), tagged ? answer : null, tagged ? notes : null, !crafter, priced, !crafter);
+                answer.offers(), tagged ? answer : null, tagged ? notes : null, offered, priced, offered);
+        page = com.moddingfromamod.wishbuilder.ApprenticeFit.page(page, shown.locked());
         MenuKit.pick(p, "apprentice", page, ApprenticeService::press);
         return true;
+    }
+
+    /** This world's view of one ranked make: the same gate and fitting its press goes through, nothing made. */
+    static com.moddingfromamod.wishbuilder.BuilderPageFit.Judged judge(ServerPlayer p, BuilderSettings settings,
+                                                                       Apprentice.Pick pick) {
+        BuilderSpec spec;
+        try {
+            spec = BuilderMenus.apprenticeSpec(p, settings, tree(settings.allow()), pick);
+        } catch (RuntimeException e) {
+            return com.moddingfromamod.wishbuilder.BuilderPageFit.Judged.KEEP;   // said at the press, as it always was
+        }
+        MakeGate.Built built = com.moddingfromamod.wishbuilder.BuilderMake.askApprentice(p.getUUID(), spec, settings.allow());
+        if (built.makes()) {
+            return built.lowered().isEmpty() ? com.moddingfromamod.wishbuilder.BuilderPageFit.Judged.KEEP
+                    : com.moddingfromamod.wishbuilder.BuilderPageFit.Judged.FIT;
+        }
+        MakeVerdict v = built.verdict();
+        return v.locked() && !built.unfit() && !MakeVerdict.TOO_MUCH.equals(v.line())
+                ? new com.moddingfromamod.wishbuilder.BuilderPageFit.Judged(com.moddingfromamod.wishbuilder.BuilderPageFit.Seen.LOCK, v.line())
+                : com.moddingfromamod.wishbuilder.BuilderPageFit.Judged.DROP;
     }
 
     /**
@@ -337,7 +372,8 @@ public final class ApprenticeService {
         }
         if (ApprenticeWords.NONE.equals(id)) {
             p.closeContainer();
-            if (pending.words().isEmpty()) {
+            if (pending.words().isEmpty() || !MagicianDoor.offered(p)) {
+                // a Crafter, or anyone while the Magician is off (#78): the Builder has every Part; nothing goes on
                 p.sendSystemMessage(Component.literal(ApprenticeWords.NONE_SAID).withStyle(ChatFormatting.AQUA));
                 nudge(p);
             } else {
@@ -371,11 +407,28 @@ public final class ApprenticeService {
         }
     }
 
+    /** The host, while the Magician is off: one line that names the setup, its words a link that opens it (#78). */
+    private static void hostTurnOn(ServerPlayer p) {
+        if (MagicianDoor.hostMayTurnOn(p)) {
+            String cmd = "/" + ChildCommands.MODDY + " " + com.moddingfromamod.config.MagicianSetup.VERB;
+            p.sendSystemMessage(Component.literal(ApprenticeWords.HOST_MAGICIAN_OFF).withStyle(ChatFormatting.GRAY)
+                    .append(Component.literal(ApprenticeWords.HOST_TURN_ON).withStyle(s -> s.withColor(ChatFormatting.AQUA)
+                            .withUnderlined(true).withClickEvent(com.moddingfromamod.compat.ChatEvents.click(
+                                    net.minecraft.network.chat.ClickEvent.Action.RUN_COMMAND, cmd)))));
+        }
+    }
+
     /** He left: nothing of his page, his words or his toggle's cache outlives the session. */
     public static void forget(UUID player) {
         PENDING.remove(player);
         PREFERS.remove(player);
         com.moddingfromamod.wishbuilder.FreeEdit.forget(player);
+    }
+
+    /** Test seam: the offers a page waiting on this player holds, in its tiles' order; empty when none. */
+    public static List<Apprentice.Pick> pendingPicksForTest(UUID player) {
+        Pending pd = PENDING.get(player);
+        return pd == null ? List.of() : pd.offers();
     }
 
     /** Test seam: is a page waiting on this player, and how many offers does it hold. */

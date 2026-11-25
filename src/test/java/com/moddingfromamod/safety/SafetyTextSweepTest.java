@@ -41,8 +41,6 @@ class SafetyTextSweepTest {
     /** A term from the shipped lexicon that is CLEARLY on one axis. */
     private static final String CLEARLY = "cocaine";
 
-    /** A term from the shipped lexicon that is WELLBEING — a flag, never a band. */
-    private static final String WELLBEING = "hurt myself";
 
     private String homeBefore;
 
@@ -105,7 +103,7 @@ class SafetyTextSweepTest {
 
     private static List<JsonObject> records(String kind) throws Exception {
         List<JsonObject> out = new ArrayList<>();
-        Path f = "wellbeing".equals(kind) ? ActionLog.grownUpNotes() : ActionLog.path();
+        Path f = ActionLog.path();
         if (f == null || !Files.exists(f)) {
             return out;
         }
@@ -191,39 +189,7 @@ class SafetyTextSweepTest {
                 "a tool with no row must exit before its arguments are touched at all");
     }
 
-    // ---- the three outcomes ----
-
-    @Test
-    @DisplayName("a WELLBEING term passes, and writes a grown-up note")
-    void wellbeingIsNeverARefusal() throws Exception {
-        SafetyTextSweep.Decision d = sweep("notify_player",
-                args("message", "I might " + WELLBEING + " if this does not work"));
-
-        assertFalse(d.refuses(),
-                "§1: a child in distress is never blocked, and that rule does not change because "
-                        + "it was MODDY who said it — blocking here would delete the only evidence");
-        assertEquals(SafetyTextSweep.Act.WELLBEING, d.assessed());
-        assertTrue(d.verdict().wellbeing(), "the flag is the whole point of the record");
-        assertEquals(SafetyVerdict.Band.FINE, d.verdict().overall(),
-                "WELLBEING sets no band — a caller reading overall() must not see a refusal");
-
-        assertEquals(1, records("wellbeing").size(),
-                "the grown-up note is the action, since nothing was refused");
-        assertTrue(records("wellbeing").get(0).get("text").getAsString().contains("notify_player"),
-                "the note must say WHERE Moddy was about to say it: "
-                        + records("wellbeing").get(0));
-
-        List<JsonObject> log = safetyRecords();
-        assertEquals(1, log.size());
-        assertEquals("WELLBEING", log.get(0).get("action").getAsString(),
-                "ONE vocabulary (decision 12.9). This used to write PASS while the INPUT layer "
-                        + "wrote WELLBEING for the same finding, so `how often is a distress flag "
-                        + "raised, and where` could not be answered by counting one field. The "
-                        + "old reasoning was that WELLBEING was a word safety-report.py did not "
-                        + "know — it has been in that tool's enforcing vocabulary since CS-S2");
-        assertTrue(log.get(0).get("wellbeing").getAsBoolean());
-        assertEquals("text", log.get(0).get("layer").getAsString());
-    }
+    // ---- the two outcomes ----
 
     @Test
     @DisplayName("a CLEARLY hit refuses, and the refusal names the field and the fix")

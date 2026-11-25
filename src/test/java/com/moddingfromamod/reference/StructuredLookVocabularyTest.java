@@ -162,7 +162,7 @@ class StructuredLookVocabularyTest {
     @DisplayName("a structured look is not graded; a described look still is")
     void aStructuredLookIsNotGradedAndADescribedOneIs() {
         SafetyVerdict refuse = new SafetyVerdict(SafetyVerdict.Band.CLEARLY, SafetyVerdict.Band.FINE,
-                SafetyVerdict.Band.FINE, SafetyVerdict.Band.FINE, false, List.of(SafetyVerdict.Reason.GORE), "",
+                SafetyVerdict.Band.FINE, SafetyVerdict.Band.FINE, List.of(SafetyVerdict.Reason.GORE), "",
                 SafetyVerdict.Provenance.HAIKU, SafetyVerdict.NO_STAGE);
         AtomicInteger graded = new AtomicInteger();
         WishBriefs.Sources src = new WishBriefs.Sources() {

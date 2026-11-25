@@ -7,9 +7,7 @@
 #
 # FORMAT   AXIS<TAB>term[<TAB>REASON]        # comment
 #   AXIS    VIOLENCE | SEXUAL | HATE | DANGER  -> CLEARLY on that axis
-#           WELLBEING                          -> the grown-up note, and NOTHING else: no band,
-#                                                 no block. Blocking a child in distress is the
-#                                                 worst answer available (§1).
+#           (a line naming any other axis is ignored)
 #   term    matched whole-word after NFKC folding and lower-casing. Never a substring, so
 #           "assassin", "Scunthorpe" and "grape" are safe by construction. Spaces in a term
 #           match any run of whitespace.
@@ -45,11 +43,3 @@ DANGER	cocaine	DRUGS
 DANGER	heroin	DRUGS
 DANGER	fentanyl	DRUGS
 DANGER	meth	DRUGS
-
-# ── wellbeing: real-life distress. A NOTE, never a block.
-# ── "kill me" and "kill myself" are deliberately ABSENT: in Minecraft they are respawn requests,
-# ── "kill me" is in the real corpus, and a note that fires on every respawn is a note nobody reads.
-WELLBEING	commit suicide	SELF_HARM
-WELLBEING	cut myself	SELF_HARM
-WELLBEING	hurt myself	SELF_HARM
-WELLBEING	end my life	SELF_HARM

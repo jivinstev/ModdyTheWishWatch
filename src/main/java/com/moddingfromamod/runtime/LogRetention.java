@@ -32,9 +32,9 @@ import org.slf4j.LoggerFactory;
  *
  * <p>The mod appends what players typed to files under its home ({@link RuntimeConfig#home()}): every wish and tool
  * call ({@code agent-actions.jsonl}, which also carries the safety records), the datapack sources the agent compiled
- * ({@code cbscript-compiles.jsonl}), the wishes it could not save ({@code one-off-wishes.jsonl}), the grown-up notes
- * ({@code grown-up-notes.jsonl}) and {@code /moddy report}s ({@code player-reports.jsonl}). {@code library-gaps.jsonl}
- * is no longer written by the mod but is pruned with the rest, because an older install may still hold one. Files that hold no words ({@code world-rules.jsonl}, {@code camera-waits.jsonl},
+ * ({@code cbscript-compiles.jsonl}), the wishes it could not save ({@code one-off-wishes.jsonl}) and
+ * {@code /moddy report}s ({@code player-reports.jsonl}). {@code library-gaps.jsonl} and {@code grown-up-notes.jsonl}
+ * are no longer written by the mod but are pruned with the rest, because an older install may still hold one. Files that hold no words ({@code world-rules.jsonl}, {@code camera-waits.jsonl},
  * {@code knobs-audit.jsonl}: closed vocabularies, ids and timings) are left alone.
  *
  * <p><b>The period is the privacy notice's</b>, copied into the jar as {@code retention.json}. There is no switch to
@@ -246,7 +246,7 @@ public final class LogRetention {
                 copied = copyFrom(src, cut, out);
             }
             // The catch-up (anything appended while the bulk was copied) and the move happen under ActionLog's lock,
-            // so its appends (the action log and the grown-up notes) cannot land between them. The other writers
+            // so its appends (the action log) cannot land between them. The other writers
             // append rarely; a record one of them writes in that instant is the one loss this accepts.
             synchronized (com.moddingfromamod.agent.ActionLog.class) {
                 try (FileChannel src = FileChannel.open(f, StandardOpenOption.READ);
