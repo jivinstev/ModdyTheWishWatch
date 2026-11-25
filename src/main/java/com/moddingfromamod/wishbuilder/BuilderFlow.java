@@ -161,6 +161,11 @@ public final class BuilderFlow {
         }
     }
 
+    /** A copy of this flow, for work off the server thread: the open flow itself is never handed away. */
+    public BuilderFlow snapshot() {
+        return copy();
+    }
+
     /** The make this flow holds so far, with the tune dialog's defaults, or null when it holds none yet. Never throws. */
     public BuilderSpec draft() {
         if (kind == null) {

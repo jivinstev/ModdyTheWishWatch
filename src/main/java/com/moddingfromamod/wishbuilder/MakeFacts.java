@@ -304,6 +304,14 @@ public record MakeFacts(String kind, Map<String, Double> numbers, Set<String> ta
         return f;
     }
 
+    private static final java.util.concurrent.atomic.AtomicLong DERIVED = new java.util.concurrent.atomic.AtomicLong();
+
+    /** How many specs have been read into facts so far (a memo hit is not one): what a test counts to prove a menu
+     *  draw derives nothing. */
+    public static long derivations() {
+        return DERIVED.get();
+    }
+
     /** At most this many specs' facts are remembered; the oldest goes first. */
     static final int MEMO_SIZE = 4096;
 
@@ -323,6 +331,7 @@ public record MakeFacts(String kind, Map<String, Double> numbers, Set<String> ta
         if (spec == null) {
             return cautious(OTHER);
         }
+        DERIVED.incrementAndGet();
         BuilderSpec.Kind k = spec.kind();
         Acc a = new Acc(k.id());
         boolean creature = k == BuilderSpec.Kind.CREATURE || k == BuilderSpec.Kind.RIDE;

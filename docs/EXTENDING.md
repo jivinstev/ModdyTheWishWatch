@@ -196,8 +196,14 @@ the limits the world gave.
 - **Limits are data**: a `MakeFacts.NUMBERS` key → the most this world allows of it, numbers only. A key the core does
   not know is ignored; a limit on a number a make does not carry does nothing. `limits(player)` may also state limits
   up front for every make (`new WorldLimits(map, stamp)`); they join each answer's own, the tighter of each winning.
-  The `stamp` is any short string that changes whenever your limits or your hidden set change: the Builder's pages
-  remember what lies ahead of each tile under (the world's Builder list, the stamp), in a small bounded cache.
+  The `stamp` is any short string that changes whenever your limits change, so a reader can tell two sets apart
+  cheaply.
+- **What it costs:** nothing on a server where no world answers (no walk, no thread, nothing kept). Where one does, the
+  facts of every Builder tile (the make pressing it heads for, that make at its lowest knobs, what lies ahead of it) are
+  worked out once per Builder tree (keyed by the tree's own fingerprint) on one background daemon thread started when
+  the server has started; a page draw then only compares your answer and limits with them, reading no make. A page the
+  walk has not reached yet (a second pick on a multi-pick page) shows its tiles locked with "⏳ Getting this page
+  ready…" for a moment and is drawn again when it is ready; it is never drawn unfitted.
 - **How a make is fitted**: through `BuilderAllowlist.capped(spec, limits)`, the one path a Builder make is "made as
   THIS world makes it". Each number is declared once beside the knob that lowers it (`MakeFit.FACTS`), and a clamp is
   never trusted: the next smaller value of the knob is tried and kept only when the make's own facts then fit. A number

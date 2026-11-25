@@ -391,8 +391,11 @@ public final class BuilderMenus {
             p.closeContainer();
             LOGGER.info("builder tune {} {}", flow.kind().id(), p.getGameProfile().getName());
             com.moddingfromamod.ui.TuneDialog dialog = flow.tune();
-            if (com.moddingfromamod.wish.MakeGate.anyWorld()) {
-                dialog = BuilderPageFit.tune(flow, dialog, judge(p, flow));   // #14: as far as this world's limits go
+            if (com.moddingfromamod.wish.MakeGate.anyWorld() && flow.draft() != null) {
+                // #14: as far as this world's limits go (the make it holds, asked once; the Make fits it anyway)
+                BuilderAllowlist allow = BuilderSettings.forPlayer(p.getUUID()).allow();
+                var v = com.moddingfromamod.wish.MakeGate.ask(MakeFacts.of(allow.capped(flow.draft())), askAbout(p, flow));
+                dialog = BuilderPageFit.tune(flow, dialog, v.limits());
             }
             MenuKit.tune(p, dialog);
             return;
@@ -406,29 +409,46 @@ public final class BuilderMenus {
         LOGGER.info("builder page {} {}", flow.step().name().toLowerCase(java.util.Locale.ROOT), p.getGameProfile().getName());
         PickPage page = flow.page();
         if (com.moddingfromamod.wish.MakeGate.anyWorld()) {
-            page = BuilderPageFit.page(flow, page, judge(p, flow), BuilderPageFit.aheadKey(
-                    BuilderSettings.forPlayer(p.getUUID()).allow(), com.moddingfromamod.wish.MakeGate.limits(p.getUUID()).stamp()));   // #14
+            // #14: this world's view of every tile, compared against facts worked out off the server thread
+            BuilderAllowlist allow = BuilderSettings.forPlayer(p.getUUID()).allow();
+            page = BuilderPageFit.draw(flow, page, BuilderPageFacts.forWorld(allow), world(p, flow));
+            if (BuilderPageFit.gettingReady(page)) {
+                String state = BuilderPageFacts.stateKey(flow);
+                UUID who = p.getUUID();
+                net.minecraft.server.MinecraftServer server = p.level().getServer();
+                BuilderPageFacts.need(allow, flow.snapshot(), () -> server.execute(() -> {
+                    ServerPlayer now = server.getPlayerList().getPlayer(who);
+                    if (now != null && FLOWS.get(who) == flow && flow.step() != BuilderFlow.Step.TUNE
+                            && BuilderPageFacts.stateKey(flow).equals(state)) {
+                        show(now, flow);   // ready: drawn again, fitted
+                    }
+                }));
+            }
         }
         MenuKit.pick(p, "builder", page, (sp, id) -> press(sp, id));
     }
 
+    /** What this world is asked about a make on {@code p}'s Builder pages: a Builder make, his. */
+    static com.moddingfromamod.wish.WishAsk askAbout(ServerPlayer p, BuilderFlow flow) {
+        return BuilderMake.askOf(p.getUUID(), BuilderMake.TEXT_PREFIX.strip(), flow.editOf(), false);
+    }
+
     /**
-     * This world's answer about a make on {@code p}'s Builder pages (#14), through the one gate a make itself passes
-     * ({@code MakeGate.build}): kept, fitted, locked with its line, or dropped. Remembered for one draw only.
+     * This world's answer about a make's facts on {@code p}'s Builder pages (#14), through the one gate a make passes
+     * ({@code MakeGate.ask}): kept within its limits, locked with its line, or dropped (hidden, or more than any fit
+     * could make it).
      */
-    static BuilderPageFit.Judge judge(ServerPlayer p, BuilderFlow flow) {
-        BuilderAllowlist allow = BuilderSettings.forPlayer(p.getUUID()).allow();
-        Map<String, BuilderPageFit.Judged> seen = new java.util.HashMap<>();
-        return spec -> seen.computeIfAbsent(spec.toJson().toString(), k -> {
-            var built = com.moddingfromamod.wish.MakeGate.build(spec, allow,
-                    BuilderMake.askOf(p.getUUID(), BuilderMake.textOf(spec), flow.editOf(), false));
-            if (built.makes()) {
-                return built.lowered().isEmpty() ? BuilderPageFit.Judged.KEEP : BuilderPageFit.Judged.FIT;
+    static BuilderPageFit.World world(ServerPlayer p, BuilderFlow flow) {
+        com.moddingfromamod.wish.WishAsk ask = askAbout(p, flow);
+        return facts -> {
+            var v = com.moddingfromamod.wish.MakeGate.ask(facts, ask);
+            if (v.makes()) {
+                return new BuilderPageFit.Judged(BuilderPageFit.Seen.KEEP, "", v.limits());
             }
-            return built.verdict().locked() && !built.unfit()
-                    ? new BuilderPageFit.Judged(BuilderPageFit.Seen.LOCK, built.verdict().line())
-                    : new BuilderPageFit.Judged(BuilderPageFit.Seen.DROP, built.verdict().line());
-        });
+            return v.locked() && !v.line().equals(com.moddingfromamod.wish.MakeVerdict.TOO_MUCH)
+                    ? new BuilderPageFit.Judged(BuilderPageFit.Seen.LOCK, v.line())
+                    : new BuilderPageFit.Judged(BuilderPageFit.Seen.DROP, v.line());
+        };
     }
 
     /** One press on a pick page. Public for the GameTest, which presses as a client would. */
@@ -441,9 +461,10 @@ public final class BuilderMenus {
         LOGGER.info("builder press {} {}", id, p.getGameProfile().getName());
         if (com.moddingfromamod.wish.MakeGate.anyWorld() && id != null && !id.startsWith("@")) {
             // #14: a tile this world locks or does not offer is never pressed into a make, whatever page sent it
-            BuilderFlow next = flow.after(id);
-            BuilderSpec draft = next == null ? null : next.draft();
-            BuilderPageFit.Judged j = draft == null ? BuilderPageFit.Judged.KEEP : judge(p, flow).judge(draft);
+            var index = BuilderPageFacts.forWorld(BuilderSettings.forPlayer(p.getUUID()).allow());
+            var tiles = index == null ? null : index.page(BuilderPageFacts.stateKey(flow));
+            BuilderPageFit.Judged j = tiles == null ? new BuilderPageFit.Judged(BuilderPageFit.Seen.LOCK, BuilderPageFit.GETTING_READY)
+                    : BuilderPageFit.judge(tiles.get(id), world(p, flow));
             if (!j.makes()) {
                 p.sendSystemMessage(Component.literal(j.line().isEmpty() ? com.moddingfromamod.wish.MakeVerdict.HIDDEN_LINE : j.line()));
                 show(p, flow);

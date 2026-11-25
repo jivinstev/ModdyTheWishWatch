@@ -1,6 +1,7 @@
 package com.moddingfromamod.wishbuilder;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -12,11 +13,15 @@ import com.moddingfromamod.ui.TuneDialog;
  * <b>The Builder's pages as THIS world shows them</b> (#14): a tile whose make the world hides, or that cannot be
  * fitted to its limits, is not drawn; a tile whose make it locks is drawn grey with the world's words and makes nothing;
  * a tile whose every way on leads to nothing allowed is culled from its page; a tune dialog's sliders and size names
- * stop at the most the limits allow. A tile is judged by the make that pressing it heads for ({@link BuilderFlow#after}),
- * so a page never needs to know what its tiles mean.
+ * stop at the most the limits allow.
  *
- * <p>Pure: the world's answer comes in as a {@link Judge}, so Gate A walks every page under limits
- * ({@code BuilderPageFitTest}, which also times the walk). The pages are still {@link PickPage}s and the dialog a
+ * <p><b>A draw is a comparison, never a walk.</b> Every tile's facts (the make pressing it heads for, that make at its
+ * lowest knobs, what lies ahead of it) are worked out once, off the server thread, by {@link BuilderPageFacts}; a draw
+ * looks them up and compares them with the world's answer. A page whose state is not worked out yet is drawn with its
+ * tiles locked in {@link #GETTING_READY}, never unfitted, and drawn again when it is ready. The make itself is still
+ * fitted and checked when it is made ({@code MakeGate.build}).
+ *
+ * <p>Pure: the world's answer comes in as a {@link World}. The pages are still {@link PickPage}s and the dialog a
  * {@link TuneDialog}, opened through {@code MenuKit}: only their tiles and inputs are narrowed.
  */
 public final class BuilderPageFit {
@@ -24,14 +29,26 @@ public final class BuilderPageFit {
     private BuilderPageFit() {
     }
 
+    /** Shown under each tile while its page's facts are still being worked out. */
+    public static final String GETTING_READY = "⏳ Getting this page ready…";
+
     /** What a world makes of one make here: kept as it is, made but fitted to its limits, locked, or dropped. */
     public enum Seen { KEEP, FIT, LOCK, DROP }
 
     /** One judged make: kept, fitted, locked with its line, or dropped (hidden, or cannot be fitted). */
-    public record Judged(Seen seen, String line) {
-        public static final Judged KEEP = new Judged(Seen.KEEP, "");
-        public static final Judged FIT = new Judged(Seen.FIT, "");
-        public static final Judged DROP = new Judged(Seen.DROP, "");
+    public record Judged(Seen seen, String line, Map<String, Double> limits) {
+        public static final Judged KEEP = new Judged(Seen.KEEP, "", Map.of());
+        public static final Judged FIT = new Judged(Seen.FIT, "", Map.of());
+        public static final Judged DROP = new Judged(Seen.DROP, "", Map.of());
+
+        public Judged {
+            line = line == null ? "" : line;
+            limits = limits == null ? Map.of() : limits;
+        }
+
+        public Judged(Seen seen, String line) {
+            this(seen, line, Map.of());
+        }
 
         /** Is it made at all (as it is, or fitted)? */
         public boolean makes() {
@@ -39,149 +56,117 @@ public final class BuilderPageFit {
         }
     }
 
-    /** The world's answer for a make, already fitted to its limits. */
+    /** The world's answer about a make's facts: kept (with the limits it is made within), locked, or dropped. */
     @FunctionalInterface
-    public interface Judge {
-        Judged judge(BuilderSpec spec);
+    public interface World {
+        Judged view(MakeFacts facts);
     }
 
-    /** How deep a tile's way on is looked down before it is taken as viable: a page, its pages, theirs, theirs. */
-    public static final int DEPTH = 3;
-
-    /** {@code page} as this world shows it, at the flow that drew it. */
-    public static PickPage page(BuilderFlow flow, PickPage page, Judge judge) {
-        return page(flow, page, judge, null);
+    /** A world, asked at most once per facts in one draw. */
+    static World remembering(World w) {
+        Map<MakeFacts, Judged> seen = new HashMap<>();
+        return f -> seen.computeIfAbsent(f, w::view);
     }
 
     /**
-     * …remembering what lies ahead of each tile under {@code ahead} (null: nothing remembered): the key of the tree and
-     * the world's limits it was worked out for ({@link #aheadKey}), so a redraw does not walk the same pages again.
+     * {@code page} as {@code world} shows it, at the flow that drew it, from {@code index}. {@code world} null (no world
+     * answers): the page as it is, with no work at all. A state {@code index} does not hold yet: every tile that is not
+     * picked is locked in {@link #GETTING_READY} ({@link #gettingReady} says so).
      */
-    public static PickPage page(BuilderFlow flow, PickPage page, Judge judge, String ahead) {
+    public static PickPage draw(BuilderFlow flow, PickPage page, BuilderPageFacts.Index index, World world) {
+        if (world == null) {
+            return page;
+        }
+        Map<String, BuilderPageFacts.TileFacts> facts = index == null ? null : index.page(BuilderPageFacts.stateKey(flow));
+        if (facts == null) {
+            return gettingReadyPage(page);
+        }
+        World w = remembering(world);
         List<PickPage.Tile> tiles = new ArrayList<>();
+        boolean changed = false;
         for (PickPage.Tile t : page.tiles()) {
-            Judged j = tile(flow, t, judge, ahead);
+            Judged j = t.selected() ? Judged.KEEP : judge(facts.get(t.id()), w);
             switch (j.seen()) {
                 case KEEP, FIT -> tiles.add(t);
-                case LOCK -> tiles.add(new PickPage.Tile(t.id(), PickPage.BLOCKED_ITEM, t.label() + " 🔒",
-                        withFirst(j.line(), t.lore()), false));
-                case DROP -> {
+                case LOCK -> {
+                    tiles.add(locked(t, j.line()));
+                    changed = true;
                 }
+                case DROP -> changed = true;
             }
         }
-        return tiles.size() == page.tiles().size() && tiles.equals(page.tiles()) ? page
-                : new PickPage(page.title(), tiles, page.back(), page.next(), page.nextLabel(), page.picks());
+        return changed ? new PickPage(page.title(), tiles, page.back(), page.next(), page.nextLabel(), page.picks()) : page;
     }
 
-    private static List<String> withFirst(String line, List<String> lore) {
-        List<String> out = new ArrayList<>();
-        out.add(line);
-        out.addAll(lore);
-        return out;
+    /** Is this a page drawn while its facts are still being worked out? */
+    public static boolean gettingReady(PickPage page) {
+        return page.tiles().stream().anyMatch(t -> !t.lore().isEmpty() && t.lore().get(0).equals(GETTING_READY));
+    }
+
+    private static PickPage gettingReadyPage(PickPage page) {
+        List<PickPage.Tile> tiles = new ArrayList<>();
+        for (PickPage.Tile t : page.tiles()) {
+            tiles.add(t.selected() ? t : locked(t, GETTING_READY));
+        }
+        return new PickPage(page.title(), tiles, page.back(), page.next(), page.nextLabel(), page.picks());
+    }
+
+    private static PickPage.Tile locked(PickPage.Tile t, String line) {
+        List<String> lore = new ArrayList<>();
+        lore.add(line);
+        lore.addAll(t.lore());
+        return new PickPage.Tile(t.id(), PickPage.BLOCKED_ITEM, t.label() + " 🔒", lore, false);
     }
 
     /**
-     * One tile: a picked one is always kept (taking a pick away is never stopped); otherwise the make it heads for is
-     * judged, and a tile whose way on leads to nothing allowed is dropped.
+     * One tile, by its worked-out facts: none (a tile that makes nothing by itself) is kept; otherwise the world's view
+     * of its make decides, then whether that make can be fitted to the limits, then whether anything ahead of it can.
      */
-    public static Judged tile(BuilderFlow flow, PickPage.Tile t, Judge judge) {
-        return tile(flow, t, judge, null);
-    }
-
-    static Judged tile(BuilderFlow flow, PickPage.Tile t, Judge judge, String ahead) {
-        if (t.selected()) {
+    public static Judged judge(BuilderPageFacts.TileFacts t, World world) {
+        if (t == null || t.make() == null) {
             return Judged.KEEP;
         }
-        BuilderFlow next = flow.after(t.id());
-        if (next == null) {
-            return Judged.KEEP;   // a tile that makes nothing by itself (a page turn, a find)
-        }
-        BuilderSpec draft = next.draft();
-        Judged j = draft == null ? Judged.KEEP : judge.judge(draft);
+        Judged j = world.view(t.make());
         if (!j.makes()) {
             return j;
         }
-        return viable(next, judge, DEPTH, ahead) ? Judged.KEEP : Judged.DROP;
-    }
-
-    /**
-     * The key what lies ahead is remembered under: the tree (the world's Builder list, which with the shipped library
-     * decides every page) and the stamp of the world's limits. A world whose answers change changes its stamp.
-     */
-    public static String aheadKey(BuilderAllowlist allow, String stamp) {
-        return Integer.toHexString(allow == null ? 0 : allow.hashCode()) + "|" + (stamp == null ? "" : stamp);
-    }
-
-    /** At most this many ways ahead are remembered; the oldest goes first. */
-    static final int AHEAD_SIZE = 2048;
-
-    private static final Map<String, Boolean> AHEAD = java.util.Collections.synchronizedMap(
-            new LinkedHashMap<>(256, 0.75f, true) {
-                @Override
-                protected boolean removeEldestEntry(Map.Entry<String, Boolean> eldest) {
-                    return size() > AHEAD_SIZE;
+        if (!MakeFit.fittable(t.make(), t.floor(), j.limits())) {
+            return Judged.DROP;
+        }
+        if (t.ahead() != null) {
+            boolean viable = false;
+            for (MakeFacts a : t.ahead()) {
+                Judged ja = world.view(a);
+                if (ja.makes() && MakeFit.satisfies(a, ja.limits())) {
+                    viable = true;
+                    break;
                 }
-            });
-
-    static boolean viable(BuilderFlow flow, Judge judge, int depth, String ahead) {
-        if (ahead == null) {
-            return viable(flow, judge, depth);
-        }
-        BuilderSpec d = flow.draft();
-        String key = ahead + "|" + flow.step() + "|" + depth + "|" + (d == null ? "" : d.toJson().toString());
-        Boolean hit = AHEAD.get(key);
-        if (hit != null) {
-            return hit;
-        }
-        boolean v = viable(flow, judge, depth);
-        AHEAD.put(key, v);
-        return v;
-    }
-
-    /** Can anything allowed be made from here on, looking {@code depth} pages ahead? */
-    static boolean viable(BuilderFlow flow, Judge judge, int depth) {
-        if (flow.step() == BuilderFlow.Step.TUNE || depth <= 0) {
-            BuilderSpec d = flow.draft();
-            return d == null || judge.judge(d).seen() != Seen.DROP;
-        }
-        PickPage page;
-        try {
-            page = flow.page();
-        } catch (RuntimeException e) {
-            return true;
-        }
-        if (page.picks() != null || page.next()) {
-            // a page that may be left as it is (its Done, its Next): its way on counts too
-            BuilderFlow on = flow.after(PickPage.NEXT_ID);
-            if (on != null && viable(on, judge, depth - 1)) {
-                return true;
+            }
+            if (!viable) {
+                return Judged.DROP;
             }
         }
-        for (PickPage.Tile t : page.tiles()) {
-            BuilderFlow next = flow.after(t.id());
-            if (next == null) {
-                continue;
-            }
-            BuilderSpec d = next.draft();
-            if ((d == null || judge.judge(d).seen() != Seen.DROP) && viable(next, judge, depth - 1)) {
-                return true;
-            }
-        }
-        return false;
+        return MakeFit.satisfies(t.make(), j.limits()) ? Judged.KEEP : Judged.FIT;
     }
 
     /**
-     * The tune dialog as this world allows: each slider stops at the largest value whose make is kept (one with a
-     * single value left is dropped: the Make fits to the limits anyway), each size name past the limits is left out.
+     * The tune dialog as this world allows: each slider stops at the largest value whose make keeps within the limits
+     * (one with a single value left is dropped: the Make fits to the limits anyway), each size name past the limits is
+     * left out. A slider whose value IS its number (how many, the size step, the strength step, the amount) is compared
+     * directly; only a number a value moves through the make (a creature's scale, an effect's duration or reach) asks
+     * for the make's facts, once per value, remembered.
      */
-    public static TuneDialog tune(BuilderFlow flow, TuneDialog dialog, Judge judge) {
+    public static TuneDialog tune(BuilderFlow flow, TuneDialog dialog, Map<String, Double> limits) {
+        if (limits == null || limits.isEmpty()) {
+            return dialog;
+        }
         List<TuneDialog.Input> in = new ArrayList<>();
         boolean changed = false;
         for (TuneDialog.Input i : dialog.inputs()) {
-            if (i instanceof TuneDialog.Slider s && List.of("size", "count", "strength", "amount").contains(s.key())) {
+            if (i instanceof TuneDialog.Slider s && DIRECT.containsKey(s.key())) {
                 int top = s.start() - 1;
                 for (int v = s.end(); v >= s.start(); v -= s.step()) {
-                    if (kept(flow, s.key(), String.valueOf(v), judge)) {
+                    if (kept(flow, s.key(), v, limits)) {
                         top = v;
                         break;
                     }
@@ -197,7 +182,7 @@ public final class BuilderPageFit {
             } else if (i instanceof TuneDialog.Choice c && c.key().equals("mobsize")) {
                 List<TuneDialog.Option> keep = new ArrayList<>();
                 for (TuneDialog.Option o : c.options()) {
-                    if (kept(flow, c.key(), o.id(), judge)) {
+                    if (keptAs(flow, c.key(), o.id(), limits)) {
                         keep.add(o);
                     }
                 }
@@ -216,7 +201,28 @@ public final class BuilderPageFit {
         return changed ? new TuneDialog(dialog.title(), dialog.body(), in, dialog.actionLabel(), dialog.command()) : dialog;
     }
 
-    private static boolean kept(BuilderFlow flow, String key, String value, Judge judge) {
+    /** The sliders whose value is itself a number, and that number. */
+    static final Map<String, String> DIRECT = Map.of("count", MakeFacts.COUNT_MADE, "size", MakeFacts.BUILDER_SIZE_STEP,
+            "strength", MakeFacts.BUILDER_STRENGTH_STEP, "amount", MakeFacts.AMOUNT_ITEMS);
+
+    /** The numbers a slider's value moves only through the make. */
+    static final Map<String, List<String>> THROUGH = Map.of(
+            "size", List.of(MakeFacts.SCALE_TIMES),
+            "strength", List.of(MakeFacts.DURATION_TICKS, MakeFacts.RADIUS_BLOCKS));
+
+    private static boolean kept(BuilderFlow flow, String key, int v, Map<String, Double> limits) {
+        Double most = limits.get(DIRECT.get(key));
+        if (most != null && v > most + 1e-9) {
+            return false;
+        }
+        List<String> through = THROUGH.getOrDefault(key, List.of());
+        if (through.stream().noneMatch(limits::containsKey)) {
+            return true;   // nothing else this value moves is limited: no make to read
+        }
+        return keptAs(flow, key, String.valueOf(v), limits);
+    }
+
+    private static boolean keptAs(BuilderFlow flow, String key, String value, Map<String, Double> limits) {
         Map<String, String> values = new LinkedHashMap<>();
         values.put(key, value);
         BuilderSpec s;
@@ -225,6 +231,6 @@ public final class BuilderPageFit {
         } catch (RuntimeException e) {
             return true;
         }
-        return judge.judge(s).seen() == Seen.KEEP;
+        return MakeFit.satisfies(MakeFacts.of(s), limits);
     }
 }

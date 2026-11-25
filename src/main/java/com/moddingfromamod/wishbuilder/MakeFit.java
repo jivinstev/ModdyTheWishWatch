@@ -119,6 +119,37 @@ public final class MakeFit {
         return satisfies(f, limits) ? new Fitted(s, true, true, lowered) : new Fitted(spec, false, false, List.of());
     }
 
+    /**
+     * {@code spec} with every knob a fit may lower at its lowest (the smallest size, strength 1, one at once, one item):
+     * the least it can be made as. A page that compares a world's limits with this, and with the make as it is, knows
+     * whether its make can be fitted without fitting it; the make itself is still fitted and checked by {@link #fit}.
+     */
+    public static BuilderSpec floor(BuilderSpec spec) {
+        BuilderSpec s = spec;
+        for (var lower : List.<Function<BuilderSpec, List<BuilderSpec>>>of(MakeFit::smaller, MakeFit::gentler,
+                MakeFit::fewer, MakeFit::fewerItems)) {
+            List<BuilderSpec> down = lower.apply(s);
+            if (!down.isEmpty()) {
+                s = down.get(down.size() - 1);
+            }
+        }
+        return s;
+    }
+
+    /**
+     * Could a make with these facts be fitted to {@code limits}, judged by its facts as it is and at its
+     * {@link #floor}: every number over its limit is clampable and its floor keeps within it. A comparison, no fitting.
+     */
+    public static boolean fittable(MakeFacts asIs, MakeFacts floor, Map<String, Double> limits) {
+        for (String key : over(asIs, limits)) {
+            Fact fact = FACTS.get(key);
+            if (fact == null || !fact.clampable() || floor == null || over(floor, Map.of(key, limits.get(key))).contains(key)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     // ── the knobs ─────────────────────────────────────────────────────────────────────────────
 
     private static BuilderSpec with(BuilderSpec s, int size, int count, Map<String, String> opts) {

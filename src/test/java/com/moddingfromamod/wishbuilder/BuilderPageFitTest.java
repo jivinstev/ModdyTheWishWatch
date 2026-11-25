@@ -2,6 +2,7 @@ package com.moddingfromamod.wishbuilder;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
@@ -12,42 +13,49 @@ import java.util.Set;
 
 import com.moddingfromamod.ui.PickPage;
 import com.moddingfromamod.ui.TuneDialog;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 /**
- * <b>The Builder's pages under a world's limits</b> (#14): a tile that cannot be fitted is dropped, a kind with nothing
- * allowed left is culled, a locked make is drawn grey with its words, a tune dialog stops at the limit, a page with no
- * world answering is the page as it is. And the walk is timed: one page, and every page of the whole menu tree.
+ * <b>The Builder's pages under a world's limits</b> (#14): the facts of every tile are worked out once
+ * ({@link BuilderPageFacts}), and a draw is a comparison that derives nothing. A tile that cannot be fitted is dropped,
+ * a kind with nothing allowed left is culled, a locked make is grey with its words, a page not worked out yet is drawn
+ * "getting ready", never unfitted, the tune dialog stops at the limit, and with no world answering nothing is done at
+ * all. The work and its time are measured.
  */
 class BuilderPageFitTest {
+
+    private static BuilderPageFacts.Index index;
+    private static long buildNanos;
+
+    @BeforeAll
+    static void build() {
+        long t0 = System.nanoTime();
+        index = BuilderPageFacts.buildNow(BuilderAllowlist.REVIEWED, LibraryPresets.SHIPPED);
+        buildNanos = System.nanoTime() - t0;
+    }
 
     private static BuilderFlow root() {
         return new BuilderFlow(BuilderAllowlist.REVIEWED, LibraryPresets.SHIPPED);
     }
 
-    /** A world's judge, made the way the core's is: fitted to {@code limits} through the allowlist's cap. */
-    static BuilderPageFit.Judge judge(Map<String, Double> limits) {
-        return spec -> {
-            MakeFit.Fitted f = BuilderAllowlist.REVIEWED.capped(spec, limits);
-            return !f.fits() ? BuilderPageFit.Judged.DROP : f.changed() ? BuilderPageFit.Judged.FIT : BuilderPageFit.Judged.KEEP;
-        };
+    /** A world that keeps everything, within {@code limits}. */
+    static BuilderPageFit.World limited(Map<String, Double> limits) {
+        return f -> new BuilderPageFit.Judged(BuilderPageFit.Seen.KEEP, "", limits);
     }
 
-    // ── the whole tree, as the menus reach it ─────────────────────────────────────────────────
+    // ── every make the menus reach (MakeFitTest's property test walks these) ─────────────────
 
     private static final int DEPTH = 9;
     private static final int CAP = 4000;
 
-    /** Every make the menus reach (a page's tiles, a multi-pick page left as it is or with one pick), up to a cap. */
     static List<BuilderSpec> leaves() {
         List<BuilderSpec> out = new ArrayList<>();
-        walk(root(), DEPTH, new HashSet<>(), out, null);
+        walk(root(), DEPTH, new HashSet<>(), out);
         return out;
     }
 
-    /** The walk; with {@code onPage}, each page reached is handed to it (the timed walk under limits). */
-    static void walk(BuilderFlow flow, int depth, Set<String> seen, List<BuilderSpec> out,
-                     java.util.function.BiConsumer<BuilderFlow, PickPage> onPage) {
+    static void walk(BuilderFlow flow, int depth, Set<String> seen, List<BuilderSpec> out) {
         if (out.size() >= CAP) {
             return;
         }
@@ -58,8 +66,7 @@ class BuilderPageFitTest {
             }
             return;
         }
-        BuilderSpec d = flow.draft();
-        if (depth <= 0 || !seen.add(flow.step() + " " + (d == null ? "" : d.toJson().toString()))) {
+        if (depth <= 0 || !seen.add(BuilderPageFacts.stateKey(flow))) {
             return;
         }
         PickPage page;
@@ -68,29 +75,31 @@ class BuilderPageFitTest {
         } catch (RuntimeException e) {
             return;
         }
-        if (onPage != null) {
-            onPage.accept(flow, page);
-        }
         boolean multi = page.picks() != null;
         if (multi) {
             BuilderFlow on = flow.after(PickPage.NEXT_ID);
             if (on != null) {
-                walk(on, depth - 1, seen, out, onPage);
+                walk(on, depth - 1, seen, out);
             }
         }
         for (PickPage.Tile t : page.tiles()) {
             BuilderFlow next = flow.after(t.id());
-            if (next == null) {
-                continue;
-            }
-            if (multi) {
+            if (next != null && multi) {
                 next = next.after(PickPage.NEXT_ID);
-                if (next == null) {
-                    continue;
-                }
             }
-            walk(next, depth - 1, seen, out, onPage);
+            if (next != null) {
+                walk(next, depth - 1, seen, out);
+            }
         }
+    }
+
+    // ── the tests ─────────────────────────────────────────────────────────────────────────────
+
+    @Test
+    void theTreeFingerprintIsTheOneTheApprenticeRecords() {
+        BuilderTree tree = BuilderTree.of(BuilderAllowlist.REVIEWED, LibraryPresets.SHIPPED);
+        assertEquals(ApprenticeTreeFingerprintDiffTest.fingerprint(tree.toJson()).get("hash").getAsString(), tree.fingerprint());
+        assertEquals(tree.fingerprint(), index.fingerprint());
     }
 
     @Test
@@ -109,38 +118,79 @@ class BuilderPageFitTest {
     }
 
     @Test
-    void noLimitsIsThePageAsItIs() {
+    void withNoWorldAnsweringNothingIsDoneAtAll() {
         BuilderFlow f = root();
-        PickPage kinds = f.page();
-        assertTrue(BuilderPageFit.page(f, kinds, judge(Map.of())) == kinds, "the same page, untouched");
+        f.press("creature");
+        PickPage page = f.page();
+        long derived = MakeFacts.derivations();
+        assertSame(page, BuilderPageFit.draw(f, page, null, null), "no world: the page as it is");
+        assertSame(page, BuilderPageFit.draw(f, page, index, null), "no world: the page as it is, index or not");
+        assertEquals(derived, MakeFacts.derivations(), "and no make was read");
+        assertFalse(BuilderPageFacts.started(), "no world asked: the background worker was never started");
+    }
+
+    @Test
+    void aDrawAfterWarmUpDerivesNothingAndIsTimed() {
+        BuilderPageFit.World w = limited(Map.of(MakeFacts.COUNT_MADE, 3.0, MakeFacts.BUILDER_SIZE_STEP, 3.0));
+        BuilderFlow kinds = root();
+        BuilderFlow bodies = root();
+        bodies.press("creature");
+        PickPage kindPage = kinds.page();
+        PickPage bodyPage = bodies.page();
+        BuilderPageFit.draw(kinds, kindPage, index, w);   // warm the classes
+        BuilderPageFit.draw(bodies, bodyPage, index, w);
+        long derived = MakeFacts.derivations();
+        long t0 = System.nanoTime();
+        PickPage k = BuilderPageFit.draw(kinds, kindPage, index, w);
+        long kindNanos = System.nanoTime() - t0;
+        t0 = System.nanoTime();
+        PickPage b = BuilderPageFit.draw(bodies, bodyPage, index, w);
+        long bodyNanos = System.nanoTime() - t0;
+        assertEquals(derived, MakeFacts.derivations(), "a draw reads no make: every tile's facts were worked out before");
+        assertFalse(BuilderPageFit.gettingReady(k) || BuilderPageFit.gettingReady(b), "both pages are worked out");
+        System.out.printf("[BuilderPageFit timing] worked out once: %d pages in %.1f s; a draw: kind page %.2f ms, "
+                        + "creature body page (%d tiles) %.2f ms%n", index.size(), buildNanos / 1e9, kindNanos / 1e6,
+                bodyPage.tiles().size(), bodyNanos / 1e6);
     }
 
     @Test
     void aKindWithNothingAllowedLeftIsCulledAndTheRestStay() {
         BuilderFlow f = root();
         PickPage kinds = f.page();
-        // nothing may have a size: every creature, ride, building and event has one, supplies and items do not
-        PickPage seen = BuilderPageFit.page(f, kinds, judge(Map.of(MakeFacts.BUILDER_SIZE_STEP, 0.0)));
+        // nothing may have a size: every creature, ride, building and event has one; supplies and items do not
+        PickPage seen = BuilderPageFit.draw(f, kinds, index, limited(Map.of(MakeFacts.BUILDER_SIZE_STEP, 0.0)));
         List<String> ids = seen.tiles().stream().map(PickPage.Tile::id).toList();
         assertFalse(ids.contains("creature"), ids.toString());
         assertTrue(ids.contains("supplies"), ids.toString());
-        assertTrue(ids.size() < kinds.tiles().size());
+        assertSame(kinds, BuilderPageFit.draw(f, kinds, index, limited(Map.of())), "no limits: the same page");
     }
 
     @Test
-    void aLockedMakeIsGreyWithItsWordsAndAFittedOneIsKept() {
+    void aLockedMakeIsGreyWithItsWordsAndAFittableOneIsKept() {
         BuilderFlow f = root();
         f.press("creature");
         PickPage from = f.page();
-        BuilderPageFit.Judge lockCats = spec -> spec.from().equals("preset:species/cat")
+        BuilderPageFit.World lockBig = facts -> facts.number(MakeFacts.SCALE_TIMES).orElse(0) > 0
                 ? new BuilderPageFit.Judged(BuilderPageFit.Seen.LOCK, "Unlocks later") : BuilderPageFit.Judged.KEEP;
-        PickPage seen = BuilderPageFit.page(f, from, lockCats);
+        PickPage seen = BuilderPageFit.draw(f, from, index, lockBig);
         PickPage.Tile cat = seen.tiles().stream().filter(t -> t.id().equals("species/cat")).findFirst().orElseThrow();
         assertEquals(PickPage.BLOCKED_ITEM, cat.item());
         assertEquals("Unlocks later", cat.lore().get(0));
         assertEquals(from.tiles().size(), seen.tiles().size(), "a locked tile is shown, not dropped");
-        // fitting to a smaller size keeps every body: they can all be made smaller
-        assertEquals(from.tiles().size(), BuilderPageFit.page(f, from, judge(Map.of(MakeFacts.BUILDER_SIZE_STEP, 1.0))).tiles().size());
+        assertEquals(from.tiles().size(), BuilderPageFit.draw(f, from, index,
+                limited(Map.of(MakeFacts.BUILDER_SIZE_STEP, 1.0))).tiles().size(), "every body can be made smaller");
+    }
+
+    @Test
+    void aPageNotWorkedOutYetIsDrawnGettingReadyNeverUnfitted() {
+        BuilderFlow f = root();
+        f.press("creature");
+        f.press("species/cat");
+        PickPage page = f.page();
+        BuilderPageFacts.Index empty = new BuilderPageFacts.Index("none");
+        PickPage seen = BuilderPageFit.draw(f, page, empty, limited(Map.of(MakeFacts.COUNT_MADE, 3.0)));
+        assertTrue(BuilderPageFit.gettingReady(seen));
+        assertTrue(seen.tiles().stream().allMatch(t -> t.selected() || t.item().equals(PickPage.BLOCKED_ITEM)));
     }
 
     @Test
@@ -152,49 +202,27 @@ class BuilderPageFitTest {
             f.press(PickPage.NEXT_ID);
         }
         TuneDialog d = f.tune();
-        TuneDialog seen = BuilderPageFit.tune(f, d, judge(Map.of(MakeFacts.COUNT_MADE, 3.0)));
+        long derived = MakeFacts.derivations();
+        TuneDialog seen = BuilderPageFit.tune(f, d, Map.of(MakeFacts.COUNT_MADE, 3.0));
+        assertEquals(derived, MakeFacts.derivations(), "a limit on how many is compared with the slider, no make read");
         TuneDialog.Slider count = (TuneDialog.Slider) seen.inputs().stream().filter(i -> i.key().equals("count"))
                 .findFirst().orElseThrow();
         assertEquals(3, count.end());
-        TuneDialog.Choice size = (TuneDialog.Choice) BuilderPageFit.tune(f, d, judge(Map.of(MakeFacts.SCALE_TIMES, 1.0)))
+        TuneDialog.Choice size = (TuneDialog.Choice) BuilderPageFit.tune(f, d, Map.of(MakeFacts.SCALE_TIMES, 1.0))
                 .inputs().stream().filter(i -> i.key().equals("mobsize")).findFirst().orElseThrow();
         TuneDialog.Choice all = (TuneDialog.Choice) d.inputs().stream().filter(i -> i.key().equals("mobsize")).findFirst().orElseThrow();
         assertTrue(size.options().size() < all.options().size() && !size.options().isEmpty(), size.options().toString());
     }
 
     @Test
-    void theWalkUnderLimitsIsTimed() {
-        BuilderPageFit.Judge j = judge(Map.of(MakeFacts.COUNT_MADE, 3.0, MakeFacts.BUILDER_SIZE_STEP, 3.0));
+    void theIndexHoldsTheFirstPagesOfEveryKind() {
         BuilderFlow f = root();
-        PickPage kinds = f.page();
-        BuilderPageFit.page(f, kinds, j);   // warm the catalogues
-        long t0 = System.nanoTime();
-        BuilderPageFit.page(f, kinds, j);
-        long kindPage = System.nanoTime() - t0;
-        BuilderFlow c = root();
-        c.press("creature");
-        PickPage bodies = c.page();
-        t0 = System.nanoTime();
-        BuilderPageFit.page(c, bodies, j);
-        long bodyPage = System.nanoTime() - t0;
-        int[] pages = {0};
-        List<BuilderSpec> reached = new ArrayList<>();
-        t0 = System.nanoTime();
-        walk(root(), DEPTH, new HashSet<>(), reached, (flow, page) -> {
-            pages[0]++;
-            BuilderPageFit.page(flow, page, j);
-        });
-        long tree = System.nanoTime() - t0;
-        // the same pages again, with what lies ahead remembered (the menus' bounded cache)
-        String ahead = BuilderPageFit.aheadKey(BuilderAllowlist.REVIEWED, "timing-" + System.nanoTime());
-        BuilderPageFit.page(c, bodies, j, ahead);
-        t0 = System.nanoTime();
-        BuilderPageFit.page(c, bodies, j, ahead);
-        long bodyAgain = System.nanoTime() - t0;
-        System.out.printf("[BuilderPageFit timing] kind page %.1f ms, creature body page (%d tiles) %.1f ms (redrawn with "
-                        + "the cache %.1f ms), whole tree %d pages / %d makes %.1f s%n", kindPage / 1e6, bodies.tiles().size(),
-                bodyPage / 1e6, bodyAgain / 1e6, pages[0], reached.size(), tree / 1e9);
-        assertTrue(bodyAgain < bodyPage, "the cache did not help: " + bodyAgain / 1e6 + " ms");
-        assertTrue(kindPage < 2_000_000_000L, "the kind page took " + kindPage / 1e6 + " ms");
+        assertTrue(index.page(BuilderPageFacts.stateKey(f)) != null, "the kind page");
+        for (PickPage.Tile t : f.page().tiles()) {
+            BuilderFlow k = f.after(t.id());
+            if (k != null && k.step() != BuilderFlow.Step.TUNE) {
+                assertTrue(index.page(BuilderPageFacts.stateKey(k)) != null, "the first page of " + t.id());
+            }
+        }
     }
 }
