@@ -277,6 +277,15 @@ the limits the world gave.
 - **Order and the rules that do not bend:** the safety layers and a world's rules file run first, so a refused wish is
   never fitted into an allowed one; nothing is charged for a make that is hidden or locked; the answer is a VIEW, worked out when asked and never written to his
   shelf or any store, because the shelf follows him to every world.
+- **Kept as asked, fitted every time.** A Builder or Apprentice make is kept on his shelf, and remembered as the
+  recipe "Make another one" and a hotbar fire make again, **as he asked for it** (within the server's allowlist),
+  never as this world fitted it. It is fitted afresh at every make and every fire: how many and how strong when it is
+  made, and a creature's **size where it stands, at every spawn** (`LiveFit.drawnScale`: the kept make fitted through
+  the same gate, and any creature held to a `scaleTimes` limit). So a creature made under tight limits and made again
+  after they rise comes out bigger, up to the new limit, without being wished again. A creature already standing keeps
+  its size until it is made again (its health, damage, armour and knockback are fitted again at once,
+  `WorldMakes.limitsChanged`). A make kept by 1.0.10, which kept the fitted spec, stays as it was kept: the asked
+  values were never stored, so there is nothing to bring back, and it is fitted from there like any other.
 - **The Apprentice's tiles** (`wishbuilder/ApprenticeFit`): fitted AFTER ranking and outside the matcher, so its
   ranking, gold-set floors and tree fingerprint are the same in every world. Each ranked make is asked through the
   same gate and fitting its press goes through: one this world hides, or that no fit could bring within its limits, is

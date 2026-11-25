@@ -158,9 +158,18 @@ public final class ContractWorldGameTest {
             }
             helper.assertTrue(kept != null, Component.literal("the make is on his shelf"));
             BuilderSpec s = kept.read();
-            helper.assertTrue(s.count() == 3 && s.size() <= 3,
-                    Component.literal("made within the limits: count " + s.count() + ", size " + s.size()));
-            helper.assertValueEqual(tagged(helper, kept.id()), 3, Component.literal("cats standing"));
+            // (C) his shelf keeps the make as he ASKED for it; what stands is this world's fit of it
+            helper.assertTrue(s.count() == 6 && s.size() == 4,
+                    Component.literal("kept as asked: count " + s.count() + ", size " + s.size()));
+            helper.assertValueEqual(tagged(helper, kept.id()), 3, Component.literal("cats standing: made within the limits"));
+            var species = SpeciesRegistry.get(kept.id());
+            double stands = 0;
+            for (double scale : rigScales(helper, p, kept.id()).values()) {
+                stands = Math.max(stands, scale);
+            }
+            helper.assertTrue(species != null && stands > 0 && stands < species.scale() - 1e-6,
+                    Component.literal("each stands at size step 3, smaller than asked: " + stands + " of "
+                            + (species == null ? "?" : species.scale())));
             String words = said(p, chat);
             helper.assertTrue(words.contains("for this world"), Component.literal("he is told it was fitted: " + words));
         });
@@ -303,7 +312,12 @@ public final class ContractWorldGameTest {
                 }
             }
             helper.assertTrue(kept != null, Component.literal("the sword is on his shelf"));
-            BuilderSpec made = kept.read();
+            // (C) his shelf keeps the sword he asked for; this world makes the strongest one it allows of it
+            BuilderSpec asked = kept.read();
+            helper.assertTrue(asked.opt("strength").equals("3") && asked.opt("tier").isEmpty(),
+                    Component.literal("kept as asked: " + asked.toJson()));
+            BuilderSpec made = com.moddingfromamod.wish.MakeGate.build(asked, BuilderAllowlist.REVIEWED,
+                    com.moddingfromamod.wish.WishAsk.replay(p.getUUID(), "")).spec();
             var madeFacts = com.moddingfromamod.wishbuilder.MakeFacts.of(made);
             helper.assertTrue(made.opt("strength").equals("3") && !made.opt("tier").isEmpty()
                             && madeFacts.number(com.moddingfromamod.wishbuilder.MakeFacts.ATTACK_DAMAGE_HALF_HEARTS)
