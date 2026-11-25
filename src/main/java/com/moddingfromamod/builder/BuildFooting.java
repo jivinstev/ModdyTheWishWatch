@@ -124,7 +124,10 @@ public final class BuildFooting {
         FILLED,
         /** Moved down onto the ground below, and filled under where it still needs it. */
         SET_DOWN,
-        /** Nothing within reach below it to stand on; left where it was put. */
+        /**
+         * Nothing within reach below it to stand on: left where it was put (a sky island's build stays level with him,
+         * #46), standing on a base of its own (#114) so it is held up and its water stays.
+         */
         NOTHING_BELOW,
         /** Part of it is over unloaded world; nothing was read and nothing done. */
         UNLOADED
@@ -143,18 +146,21 @@ public final class BuildFooting {
      * @param footing  columns under the build given a footing on ground
      * @param island   columns (under the build and its beach) filled from the water
      * @param lava     columns given an obsidian footing over lava
-     * @param hanging  columns still over a drop deeper than {@link #FOOTING_CAP}
+     * @param hanging  columns over a drop deeper than {@link #FOOTING_CAP} (or over nothing): each now stands on
+     *                 a one-block base ({@link #based})
      * @param leaves   the look down went through a treetop
+     * @param based    columns given a one-block base under them because they were over a drop or nothing (#114):
+     *                 the owner's rule, a build left level past an edge stands on something and its water stays
      */
     public record Decision(Action action, int anchorY, int dropped, List<Fill> fills, int footing,
-                           int island, int lava, int hanging, boolean leaves) {
+                           int island, int lava, int hanging, boolean leaves, int based) {
 
         public boolean moved() {
             return action == Action.SET_DOWN && dropped != 0;
         }
 
         static Decision of(Action a, int y) {
-            return new Decision(a, y, 0, List.of(), 0, 0, 0, 0, false);
+            return new Decision(a, y, 0, List.of(), 0, 0, 0, 0, false, 0);
         }
     }
 
@@ -286,21 +292,25 @@ public final class BuildFooting {
         Collections.sort(gaps);
         int median = gaps.get((gaps.size() - 1) / 2);
         int floorY = ay;
+        boolean nothingBelow = false;
         if (median > FOOTING_DEPTH && mayMove) {
             if (median == Integer.MAX_VALUE) {
-                return new Decision(Action.NOTHING_BELOW, ay, 0, List.of(), 0, 0, 0, cols.size(), leaves);
+                // nothing within reach below: it stays where it was put, and each column over nothing gets its base
+                nothingBelow = true;
             }
-            // Set down onto the ground below: the median of where each column would rest, so a
-            // tree's own trunk under one corner does not hold the whole house up in the canopy.
-            List<Integer> rest = new ArrayList<>();
-            for (int i = 0; i < cols.size(); i++) {
-                Column c = cols.get(i);
-                if (c.under() != Under.NOTHING) {
-                    rest.add(c.top() + 1 - footprint.get(i)[2]);
+            if (!nothingBelow) {
+                // Set down onto the ground below: the median of where each column would rest, so a
+                // tree's own trunk under one corner does not hold the whole house up in the canopy.
+                List<Integer> rest = new ArrayList<>();
+                for (int i = 0; i < cols.size(); i++) {
+                    Column c = cols.get(i);
+                    if (c.under() != Under.NOTHING) {
+                        rest.add(c.top() + 1 - footprint.get(i)[2]);
+                    }
                 }
+                Collections.sort(rest);
+                floorY = Math.min(ay, rest.get(rest.size() / 2));
             }
-            Collections.sort(rest);
-            floorY = Math.min(ay, rest.get(rest.size() / 2));
         }
         List<Fill> fills = new ArrayList<>();
         int footing = 0, island = 0, lava = 0, hanging = 0;
@@ -319,9 +329,10 @@ public final class BuildFooting {
                 continue;       // standing on it, or sunk into a slope: nothing to fill
             }
             if (c.under() == Under.NOTHING || g > FOOTING_CAP) {
-                // A cliff lip or a sea cliff: left as it is and reported. A stub of fill hanging in
-                // the air would be the tower of fill that was ruled out, only shorter.
+                // A cliff lip, a sea cliff, a sky island's edge: never a tower of fill down to what is far below,
+                // but ONE layer of base right under it (#114), so it stands on something and its water stays.
                 hanging++;
+                fills.add(new Fill(x, bottom - 1, z, baseMaterial(cols)));
                 continue;
             }
             switch (c.under()) {
@@ -379,9 +390,23 @@ public final class BuildFooting {
         }
         fills.sort((a, b) -> a.y() != b.y() ? Integer.compare(a.y(), b.y())
                 : a.x() != b.x() ? Integer.compare(a.x(), b.x()) : Integer.compare(a.z(), b.z()));
-        Action a = floorY != ay ? Action.SET_DOWN : fills.isEmpty() ? Action.NONE : Action.FILLED;
+        Action a = nothingBelow ? Action.NOTHING_BELOW
+                : floorY != ay ? Action.SET_DOWN : fills.isEmpty() ? Action.NONE : Action.FILLED;
         return new Decision(a, floorY, ay - floorY, List.copyOf(fills), footing, island, lava, hanging,
-                leaves);
+                leaves, hanging);
+    }
+
+    /**
+     * <b>A base's block</b> (#114): what the ground it partly stands on is made of ({@link #material}), so a farm at
+     * an island's edge carries on the island's soil; {@link #STONE} when it stands on nothing at all.
+     */
+    static String baseMaterial(List<Column> cols) {
+        for (Column c : cols) {
+            if (c.under() == Under.GROUND && c.block() != null && !c.block().isBlank()) {
+                return material(c.block());
+            }
+        }
+        return STONE;
     }
 
     /** An island column: the water from its surface down to the seabed (capped), then up to {@code topY}. */
@@ -472,8 +497,8 @@ public final class BuildFooting {
                     "the spot was %d block(s) above the ground%s, so I set it down on the ground below, "
                             + "at %d %d %d, and told him where", d.dropped(),
                     d.leaves() ? " (up in a tree)" : "", x, y, z));
-            case NOTHING_BELOW -> said.add("⚠ there is nothing under it to stand on within "
-                    + SCAN + " blocks, so it was left where it was put");
+            case NOTHING_BELOW -> said.add("there is nothing under it to stand on within "
+                    + SCAN + " blocks, so it was left where it was put, on a base of its own");
             default -> {
             }
         }
@@ -487,9 +512,9 @@ public final class BuildFooting {
         if (d.lava() > 0) {
             said.add("it was over lava, so it stands on an obsidian footing");
         }
-        if (d.hanging() > 0 && d.action() != Action.NOTHING_BELOW) {
-            said.add("⚠ " + d.hanging() + " column(s) of its base are still over a drop deeper than "
-                    + FOOTING_CAP + " blocks");
+        if (d.based() > 0 && d.action() != Action.NOTHING_BELOW) {
+            said.add(d.based() + " column(s) of its base were over a drop deeper than " + FOOTING_CAP
+                    + " blocks, so they stand on a one-block base");
         }
         for (String also : alsoDone) {
             if (also != null && !also.isEmpty()) {

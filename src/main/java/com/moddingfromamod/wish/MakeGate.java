@@ -62,6 +62,50 @@ public final class MakeGate {
         return v;
     }
 
+    /**
+     * Where this world sends a finished make (#70, {@link WorldMakes#landing}), asked before its first placing step.
+     * {@link com.moddingfromamod.world.Landing#LANDS} with no world, and when the world throws or answers null.
+     */
+    public static com.moddingfromamod.world.Landing landing(MakeFacts facts, WishAsk ask) {
+        WorldMakes world = WorldMakes.get();
+        if (world == WorldMakes.NONE || !anyWorld()) {
+            return com.moddingfromamod.world.Landing.LANDS;
+        }
+        try {
+            com.moddingfromamod.world.Landing l = world.landing(facts, ask);
+            return l == null ? com.moddingfromamod.world.Landing.LANDS : l;
+        } catch (RuntimeException | LinkageError e) {
+            LOGGER.warn("the world's WorldMakes.landing threw on {}: {}", facts, e.toString());
+            return com.moddingfromamod.world.Landing.LANDS;
+        }
+    }
+
+    /** Tell the world a make it asked to keep was not kept (#70); a world that throws stops nothing. */
+    public static void notKept(com.moddingfromamod.world.NotKept what) {
+        WorldMakes world = WorldMakes.get();
+        if (world == WorldMakes.NONE || !anyWorld()) {
+            return;
+        }
+        try {
+            world.notKept(what);
+        } catch (RuntimeException | LinkageError e) {
+            LOGGER.warn("the world's WorldMakes.notKept threw on {}: {}", what, e.toString());
+        }
+    }
+
+    /** Tell the world a kept make was handed over (#70); a world that throws stops nothing. */
+    public static void handedOver(com.moddingfromamod.world.HandedOver what) {
+        WorldMakes world = WorldMakes.get();
+        if (world == WorldMakes.NONE || !anyWorld()) {
+            return;
+        }
+        try {
+            world.handedOver(what);
+        } catch (RuntimeException | LinkageError e) {
+            LOGGER.warn("the world's WorldMakes.handedOver threw on {}: {}", what, e.toString());
+        }
+    }
+
     /** The world's limits for every make of this player's, or none. Cheap: a menu asks per draw. */
     public static WorldLimits limits(java.util.UUID player) {
         WorldMakes world = WorldMakes.get();

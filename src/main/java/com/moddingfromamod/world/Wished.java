@@ -16,10 +16,10 @@ import net.minecraft.world.entity.Entity;
  *   <li>{@link WishMobTags#ALL} ({@code wishmob}): on every sculpted wish creature and on a rig's carrier (the
  *       living entity that holds a rig creature's stats), put on at spawn and again on every load;</li>
  *   <li>{@link WishMobLimit#WISHED_TAG} ({@code moddy_wished}): on a plain mob admitted inside a spawn scope (a wish's
- *       command, an event, a datapack function), the mob the wish's census counts.</li>
+ *       command, an event, a function of a wish's own datapack), the mob the wish's census counts.</li>
  * </ul>
- * A rig's display parts are not bodies and are never wished; a mob the world spawns by itself, or a child's own spawn
- * egg, carries neither marker.
+ * A rig's display parts are not bodies and are never wished; a mob the world spawns by itself, a child's own spawn
+ * egg, or a world's own datapack function (#80) carries neither marker.
  */
 public final class Wished {
 
