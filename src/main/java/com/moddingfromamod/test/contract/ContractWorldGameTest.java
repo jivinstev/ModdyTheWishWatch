@@ -1042,12 +1042,19 @@ public final class ContractWorldGameTest {
                     helper.fail(Component.literal("waiting for the third cat"));
                 }
                 default -> {
-                    helper.assertTrue(now.size() == 3, Component.literal("the third cat stands: " + now));
+                    // the golem fired after the raise: a carrier not standing before it (an older one may be gone)
+                    Double fresh = null;
                     for (var e : now.entrySet()) {
                         if (!seen.get().containsKey(e.getKey())) {
-                            helper.assertTrue(Math.abs(e.getValue() - species.scale()) < 1e-6,
-                                    Component.literal("after the limit rose it is its full asked size: " + e.getValue()));
+                            fresh = e.getValue();
                         }
+                    }
+                    helper.assertTrue(fresh != null, Component.literal("the golem fired after the raise stands: " + now));
+                    helper.assertTrue(Math.abs(fresh - species.scale()) < 1e-6,
+                            Component.literal("after the limit rose it is its full asked size: " + fresh + " of " + species.scale()));
+                    for (double standing : now.values()) {
+                        helper.assertTrue(Math.abs(standing - species.scale()) < 1e-6,
+                                Component.literal("and the ones standing grew too: " + now));
                     }
                     var kept = BuilderSpecStore.get(p.getStringUUID(), id.get());
                     helper.assertTrue(kept != null && kept.read().equals(BuilderAllowlist.REVIEWED.capped(golem())),
