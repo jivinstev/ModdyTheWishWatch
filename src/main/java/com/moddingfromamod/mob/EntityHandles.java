@@ -639,6 +639,16 @@ public final class EntityHandles {
         return root;
     }
 
+    private volatile boolean refusedNewer;
+
+    /**
+     * Did the last {@link #loadJson} meet an undo record written by a newer Moddy ({@link MobState.Newer}, #115)? Then
+     * the table holds less than the file, and {@code MobHandleStore} never writes it back over that file.
+     */
+    public boolean refusedNewer() {
+        return refusedNewer;
+    }
+
     /**
      * Replace the table from JSON. <b>A damaged record is skipped, never fatal.</b>
      *
@@ -650,6 +660,7 @@ public final class EntityHandles {
      * @return how many handles were restored
      */
     public synchronized int loadJson(JsonObject root) {
+        refusedNewer = false;
         byName.clear();
         newestFirst.clear();
         nameCounters.clear();
@@ -660,7 +671,13 @@ public final class EntityHandles {
             JsonElement arr = root.get("handles");
             if (arr != null && arr.isJsonArray()) {
                 for (JsonElement el : arr.getAsJsonArray()) {
-                    Handle h = handleFromJson(el);
+                    Handle h;
+                    try {
+                        h = handleFromJson(el);
+                    } catch (MobState.Newer n) {
+                        refusedNewer = true;   // a newer Moddy's undo record: this table is never written back
+                        continue;
+                    }
                     if (h != null && !byName.containsKey(h.name())) {
                         byName.put(h.name(), h);
                         newestFirst.addLast(h);
@@ -699,6 +716,8 @@ public final class EntityHandles {
                     o.has("before") && o.get("before").isJsonObject()
                             ? MobState.fromJson(o.getAsJsonObject("before"))
                             : MobState.UNKNOWN);
+        } catch (MobState.Newer n) {
+            throw n;   // refused, never dropped (#115): the table that read it is never written back
         } catch (RuntimeException e) {
             return null;
         }
@@ -731,6 +750,8 @@ public final class EntityHandles {
                     o.has("targeted") ? o.get("targeted").getAsLong() : 0L,
                     history,
                     com.moddingfromamod.marshal.ArtifactOwner.of(o));
+        } catch (MobState.Newer n) {
+            throw n;
         } catch (RuntimeException e) {
             return null;
         }
