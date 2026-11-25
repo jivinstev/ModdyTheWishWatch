@@ -64,16 +64,33 @@ public final class CrafterService {
         if (p == null || p.getServer() == null) {
             return Crafters.Role.MAGICIAN;
         }
-        if (com.moddingfromamod.seam.PlayerSeams.isCrafter(p.getUUID())) {
+        return role(p.getServer(), p.getUUID(), p.getGameProfile());
+    }
+
+    /**
+     * The same answer for a player by id, online or not (#81: a wish put back in line may belong to a player who has
+     * left). The server's lists are keyed by id, so an offline player is read from them just as an online one is.
+     */
+    public static Crafters.Role role(net.minecraft.server.MinecraftServer server, UUID id) {
+        if (server == null || id == null) {
+            return Crafters.Role.MAGICIAN;
+        }
+        ServerPlayer online = server.getPlayerList().getPlayer(id);
+        return online != null ? role(online) : role(server, id, new com.mojang.authlib.GameProfile(id, ""));
+    }
+
+    private static Crafters.Role role(net.minecraft.server.MinecraftServer server, UUID id,
+                                      com.mojang.authlib.GameProfile profile) {
+        if (com.moddingfromamod.seam.PlayerSeams.isCrafter(id)) {
             return Crafters.Role.CRAFTER;   // a test's bot on a shared server; nothing that ships sets it
         }
-        if (AlwaysMagician.anyone(p.getUUID())) {
+        if (AlwaysMagician.anyone(id)) {
             // a server's canary (through AlwaysMagician) asks "is Moddy still GRANTING wishes", so its wish is always the agent's. It is
             // on no world's list, so behind an open door it was a Crafter, its words went to the Apprentice, no
             // wish was made and every canary said NOT SUBMITTED. No player can hold this id.
             return Crafters.Role.MAGICIAN;
         }
-        var list = p.getServer().getPlayerList();
+        var list = server.getPlayerList();
         boolean open = WorldCrafters.current().open();
         if (!open) {
             return Crafters.Role.MAGICIAN;
@@ -81,8 +98,8 @@ public final class CrafterService {
         // A client test's player is the singleplayer OWNER, which vanilla counts as an operator — and
         // an operator is always a Magician. IGNORE_OP_PROPERTY is the A/B seam that photographs the
         // Crafter's view on a real client (CrafterShotsClientTest); nothing ships setting it.
-        boolean op = list.isOp(p.getGameProfile()) && !"true".equals(System.getProperty(IGNORE_OP_PROPERTY));
-        return Crafters.role(true, list.getWhiteList().isWhiteListed(p.getGameProfile()), op);
+        boolean op = list.isOp(profile) && !"true".equals(System.getProperty(IGNORE_OP_PROPERTY));
+        return Crafters.role(true, list.getWhiteList().isWhiteListed(profile), op);
     }
 
     public static boolean isCrafter(ServerPlayer p) {
