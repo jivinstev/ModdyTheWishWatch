@@ -1,11 +1,12 @@
 {
+  "health": 10,
   "id": "sheep",
   "name": "Sheep",
   "base": "companion",
   "powers": [
     "friendly"
   ],
-  "damage": 0,
+  "damage": 1,
   "parts": [
     {
       "name": "body",

@@ -14,21 +14,20 @@ By **Moddy LLC**. Questions and problem reports: [GitHub Issues](https://github.
 
 ## Turn on the Magician
 
-1. Install **Claude Code** or **Muse Code** and sign in to your subscription. For the Magician to give things **powers**, also install **Python 3** from python.org (on Windows, tick "Add python.exe to PATH").
+1. Install **Claude Code** or **Muse Code** and sign in to your subscription.
 2. In game, open your wish watch and press **✪ Turn on the Magician**.
-3. Press the button for your subscription. Moddy checks everything, Python 3 included, and tells you when it's ready (a few minutes, once). Without Python the Magician still turns on and makes creatures, buildings, items and pictures; Moddy tells you the one thing to do for powers.
+3. Press the button for your subscription. Moddy checks everything and tells you when it's ready (a few minutes, once).
 
 ## What it runs on your computer
 
 - With the Magician **off** (the default), the game makes no connection to the internet.
 - With the Magician **on**, it starts the Claude Code or Muse Code program you set up, and the agent may look things up on en.wikipedia.org, commons.wikimedia.org and minecraft.wiki, or fetch a skin a wish asks for.
 - Builder and Apprentice makes, powers included, need nothing else: their datapacks are compiled when the mod is built and ship inside the jar.
-- The Magician needs **Python 3** for its own powers (new datapacks written for a wish): it compiles each one with the bundled compiler. Its setup checks for a working Python 3, and without one it still turns on and tells you what to install.
+- The Magician's own powers (new datapacks written for a wish) are compiled inside the game by the compiler built into the mod. Nothing else is installed or started for them.
 
 ## Requirements
 
-- NeoForge for Minecraft 1.21.8. No other mod.
-- Python 3 only if you use the Magician and want its own powers. The Builder and the Apprentice never need it.
+- NeoForge for Minecraft 1.21.8. No other mod, and no Python.
 
 ## How releases are made
 

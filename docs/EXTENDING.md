@@ -126,6 +126,10 @@ test world below does, with a toy formula of its own).
   | `armorPoints` | the game's armour points (a full iron suit is 15) | a Builder creature or ride (as health), a stored creature |
   | `knockbackResistanceFraction` | 0 (pushed as anyone) to 1 (never pushed) | a Builder creature or ride (as health), a stored creature |
 
+  A stored creature's numbers are its record's. One exception, the library-copy rule (`docs/STORE_MIGRATIONS.md`): a
+  world's unowned copy of a library creature (the shared one its first spawn registered) always reads its shipped
+  health, attack damage, armour and knockback, so a stock creature's facts are the same in every world.
+
   `combine` (several things one recipe makes) keeps each number's largest value; a number none of them carries stays
   absent.
 - **`known`** is false when the thing could not be read (gone from its store, a newer Moddy's spec, a command the core
@@ -146,12 +150,12 @@ on a set of tags. Today it reads two markers:
 | Marker | Put on | Meaning |
 |---|---|---|
 | `wishmob` | every sculpted wish creature, and a rig's carrier (the living entity that holds a rig creature's stats), at spawn and again on every load | a creature a wish made |
-| `moddy_wished` | a plain mob that joined the world inside a spawn scope: a wish's command (the Magician's `summon`, a recipe's command), a Builder or Magician event, or **any datapack function**, run by a tick or a schedule | a mob the wishes' spawn budget counts |
+| `moddy_wished` | a plain mob that joined the world inside a spawn scope: a wish's command (the Magician's `summon`, a recipe's command), a Builder or Magician event, or a function of a **wish's own datapack** (a namespace a wish wrote, `datapack/WishPacks`), run by a tick or a schedule | a mob the wishes' spawn budget counts |
 
-A rig's display parts are parts of a body, never one, and are never wished. A mob the world spawns by itself, or a
-child's own spawn egg, carries neither marker. Note the last row: a mob **your world's own datapack function** spawns
-is inside the same scope and is marked too; a world that spawns mobs from its own functions tags them itself and checks
-its own tag first.
+A rig's display parts are parts of a body, never one, and are never wished. A mob the world spawns by itself, a
+child's own spawn egg, and a mob your world's own datapack function (or vanilla's, or another mod's) spawns carry
+neither marker (#80): those functions run with no spawn scope, exactly as without Moddy, so what they spawn is not
+wished and is not counted against the wishes' spawn budget.
 
 ## Telling a wished item stack from any other: `WishedItem`
 
@@ -291,6 +295,64 @@ the limits the world gave.
   once per creature: "✨ Your creatures are stronger now! This world lets them do more." or "✨ Your creatures are held
   back a little in this world for now.", swept like any line. So "the strongest dragon ever" made in an early round is
   held down and comes out fully later, without being wished again.
+- **Where a finished make goes** (#70): `landing(facts, ask)` returns a `world/Landing`, asked once per new make,
+  before its first placing step, with the facts as this world fits it and the same `WishAsk`. Cheap and free of side
+  effects; an exception or a null answer means `LANDS`.
+
+  | Answer | What happens |
+  |---|---|
+  | `Landing.LANDS` (the default) | it appears where it was aimed, as always |
+  | `Landing.KEPT` | it is made and kept as any make, but **not placed**: a creature is sculpted and not spawned (no preview stands), an item is made and not given, a building is saved and not built, an event's design is kept and not staged. It is put on his hotbar as a wish for its recipe, in the first empty slot, or in his Wish Bag when the hotbar is full (he is never asked to give a slot up; with no room in either he is told, and it stays on his shelf). Fired, it appears where he aims it, like any hotbar wish |
+  | `Landing.KEPT_AS_ITEM` | an item make hands over the real item, as `LANDS` does; a creature is kept as `KEPT` |
+
+  `landing` is asked **exactly once** per make, on the server thread, and its answer is locked into the make as its
+  aim is: it is never asked again while the make is built. Then the world is told with `handedOver(HandedOver)`, data
+  only (never your words or his): the player, the make's id and kind (`creature` or `item`), the recipe its hotbar wish
+  fires (`builder:<id>`, the one "Make another one" uses), its `MakeFacts` as this world made it, the hotbar slot it
+  went to (0 to 8, or `-1` for his Wish Bag or the real item) and `realItem`. He is told where it went ("🎯 Red cat is
+  on your hotbar. Aim and use it to make it appear.").
+
+  A kept make is **not charged when it is kept**: there is no charge to repeat, so nothing has to remember one across
+  a restart. Each fire of its hotbar wish is its own wish, a make-again charged once by `WishCharge` like any other.
+  The kept make itself is its shelf row (`builder-specs.json`, a versioned store that refuses a file it cannot read),
+  and its provenance is published as for any make (the same tools make it). If it could not be handed over (he left
+  first, or his hotbar and Wish Bag were full), it stays on his shelf, and the watch's own "Add to hotbar" puts it
+  there as for any make he has.
+
+  **Builder and Apprentice**: every new **creature, ride, item** (a machine or magic block too), **building** and
+  **event**, asked before its first placing step with its own facts; its recipe is the kept make's, `builder:<id>`.
+  A creature made several at once is handed over as one wish, which makes one each time it is fired.
+
+  **The Magician** (`agent/KeptWish`, in `McpProtocol`'s one dispatch): asked ONCE, at the wish's first `plan_wish`,
+  with `MakeFacts.cautious(kind)` (nothing is made yet, so the most a thing of that kind could be) and a `WishAsk` of
+  magic `MAGICIAN`, and locked on the run. The wish still does all its work (plan, design, datapack, every safety
+  layer); only the placing is held. The plan's result tells the agent: place nothing, teach the replay command with
+  `add_template`, then `finish_wish`. Every placing call during a kept wish is refused in the dispatch with a tool error
+  that says why: `sculpt_creature`/`define_creature` without `spawn:false`, `build_structure` without `build:false`,
+  `stage_event` without `now:false`, `make_item` with an `at`, `paint_surface`, `give_items` (allowed for
+  `KEPT_AS_ITEM`), and a `run_command` that summons, sets blocks or gives (`summon`, `setblock`, `fill`, `clone`,
+  `place`, `give`, `item`, `loot`, `function`, `wishmob`, `wishsummon`, `wishbuild`, `wishpaint`, `moddyevent`,
+  `wishdatapack`, read through `execute … run`; an item kept as the real item may run its own
+  `wishdatapack <id> give`). Finishing hands over the wish's newest taught recipe, the one "Make another one" and a
+  hotbar fire use. A Magician wish is charged as a wish when it is asked, as always; each fire of its hotbar wish is a
+  recipe wish, charged by `WishCharge` like any.
+
+  **Always land, and the world's answer is not used:** a change to something he already has (a Magician plan whose
+  `about` is not `new`), a real mob, supplies, a rule, a **picture** (not yet kept), and a Magician wish of any kind
+  but `creature`, `building`, `event` or `item` (no replay recipe places it, `wish/ReplayContract`). A Builder change is
+  not asked at all.
+
+  **When the world asked to keep a make and the core did not**, the world is told, once per make, with
+  `notKept(NotKept)`: the player, the kind (`creature`, `item`, `building`, `event`, `picture` or `other`), what it
+  asked, and why (`NO_REPLAY_RECIPE`: it landed; `A_CHANGE`: a change to his thing, changed where it stands;
+  `NOTHING_TAUGHT`: a kept Magician wish finished having taught no recipe, so nothing could be handed over and nothing
+  was placed). Data only, never words. It is also logged as a warning; it is never dropped silently. With no world
+  answering nothing changes and nothing is asked.
+
+  The Magician's `run_command` is read the way `CommandGuard` reads it (`CommandGuard.runChain`: the command and each
+  `execute … run` tail, by root word), never by searching its text. `function` is refused outright during a kept wish:
+  a datapack function may place anything, and nothing can show beforehand that it will not. The "place nothing" text
+  the agent reads is the core's own, with no world's words in it.
 - **Where the core asks:** every Builder and Apprentice make and every Builder change (`BuilderMake.make`, whatever page
   drew its tile); every tile of the Builder's pages and its tune dialog, per draw; each ranked make on the Apprentice's page, as it opens; a recipe, "Make another one" and a
   hotbar fire (`WishService.submit`, by the facts of what the recipe makes, fitted at fire); "Give me one"; each thing on
@@ -313,7 +375,25 @@ the limits the world gave.
   same gate and fitting its press goes through: one this world hides, or that no fit could bring within its limits, is
   dropped; one it locks is shown locked with its words; one it fits is drawn as it is, made fitted when pressed and told
   once. The order is the matcher's. With no world answering the page is exactly today's.
-- **Not yet** (a later change): the Magician's tool arguments are fitted from limits carried in its brief.
+- **The Magician** (`agent/ToolArgFit`, #69). Its brief carries this world's limits for the wish's player **as data
+  only**: the fact keys from the closed vocabulary and their numbers (`THIS WORLD'S LIMITS (numbers only, by make
+  fact): healthHalfHearts=40, …`), never a word a world wrote. Each making tool's arguments that a fact measures (today
+  `sculpt_creature`'s and `define_species`'s `health`, `damage`, `scale`, `armor`, `knockbackResistance`;
+  `define_species`'s and `stage_event`'s `count` as `countMade`; `give_items`'s and `make_item`'s `count` as
+  `amountItems`) are fitted when they are over it,
+  in the one dispatch every tool call passes (`McpProtocol`, after the safety layers and the world's rules, so a
+  refused call is never fitted into an allowed one), and the tool result ends with a note the core writes from the fact
+  and the limit alone, so the agent tells the player in its own words, which the text sweep reads as it reads all of
+  them. A creature's stats and size are fitted where it stands, at every spawn (the live fit), so the tool keeps what
+  was asked and the note says "health is held to 40 where it stands: this world's limit": lowering it in the arguments
+  would write this world's limit into the creature's record for good, and a later round could never let it out. **The
+  rule: a world's limit is never persisted into a creature.** Only a fact the core cannot fit live (how many at once,
+  how many items) is set to the limit in the arguments ("count was set to 3: this world's limit"). A Builder make goes
+  through the same dispatch but is fitted by the Builder itself, so it is left alone here. What no fact measures (a custom datapack power) is kept as it is:
+  the thing is made, and a world that cannot measure it shows it as it chooses on his watch (locked, in the contract
+  world), never refused at the tool. A lesson the agent reads before it builds a creature or an item tells it to make
+  the strongest version the limits allow ("the strongest sword ever" is the strongest sword allowed); a test pins it.
+  With no world answering, the brief carries nothing and no argument is touched.
 - **Cheap, and free of side effects:** a menu asks once per tile per draw, on the server thread. Default methods only.
 - **Example:** `ContractWorld` (the contract test world below): hostile makes hidden, a make its own toy rating puts at
   4 or more locked, everything else fitted to three at once, size step 3, 40 health and 6 attack damage.

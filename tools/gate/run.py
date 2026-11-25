@@ -24,6 +24,30 @@ import gatelib as g
 # above this many failures, the retries share one server instead of one each (each boot costs a minute or two)
 MAX_ALONE = 8
 
+# --no-python: the directory of stub `python`/`python3` scripts put first on the game's PATH, or None. A player's game
+# never starts Python (the datapack compiler is in the jar: NoPythonTest, NoPythonGameTest), so a Gate B run proves it:
+# a stub records being started and fails, and the job is red if one was.
+NO_PYTHON: Optional[str] = None
+
+
+def no_python_stubs(out_dir: str) -> str:
+    """Write the stubs (POSIX shells; on Windows the run says it cannot check) and return their directory."""
+    d = os.path.join(out_dir, "no-python")
+    os.makedirs(d, exist_ok=True)
+    log = os.path.join(out_dir, "python-started")
+    if os.path.exists(log):
+        os.remove(log)
+    for n in ("python", "python3"):
+        path = os.path.join(d, n)
+        g.write_text(path, '#!/bin/sh\necho "$0 $*" >> "%s"\nexit 127\n' % log)
+        os.chmod(path, 0o755)
+    return d
+
+
+def python_started(out_dir: str) -> List[str]:
+    log = os.path.join(out_dir, "python-started")
+    return [ln for ln in g.read_text(log).splitlines() if ln.strip()] if os.path.exists(log) else []
+
 
 def gradle_cmd(shard: str, rundir: str, home: str, classes: List[str], not_classes: List[str],
                exclude: List[str], extra: List[str]) -> List[str]:
@@ -77,7 +101,10 @@ def _attempt(name: str, out_dir: str, shard: str, classes: List[str], not_classe
     timed_out = False
     with open(log_path, "w", encoding="utf-8", errors="replace") as log:
         kw = {"start_new_session": True} if os.name != "nt" else {}
-        proc = subprocess.Popen(cmd, cwd=g.ROOT, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, **kw)
+        env = dict(os.environ)
+        if NO_PYTHON:
+            env["PATH"] = NO_PYTHON + os.pathsep + env.get("PATH", "")
+        proc = subprocess.Popen(cmd, cwd=g.ROOT, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, env=env, **kw)
         assert proc.stdout is not None
         deadline = started + timeout_min * 60
         for raw in proc.stdout:
@@ -164,6 +191,8 @@ def run_job(args) -> int:
     os.makedirs(out_dir, exist_ok=True)
     expect = expected_classes(tier, classes, not_classes)
     extra = list(args.gradle_arg or [])
+    global NO_PYTHON
+    NO_PYTHON = no_python_stubs(out_dir) if getattr(args, "no_python", False) and os.name != "nt" else None
     covmap = getattr(args, "covmap_tools", None)
     if covmap:
         # a coverage-mapping run (docs/GATE_B.md, "The coverage map"): the JaCoCo agent on, every class in batches of
@@ -208,6 +237,9 @@ def run_job(args) -> int:
                               "error": t.get("error"), "alone": len(group) == 1}
                 if t.get("passed"):
                     r["outcome"] = "flaky"
+    started = python_started(out_dir) if NO_PYTHON else []
+    if started:
+        problems.append("the game started Python (a player's game never does): %s" % "; ".join(started[:3]))
     result = {
         "schema": 1,
         "kind": args.kind,
@@ -225,6 +257,7 @@ def run_job(args) -> int:
         "tests": rows,
         "retries": retries,
         "problems": problems,
+        "noPython": bool(NO_PYTHON),
     }
     result["verdict"] = job_verdict(result)
     if covmap:

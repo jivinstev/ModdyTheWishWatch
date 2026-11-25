@@ -1,4 +1,5 @@
 {
+  "health": 12,
   "id": "snail",
   "name": "Snail",
   "scale": 1.2,
@@ -6,7 +7,7 @@
   "powers": [
     "friendly"
   ],
-  "damage": 0,
+  "damage": 1,
   "speed": 0.12,
   "parts": [
     {

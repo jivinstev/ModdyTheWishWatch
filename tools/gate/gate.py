@@ -48,6 +48,8 @@ def main(argv=None) -> int:
     r.add_argument("--plan", help="a plan from `gate.py plan`: run its job --job")
     r.add_argument("--job", type=int, default=0)
     r.add_argument("--covmap-tools", help="a coverage-mapping run: the directory `./gradlew covmapTools` filled")
+    r.add_argument("--no-python", action="store_true",
+                   help="run the game with python and python3 replaced by stubs that fail; red if one was started")
 
     pl = sub.add_parser("plan", help="share the tier among parallel jobs")
     pl.add_argument("--shard", default=g.FULL_TIER)

@@ -107,14 +107,12 @@ jobs:
             ~/.gradle/caches
             ~/.gradle/wrapper
           key: gradle-${{ runner.os }}-${{ hashFiles('gradle.properties', 'build.gradle', 'versions/*.properties', 'gradle/wrapper/gradle-wrapper.properties') }}
-      - name: The datapack compiler's Python dependency
-        run: python3 -m pip install --break-system-packages ply
       - name: This job's share of the tier
         env:
           PLAN: ${{ needs.plan.outputs.plan }}
         run: |
           printf '%s' "$PLAN" > plan.json
-          python3 tools/gate/gate.py run --shard ci,default --plan plan.json --job ${{ matrix.job }} \
+          python3 tools/gate/gate.py run --shard ci,default --no-python --plan plan.json --job ${{ matrix.job }} \
             --kind nightly --label job-${{ matrix.job }} --timeout 100 --out gate-job
       - name: Keep the result and the logs
         if: always()

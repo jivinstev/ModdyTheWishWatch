@@ -120,6 +120,12 @@ public final class MuseExec {
      * {@code tools/muse-cli-shim.py}, when this server launches its workers through it (a dedicated
      * server's launcher sets {@code -Dmoddingfromamod.cli} to the shim in its {@code bin/}), else
      * null. {@code -Dmoddingfromamod.muse.shim} names one directly (tests; {@code none} turns it off).
+     *
+     * <p><b>Dedicated-server only.</b> This is the one place the mod can start a {@code python3}: the shim is a Python
+     * script, run through {@code python3} when it is not executable itself. Only a dedicated server's own launcher
+     * sets either property, so a player's game (single player, or a LAN world) never has a shim and never starts
+     * Python. Everything a player's Magician does, CBScript datapacks included, is compiled in-process
+     * ({@code CbScriptCompiler}); {@code NoPythonTest} holds every other process the jar can start to that.
      */
     public static String shim() {
         String prop = System.getProperty("moddingfromamod.muse.shim");

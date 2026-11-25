@@ -144,6 +144,20 @@ class OneAttempt(unittest.TestCase):
         a = {"log": g.parse_log("2 required tests failed"), "record": rec(IDS, failed=[IDS[0]]), "timedOut": False}
         self.assertEqual(len(run.check_attempt(a, [], ["AGameTest", "BGameTest"])), 1)
 
+    @unittest.skipIf(os.name == "nt", "the stubs are POSIX shell scripts")
+    def test_the_no_python_stubs_fail_and_say_they_were_started(self):
+        import subprocess
+        d = tempfile.mkdtemp()
+        try:
+            stubs = run.no_python_stubs(d)
+            env = dict(os.environ, PATH=stubs + os.pathsep + os.environ.get("PATH", ""))
+            out = subprocess.run(["python3", "-c", "print(1)"], env=env, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            self.assertEqual(out.returncode, 127)
+            self.assertEqual(len(run.python_started(d)), 1)
+            self.assertIn("python3 -c print(1)", run.python_started(d)[0])
+        finally:
+            shutil.rmtree(d)
+
     def test_only_a_run_that_never_started_for_want_of_a_download_is_run_again(self):
         self.assertTrue(run.never_started("> Could not resolve all artifacts\nReceived status code 429 from server"))
         self.assertFalse(run.never_started("gt-adapter: 3 tests found\nCould not GET x"), "a server that ran is not")
@@ -191,7 +205,7 @@ class Retry(unittest.TestCase):
         g.gate_tree = lambda rev="HEAD", root=g.ROOT: "tree"
         run._commit = lambda: "abc"
         try:
-            a = types.SimpleNamespace(shard="ci,default", classes=None, classes_file=None, not_classes=None,
+            a = types.SimpleNamespace(shard="ci,default", classes=None, classes_file=None, not_classes=None, no_python=False,
                                       not_classes_file=None, exclude=None, flake_register=None, out=out, retry=True,
                                       timeout=1, kind="nightly", label="job-0", gradle_arg=None, plan=None, job=0)
             code = run.run_job(a)

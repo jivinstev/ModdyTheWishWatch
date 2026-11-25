@@ -183,12 +183,6 @@ public final class AuthorDatapackTool implements McpTool {
         if (id.isBlank() || source.isBlank()) {
             return ToolResult.error("Need both feature_id and cbscript.");
         }
-        // NO WORKING PYTHON: every power is compiled with Python 3. Without one, the one clear reason, which
-        // the agent can relay, rather than a compile error that would send it rewriting a source with nothing wrong.
-        String noPython = com.moddingfromamod.datapack.CbScriptCompiler.pythonRefusal();
-        if (noPython != null) {
-            return ToolResult.error(noPython);
-        }
         // ── A MACHINE HE FILLS, HAND-WRITTEN (smoke, 2026-09-28) ─────────────────────────
         // A machine that makes something from what he puts in was answered by hand-writing a
         // datapack (a cauldron that eats dropped eggs) — it worked, but it is saved nowhere, it
@@ -280,11 +274,8 @@ public final class AuthorDatapackTool implements McpTool {
         // Capture the agent's design reasoning for the manifest (DatapackForge.compile records it).
         com.moddingfromamod.provenance.ProvenanceContext.note(str(args, "note"));
 
-        // Compile off the game thread — it shells out to Python and can take a couple of seconds.
+        // Compile off the game thread: the compiler runs in-process and a big script takes a moment.
         CompileResult compiled = DatapackForge.compile(id, desc, source);
-        if (!compiled.ok() && com.moddingfromamod.datapack.PythonCheck.isAgentMessage(compiled.error())) {
-            return ToolResult.error(compiled.error());
-        }
         if (!compiled.ok()) {
             return ToolResult.error("CBScript did not compile:\n\n" + compiled.failureSummary()
                     + "\n\nFix the source and call author_datapack again with the same feature_id. "

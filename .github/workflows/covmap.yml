@@ -142,15 +142,13 @@ jobs:
           distribution: temurin
           java-version: '21'
       - *gradleCache
-      - name: The datapack compiler's Python dependency
-        run: python3 -m pip install --break-system-packages ply
       - *covmapTools
       - name: Map this share
         env:
           PLAN: ${{ needs.plan.outputs.plan }}
         run: |
           printf '%s' "$PLAN" > plan.json
-          python3 tools/gate/gate.py run --shard ci,default --plan plan.json --job ${{ matrix.job }} \
+          python3 tools/gate/gate.py run --shard ci,default --no-python --plan plan.json --job ${{ matrix.job }} \
             --label job-${{ matrix.job }}-r${{ matrix.replica }} --kind covmap \
             --covmap-tools build/covmap-tools --timeout 140 --out covmap-job
       - name: Keep the analysis
