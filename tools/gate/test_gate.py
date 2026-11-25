@@ -335,6 +335,12 @@ class History(unittest.TestCase):
         finally:
             shutil.rmtree(d)
 
+    def test_a_pull_requests_run_is_recorded_as_one_and_is_never_full_tier_evidence(self):
+        j = job("pr-7", [(IDS[0], "flaky")])
+        rec = history.pr_record(j, {"id": 99, "html_url": "u", "pull_requests": [{"number": 7}]})
+        self.assertEqual((rec["kind"], rec["label"], rec["fullTier"], rec["runUrl"]), ("pr", "pr7", False, "u"))
+        self.assertIn("AGameTest.t0", history.flaky([dict(rec, tree="t1")]), "its flakes count")
+
     def test_the_report_names_flakes_not_in_the_register(self):
         runs = [stored("t2", "failed", "2"), stored("t2", "passed", "3")]
         self.assertIn("NOT IN THE REGISTER", history.report(runs, register={}))

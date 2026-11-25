@@ -283,9 +283,10 @@ def harvest(data_dir: str, repo: str, workflow: str = "ci.yml", days: int = 3) -
                 if art.get("name") != ARTIFACT or art.get("expired"):
                     continue
                 z = zipfile.ZipFile(io.BytesIO(gh("repos/%s/actions/artifacts/%d/zip" % (repo, art["id"]))))
-                if "job.json" not in z.namelist():
+                names = sorted((n for n in z.namelist() if n.split("/")[-1] == "job.json"), key=lambda n: n.count("/"))
+                if not names:
                     continue
-                job = json.loads(z.read("job.json").decode("utf-8"))
+                job = json.loads(z.read(names[0]).decode("utf-8"))
                 stored.append(store(data_dir, pr_record(job, run)))
         if len(runs) < 100:
             break

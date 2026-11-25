@@ -156,7 +156,7 @@ def main(argv=None) -> int:
             for rel in history.harvest(a.data, a.harvest, days=a.days):
                 print("gate-data: (a pull request run) " + rel)
         if a.publish:
-            history.publish(a.data, "Record %d run(s)" % len(a.records))
+            history.publish(a.data, "Record %d run(s)%s" % (len(a.records), " and the pull requests' runs" if a.harvest else ""))
         return 0
     if a.cmd == "issue":
         import issues

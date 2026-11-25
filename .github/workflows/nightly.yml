@@ -10,6 +10,8 @@
 #   verdict  merges the jobs: every class of the tier ran, each with as many tests as its source declares, none twice.
 #            A missing job, a short count or a failed test is red. The run is recorded, one file, on the data-only
 #            gate-data branch (runs/<month>/...), and the one issue labelled nightly-red is opened, updated or closed.
+#   pr-runs  every night, run or skipped: the targeted Gate B results of the last three days' pull requests (CI keeps
+#            each as the gate-run-record artifact; a pull request cannot write gate-data itself), recorded the same way.
 #
 # A pull request that changes this workflow or tools/gate/ runs it too, as a dry run: the whole tier, no record, no
 # issue (a pull request's token cannot write, and its result is not main's). Standard runners on a public repository
@@ -166,3 +168,21 @@ jobs:
         run: |
           python3 -c 'import json; r=json.load(open("run-record.json", encoding="utf-8")); print(r["verdict"].upper(), r["counts"])'
           test "${{ steps.merge.outputs.status }}" = "0"
+
+  pr-runs:
+    name: Record the pull requests' runs
+    # a pull request's token cannot write gate-data (and a fork's never could), so its Gate B job keeps its result as
+    # the gate-run-record artifact and this collects every one from the last three days, every night, run or skipped
+    if: github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write    # gate-data
+      actions: read      # the CI runs and their artifacts
+    steps:
+      - uses: actions/checkout@v7
+      - *gateData
+      - name: Collect and record
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 tools/gate/gate.py record --data gate-data --harvest "${{ github.repository }}" --days 3 --publish

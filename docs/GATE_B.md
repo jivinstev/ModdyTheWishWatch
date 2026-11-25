@@ -74,10 +74,16 @@ only docs has the same gate tree as its parent, so its night is skipped.
 
 ## Run history
 
-Every nightly run is recorded as ONE file on the data-only `gate-data` branch:
+Every nightly run and every pull request's targeted Gate B run is recorded as ONE file on the data-only `gate-data`
+branch:
 `runs/<YYYY-MM>/<started>-<kind>-<commit>.json.gz`. One file a run means two workflows recording at once never touch
 the same file; the loser of a push race rebases and pushes again. The branch is never merged anywhere and needs no pull
 request: it is data the workflows write with their own `GITHUB_TOKEN`.
+
+A pull request's token cannot write the branch (a fork's never could), so its Gate B job keeps its result as the
+`gate-run-record` artifact, and the nightly's `pr-runs` job, every night whether the tier ran or not, collects the last
+three days' (`gate.py record --harvest`). A pull request's record is kind `pr`: it counts for flakes, costs and trends,
+and never as full-tier evidence.
 
 A record holds the commit, the gate tree, the run's URL, each job's counts, and every test: its `Class.method` name,
 seconds, batch, outcome (`passed`, `flaky`, `failed`, `known-flaky`, `skipped`), error, and its retry if it had one.
