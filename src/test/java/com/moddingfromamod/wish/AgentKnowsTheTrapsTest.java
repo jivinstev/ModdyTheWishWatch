@@ -1760,6 +1760,14 @@ class AgentKnowsTheTrapsTest {
             assertTrue(src.contains("\"armor\"") && src.contains("\"knockback_resistance\""),
                     tool + " must take armor and knockback_resistance (a shell, a heavy body), as define_species does");
         }
+        // and a creature far above its size is told so (an advisory, never a refusal), sculpted or real
+        for (String tool : new String[] {"SculptCreatureTool", "ModifyMobTool", "DefineSpeciesTool"}) {
+            String src = Files.readString(Path.of("src/main/java/com/moddingfromamod/agent/tools/" + tool + ".java"));
+            assertTrue(src.contains("PowerLine.farAbove("), tool + "'s result must carry the far-above-its-size advisory");
+        }
+        String modify = Files.readString(Path.of("src/main/java/com/moddingfromamod/agent/tools/ModifyMobTool.java"));
+        assertTrue(modify.contains("realMobPower(") && modify.contains("PowerLine.boxVolume("),
+                "modify_mob on a REAL mob must report its power from the live entity, with the same flags");
         // the lesson keeps no line telling it to zero a friendly creature's damage
         String creature = WishLessons.text("creature").replace("**", "").replaceAll("\\s+", " ").toLowerCase(java.util.Locale.ROOT);
         assertTrue(!creature.contains("damage 0") && !creature.contains("0 damage") && !creature.contains("damage: 0"),

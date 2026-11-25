@@ -59,19 +59,25 @@ public final class PowerLine {
      * 1 (NaN when it has none).
      */
     public static String of(Species s, double bodyVolume) {
-        StringBuilder sb = new StringBuilder("Power: ").append(num(s.health())).append(" health, ")
-                .append(num(s.damage())).append(" damage");
-        if (s.armor() > 0) {
-            sb.append(", ").append(num(s.armor())).append(" armour");
-        }
-        if (s.knockbackResistance() > 0) {
-            sb.append(", knockback resistance ").append(num(s.knockbackResistance()));
-        }
         boolean vehicle = s.archetype() == Archetype.VEHICLE;
-        PowerBand.Band band = PowerBand.forCreature(bodyVolume, s.body(), s.scale());
-        sb.append(": like ").append(likeVanilla(s.health(), s.damage())).append(". Its size is ").append(band.name())
-                .append(": about ").append(num(PowerBand.defaultHealth(band, s.powers().contains(Species.Power.BOSS))))
-                .append(" health, ").append(num(PowerBand.defaultDamage(band, vehicle))).append(" damage")
+        return of(s.health(), s.damage(), s.armor(), s.knockbackResistance(),
+                PowerBand.forCreature(bodyVolume, s.body(), s.scale()), s.powers().contains(Species.Power.BOSS), vehicle);
+    }
+
+    /** The power line from plain numbers: a real mob's live attributes, or a species'. */
+    public static String of(double health, double damage, double armor, double knockback, PowerBand.Band band,
+                            boolean boss, boolean vehicle) {
+        StringBuilder sb = new StringBuilder("Power: ").append(num(health)).append(" health, ").append(num(damage))
+                .append(" damage");
+        if (armor > 0) {
+            sb.append(", ").append(num(armor)).append(" armour");
+        }
+        if (knockback > 0) {
+            sb.append(", knockback resistance ").append(num(knockback));
+        }
+        sb.append(": like ").append(likeVanilla(health, damage)).append(". Its size is ").append(band.name())
+                .append(": about ").append(num(PowerBand.defaultHealth(band, boss))).append(" health, ")
+                .append(num(PowerBand.defaultDamage(band, vehicle))).append(" damage")
                 .append(vehicle ? " (a vehicle never hits)." : ".");
         return sb.toString();
     }
@@ -84,13 +90,73 @@ public final class PowerLine {
         if (s.damage() > 0 || !com.moddingfromamod.vanilla.RigInstinct.of(s).fights()) {
             return "";
         }
-        PowerBand.Band band = PowerBand.forCreature(bodyVolume, s.body(), s.scale());
         String why = s.base() == Species.Base.GUARDIAN ? "base 'guardian'"
                 : s.base() == Species.Base.HUNTER ? "base 'hunter'" : "no 'friendly' power, so it attacks";
+        return zeroHitFlag(why, PowerBand.forCreature(bodyVolume, s.body(), s.scale()));
+    }
+
+    /** The flag for a fighter with no hit, given why it fights and its band. */
+    public static String zeroHitFlag(String why, PowerBand.Band band) {
         return "⚠ It fights (" + why + ") but its damage is 0, and a hit of 0 lands nothing: it can never hurt what it "
                 + "fights. Give it damage before you show him (modify_mob with damage, or sculpt it again with damage): about "
-                + num(band.damage()) + " for its size (" + band.name() + "). Damage never makes a friendly creature attack; only its instinct does.";
+                + num(band.damage()) + " for its size (" + band.name() + "). Damage never makes a friendly creature "
+                + "attack; only its instinct does.";
     }
+
+    /**
+     * How much armour doubles its toughness: with this much, every hit takes about half (vanilla armour shaves up to
+     * 4% a point). Toughness for the advisory is {@code health * (1 + armour / ARMOUR_DOUBLES)}.
+     */
+    public static final double ARMOUR_DOUBLES = 15;
+
+    /**
+     * <b>An advisory, never a refusal</b> (#101 smoke): non-empty when a creature that is not a boss is FAR above what
+     * its size's band allows a reviewed stock creature: its health above the band's most health, or its health and
+     * armour together (its toughness) above twice that (a small body there is in iron-golem territory), or its damage
+     * above the band's most damage. Those tops ({@link PowerBand.Band#maxHealth},
+     * {@link PowerBand.Band#maxDamage}) are about two and a half times the band's default for the small and medium
+     * bands and about twice for the large and huge ones: a man-sized knight at 80 health and 12 armour is in iron-golem
+     * territory; a giant dinosaur at 300 health is at the top of its band, not above it. Never for a boss, never below
+     * the band, and the line only says how to lower it or to mark it a boss if that is meant.
+     */
+    public static String farAbove(double health, double damage, double armor, PowerBand.Band band, boolean boss) {
+        if (boss) {
+            return "";
+        }
+        double tough = health * (1 + Math.max(0, armor) / ARMOUR_DOUBLES);
+        boolean tooTough = health > band.maxHealth() + 1e-9 || tough > 2 * band.maxHealth() + 1e-9;
+        boolean hitsTooHard = damage > band.maxDamage() + 1e-9;
+        if (!tooTough && !hitsTooHard) {
+            return "";
+        }
+        String what = tooTough && hitsTooHard ? "too tough and hits too hard" : tooTough
+                ? (armor > 0 ? "too tough for its size, health and armour together" : "too tough for its size")
+                : "hits too hard for its size";
+        return "⚠ That is far above its size (" + band.name() + ": the most a creature this size has is about "
+                + num(band.maxHealth()) + " health, " + num(band.maxDamage()) + " damage): it is " + what
+                + ". If it is meant to be a boss, give it the 'boss' power; otherwise lower it (modify_mob with health, "
+                + "damage or armor) before you show him. Nothing was refused.";
+    }
+
+    /** The advisory for a species. A vehicle has none: its health is how much it takes, not a size (#99). */
+    public static String farAbove(Species s, double bodyVolume) {
+        if (s.archetype() == Archetype.VEHICLE) {
+            return "";
+        }
+        return farAbove(s.health(), s.damage(), s.armor(), PowerBand.forCreature(bodyVolume, s.body(), s.scale()),
+                s.powers().contains(Species.Power.BOSS));
+    }
+
+    /**
+     * A real mob's body, measured on its bounding box: width x width x height, times {@link #BOX_FILL}, the share of
+     * its box a vanilla mob's model fills (a zombie's boxes are about 0.41 cubic blocks of its 0.70 box; an iron
+     * golem's and a ravager's land in the large band, as the stock creatures their size do).
+     */
+    public static double boxVolume(double width, double height) {
+        return Math.max(0, width) * Math.max(0, width) * Math.max(0, height) * BOX_FILL;
+    }
+
+    public static final double BOX_FILL = 0.6;
 
     private static String num(double v) {
         return v == Math.rint(v) ? Long.toString((long) v) : String.format(Locale.ROOT, "%.1f", v);
