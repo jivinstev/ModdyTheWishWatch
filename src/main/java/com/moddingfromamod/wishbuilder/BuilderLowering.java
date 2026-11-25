@@ -494,6 +494,7 @@ public final class BuilderLowering {
             }
         }
         defence(shipped, a);
+        strength(spec, a, sculpt.getAsJsonArray("parts"), BuilderParts.vehicle(preset, shipped));
         List<String> powers = new ArrayList<>(temperPowers(spec.temper()));
         // what the starter does by being itself (a dragon flies and never burns, a T-Rex pounces). The lowering's
         // list replaces the starter's own file, so before this a Builder pet dragon walked and burned.
@@ -568,6 +569,47 @@ public final class BuilderLowering {
                 sculptArgs.add(k[1], shipped.get(k[0]).deepCopy());
             }
         }
+    }
+
+    /**
+     * #103: its size and How strong move its health and attack damage ({@link BuilderCreatureStrength}), and a guard
+     * always hits for at least its size band's damage, measured on the body it is made with ({@code parts}) at the
+     * scale it is made at. A number the sculpt does not carry is left to the tool (its band's default, #100), except a
+     * guard's damage, which it always carries.
+     */
+    static void strength(BuilderSpec spec, JsonObject sculptArgs, JsonArray parts, boolean vehicle) {
+        BuilderMobSizes.Level size = BuilderCreatureStrength.sizeOf(spec);
+        int st = BuilderCreatureStrength.strengthOf(spec);
+        boolean guard = "guard".equals(spec.temper());
+        if (sculptArgs.has("health") && sculptArgs.get("health").isJsonPrimitive()) {
+            sculptArgs.addProperty("health", BuilderCreatureStrength.health(sculptArgs.get("health").getAsDouble(), size, st));
+        }
+        if (sculptArgs.has("damage") && sculptArgs.get("damage").isJsonPrimitive() || guard) {
+            double body = sculptArgs.has("damage") && sculptArgs.get("damage").isJsonPrimitive()
+                    ? sculptArgs.get("damage").getAsDouble() : 0;
+            double scale = sculptArgs.has("scale") ? sculptArgs.get("scale").getAsDouble() : 1.0;
+            double band = com.moddingfromamod.species.PowerBand.forVolume(
+                    com.moddingfromamod.species.PowerBand.volume(boxes(parts), scale)).damage();
+            sculptArgs.addProperty("damage", BuilderCreatureStrength.damage(body, size, st, guard, band, vehicle));
+        }
+    }
+
+    /** A sculpt's parts as boxes ({@code from} and {@code to} in pixels), for measuring its solid volume. */
+    static List<double[]> boxes(JsonArray parts) {
+        List<double[]> out = new ArrayList<>();
+        if (parts == null) {
+            return out;
+        }
+        for (JsonElement e : parts) {
+            JsonObject p = e.getAsJsonObject();
+            if (p.has("from") && p.has("to")) {
+                JsonArray f = p.getAsJsonArray("from");
+                JsonArray t = p.getAsJsonArray("to");
+                out.add(new double[] {f.get(0).getAsDouble(), f.get(1).getAsDouble(), f.get(2).getAsDouble(),
+                        t.get(0).getAsDouble(), t.get(1).getAsDouble(), t.get(2).getAsDouble()});
+            }
+        }
+        return out;
     }
 
     /** step 6: the tune dialog's "How fast" (1 slow, 2 its own pace, 3 fast) as sculpt_creature's speed. */
@@ -741,6 +783,7 @@ public final class BuilderLowering {
             }
         }
         defence(LibraryPresets.SHIPPED.species(Catalogue.bare(preset)), a);
+        strength(spec, a, parts, BuilderParts.vehicle(preset, LibraryPresets.SHIPPED.species(Catalogue.bare(preset))));
         List<String> powers = new ArrayList<>(temperPowers(spec.temper()));
         // (was an earlier issue's flies alone): a body brings what it does by being itself (a plane flies, a rabbit hops, a
         // phoenix glows and never burns, BuilderNatural); every other power is his pick on the powers page. A make saved

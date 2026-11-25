@@ -49,6 +49,7 @@ public final class BuilderPaths {
         row("creature/ready/powers", true, true, "");
         row("creature/ready/scheme", true, true, "");
         row("creature/ready/speed", true, true, "");
+        row("creature/ready/strength", true, true, "");
         row("creature/ready/temper", true, true, "");
         row("event/made_up/count", false, false, "how many to make is a new make, never a change of the ones he has");
         row("event/made_up/motion", true, false, "not read by a typed change yet: #2352");
@@ -85,6 +86,7 @@ public final class BuilderPaths {
         row("ride/ready/powers", true, true, "");
         row("ride/ready/scheme", true, true, "");
         row("ride/ready/speed", true, true, "");
+        row("ride/ready/strength", true, true, "");
         row("ride/ready/temper", true, true, "");
         row("rule/rule/does", true, false, "not read by a typed change yet: #2352");
         row("rule/rule/when", true, false, "not read by a typed change yet: #2352");
