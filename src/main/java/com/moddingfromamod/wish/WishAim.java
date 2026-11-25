@@ -119,11 +119,31 @@ public final class WishAim {
      * sky, or out of reach).
      */
     public static Spot aim(Snapshot me, Hit hit, World w) {
+        return aim(me, hit, w, true);
+    }
+
+    /**
+     * …with {@code sure}: do we confidently know he is looking at what the ray hit ({@link AimConfidence})? A sure hit
+     * settles where he looked however far below him (#114). An UNSURE hit more than {@link #maxDrop} below the ground
+     * under him is held level, as a miss is (#46): a flick across a far floor is not a choice of that floor.
+     */
+    public static Spot aim(Snapshot me, Hit hit, World w, boolean sure) {
         if (hit != null) {
             // The air block in FRONT of the face it hit — never the block itself, which put a
             // wish inside the hillside it was aimed at.
             int x = hit.x() + hit.nx(), y = hit.y() + hit.ny(), z = hit.z() + hit.nz();
             int stand = standAt(w, x, y, z);
+            if (!sure && stand != Integer.MIN_VALUE) {
+                int fy = floor(me.y());
+                int ground = standAt(w, floor(me.x()), fy, floor(me.z()));
+                int under = ground == Integer.MIN_VALUE ? fy : ground;
+                double out = Math.hypot(x + 0.5 - me.x(), z + 0.5 - me.z());
+                if (under - stand > maxDrop(out)) {
+                    Spot m = aim(me, null, w, true);
+                    return new Spot(m.x(), m.y(), m.z(), "an unsure hit " + (under - stand)
+                            + " below him, held level as a miss: " + m.how());
+                }
+            }
             return stand == Integer.MIN_VALUE ? new Spot(x, y, z, "hit, nothing below")
                     : new Spot(x, stand, z, (stand == y ? "hit" : "hit, settled " + (y - stand) + " down")
                             + overLava(w, x, stand, z));
