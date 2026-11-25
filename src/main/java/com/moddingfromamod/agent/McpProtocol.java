@@ -777,11 +777,19 @@ public final class McpProtocol {
                                 // safety and the world's rules (a refused call never gets here); the core's note is
                                 // added to the result below. No world answering: nothing is touched.
                                 // A Builder make is fitted by the Builder itself (MakeGate.build, the live fit) and says so.
-                                final var fittedArgs = runNow != null && !runNow.builderMade()
-                                        && com.moddingfromamod.wish.MakeGate.anyWorld()
+                                final boolean fitting = runNow != null && !runNow.builderMade()
+                                        && com.moddingfromamod.wish.MakeGate.anyWorld();
+                                final JsonObject askedArgs = fitting ? args.deepCopy() : null;
+                                final var fittedArgs = fitting
                                         ? ToolArgFit.fit(name, args,
                                                 com.moddingfromamod.wish.MakeGate.limits(runNow.playerId()).limits())
                                         : java.util.List.<ToolArgFit.Lowered>of();
+                                if (!fittedArgs.isEmpty()) {
+                                    // the action log keeps BOTH, so a replay can tell "the agent asked 10" from "the
+                                    // world allowed 3": logged before the call, whatever its outcome
+                                    LOGGER.info("[world fit] wish {}: {} asked {} fitted {} ({})", wishId, name, askedArgs,
+                                            args, fittedArgs);
+                                }
                                 if (asyncPlan) {
                                     // Opened BEFORE the body, so what it shows the child is held.
                                     com.moddingfromamod.marshal.PlanDeferral.global().hold(runNow.wishId());
@@ -801,8 +809,11 @@ public final class McpProtocol {
                                                 false, out.imageBase64(), out.imageMime());
                                     }
                                 }
+                                // The note only on a result that stood. The non-live arguments were already fitted
+                                // BEFORE the call, error or not, and that is deliberate: a tool must never run with more
+                                // than this world allows, so do not move the fitting after the call. A failed call made
+                                // nothing, so there is nothing to tell the player about.
                                 if (!fittedArgs.isEmpty() && !out.isError()) {
-                                    LOGGER.info("[world fit] wish {}: {} fitted {}", wishId, name, fittedArgs);
                                     out = new ToolResult(out.text() + ToolArgFit.notes(fittedArgs), false,
                                             out.imageBase64(), out.imageMime());
                                 }
