@@ -37,6 +37,49 @@ public final class MagicianDoor {
         return WishRoute.choose(magicianOn, role, false, WishRoute.Hint.MAGICIAN, false) == WishRoute.Route.MAGICIAN;
     }
 
+    /**
+     * <b>For a wish already made, put back in line</b> (#81): does the Magician still answer its player? The same
+     * decision a fresh wish gets ({@link #offered}), asked by id, so a player who has left is read from the server's
+     * lists. With no server or no player there is nothing to ask, and nothing changes from before: true.
+     */
+    public static boolean answersNow(net.minecraft.server.MinecraftServer server, UUID player) {
+        if (server == null || player == null) {
+            return true;
+        }
+        return offered(on(player), CrafterService.role(server, player));
+    }
+
+    /** What a child hears when a wish of theirs is no longer the Magician's to make (#81). */
+    public static final String NOT_THE_MAGICIANS = "✨ The Magician can't make that wish for you now. Wish it again and "
+            + "Moddy's Apprentice will help, or open the 🛠 Wish Builder on your watch!";
+
+    /** The book's note on such a wish. */
+    static final String TURNED_BACK_NOTE = "The Magician no longer answers this player, so the wish was not put back in line.";
+
+    /**
+     * End a wish that was about to go back in line to a Magician who no longer answers its player (#81), the way the
+     * safety layer ends one at the plan step: the run stopped, the book REJECTED with a note, its bar down, and the
+     * child told in one line if they are here. Server thread. Never queued, so no worker is woken for it.
+     */
+    public static void turnBack(net.minecraft.server.MinecraftServer server, Wish wish, String where) {
+        if (server == null || wish == null || wish.id() == null) {
+            return;
+        }
+        com.moddingfromamod.marshal.Marshal marshal = com.moddingfromamod.marshal.Marshal.global();
+        marshal.cancel(wish.id(), com.moddingfromamod.marshal.CancelMode.STOP, "", "");
+        WishBook.get(server).complete(wish.id(), WishStatus.REJECTED, TURNED_BACK_NOTE);
+        if (wish.playerId() != null) {
+            WishCancel.clearHud(wish.playerId(), wish.id(), marshal);
+            ServerPlayer p = server.getPlayerList().getPlayer(wish.playerId());
+            if (p != null) {
+                p.sendSystemMessage(net.minecraft.network.chat.Component.literal(NOT_THE_MAGICIANS)
+                        .withStyle(net.minecraft.ChatFormatting.AQUA));
+            }
+        }
+        org.slf4j.LoggerFactory.getLogger(MagicianDoor.class).info(
+                "wish {}: not put back in line at {}: the Magician no longer answers its player (#81)", wish.shortId(), where);
+    }
+
     /** The Magician is off and this player is the one who may turn it on (the watch's "✪ Turn on the Magician"). */
     public static boolean hostMayTurnOn(ServerPlayer p) {
         return p != null && !on(p.getUUID()) && com.moddingfromamod.config.MagicianSetup.watchTile(p)
