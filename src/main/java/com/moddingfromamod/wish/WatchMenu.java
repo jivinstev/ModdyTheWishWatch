@@ -259,7 +259,8 @@ public final class WatchMenu extends ChestMenu {
                         world.guide().hasBook(), world.guide().book().title(),
                         starters));
         // a Magician picks who answers his typed wishes, where the Apprentice exists (the Builder is on).
-        if (!CrafterService.isCrafter(player) && com.moddingfromamod.wishbuilder.BuilderSettings.forPlayer(player.getUUID()).enabled()) {
+        // Only where the Magician would answer (#78): with it off there is no Magician magic to switch to.
+        if (MagicianDoor.offered(player) && com.moddingfromamod.wishbuilder.BuilderSettings.forPlayer(player.getUUID()).enabled()) {
             boolean apprentice = ApprenticeService.prefersApprentice(player);
             page = com.moddingfromamod.marshal.GuidePanel.withMode(page,
                     com.moddingfromamod.wishbuilder.ApprenticeWords.modeLabel(apprentice),
@@ -479,7 +480,8 @@ public final class WatchMenu extends ChestMenu {
      * changes. Who answers is decided again on the server at submit: the lore is a courtesy.
      */
     static WatchPanel.Layout forRole(ServerPlayer player, WatchPanel.Layout l) {
-        if (!CrafterService.isCrafter(player)) {
+        // "Type anything you can imagine" is the Magician's promise: only where he would answer the box (#78)
+        if (MagicianDoor.offered(player)) {
             return l;
         }
         List<WatchPanel.Cell> cells = new ArrayList<>();
