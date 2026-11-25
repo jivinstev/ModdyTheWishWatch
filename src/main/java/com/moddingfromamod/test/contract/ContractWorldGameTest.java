@@ -1230,4 +1230,49 @@ public final class ContractWorldGameTest {
         }
         return n;
     }
+
+    /** Run {@code lines} as a datapack function in {@code namespace}, the way a tick or a schedule runs one. */
+    private static void runFunction(net.minecraft.server.MinecraftServer server, String namespace, List<String> lines) {
+        var source = server.createCommandSourceStack().withSuppressedOutput().withPermission(4);
+        var fn = net.minecraft.commands.functions.CommandFunction.fromLines(
+                net.minecraft.resources.ResourceLocation.fromNamespaceAndPath(namespace, "gt_spawn"),
+                server.getCommands().getDispatcher(), source, lines);
+        server.getFunctions().execute(fn, source);
+    }
+
+    /**
+     * #80: "wished" means a wish made it. A creeper this world's OWN datapack function spawns is not wished and is not
+     * counted against the wishes' budget; one a wish's datapack function spawns is both. Through the real
+     * {@code ServerFunctionManager.execute}, as a tick or a schedule runs a function.
+     */
+    @GameTest(template = "empty_test", batch = "contract_world_function_spawns", timeoutTicks = 400)
+    public static void aWorldsOwnFunctionSpawnsNothingWishedAndAWishPackDoes(GameTestHelper helper) {
+        var level = helper.getLevel();
+        var server = level.getServer();
+        BlockPos p = helper.absolutePos(new BlockPos(1, 2, 1));
+        com.moddingfromamod.datapack.WishPacks.forceForTest("gt_wishpack_80", true);
+        MockPlayerNetwork.afterTest(helper, () -> com.moddingfromamod.datapack.WishPacks.forceForTest("gt_wishpack_80", false));
+        var kind = com.moddingfromamod.mob.SpawnBudget.Kind.EXPLOSIVE;
+        int liveBefore = com.moddingfromamod.mob.WishMobLimit.live(level.dimension(), kind);
+        String at = p.getX() + " " + p.getY() + " " + p.getZ();
+        runFunction(server, "gt_worldpack_80", List.of("summon minecraft:creeper " + at + " {NoAI:1b,Tags:[\"gt80_world\"]}",
+                "summon minecraft:creeper " + at + " {NoAI:1b,Tags:[\"gt80_world\"]}"));
+        runFunction(server, "gt_wishpack_80", List.of("summon minecraft:creeper " + at + " {NoAI:1b,Tags:[\"gt80_wish\"]}",
+                "summon minecraft:creeper " + at + " {NoAI:1b,Tags:[\"gt80_wish\"]}"));
+        var box = new net.minecraft.world.phys.AABB(p).inflate(4);
+        var world = level.getEntitiesOfClass(net.minecraft.world.entity.monster.Creeper.class, box,
+                c -> c.getTags().contains("gt80_world"));
+        var wish = level.getEntitiesOfClass(net.minecraft.world.entity.monster.Creeper.class, box,
+                c -> c.getTags().contains("gt80_wish"));
+        int counted = com.moddingfromamod.mob.WishMobLimit.live(level.dimension(), kind) - liveBefore;
+        world.forEach(net.minecraft.world.entity.Entity::discard);
+        wish.forEach(net.minecraft.world.entity.Entity::discard);
+        helper.assertTrue(world.size() == 2 && world.stream().noneMatch(com.moddingfromamod.world.Wished::isWished),
+                Component.literal("the world's own function: its creepers stand and none is wished: " + world.size()));
+        helper.assertTrue(wish.size() == 2 && wish.stream().allMatch(com.moddingfromamod.world.Wished::isWished),
+                Component.literal("a wish pack's function: both creepers are wished: " + wish.size()));
+        helper.assertTrue(counted == 2, Component.literal("the wishes' budget counts only the wish pack's two, counted "
+                + counted));
+        helper.succeed();
+    }
 }
