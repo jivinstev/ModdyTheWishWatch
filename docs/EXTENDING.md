@@ -146,12 +146,12 @@ on a set of tags. Today it reads two markers:
 | Marker | Put on | Meaning |
 |---|---|---|
 | `wishmob` | every sculpted wish creature, and a rig's carrier (the living entity that holds a rig creature's stats), at spawn and again on every load | a creature a wish made |
-| `moddy_wished` | a plain mob that joined the world inside a spawn scope: a wish's command (the Magician's `summon`, a recipe's command), a Builder or Magician event, or **any datapack function**, run by a tick or a schedule | a mob the wishes' spawn budget counts |
+| `moddy_wished` | a plain mob that joined the world inside a spawn scope: a wish's command (the Magician's `summon`, a recipe's command), a Builder or Magician event, or a function of a **wish's own datapack** (a namespace a wish wrote, `datapack/WishPacks`), run by a tick or a schedule | a mob the wishes' spawn budget counts |
 
-A rig's display parts are parts of a body, never one, and are never wished. A mob the world spawns by itself, or a
-child's own spawn egg, carries neither marker. Note the last row: a mob **your world's own datapack function** spawns
-is inside the same scope and is marked too; a world that spawns mobs from its own functions tags them itself and checks
-its own tag first.
+A rig's display parts are parts of a body, never one, and are never wished. A mob the world spawns by itself, a
+child's own spawn egg, and a mob your world's own datapack function (or vanilla's, or another mod's) spawns carry
+neither marker (#80): those functions run with no spawn scope, exactly as without Moddy, so what they spawn is not
+wished and is not counted against the wishes' spawn budget.
 
 ## Telling a wished item stack from any other: `WishedItem`
 
