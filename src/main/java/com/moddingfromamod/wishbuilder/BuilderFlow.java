@@ -2372,6 +2372,10 @@ public final class BuilderFlow {
         // step 6: how fast a creature or a ride goes (slow, its own pace, fast). LAST, so no older control moves.
         in.add(paced() ? new TuneDialog.Slider("speed", "How fast", 1, 3, 1,
                 prior == null ? start("speed", 2, 1, 3) : Math.max(1, Math.min(3, num(prior.opt("speed"), 2)))) : null);
+        // #103: how strong a creature or a ride is (gentle, its own, strong): its health and its hit. After How fast,
+        // so no older control moves.
+        in.add(paced() ? new TuneDialog.Slider("strength", "How strong", 1, 3, 1,
+                prior == null ? start("strength", 2, 1, 3) : Math.max(1, Math.min(3, num(prior.opt("strength"), 2)))) : null);
         in.removeIf(java.util.Objects::isNull);
         String title = editOf != null ? "Change your " + (prior.name().isEmpty() ? pickedLabel() : prior.name())
                 : kind == BuilderSpec.Kind.RULE ? "Your new rule"
@@ -2445,6 +2449,11 @@ public final class BuilderFlow {
             int speed = Math.max(1, Math.min(3, num(values.get("speed"), prior == null ? 2 : num(prior.opt("speed"), 2))));
             if (speed != 2) {
                 opts.put("speed", String.valueOf(speed));   // its own pace is written as nothing, so older specs read the same
+            }
+            // #103: its own strength is written as nothing too, so every older creature reads the same
+            int strength = Math.max(1, Math.min(3, num(values.get("strength"), prior == null ? 2 : num(prior.opt("strength"), 2))));
+            if (strength != 2) {
+                opts.put("strength", String.valueOf(strength));
             }
         }
         if (eventMadeUp()) {

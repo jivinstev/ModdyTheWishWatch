@@ -233,7 +233,10 @@ public final class MakeFit {
         try {
             now = Integer.parseInt(s.opt("strength").strip());
         } catch (NumberFormatException none) {
-            return out;
+            if (!creatureLike(s)) {
+                return out;
+            }
+            now = BuilderCreatureStrength.OWN;   // #103: a creature's own strength is written as nothing; gentler still exists
         }
         for (int st = now - 1; st >= 1; st--) {
             Map<String, String> o = new LinkedHashMap<>(s.opts());
@@ -292,12 +295,17 @@ public final class MakeFit {
         return out;
     }
 
+    /** A creature or a ride: its strength is #103's How strong, its own (2) when unstated. */
+    private static boolean creatureLike(BuilderSpec s) {
+        return s.kind() == BuilderSpec.Kind.CREATURE || s.kind() == BuilderSpec.Kind.RIDE;
+    }
+
     private static int stepsKept(BuilderSpec s) {
         int strength;
         try {
             strength = Integer.parseInt(s.opt("strength").strip());
         } catch (NumberFormatException none) {
-            strength = 0;
+            strength = creatureLike(s) ? BuilderCreatureStrength.OWN : 0;
         }
         BuilderMobSizes.Level l = s.opt("mobsize").isEmpty() ? null : BuilderMobSizes.of(s.opt("mobsize"));
         int size = l == null ? s.size() : BuilderMobSizes.ALL.indexOf(l);
