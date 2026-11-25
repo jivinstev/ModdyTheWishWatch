@@ -8,6 +8,7 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.moddingfromamod.ModdingFromAModMod;
+import com.moddingfromamod.world.WorldAccess;
 import com.moddingfromamod.world.WorldCrafters;
 import net.minecraft.ChatFormatting;
 import net.minecraft.advancements.AdvancementHolder;
@@ -214,6 +215,22 @@ public final class CrafterService {
             return;
         }
         greet(p);
+    }
+
+    /**
+     * #82: once at server start, whether this world's access settings could be read, said in ONE warning line when
+     * they could not (or the door is open with the server's allow list off). A warning only: nothing changes.
+     * {@link WorldAccess#current()} keeps the answer for a server plug-in's health report.
+     */
+    @SubscribeEvent
+    public static void onServerStarted(net.neoforged.neoforge.event.server.ServerStartedEvent event) {
+        String id = com.moddingfromamod.world.WorldFacts.manifestId();
+        WorldAccess a = WorldAccess.classify(id, () -> com.moddingfromamod.world.WorldFacts.manifestText(id),
+                event.getServer().getPlayerList().isUsingWhitelist());
+        WorldAccess.publish(a);
+        if (a.warns()) {
+            LOGGER.warn(a.line());
+        }
     }
 
     /** What a joining player is sent: the pause menu's links, and a Crafter's welcome. Public for a client test. */

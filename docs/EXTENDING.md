@@ -380,6 +380,28 @@ plugins.add(SettingsOverride.class, new SettingsOverride() {
 });
 ```
 
+### Reading a world's access state
+*`com.moddingfromamod.world.WorldAccess.current()`*, a static reader, not a hook. **Show in your own health report
+whether this world's access settings were read.** A world's manifest (`worlds/<id>.json`) may say, in its `crafters`
+block, that players off the server's allow list are answered by the Apprentice only. At server start the core
+classifies those settings once and, when something is wrong, logs one warning line (logger `moddingfromamod/crafters`,
+starting `world access:`). Nothing is refused and nothing changes for players: the core carries on with its default,
+in which every player the Magician is set up for is answered by it.
+
+- `state()`: `QUIET` (single player, a server with no world id, or a manifest with no `crafters` block), `READ`
+  (read and consistent), `MISSING` (a world id is set but no jar carries its manifest), `UNREADABLE`, `MALFORMED`, or
+  `ALLOW_LIST_OFF` (the door is open but the server's `white-list` is off, so vanilla counts every player as on it).
+- `world()` is the manifest id; `line()` is the warning that was logged (empty when none); `warns()` says whether one was.
+- Before the server has started it answers `QUIET`.
+
+Three kinds of server, and how each is set up with what exists (there is no setting of its own):
+
+| A server that is… | is set up as |
+|---|---|
+| **Magician on for everyone** | `magician.enabled on`, the world's door shut (`crafters.open` false or no `crafters` block) |
+| **Magician off, except an allow list** | `magician.enabled on`, the door open (`crafters.open` true) and the server's `white-list` on: listed players and operators are answered by the Magician, everyone else by the Apprentice and the Builder |
+| **Magician never on** | `magician.enabled off` (a `SettingsOverride` can lock it) |
+
 ## Internal seams (do not build on these)
 
 These hooks are read by the public core but exist for our own servers. Each one's javadoc says so. They may
