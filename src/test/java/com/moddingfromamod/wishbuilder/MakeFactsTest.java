@@ -313,7 +313,7 @@ class MakeFactsTest {
         assertTrue(f.known() && f.has(MakeFacts.BOSS) && f.has(MakeFacts.HOSTILE), f.toString());
         assertEquals(200.0, f.number(MakeFacts.HEALTH_HALF_HEARTS).orElse(-1));
         assertEquals(1.0, f.number(MakeFacts.COUNT_MADE).orElse(-1));
-        assertEquals(4.0, MakeFacts.ofCommands(List.of("wishmob spawn d 3"), store).number(MakeFacts.COUNT_MADE).orElse(-1));
+        assertEquals(3.0, MakeFacts.ofCommands(List.of("wishmob spawn d 3"), store).number(MakeFacts.COUNT_MADE).orElse(-1));
         // gone from the store: the cautious facts of a creature
         MakeFacts gone = MakeFacts.ofCommands(List.of("wishmob spawn nobody"), store);
         assertFalse(gone.known());
@@ -323,7 +323,8 @@ class MakeFactsTest {
         // the replay commands, each read as what it makes
         assertEquals(new MakeFacts.Ref("item", "lightning_sword_lightning", 1),
                 MakeFacts.ref("wishdatapack lightning_sword_lightning give"));
-        assertEquals(new MakeFacts.Ref("creature", "pet_dragon", 4), MakeFacts.ref("wishmob spawn pet_dragon 3"));
+        assertEquals(new MakeFacts.Ref("creature", "pet_dragon", 3), MakeFacts.ref("wishmob spawn pet_dragon 3"));
+        assertEquals(new MakeFacts.Ref("creature", "pet_dragon", 1), MakeFacts.ref("wishmob spawn pet_dragon at castle:door"));
         assertEquals(new MakeFacts.Ref("event", "meteor", 1), MakeFacts.ref("moddyevent stage meteor"));
         assertEquals(new MakeFacts.Ref("building", "castle", 1), MakeFacts.ref("wishbuild castle"));
         assertEquals(new MakeFacts.Ref("picture", "cat", 1), MakeFacts.ref("wishpaint cat"));

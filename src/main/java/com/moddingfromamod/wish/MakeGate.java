@@ -1,0 +1,143 @@
+package com.moddingfromamod.wish;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import com.moddingfromamod.ModdingFromAModMod;
+import com.moddingfromamod.ui.PickPage;
+import com.moddingfromamod.wishbuilder.BuilderAllowlist;
+import com.moddingfromamod.wishbuilder.BuilderSpec;
+import com.moddingfromamod.wishbuilder.MakeFacts;
+import com.moddingfromamod.wishbuilder.MakeFit;
+import com.moddingfromamod.world.MakeView;
+import com.moddingfromamod.world.WorldLimits;
+import com.moddingfromamod.world.WorldMakes;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+/**
+ * <b>The core's one way to ask this world what may be made here, and how big</b> ({@link WorldMakes}), and to show,
+ * fit and say its answer. Every place a make starts or is offered asks through here (a Builder page's tiles, its tune
+ * dialog and its Make, an Apprentice make, a recipe, "Make another one", a hotbar fire, "Give me one", a thing on his
+ * watch), so the distress rule, the sweep, the fallback and the fitting ({@link MakeVerdict}, {@link MakeFit}) are the
+ * same at each. A VIEW: nothing here is written to the shelf or any store. Server thread.
+ *
+ * <p>Safety runs before it at every start (the lexicon on a wish's words, the agent's own checks, a world's rules
+ * file), so nothing safety refuses ever reaches a world to be fitted or locked.
+ */
+public final class MakeGate {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(ModdingFromAModMod.MODID);
+
+    private MakeGate() {
+    }
+
+    /** What this world says about the make {@code facts} describes, for {@code ask}, decided. */
+    public static MakeVerdict ask(MakeFacts facts, WishAsk ask) {
+        WorldMakes world = WorldMakes.get();
+        if (world == WorldMakes.NONE) {
+            return MakeVerdict.ALLOWED;   // the plain game: nothing to ask
+        }
+        MakeView view;
+        Map<String, Double> upFront;
+        try {
+            view = world.view(facts, ask);
+            WorldLimits l = world.limits(ask.player());
+            upFront = l == null ? Map.of() : l.limits();
+        } catch (RuntimeException | LinkageError e) {
+            // a world that cannot answer stops nothing: the game as it is with no world answering
+            LOGGER.warn("the world's WorldMakes threw on {}: {}", facts, e.toString());
+            view = MakeView.ALLOWED;
+            upFront = Map.of();
+        }
+        MakeVerdict v = MakeVerdict.decide(ask.distress(), view, upFront, line -> WishFeedback.sweeps(line, ""));
+        // a make over a limit it carries no knob for cannot be fitted by anyone: locked in the core's words
+        if (v.state() == MakeView.State.FIT && !MakeFit.over(facts, v.limits()).isEmpty()
+                && MakeFit.over(facts, v.limits()).stream().anyMatch(k -> !MakeFit.FACTS.get(k).clampable())) {
+            return v.tooMuch();
+        }
+        return v;
+    }
+
+    /** The world's limits for every make of this player's, or none. Cheap: a menu asks per draw. */
+    public static WorldLimits limits(java.util.UUID player) {
+        WorldMakes world = WorldMakes.get();
+        if (world == WorldMakes.NONE || player == null) {
+            return WorldLimits.NONE;
+        }
+        try {
+            WorldLimits l = world.limits(player);
+            return l == null ? WorldLimits.NONE : l;
+        } catch (RuntimeException | LinkageError e) {
+            LOGGER.warn("the world's WorldMakes threw on limits: {}", e.toString());
+            return WorldLimits.NONE;
+        }
+    }
+
+    /** What a Builder spec becomes here: the verdict, and the spec fitted when it is let through within limits. */
+    public record Built(MakeVerdict verdict, BuilderSpec spec, List<String> lowered, boolean unfit) {
+        Built(MakeVerdict verdict, BuilderSpec spec, List<String> lowered) {
+            this(verdict, spec, lowered, false);
+        }
+
+        public boolean makes() {
+            return verdict.makes();
+        }
+    }
+
+    /**
+     * A Builder spec, asked and fitted: the world is asked about the spec as this world caps it; FIT fits it through
+     * {@link BuilderAllowlist#capped(BuilderSpec, Map)}, the one fitting path, and the fitted make is asked again (a
+     * world may lock what it fitted). One that cannot be fitted is locked in {@link MakeVerdict#TOO_MUCH}.
+     */
+    public static Built build(BuilderSpec spec, BuilderAllowlist allow, WishAsk ask) {
+        BuilderSpec capped = allow == null ? spec : allow.capped(spec);
+        MakeVerdict v = ask(MakeFacts.of(capped), ask);
+        if (!v.makes() || v.limits().isEmpty()) {
+            return new Built(v, capped, List.of());
+        }
+        MakeFit.Fitted f = allow == null ? MakeFit.fit(capped, v.limits()) : allow.capped(spec, v.limits());
+        if (!f.fits()) {
+            return new Built(v.tooMuch(), capped, List.of(), true);
+        }
+        if (!f.changed()) {
+            return new Built(v, f.spec(), List.of());
+        }
+        MakeVerdict again = ask(MakeFacts.of(f.spec()), ask);
+        if (!again.makes()) {
+            return new Built(again, f.spec(), List.of());
+        }
+        return new Built(v, f.spec(), f.lowered());
+    }
+
+    /** Is anything answering here at all? With nothing, every page is drawn exactly as before. */
+    public static boolean anyWorld() {
+        return WorldMakes.get() != WorldMakes.NONE;
+    }
+
+    /** Say a verdict's line, once; nothing when the make is let through. */
+    public static void say(ServerPlayer player, MakeVerdict v) {
+        if (player != null && !v.makes() && !v.line().isEmpty()) {
+            player.sendSystemMessage(Component.literal(v.line()));
+        }
+    }
+
+    /** Say, once, that a make was fitted (the core's own words, swept like any line); nothing when it was not. */
+    public static void sayFitted(ServerPlayer player, List<String> lowered) {
+        String line = MakeVerdict.fittedLine(lowered);
+        if (player != null && !line.isEmpty() && WishFeedback.sweeps(line, "")) {
+            player.sendSystemMessage(Component.literal(line));
+        }
+    }
+
+    /** A make tile, drawn as locked: grey, with the world's words first under its name. Never pressable into a make. */
+    public static PickPage.Tile lockedTile(PickPage.Tile t, MakeVerdict v) {
+        List<String> lore = new ArrayList<>();
+        lore.add(v.line());
+        lore.addAll(t.lore());
+        return new PickPage.Tile(t.id(), PickPage.BLOCKED_ITEM, t.label() + " 🔒", lore, false);
+    }
+}

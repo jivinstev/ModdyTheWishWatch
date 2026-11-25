@@ -289,8 +289,38 @@ public record MakeFacts(String kind, Map<String, Double> numbers, Set<String> ta
      * {@code builder:<id>} make's stored spec. The ready-mades are read from the shipped library.
      */
     public static MakeFacts of(BuilderSpec spec) {
-        return of(spec, LibraryPresets.SHIPPED);
+        if (spec == null) {
+            return cautious(OTHER);
+        }
+        // the shipped library's facts of a spec never change at run time: a bounded memo, so a menu drawn under a
+        // world's limits (every tile's make, read and fitted) does not lower the same spec again and again
+        String key = spec.toJson().toString();
+        MakeFacts hit = MEMO.get(key);
+        if (hit != null) {
+            return hit;
+        }
+        MakeFacts f = of(spec, LibraryPresets.SHIPPED);
+        MEMO.put(key, f);
+        return f;
     }
+
+    private static final java.util.concurrent.atomic.AtomicLong DERIVED = new java.util.concurrent.atomic.AtomicLong();
+
+    /** How many specs have been read into facts so far (a memo hit is not one): what a test counts to prove a menu
+     *  draw derives nothing. */
+    public static long derivations() {
+        return DERIVED.get();
+    }
+
+    /** At most this many specs' facts are remembered; the oldest goes first. */
+    static final int MEMO_SIZE = 4096;
+
+    private static final Map<String, MakeFacts> MEMO = Collections.synchronizedMap(new LinkedHashMap<>(256, 0.75f, true) {
+        @Override
+        protected boolean removeEldestEntry(Map.Entry<String, MakeFacts> eldest) {
+            return size() > MEMO_SIZE;
+        }
+    });
 
     /**
      * …with the ready-mades read through {@code presets}. A spec still being picked (a menu page's tile: a kind with
@@ -301,6 +331,7 @@ public record MakeFacts(String kind, Map<String, Double> numbers, Set<String> ta
         if (spec == null) {
             return cautious(OTHER);
         }
+        DERIVED.incrementAndGet();
         BuilderSpec.Kind k = spec.kind();
         Acc a = new Acc(k.id());
         boolean creature = k == BuilderSpec.Kind.CREATURE || k == BuilderSpec.Kind.RIDE;
@@ -770,7 +801,7 @@ public record MakeFacts(String kind, Map<String, Double> numbers, Set<String> ta
 
     /**
      * What one recipe command makes, or null when it makes no thing (a {@code say}, {@code time set}…). The replay
-     * commands ({@code ReplayContract.ALL}): {@code wishmob spawn <id> [n]}, {@code wishdatapack <id> <entry>},
+     * commands ({@code ReplayContract.ALL}): {@code wishmob spawn <id> [count] [at …]} (count: how many it spawns), {@code wishdatapack <id> <entry>},
      * {@code wishbuild <id>}, {@code wishpaint <id>}, {@code moddyevent stage <id>}; and the two plain ones a recipe may
      * carry, {@code summon <mob>} and {@code give <who> <item>}.
      */
@@ -784,7 +815,7 @@ public record MakeFacts(String kind, Map<String, Double> numbers, Set<String> ta
         }
         return switch (w[0]) {
             case "wishmob" -> w.length >= 3 && w[1].equals("spawn")
-                    ? new Ref(BuilderSpec.Kind.CREATURE.id(), w[2], 1 + (w.length >= 4 ? Math.max(0, num(w[3], 0)) : 0)) : null;
+                    ? new Ref(BuilderSpec.Kind.CREATURE.id(), w[2], w.length >= 4 ? Math.max(1, num(w[3], 1)) : 1) : null;
             case "wishdatapack" -> w.length >= 2 ? new Ref(BuilderSpec.Kind.ITEM.id(), w[1], 1) : null;
             case "wishbuild" -> w.length >= 2 ? new Ref(BuilderSpec.Kind.BUILDING.id(), w[1], 1) : null;
             case "wishpaint" -> w.length >= 2 ? new Ref(BuilderSpec.Kind.PICTURE.id(), w[1], 1) : null;

@@ -217,6 +217,12 @@ public final class WorldModuleHost {
         bases = b;
         WorldRules fallback = m == null ? WorldRules.ALLOW_ALL : m.fallbackRules(b);
         WorldRulesService.start(WorldRulesService.defaultFile(), worldId(), fallback);
+        // #14: a world that answers makes has its Builder pages' facts worked out now, in the background, so a page drawn
+        // later is a comparison. A world that answers none starts nothing.
+        if (WorldMakes.get() != WorldMakes.NONE) {
+            com.moddingfromamod.wishbuilder.BuilderPageFacts.forWorld(
+                    com.moddingfromamod.wishbuilder.BuilderSettings.current().allow());
+        }
     }
 
     @SubscribeEvent
