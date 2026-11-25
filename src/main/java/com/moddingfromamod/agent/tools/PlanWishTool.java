@@ -456,7 +456,7 @@ public final class PlanWishTool implements McpTool {
         var level = com.moddingfromamod.wish.reveal.WishOrbs.levelOf(player.getServer(), spot.dimension());
         net.minecraft.core.BlockPos at = new net.minecraft.core.BlockPos(spot.x(), spot.y(), spot.z());
         var to = com.moddingfromamod.wish.WishAimer.slide(level, from, at,
-                com.moddingfromamod.wish.WishAim.Kind.parse(kind));
+                com.moddingfromamod.wish.WishAim.Kind.parse(kind), run.playerId());
         if (to == null) {
             return;
         }

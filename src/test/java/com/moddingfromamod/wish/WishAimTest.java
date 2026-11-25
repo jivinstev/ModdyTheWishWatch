@@ -271,12 +271,14 @@ class WishAimTest {
 
     @Test
     void aBuildingSlidOffASkyIslandStaysLevelWithHimNotOnAFloorFarBelow() {
-        // The measured case: a farm wished at the island's edge slid 12 out and went up 126 blocks below, out of sight.
+        // The measured case (#46): a farm wished at the island's edge slid 12 out and went up 126 blocks below, out of
+        // sight. Aimed at the island's own ground, the slide now stops at the island's edge, on its ground (a slide from
+        // ground never leaves the ground: the arena's north wall, 2026-11-25), still level with him.
         WishAim.Spot s = WishAim.slide(at(64, 0f), 0, 64, 2, WishAim.Kind.BUILDING, island(true));
         assertNotNull(s);
         assertEquals(64, s.y(), s.how());
-        assertEquals(12, s.z());
-        assertTrue(s.how().contains("level with where he aimed over a drop of 124"), s.how());
+        assertEquals(3, s.z(), "the island's last block of ground: " + s.how());
+        assertTrue(s.how().contains("stopped short of 12: the ground ends there"), s.how());
     }
 
     @Test
@@ -286,7 +288,37 @@ class WishAimTest {
         assertNotNull(overVoid);
         assertEquals(java.util.List.of(overFloor.x(), overFloor.y(), overFloor.z()),
                 java.util.List.of(overVoid.x(), overVoid.y(), overVoid.z()));
-        assertTrue(overVoid.how().contains("over the void"), overVoid.how());
+        assertTrue(overVoid.how().contains("the ground ends there"), overVoid.how());
+    }
+
+    @Test
+    void aBuildingAimedInsideAnArenasWallIsNotCarriedThroughIt() {
+        // The arena (2026-11-25): a floor at 64 over a 124-block drop, a wall 5 high at z 6..7 (outside: nothing), and a
+        // house aimed 4 out. It used to slide to 12, through the wall and over the drop, where the world refused it.
+        Fake w = island(true);
+        w.box(-20, 60, -3, 20, 63, 5, WishAim.Cell.SOLID);
+        w.box(-20, 64, 6, 20, 68, 7, WishAim.Cell.SOLID);
+        WishAim.Spot s = WishAim.slide(at(64, 0f), 0, 64, 4, WishAim.Kind.BUILDING, w);
+        assertNotNull(s);
+        assertEquals(5, s.z(), "the last floor before the wall: " + s.how());
+        assertEquals(64, s.y());
+        assertTrue(s.how().contains("a wall"), s.how());
+        // and with no wall, the world's own edge stops it: everything past z 4 is outside where the world allows
+        Fake open = island(true);
+        open.box(-20, 60, -3, 20, 63, 20, WishAim.Cell.SOLID);
+        WishAim.Spot fenced = WishAim.slide(at(64, 0f), 0, 64, 2, WishAim.Kind.BUILDING, open, (x, z) -> z <= 4);
+        assertNotNull(fenced);
+        assertEquals(4, fenced.z(), fenced.how());
+        assertTrue(fenced.how().contains("this world's edge"), fenced.how());
+    }
+
+    @Test
+    void aMissOverTheVoidStillSlidesLevelWithHim() {
+        // aimed at nothing (no ground under the spot), the slide is #46's: level with where he aimed
+        WishAim.Spot s = WishAim.slide(at(64, 0f), 0, 64, 5, WishAim.Kind.BUILDING, island(true));
+        assertNotNull(s);
+        assertEquals(12, s.z(), s.how());
+        assertTrue(s.how().contains("level with where he aimed over a drop of 124"), s.how());
     }
 
     @Test
@@ -330,14 +362,19 @@ class WishAimTest {
         Fake w = new Fake();
         w.groundTop = 200;
         w.box(-2, 100, -2, 2, 102, 3, WishAim.Cell.AIR);
-        assertNull(WishAim.slide(at(100, 0f), 0, 100, 2, WishAim.Kind.BUILDING, w));
+        // it walks to the cave's end and stops at its rock wall: never into the void, never climbing out of the rock
+        WishAim.Spot s = WishAim.slide(at(100, 0f), 0, 100, 2, WishAim.Kind.BUILDING, w);
+        assertNotNull(s);
+        assertEquals(3, s.z(), s.how());
+        assertEquals(100, s.y());
+        assertTrue(s.how().contains("a wall"), s.how());
     }
 
     @Test
-    void aSlideOverAColumnNotLoadedBelowStaysWhereItWas() {
+    void aSlideOverAColumnNotLoadedStopsBeforeIt() {
         Fake w = island(false);
-        w.put(0, -20, 12, WishAim.Cell.UNLOADED);
-        assertNull(WishAim.slide(at(64, 0f), 0, 64, 2, WishAim.Kind.BUILDING, w));
+        w.put(0, 64, 3, WishAim.Cell.UNLOADED);
+        assertNull(WishAim.slide(at(64, 0f), 0, 64, 2, WishAim.Kind.BUILDING, w), "the next step is not loaded: it stays");
     }
 
     @Test

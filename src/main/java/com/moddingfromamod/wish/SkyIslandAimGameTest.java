@@ -20,7 +20,7 @@ import net.minecraft.world.level.block.Blocks;
 /**
  * #114, the owner's decision, through the real press ({@code BuilderMake.make}, what a Builder tile runs): a farm plot
  * made from a sky island's edge. He stands on an island 120 blocks up; 50 below, out past its edge, is a small stone
- * pad (20 blocks out, so his look clears the island's own edge); nothing else is within reach. A MISS stays level with him (#46) and stands on a base of its own, so it does not
+ * pad (28 blocks out, so his look clears the island's own edge); nothing else is within reach. A MISS stays level with him (#46) and stands on a base of its own, so it does not
  * hang; a STEADY look at the pad is a confident hit and settles there, however far down; a ONE-TICK flick to the pad is
  * not, and is held level as a miss is. Test code: never in the jar.
  */
@@ -40,18 +40,25 @@ public final class SkyIslandAimGameTest {
         MockPlayerNetwork.clearStaleMocks(helper);
         BlockPos o = helper.absolutePos(BlockPos.ZERO);
         var level = helper.getLevel();
+        // ITS OWN SPACE (#129's lesson): everything here is above the 9x9x9 structure the framework clears, and batches
+        // reuse positions, so an earlier batch's farm (built level with the island) stood in this one's line of sight.
+        // The layers it uses are emptied before and after.
+        clear(level, o);
+        MockPlayerNetwork.afterTest(helper, () -> clear(level, o));
         for (int x = 0; x <= 4; x++) {
             for (int z = 0; z <= 4; z++) {
                 level.setBlockAndUpdate(o.offset(x, ISLAND, z), Blocks.GRASS_BLOCK.defaultBlockState());
             }
         }
-        for (int x = 23; x <= 25; x++) {
+        for (int x = 31; x <= 33; x++) {
             for (int z = 1; z <= 3; z++) {
                 level.setBlockAndUpdate(o.offset(x, PAD, z), Blocks.STONE.defaultBlockState());
             }
         }
         ServerPlayer p = MockPlayerNetwork.inLevel(helper, name);
-        p.setPos(o.getX() + 4.5, o.getY() + ISLAND + 1, o.getZ() + 2.5);   // at the island's east edge
+        // at the island's east edge; the pad 28 out keeps his look shallow enough to clear the island's own edge by
+        // ~0.5 of a block (at 20 out it cleared it by 0.12, and a mock a little off its spot hit the island instead)
+        p.setPos(o.getX() + 4.8, o.getY() + ISLAND + 1, o.getZ() + 2.5);
         look(p, 0f);
         String before = System.getProperty(BuilderSettings.ENABLED_PROPERTY);
         System.setProperty(BuilderSettings.ENABLED_PROPERTY, "true");
@@ -70,6 +77,19 @@ public final class SkyIslandAimGameTest {
         return p;
     }
 
+    /** The island's and the pad's layers, and every farm a case builds on them, emptied. */
+    static void clear(net.minecraft.server.level.ServerLevel level, BlockPos o) {
+        for (int x = -4; x <= 48; x++) {
+            for (int z = -10; z <= 14; z++) {
+                for (int y : new int[]{ISLAND - 2, PAD - 2}) {
+                    for (int dy = 0; dy <= 10; dy++) {
+                        level.setBlock(o.offset(x, y + dy, z), Blocks.AIR.defaultBlockState(), 2);
+                    }
+                }
+            }
+        }
+    }
+
     /** Face east, at this pitch. */
     private static void look(ServerPlayer p, float pitch) {
         p.setYRot(-90f);
@@ -80,7 +100,7 @@ public final class SkyIslandAimGameTest {
     /** The pitch that looks at the middle of the pad's top. */
     private static float atThePad(GameTestHelper helper, ServerPlayer p) {
         BlockPos o = helper.absolutePos(BlockPos.ZERO);
-        double dx = o.getX() + 24.5 - p.getX();
+        double dx = o.getX() + 32.5 - p.getX();
         double dy = p.getEyeY() - (o.getY() + PAD + 1);
         return (float) Math.toDegrees(Math.atan2(dy, dx));
     }

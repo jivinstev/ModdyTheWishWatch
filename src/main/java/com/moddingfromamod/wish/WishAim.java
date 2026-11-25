@@ -192,6 +192,25 @@ public final class WishAim {
      * {@link #maxDrop}, the new spot is level with where he aimed.
      */
     public static Spot slide(Snapshot me, int ax, int ay, int az, Kind kind, World w) {
+        return slide(me, ax, ay, az, kind, w, null);
+    }
+
+    /** How many blocks one step of an outward slide may climb before it is a wall, not ground rising. */
+    static final int STEP_UP = 2;
+
+    /**
+     * …with {@code allowed}, where this world lets the wish stand ({@code x, z}; null: anywhere).
+     *
+     * <p><b>A slide from ground never leaves the ground</b> (the arena's north wall, 2026-11-25). When the spot he aimed
+     * at stands on something and the kind slides it OUTWARD (a building to 12), it walks out along the gaze a block at
+     * a time and stops at the last spot that still has ground: before a step with nothing under it within
+     * {@link #maxDrop} (an edge, the void), a step that climbs more than {@link #STEP_UP} (a wall), or a step outside
+     * {@code allowed}. So a house aimed 4 blocks inside an arena's wall is not carried through the wall and over a
+     * 124-block drop into a place the world refuses. A spot aimed at nothing (a miss over the void) slides as before:
+     * level with where he aimed (#46). Null when it would not move.
+     */
+    public static Spot slide(Snapshot me, int ax, int ay, int az, Kind kind, World w,
+                             java.util.function.BiPredicate<Integer, Integer> allowed) {
         if (kind == null) {
             return null;
         }
@@ -214,6 +233,9 @@ public final class WishAim {
         if (w.at(x, ay, z) == Cell.UNLOADED) {
             return null;
         }
+        if (want > d && floored(w, ax, ay, az)) {
+            return walkOut(me, ax, ay, az, d, want, ux, uz, kind, w, allowed);
+        }
         int from = Math.max(ay, floor(me.y()));
         int stand = standAt(w, x, from, z);
         String slid = "slid " + Math.round(d) + "→" + Math.round(want) + " for a "
@@ -226,6 +248,53 @@ public final class WishAim {
             return new Spot(x, ay, z, slid + ", level with where he aimed over a drop of " + (ay - stand));
         }
         return new Spot(x, stand, z, slid + overLava(w, x, stand, z));
+    }
+
+    /** The outward slide from ground, a block at a time: the last spot that still has ground the world allows. */
+    private static Spot walkOut(Snapshot me, int ax, int ay, int az, double d, double want, double ux, double uz,
+                                Kind kind, World w, java.util.function.BiPredicate<Integer, Integer> allowed) {
+        int lastX = ax, lastZ = az, lastY = ay;
+        double reached = d;
+        String stoppedBy = null;
+        for (int s = (int) Math.floor(d) + 1; s <= (int) Math.round(want); s++) {
+            int x = floor(me.x() + ux * s), z = floor(me.z() + uz * s);
+            if (x == lastX && z == lastZ) {
+                continue;
+            }
+            if (w.at(x, lastY, z) == Cell.UNLOADED) {
+                stoppedBy = "the world there is not loaded";
+                break;
+            }
+            int stand = standAt(w, x, lastY + STEP_UP, z);
+            boolean rock = w.at(x, lastY, z) != Cell.AIR && w.at(x, lastY, z) != Cell.UNLOADED;
+            if (stand == Integer.MIN_VALUE && rock) {
+                stoppedBy = "a wall";   // into rock too deep to climb out of
+                break;
+            }
+            if (stand == Integer.MIN_VALUE || lastY - stand > maxDrop(s)) {
+                stoppedBy = "the ground ends there";
+                break;
+            }
+            if (stand - lastY > STEP_UP) {
+                stoppedBy = "a wall";
+                break;
+            }
+            if (allowed != null && !allowed.test(x, z)) {
+                stoppedBy = "this world's edge";
+                break;
+            }
+            lastX = x;
+            lastZ = z;
+            lastY = stand;
+            reached = s;
+        }
+        if (lastX == ax && lastZ == az) {
+            return null;   // no room out there: it stays where he aimed
+        }
+        String slid = "slid " + Math.round(d) + "→" + Math.round(reached) + " for a "
+                + kind.name().toLowerCase(java.util.Locale.ROOT);
+        return new Spot(lastX, lastY, lastZ, (stoppedBy == null ? slid : slid + ", stopped short of "
+                + Math.round(want) + ": " + stoppedBy) + overLava(w, lastX, lastY, lastZ));
     }
 
     /** How far below its own level a spot this far out from him may settle: that far, and at least {@link #MIN_MISS}. */

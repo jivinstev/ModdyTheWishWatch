@@ -164,10 +164,19 @@ public final class WishAimer {
 
     /** {@link WishAim#slide} against this level, or null when the spot does not move. */
     public static WishAim.Spot slide(ServerLevel level, WishRun.Aim from, BlockPos at, WishAim.Kind kind) {
+        return slide(level, from, at, kind, null);
+    }
+
+    /** …for {@code caster}'s wish: the slide stays inside where this world lets his wish stand (its fence, if any). */
+    public static WishAim.Spot slide(ServerLevel level, WishRun.Aim from, BlockPos at, WishAim.Kind kind,
+                                     java.util.UUID caster) {
         if (level == null || from == null || at == null) {
             return null;
         }
-        return WishAim.slide(pure(from), at.getX(), at.getY(), at.getZ(), kind, world(level));
+        com.moddingfromamod.world.Region fence = caster == null ? null
+                : com.moddingfromamod.world.WorldModuleHost.fenceFor(caster);
+        return WishAim.slide(pure(from), at.getX(), at.getY(), at.getZ(), kind, world(level),
+                fence == null ? null : (x, z) -> fence.contains(x + 0.5, z + 0.5));
     }
 
     /** The log line a report about "where did it land" is checked against. */
