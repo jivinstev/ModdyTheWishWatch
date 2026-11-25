@@ -534,8 +534,22 @@ public record Species(String id, String name, Body body, String texture, int tin
         return o;
     }
 
-    /** Parse a species. Missing fields take sane defaults; bad ones are clamped, never fatal. */
+    /**
+     * Parse a species. Missing fields take sane defaults; bad ones are clamped, never fatal. A creature with no health
+     * or attack damage of its own gets its size's ({@link PowerBand}), measured from its vanilla model shape and scale;
+     * {@link #fromJson(JsonObject, double)} measures a sculpted body instead.
+     */
     public static Species fromJson(JsonObject o) {
+        return fromJson(o, Double.NaN);
+    }
+
+    /**
+     * Parse a species whose body's solid volume at scale 1 is {@code bodyVolume} cubic blocks (its sculpt's boxes;
+     * NaN when it has none). Only a field that is absent (or not a number) takes its band's default (#100): a tiny
+     * thing about 6 health and 1 damage, a huge one about 160 and 12, a boss half as much health again, a vehicle no
+     * hit. Before #100 every such creature got a flat 20 and 3, whatever it was.
+     */
+    public static Species fromJson(JsonObject o, double bodyVolume) {
         if (o == null) {
             return null;
         }
@@ -574,6 +588,13 @@ public record Species(String id, String name, Body body, String texture, int tin
         // A life that needs a power (a dragon's flight) brings it, however the file was written.
         if (s.archetype() != null) {
             s = s.withBehaves(s.archetype());
+        }
+        boolean noHealth = !isNumber(o, "health");
+        boolean noDamage = !isNumber(o, "damage");
+        if (noHealth || noDamage) {
+            PowerBand.Band band = PowerBand.forCreature(bodyVolume, s.body(), s.scale());
+            s = s.withStats(noHealth ? PowerBand.defaultHealth(band, s.powers().contains(Power.BOSS)) : null,
+                    noDamage ? PowerBand.defaultDamage(band, s.archetype() == Archetype.VEHICLE) : null);
         }
         return s.isValid() ? s : null;
     }
@@ -792,6 +813,23 @@ public record Species(String id, String name, Body body, String texture, int tin
 
     private static String str(JsonObject o, String k, String fallback) {
         return o.has(k) && o.get(k).isJsonPrimitive() ? o.get(k).getAsString() : fallback;
+    }
+
+    /** Whether {@code o} states {@code k} as a number (absent, null or a word is not one). */
+    private static boolean isNumber(JsonObject o, String k) {
+        try {
+            return o.has(k) && o.get(k).isJsonPrimitive() && o.get(k).getAsJsonPrimitive().isNumber()
+                    || o.has(k) && o.get(k).isJsonPrimitive() && !Double.isNaN(Double.parseDouble(o.get(k).getAsString()));
+        } catch (RuntimeException e) {
+            return false;
+        }
+    }
+
+    /** The same creature with this health and attack damage; a null leaves that one as it is. */
+    private Species withStats(Double newHealth, Double newDamage) {
+        return new Species(id, name, body, texture, tint, scale, newHealth == null ? health : newHealth, speed,
+                newDamage == null ? damage : newDamage, armor, knockbackResistance, powers, modelKey, base, abilities,
+                abilityPacks, ownerId, voice, throwsItem, behaves);
     }
 
     private static double dbl(JsonObject o, String k, double fallback) {

@@ -1382,7 +1382,8 @@ public final class SculptCreatureTool implements McpTool {
             // Resolved above to an archetype's key; with start_from and none named, the base's life stays.
             speciesJson.addProperty("behaves", args.get(com.moddingfromamod.species.BehavesLike.ARG).getAsString());
         }
-        Species species = Species.fromJson(speciesJson);
+        // a number it was not given comes from its size (#100): measured on the body it was just given
+        Species species = Species.fromJson(speciesJson, com.moddingfromamod.runtime.CreatureSculpt.volume(parts));
         if (species == null) {
             return ToolResult.error("Couldn't build the creature's stats.");
         }
