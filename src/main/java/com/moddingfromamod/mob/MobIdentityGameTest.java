@@ -459,6 +459,52 @@ public class MobIdentityGameTest {
     }
 
     /**
+     * #115: {@code modify_mob} sets a creature's armour and knockback resistance (#101), and undoing the wish puts both
+     * back to what they were, through the real tool and the real undo. Its own batch, as the undo test above.
+     */
+    @GameTest(template = "empty_test", timeoutTicks = 900, batch = "mobid_undo_defence")
+    public static void undoingAMobWishPutsItsArmourAndKnockbackBack(GameTestHelper helper) {
+        ServerLevel level = arrive(helper, EntityType.CAMEL);
+        Vec3 here = PlotChild.spot(helper);
+        LivingEntity camel = place(level, EntityType.CAMEL, here.add(4, 0, 0));
+        double armourBefore = camel.getAttributeBaseValue(Attributes.ARMOR);
+        double knockbackBefore = camel.getAttributeBaseValue(Attributes.KNOCKBACK_RESISTANCE);
+
+        var marshal = com.moddingfromamod.marshal.Marshal.global();
+        java.util.UUID wishId = java.util.UUID.randomUUID();
+        java.util.UUID child = PlotChild.childId(helper);
+        String worker = "mobid-undo-defence-w1";
+        marshal.submit(wishId, child, "make the camel tough");
+        var run = marshal.assign(worker, wishId);
+
+        AtomicReference<Ladder> out = new AtomicReference<>();
+        ladder(out, l -> l.rung(2, "camel", "\"armor\":10,\"knockback_resistance\":0.8", worker));
+
+        helper.succeedWhen(() -> {
+            Ladder l = waitFor(helper, out);
+            helper.assertFalse(l.failed(), Component.literal(l.why()));
+            helper.assertTrue(Math.abs(camel.getAttributeBaseValue(Attributes.ARMOR) - 10) < 0.001
+                            && Math.abs(camel.getAttributeBaseValue(Attributes.KNOCKBACK_RESISTANCE) - 0.8) < 0.001,
+                    Component.literal("the wish should have toughened it first. " + l.trace()
+                            + "\n" + whichCamels(level, here, camel)));
+            String handle = EntityHandles.global().handleFor(camel.getUUID());
+            helper.assertTrue(handle != null, Component.literal("the camel has no handle to undo. " + l.trace()));
+            run.made(com.moddingfromamod.marshal.MadeKind.MOB, handle);
+
+            var result = com.moddingfromamod.wish.WishUndo.undo(level.getServer(), run);
+            double armour = camel.getAttributeBaseValue(Attributes.ARMOR);
+            double knockback = camel.getAttributeBaseValue(Attributes.KNOCKBACK_RESISTANCE);
+            marshal.finish(wishId);
+            helper.assertTrue(result.reversed() == 1,
+                    Component.literal("the mob edit should have been reversed, undo said: " + result.couldNot()));
+            helper.assertTrue(Math.abs(armour - armourBefore) < 0.001 && Math.abs(knockback - knockbackBefore) < 0.001,
+                    Component.literal("armour and knockback go back to " + armourBefore + " and " + knockbackBefore
+                            + ", not " + armour + " and " + knockback + ". " + l.trace()));
+            done(helper, camel);
+        });
+    }
+
+    /**
      * <b>The ladder can now be handed the animal.</b>
      *
      * <p>{@code ArtifactIndex} enumerated species, buildings, machines, trains and items and no

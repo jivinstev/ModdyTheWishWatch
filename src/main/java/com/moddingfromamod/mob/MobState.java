@@ -28,11 +28,34 @@ import com.google.gson.JsonObject;
  * {@link MobStates} is the half that reads and writes a real entity.
  */
 public record MobState(Double scale, Double maxHealth, Double damage, Double speed,
-                       String glow, String name, Boolean invulnerable, String pet) {
+                       String glow, String name, Boolean invulnerable, String pet,
+                       Double armor, Double knockbackResistance) {
+
+    /**
+     * <b>The record's version</b>, written inline as {@code "v"} (#115; see {@code docs/STORE_MIGRATIONS.md}). v1 (no
+     * {@code "v"}): before armour and knockback resistance were captured; such a record reads them as null, "not
+     * captured", so an undo leaves them as they are. A record of a later version than this is REFUSED
+     * ({@link #fromJson} throws {@link Newer}): its undo is not applied by a build that cannot read all of it, and
+     * {@code mobs.json} itself is never written over by an older build ({@code MobHandleStore.VERSION}).
+     */
+    public static final int RECORD_VERSION = 2;
 
     /** Nothing known about it at all — what a mob touched before this existed restores to. */
     public static final MobState UNKNOWN =
-            new MobState(null, null, null, null, null, null, null, null);
+            new MobState(null, null, null, null, null, null, null, null, null, null);
+
+    /** A record written by a newer Moddy than this one: refused, never half-read. */
+    public static final class Newer extends RuntimeException {
+        public Newer(int v) {
+            super("an undo record of version " + v + ", newer than this build's " + RECORD_VERSION);
+        }
+    }
+
+    /** The shape before armour and knockback resistance (#115): neither is known. */
+    public MobState(Double scale, Double maxHealth, Double damage, Double speed,
+                    String glow, String name, Boolean invulnerable, String pet) {
+        this(scale, maxHealth, damage, speed, glow, name, invulnerable, pet, null, null);
+    }
 
     /**
      * The shape before pets added {@code pet}: a record read back from an older undo store, or a
@@ -40,7 +63,7 @@ public record MobState(Double scale, Double maxHealth, Double damage, Double spe
      */
     public MobState(Double scale, Double maxHealth, Double damage, Double speed,
                     String glow, String name, Boolean invulnerable) {
-        this(scale, maxHealth, damage, speed, glow, name, invulnerable, null);
+        this(scale, maxHealth, damage, speed, glow, name, invulnerable, null, null, null);
     }
 
     public MobState {
@@ -51,7 +74,8 @@ public record MobState(Double scale, Double maxHealth, Double damage, Double spe
     /** True when there is nothing here to put back. */
     public boolean isEmpty() {
         return scale == null && maxHealth == null && damage == null && speed == null
-                && glow == null && name == null && invulnerable == null && pet == null;
+                && glow == null && name == null && invulnerable == null && pet == null && armor == null
+                && knockbackResistance == null;
     }
 
     /**
@@ -74,6 +98,12 @@ public record MobState(Double scale, Double maxHealth, Double damage, Double spe
         if (speed != null) {
             parts.add("speed " + trim(speed));
         }
+        if (armor != null) {
+            parts.add(trim(armor) + " armour");
+        }
+        if (knockbackResistance != null) {
+            parts.add("knockback resistance " + trim(knockbackResistance));
+        }
         if (glow != null) {
             parts.add("glowing " + glow.replace('_', ' '));
         }
@@ -95,6 +125,7 @@ public record MobState(Double scale, Double maxHealth, Double damage, Double spe
 
     public JsonObject toJson() {
         JsonObject o = new JsonObject();
+        o.addProperty("v", RECORD_VERSION);
         if (scale != null) {
             o.addProperty("scale", scale);
         }
@@ -120,17 +151,41 @@ public record MobState(Double scale, Double maxHealth, Double damage, Double spe
             // "" is a real value: it DID nothing, and undoing a "follow me" puts that back.
             o.addProperty("pet", pet);
         }
+        if (armor != null) {
+            o.addProperty("armor", armor);
+        }
+        if (knockbackResistance != null) {
+            o.addProperty("knockback_resistance", knockbackResistance);
+        }
         return o;
     }
 
-    /** Read one back. Anything unreadable becomes null — "we do not know" — never a made-up value. */
+    /**
+     * Read one back. Anything unreadable becomes null — "we do not know" — never a made-up value. A v1 record (no
+     * {@code "v"}) has no armour or knockback resistance: null, not captured. A newer record throws {@link Newer}.
+     */
     public static MobState fromJson(JsonObject o) {
         if (o == null) {
             return UNKNOWN;
         }
+        int v = versionOf(o);
+        if (v > RECORD_VERSION) {
+            throw new Newer(v);
+        }
+        boolean defence = v >= 2;
         return new MobState(dbl(o, "scale"), dbl(o, "health"), dbl(o, "damage"), dbl(o, "speed"),
                 str(o, "glow"), str(o, "name"), bool(o, "invulnerable"),
-                o.has("pet") && o.get("pet").isJsonPrimitive() ? o.get("pet").getAsString() : null);
+                o.has("pet") && o.get("pet").isJsonPrimitive() ? o.get("pet").getAsString() : null,
+                defence ? dbl(o, "armor") : null, defence ? dbl(o, "knockback_resistance") : null);
+    }
+
+    /** A record's version: its {@code "v"}, or 1 for a record written before records had one. */
+    public static int versionOf(JsonObject o) {
+        try {
+            return o != null && o.has("v") && o.get("v").isJsonPrimitive() ? o.get("v").getAsInt() : 1;
+        } catch (RuntimeException e) {
+            return Integer.MAX_VALUE;   // unreadable: refused like a newer one, never guessed at
+        }
     }
 
     private static Double dbl(JsonObject o, String k) {
