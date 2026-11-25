@@ -59,6 +59,17 @@ public final class BedrockGeometry {
         return textureHeight;
     }
 
+    /** Its solid volume in cubic blocks (every cube's size, summed, 16 px to a block): how big a body it draws (#100). */
+    public double volume() {
+        double px = 0;
+        for (Bone b : bones) {
+            for (Cube c : b.cubes()) {
+                px += Math.abs((double) c.size()[0] * c.size()[1] * c.size()[2]);
+            }
+        }
+        return px / 4096.0;
+    }
+
     public List<Bone> bones() {
         return bones;
     }
