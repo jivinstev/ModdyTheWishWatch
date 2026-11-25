@@ -627,6 +627,7 @@ public final class ContractWorldGameTest {
         BuilderMake.make(p, two, BuilderAllowlist.REVIEWED).thenAcceptAsync(made::set);
         StringBuilder chat = new StringBuilder();
         AtomicReference<Integer> step = new AtomicReference<>(0);
+        AtomicReference<String> firstFail = new AtomicReference<>();
         com.moddingfromamod.test.RealTime.succeedWhen(helper, () -> {
             BuilderMake.Result r = made.get();
             helper.assertTrue(r != null && r.outcome() == BuilderMake.Outcome.MADE, Component.literal("the dinosaurs: " + r));
@@ -634,10 +635,13 @@ public final class ContractWorldGameTest {
             helper.assertTrue(them.size() == 2, Component.literal("two creatures carry the fit: " + them.size()));
             var hurt = them.get(0);
             var whole = them.get(1);
+            helper.assertTrue(firstFail.get() == null, Component.literal(String.valueOf(firstFail.get())));
             if (step.get() == 0) {
                 helper.assertTrue(Math.abs(hurt.getMaxHealth() - ContractWorld.TOUGHEST) < 0.01
                         && Math.abs(whole.getMaxHealth() - ContractWorld.TOUGHEST) < 0.01,
                         Component.literal("the first round holds them to 40: " + hurt.getMaxHealth() + ", " + whole.getMaxHealth()));
+                step.set(1);   // from here the world has changed: the first failure is the one reported
+                try {
                 hurt.setHealth(20);   // half its hearts
                 whole.setHealth(whole.getMaxHealth());
                 said(p, chat);
@@ -685,7 +689,10 @@ public final class ContractWorldGameTest {
                                 && armor.getModifier(com.moddingfromamod.wish.LiveFit.ARMOR_ID) != null
                                 && steady.getModifier(com.moddingfromamod.wish.LiveFit.KNOCKBACK_RESISTANCE_ID) != null,
                         Component.literal("armour " + armor.getValue() + ", knockback " + steady.getValue()));
-                step.set(1);
+                } catch (RuntimeException | AssertionError e) {
+                    firstFail.set(e.getMessage() == null ? e.toString() : e.getMessage());
+                    throw e;
+                }
             }
         });
     }
