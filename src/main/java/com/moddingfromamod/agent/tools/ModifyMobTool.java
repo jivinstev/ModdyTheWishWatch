@@ -1063,6 +1063,10 @@ public final class ModifyMobTool implements McpTool {
                 if (!zeroHit.isEmpty()) {
                     notes.add(zeroHit);
                 }
+                String farAbove = com.moddingfromamod.species.PowerLine.farAbove(nowSpecies, vol);
+                if (!farAbove.isEmpty()) {
+                    notes.add(farAbove);
+                }
             }
             return;
         }
@@ -1130,6 +1134,38 @@ public final class ModifyMobTool implements McpTool {
         if (tweak.glow() != null) {
             applyGlow(scoreboard, e, tweak);
         }
+        // #101 (smoke): a REAL mob whose numbers or instinct were shaped is told its power too, read from the live
+        // entity (its attributes and its box), with the same flags a sculpted creature's result carries
+        if (!creature && (tweak.health() != null || tweak.damage() != null || tweak.armor() != null
+                || tweak.knockbackResistance() != null || tweak.scale() != null || !tweak.behaviour().isEmpty())) {
+            notes.addAll(realMobPower(e, tweak));
+        }
+    }
+
+    /** The power line of a real mob as it now stands, and the zero-hit flag and the far-above advisory where they apply. */
+    static List<String> realMobPower(LivingEntity e, MobTweak tweak) {
+        List<String> out = new ArrayList<>();
+        double health = e.getMaxHealth();
+        double damage = e.getAttribute(Attributes.ATTACK_DAMAGE) == null ? 0 : e.getAttributeValue(Attributes.ATTACK_DAMAGE);
+        double armor = e.getAttribute(Attributes.ARMOR) == null ? 0 : e.getAttributeValue(Attributes.ARMOR);
+        double knockback = e.getAttribute(Attributes.KNOCKBACK_RESISTANCE) == null ? 0
+                : e.getAttributeValue(Attributes.KNOCKBACK_RESISTANCE);
+        boolean boss = com.moddingfromamod.mob.RideSeat.BOSSES.contains(typeId(e))
+                || tweak.behaviour().powers().contains(com.moddingfromamod.species.Species.Power.BOSS);
+        var band = com.moddingfromamod.species.PowerBand.forVolume(
+                com.moddingfromamod.species.PowerLine.boxVolume(e.getBbWidth(), e.getBbHeight()));
+        out.add(com.moddingfromamod.species.PowerLine.of(health, damage, armor, knockback, band, boss, false));
+        var base = tweak.behaviour().base();
+        if (damage <= 0 && com.moddingfromamod.vanilla.RigInstinct.forRealMob(base, tweak.behaviour().powers()).fights()) {
+            out.add(com.moddingfromamod.species.PowerLine.zeroHitFlag("base '"
+                    + base.name().toLowerCase(java.util.Locale.ROOT) + "', on a " + typeId(e).replace('_', ' ')
+                    + " with no attack of its own", band));
+        }
+        String far = com.moddingfromamod.species.PowerLine.farAbove(health, damage, armor, band, boss);
+        if (!far.isEmpty()) {
+            out.add(far);
+        }
+        return out;
     }
 
     /**
