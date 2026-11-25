@@ -55,6 +55,28 @@ public final class MakeFit {
         return Collections.unmodifiableMap(m);
     }
 
+    /**
+     * The numbers a creature can still be fitted to on the LIVE entity when no step of its make lowers them: health
+     * and attack damage, by one attribute modifier each with a fixed id, put on at spawn ({@code wish.LiveFit}) and
+     * never written into a spec, a shelf or a store.
+     */
+    public static final java.util.Set<String> LIVE = java.util.Set.of(MakeFacts.HEALTH_HALF_HEARTS,
+            MakeFacts.ATTACK_DAMAGE_HALF_HEARTS);
+
+    /** Is this a make whose creatures are fitted live ({@link #LIVE})? */
+    public static boolean livesFitted(MakeFacts f) {
+        return f.kind().equals(BuilderSpec.Kind.CREATURE.id()) || f.kind().equals(BuilderSpec.Kind.RIDE.id());
+    }
+
+    /**
+     * Does a made thing keep within {@code limits} here: every number within, or a creature over only in what is fitted
+     * on the live entity at spawn ({@link #LIVE}).
+     */
+    public static boolean satisfiesHere(MakeFacts facts, Map<String, Double> limits) {
+        List<String> over = over(facts, limits);
+        return over.isEmpty() || livesFitted(facts) && LIVE.containsAll(over);
+    }
+
     /** What fitting did: the spec as made, whether it changed, whether it fits at all, and which numbers were lowered. */
     public record Fitted(BuilderSpec spec, boolean changed, boolean fits, List<String> lowered) {
         public Fitted {
@@ -96,6 +118,9 @@ public final class MakeFit {
         // two passes: lowering one knob can move another number (a smaller size, a shorter reach)
         for (int pass = 0; pass < 2 && !satisfies(f, limits); pass++) {
             for (String key : over(f, limits)) {
+                if (lowered.contains(key) && LIVE.contains(key) && livesFitted(f)) {
+                    continue;   // already left to the live fit
+                }
                 Fact fact = FACTS.get(key);
                 if (fact == null || !fact.clampable()) {
                     return new Fitted(spec, false, false, List.of());
@@ -107,6 +132,13 @@ public final class MakeFit {
                         break;
                     }
                 }
+                if (found == null && LIVE.contains(key) && livesFitted(f)) {
+                    // the LAST step: no size or strength lowers it, so it is fitted on the live creature at spawn
+                    if (!lowered.contains(key)) {
+                        lowered.add(key);
+                    }
+                    continue;
+                }
                 if (found == null) {
                     return new Fitted(spec, false, false, List.of());
                 }
@@ -117,7 +149,8 @@ public final class MakeFit {
                 }
             }
         }
-        return satisfies(f, limits) ? new Fitted(s, true, true, lowered) : new Fitted(spec, false, false, List.of());
+        return satisfiesHere(f, limits) ? new Fitted(s, !s.equals(spec) || !lowered.isEmpty(), true, lowered)
+                : new Fitted(spec, false, false, List.of());
     }
 
     /**
@@ -143,6 +176,9 @@ public final class MakeFit {
      */
     public static boolean fittable(MakeFacts asIs, MakeFacts floor, Map<String, Double> limits) {
         for (String key : over(asIs, limits)) {
+            if (LIVE.contains(key) && livesFitted(asIs)) {
+                continue;   // fitted on the live creature at spawn, whatever its steps
+            }
             Fact fact = FACTS.get(key);
             if (fact == null || !fact.clampable() || floor == null || over(floor, Map.of(key, limits.get(key))).contains(key)) {
                 return false;
@@ -206,17 +242,45 @@ public final class MakeFit {
      * not fitted at all (locked), never made wrong.
      */
     static List<BuilderSpec> steps(BuilderSpec s) {
-        List<BuilderSpec> sizes = new ArrayList<>();
-        sizes.add(s);
-        sizes.addAll(smaller(s));
+        List<BuilderSpec> tiers = new ArrayList<>();
+        tiers.add(s);
+        tiers.addAll(lowerTiers(s));
         List<BuilderSpec> out = new ArrayList<>();
-        for (BuilderSpec sized : sizes) {
-            out.add(sized);
-            out.addAll(gentler(sized));
+        for (BuilderSpec tiered : tiers) {
+            List<BuilderSpec> sizes = new ArrayList<>();
+            sizes.add(tiered);
+            sizes.addAll(smaller(tiered));
+            for (BuilderSpec sized : sizes) {
+                out.add(sized);
+                out.addAll(gentler(sized));
+            }
         }
         out.remove(0);   // the make as it is is not a candidate
-        // highest first: the most steps kept, then the bigger size
+        // highest first: the best material kept, then the most steps, then the bigger size
         out.sort((a, b) -> Integer.compare(stepsKept(b), stepsKept(a)));
+        return out;
+    }
+
+    /**
+     * An item made of a lower material ({@link BuilderItemPowers#TIERS}, a world's {@code itemTier}): the same stock item
+     * and power at each lower tier that still makes it (a stone sword; never a basic mace, which there is none of).
+     */
+    static List<BuilderSpec> lowerTiers(BuilderSpec s) {
+        List<BuilderSpec> out = new ArrayList<>();
+        if (s.kind() != BuilderSpec.Kind.ITEM || BuilderItemPowers.of(s) == null) {
+            return out;
+        }
+        String now = s.opt("tier").isEmpty() ? BuilderItemPowers.TIER_ANY : s.opt("tier");
+        int at = BuilderItemPowers.TIERS.indexOf(now);
+        for (int i = at + 1; i < BuilderItemPowers.TIERS.size(); i++) {
+            String tier = BuilderItemPowers.TIERS.get(i);
+            if (BuilderItemPowers.tiered(BuilderItemPowers.of(s), tier) == null) {
+                continue;
+            }
+            Map<String, String> o = new LinkedHashMap<>(s.opts());
+            o.put("tier", tier);
+            out.add(with(s, s.size(), s.count(), o));
+        }
         return out;
     }
 
@@ -229,7 +293,9 @@ public final class MakeFit {
         }
         BuilderMobSizes.Level l = s.opt("mobsize").isEmpty() ? null : BuilderMobSizes.of(s.opt("mobsize"));
         int size = l == null ? s.size() : BuilderMobSizes.ALL.indexOf(l);
-        return size * 10 + strength;
+        int tier = BuilderItemPowers.TIERS.size() - 1 - Math.max(0, BuilderItemPowers.TIERS.indexOf(
+                s.opt("tier").isEmpty() ? BuilderItemPowers.TIER_ANY : s.opt("tier")));
+        return tier * 1000 + size * 10 + strength;
     }
 
     /** Fewer at once. */
@@ -272,7 +338,14 @@ public final class MakeFit {
                 out.add(c);
                 continue;
             }
-            List<String> over = over(f, limits);
+            List<String> over = new ArrayList<>(over(f, limits));
+            if (livesFitted(f)) {
+                over.removeAll(LIVE);   // fitted on the live creature at spawn
+            }
+            if (over.isEmpty()) {
+                out.add(c);
+                continue;
+            }
             Double most = limits.get(MakeFacts.COUNT_MADE);
             if (!over.equals(List.of(MakeFacts.COUNT_MADE)) || most == null || most < 1
                     || !c.strip().startsWith("wishmob spawn ")) {

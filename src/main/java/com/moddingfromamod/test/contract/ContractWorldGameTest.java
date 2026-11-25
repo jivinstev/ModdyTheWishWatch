@@ -270,4 +270,130 @@ public final class ContractWorldGameTest {
                     String.format("%.2f", took / 1e6));
         });
     }
+
+    @GameTest(template = "empty_test", batch = "contract_world_strongest_sword", timeoutTicks = 40000)
+    public static void theStrongestSwordEverGivesTheStrongestSwordThisWorldAllows(GameTestHelper helper) {
+        ServerPlayer p = setUp(helper, "gtcontractsword");
+        Set<String> had = Set.copyOf(BuilderSpecStore.all(RuntimeConfig.playersDir(), p.getStringUUID()).keySet());
+        Map<String, String> o = new java.util.LinkedHashMap<>();
+        o.put("stock", "sword");
+        o.put("shape", "shape:on_hit");
+        o.put("effect", "effect:lightning");
+        o.put("power", "lightning");
+        o.put("strength", "3");
+        BuilderSpec strongest = new BuilderSpec(BuilderSpec.CURRENT, BuilderSpec.Kind.ITEM, "", "", 2, List.of(), "", 1, "",
+                "", o);
+        // the game's own numbers, read at run time: this sword hits harder than this world allows
+        var facts = com.moddingfromamod.wishbuilder.MakeFacts.of(BuilderAllowlist.REVIEWED.capped(strongest));
+        helper.assertTrue(com.moddingfromamod.wish.MakeGate.anyWorld() && facts.number(
+                com.moddingfromamod.wishbuilder.MakeFacts.ATTACK_DAMAGE_HALF_HEARTS).orElse(0) > ContractWorld.HARDEST,
+                Component.literal("the strongest sword is over the limit here: " + facts));
+        AtomicReference<BuilderMake.Result> result = new AtomicReference<>();
+        BuilderMake.make(p, strongest, BuilderAllowlist.REVIEWED).thenAcceptAsync(result::set);
+        StringBuilder chat = new StringBuilder();
+        com.moddingfromamod.test.RealTime.succeedWhen(helper, () -> {
+            BuilderMake.Result r = result.get();
+            helper.assertTrue(r != null && r.outcome() == BuilderMake.Outcome.MADE, Component.literal("the sword: " + r));
+            BuilderSpecStore.Made kept = null;
+            for (var m : BuilderSpecStore.all(RuntimeConfig.playersDir(), p.getStringUUID()).values()) {
+                if (!had.contains(m.id())) {
+                    kept = m;
+                }
+            }
+            helper.assertTrue(kept != null, Component.literal("the sword is on his shelf"));
+            BuilderSpec made = kept.read();
+            var madeFacts = com.moddingfromamod.wishbuilder.MakeFacts.of(made);
+            helper.assertTrue(made.opt("strength").equals("3") && !made.opt("tier").isEmpty()
+                            && madeFacts.number(com.moddingfromamod.wishbuilder.MakeFacts.ATTACK_DAMAGE_HALF_HEARTS)
+                            .orElse(99) <= ContractWorld.HARDEST,
+                    Component.literal("the strongest sword this world allows, at full strength: " + made.toJson() + " " + madeFacts));
+            helper.assertTrue(said(p, chat).contains("for this world"), Component.literal("he is told: " + chat));
+        });
+    }
+
+    @GameTest(template = "empty_test", batch = "contract_world_tough_creature", timeoutTicks = 40000)
+    public static void aGiantToughCreatureIsFittedOnItsStatsHolderAndNowhereElse(GameTestHelper helper) {
+        ServerPlayer p = setUp(helper, "gtcontracttough");
+        Set<String> had = Set.copyOf(BuilderSpecStore.all(RuntimeConfig.playersDir(), p.getStringUUID()).keySet());
+        Set<String> speciesHad = new java.util.HashSet<>();
+        SpeciesRegistry.all().forEach(sp -> speciesHad.add(sp.id()));
+        // a giant long-neck dinosaur: tougher than this world allows, and no size or strength step lowers its health
+        BuilderSpec dragon = new BuilderSpec(BuilderSpec.CURRENT, BuilderSpec.Kind.CREATURE,
+                "preset:bodies/long_neck_dinosaur", "", 3, List.of(), "friendly", 1, "", "", Map.of());
+        AtomicReference<BuilderMake.Result> result = new AtomicReference<>();
+        AtomicReference<Integer> another = new AtomicReference<>();
+        BuilderMake.make(p, dragon, BuilderAllowlist.REVIEWED).thenAcceptAsync(result::set);
+        StringBuilder chat = new StringBuilder();
+        com.moddingfromamod.test.RealTime.succeedWhen(helper, () -> {
+            BuilderMake.Result r = result.get();
+            helper.assertTrue(r != null && r.outcome() == BuilderMake.Outcome.MADE, Component.literal("the dinosaur: " + r));
+            BuilderSpecStore.Made kept = null;
+            for (var m : BuilderSpecStore.all(RuntimeConfig.playersDir(), p.getStringUUID()).values()) {
+                if (!had.contains(m.id())) {
+                    kept = m;
+                }
+            }
+            helper.assertTrue(kept != null, Component.literal("the dinosaur is on his shelf"));
+            // the stats holder: the living entity with the fit on it (never a display part, which is not living)
+            List<net.minecraft.world.entity.LivingEntity> fitted = new ArrayList<>();
+            for (var e : helper.getLevel().getAllEntities()) {
+                if (e instanceof net.minecraft.world.entity.LivingEntity le && !(e instanceof ServerPlayer)
+                        && com.moddingfromamod.wish.LiveFit.modifierOn(le, net.minecraft.world.entity.ai.attributes.Attributes.MAX_HEALTH,
+                        com.moddingfromamod.wish.LiveFit.MAX_HEALTH_ID) != null && le.distanceTo(p) < 64) {
+                    fitted.add(le);
+                }
+            }
+            helper.assertTrue(another.get() == null ? fitted.size() == 1 : !fitted.isEmpty(), Component.literal("one creature carries the fit: " + fitted.size()));
+            var holder = fitted.get(0);
+            helper.assertTrue(Math.abs(holder.getMaxHealth() - ContractWorld.TOUGHEST) < 0.01,
+                    Component.literal("its health is this world's most: " + holder.getMaxHealth()));
+            // fitted again (a reload, an edit): replaced, never stacked
+            String speciesId = SpeciesRegistry.all().stream().map(sp -> sp.id())
+                    .filter(id -> !speciesHad.contains(id)).findFirst().orElse("");
+            com.moddingfromamod.wish.LiveFit.apply(holder, speciesId);
+            long mods = holder.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.MAX_HEALTH).getModifiers()
+                    .stream().filter(m -> m.id().equals(com.moddingfromamod.wish.LiveFit.MAX_HEALTH_ID)).count();
+            helper.assertTrue(mods == 1 && Math.abs(holder.getMaxHealth() - ContractWorld.TOUGHEST) < 0.01,
+                    Component.literal("one fit after fitting again: " + mods + ", health " + holder.getMaxHealth()));
+            // and nowhere else: the kept make and the creature's species keep its own strength for every other world
+            helper.assertTrue(!kept.spec().toString().contains("world_fit") && kept.read().size() == 3,
+                    Component.literal("the shelf keeps the make as made: " + kept.spec()));
+            var species = SpeciesRegistry.get(speciesId);
+            helper.assertTrue(species != null && species.health() > ContractWorld.TOUGHEST,
+                    Component.literal("the species keeps its own health: " + (species == null ? "none" : species.health())));
+            helper.assertTrue(said(p, chat).contains("for this world"), Component.literal("he is told: " + chat));
+            // made another way (a recipe's button, "Make another one", the Magician's spawn): fitted and told, once
+            if (another.get() == null) {
+                com.moddingfromamod.wish.MakeGate.forgetToldForTest();
+                int before = count(said(p, chat), "for this world");
+                var server = helper.getLevel().getServer();
+                try {
+                    server.getCommands().getDispatcher().execute("execute as " + p.getScoreboardName() + " at @s run wishmob spawn "
+                            + speciesId + " 1", server.createCommandSourceStack().withSuppressedOutput());
+                } catch (com.mojang.brigadier.exceptions.CommandSyntaxException e) {
+                    helper.fail(Component.literal("the spawn: " + e.getMessage()));
+                }
+                another.set(before);
+            }
+            int fits = 0;
+            for (var e : helper.getLevel().getAllEntities()) {
+                if (e instanceof net.minecraft.world.entity.LivingEntity le && !(e instanceof ServerPlayer)
+                        && com.moddingfromamod.wish.LiveFit.modifierOn(le, net.minecraft.world.entity.ai.attributes.Attributes.MAX_HEALTH,
+                        com.moddingfromamod.wish.LiveFit.MAX_HEALTH_ID) != null && le.distanceTo(p) < 64) {
+                    fits++;
+                }
+            }
+            helper.assertTrue(fits == 2, Component.literal("the second one carries its fit too: " + fits));
+            helper.assertTrue(count(said(p, chat), "for this world") == another.get() + 1,
+                    Component.literal("told once more, once: " + chat));
+        });
+    }
+
+    private static int count(String in, String what) {
+        int n = 0;
+        for (int i = in.indexOf(what); i >= 0; i = in.indexOf(what, i + 1)) {
+            n++;
+        }
+        return n;
+    }
 }

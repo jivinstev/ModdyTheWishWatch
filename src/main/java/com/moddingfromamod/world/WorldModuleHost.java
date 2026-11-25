@@ -220,6 +220,8 @@ public final class WorldModuleHost {
         // #14: a world that answers makes has its Builder pages' facts worked out now, in the background, so a page drawn
         // later is a comparison. A world that answers none starts nothing.
         if (WorldMakes.get() != WorldMakes.NONE) {
+            // an item's attack damage and a creature's inherited numbers are the game's own, read at run time
+            com.moddingfromamod.wish.MakeFactsLookup.readTheGame();
             com.moddingfromamod.wishbuilder.BuilderPageFacts.forWorld(
                     com.moddingfromamod.wishbuilder.BuilderSettings.current().allow());
         }

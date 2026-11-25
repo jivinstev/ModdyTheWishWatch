@@ -305,12 +305,12 @@ public record MakeFacts(String kind, Map<String, Double> numbers, Set<String> ta
         return f;
     }
 
-    private static final java.util.concurrent.atomic.AtomicLong DERIVED = new java.util.concurrent.atomic.AtomicLong();
+    private static final ThreadLocal<long[]> DERIVED = ThreadLocal.withInitial(() -> new long[1]);
 
-    /** How many specs have been read into facts so far (a memo hit is not one): what a test counts to prove a menu
-     *  draw derives nothing. */
+    /** How many specs THIS thread has read into facts so far (a memo hit is not one): what a test counts to prove a
+     *  menu draw derives nothing. Per thread, so a page worked out in the background meanwhile is not counted. */
     public static long derivations() {
-        return DERIVED.get();
+        return DERIVED.get()[0];
     }
 
     /** At most this many specs' facts are remembered; the oldest goes first. */
@@ -332,7 +332,7 @@ public record MakeFacts(String kind, Map<String, Double> numbers, Set<String> ta
         if (spec == null) {
             return cautious(OTHER);
         }
-        DERIVED.incrementAndGet();
+        DERIVED.get()[0]++;
         BuilderSpec.Kind k = spec.kind();
         Acc a = new Acc(k.id());
         boolean creature = k == BuilderSpec.Kind.CREATURE || k == BuilderSpec.Kind.RIDE;
@@ -499,10 +499,9 @@ public record MakeFacts(String kind, Map<String, Double> numbers, Set<String> ta
                     a.most(SCALE_TIMES, args.get("scale").getAsDouble());
                 }
                 if (sculpted) {
-                    // its health and attack damage: the sculpt's own (a body is sent whole), else the ready-made's it
-                    // starts from, which the sculpt keeps
-                    JsonObject from = args.has("health") || args.has("damage") ? args
-                            : LibraryPresets.SHIPPED.species("species/" + str(args, "start_from"));
+                    // its health and attack damage: the sculpt's own (a body is sent whole), else what the creature it
+                    // starts from gives it, which the sculpt keeps (#14: in a game, the world's own record of it)
+                    JsonObject from = args.has("health") || args.has("damage") ? args : startsFrom(str(args, "start_from"));
                     double health = numeric(from == null ? null : from.get("health"));
                     double damage = numeric(from == null ? null : from.get("damage"));
                     if (!Double.isNaN(health)) {
@@ -557,6 +556,45 @@ public record MakeFacts(String kind, Map<String, Double> numbers, Set<String> ta
             a.inert = true;
         }
         params(a, item.get("params"));
+        // its attack damage: the base item's own, read from the game at run time (ItemStats), never a table here
+        String base = str(item, "base_item").isEmpty() ? str(item, "baseItem") : str(item, "base_item");
+        java.util.function.Function<String, java.util.OptionalDouble> read = itemAttack;
+        if (!base.isEmpty() && read != null) {
+            java.util.OptionalDouble d = read.apply(base);
+            if (d != null && d.isPresent()) {
+                a.most(ATTACK_DAMAGE_HALF_HEARTS, d.getAsDouble());
+            }
+        }
+    }
+
+    private static volatile java.util.function.Function<String, java.util.OptionalDouble> itemAttack;
+
+    /**
+     * How an item's attack damage is read: the game's own numbers for a base item id, wielded ({@code ItemStats}), or
+     * empty for an item that has none. Installed by the server when a world answers makes; with none installed an item
+     * carries no {@link #ATTACK_DAMAGE_HALF_HEARTS} (absent, never 0). Installing one forgets every remembered fact.
+     */
+    public static void itemAttack(java.util.function.Function<String, java.util.OptionalDouble> read) {
+        itemAttack = read;
+        MEMO.clear();
+    }
+
+    private static volatile java.util.function.Function<String, JsonObject> inherits;
+
+    /**
+     * How the game reads the numbers a creature made {@code start_from} another one inherits (its record in this
+     * world, else a new creature's own), installed by the server with {@link #itemAttack}. Without one (a unit test)
+     * the shipped ready-made's record is read. Installing one forgets every remembered fact.
+     */
+    public static void inherits(java.util.function.Function<String, JsonObject> read) {
+        inherits = read;
+        MEMO.clear();
+    }
+
+    private static JsonObject startsFrom(String id) {
+        var read = inherits;
+        JsonObject o = read == null ? null : read.apply(id);
+        return o != null ? o : LibraryPresets.SHIPPED.species("species/" + id);
     }
 
     /**

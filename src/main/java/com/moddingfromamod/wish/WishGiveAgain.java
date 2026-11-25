@@ -168,7 +168,7 @@ public final class WishGiveAgain {
             String kind = SpeciesRegistry.get(key) != null ? "creature" : "item";
             var facts = MakeFactsLookup.forThing(player.level().getServer(), kind, key);
             MakeVerdict v = MakeGate.ask(facts, asked);
-            if (v.makes() && !com.moddingfromamod.wishbuilder.MakeFit.satisfies(facts, v.limits())) {
+            if (v.makes() && !com.moddingfromamod.wishbuilder.MakeFit.satisfiesHere(facts, v.limits())) {
                 v = v.tooMuch();   // one of a kept thing: nothing of it can be made smaller here
             }
             if (!v.makes()) {

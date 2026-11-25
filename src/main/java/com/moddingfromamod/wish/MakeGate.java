@@ -38,7 +38,7 @@ public final class MakeGate {
     /** What this world says about the make {@code facts} describes, for {@code ask}, decided. */
     public static MakeVerdict ask(MakeFacts facts, WishAsk ask) {
         WorldMakes world = WorldMakes.get();
-        if (world == WorldMakes.NONE) {
+        if (world == WorldMakes.NONE || !anyWorld()) {
             return MakeVerdict.ALLOWED;   // the plain game: nothing to ask
         }
         MakeView view;
@@ -95,6 +95,9 @@ public final class MakeGate {
      */
     public static Built build(BuilderSpec spec, BuilderAllowlist allow, WishAsk ask) {
         BuilderSpec capped = allow == null ? spec : allow.capped(spec);
+        if (!anyWorld()) {
+            return new Built(MakeVerdict.ALLOWED, capped, List.of());   // the plain game: nothing read, nothing fitted
+        }
         MakeVerdict v = ask(MakeFacts.of(capped), ask);
         if (!v.makes() || v.limits().isEmpty()) {
             return new Built(v, capped, List.of());
@@ -115,8 +118,15 @@ public final class MakeGate {
 
     /** Is anything answering here at all? With nothing, every page is drawn exactly as before. */
     public static boolean anyWorld() {
-        return WorldMakes.get() != WorldMakes.NONE;
+        boolean any = WorldMakes.get() != WorldMakes.NONE;
+        if (any && !itemsRead) {
+            itemsRead = true;   // the first time a world answers: an item's attack damage is the game's own
+            MakeFactsLookup.readTheGame();
+        }
+        return any;
     }
+
+    private static volatile boolean itemsRead;
 
     /** Say a verdict's line, once; nothing when the make is let through. */
     public static void say(ServerPlayer player, MakeVerdict v) {
@@ -129,8 +139,24 @@ public final class MakeGate {
     public static void sayFitted(ServerPlayer player, List<String> lowered) {
         String line = MakeVerdict.fittedLine(lowered);
         if (player != null && !line.isEmpty() && WishFeedback.sweeps(line, "")) {
+            TOLD.put(player.getUUID(), System.currentTimeMillis());
             player.sendSystemMessage(Component.literal(line));
         }
+    }
+
+    /** How long after a fitted line a creature fitted on spawn is not told again: the same make. */
+    static final long TOLD_FOR_MILLIS = 30_000L;
+    private static final Map<java.util.UUID, Long> TOLD = new java.util.concurrent.ConcurrentHashMap<>();
+
+    /** For a GameTest that a creature made another way is told: forget who was told a moment ago. */
+    public static void forgetToldForTest() {
+        TOLD.clear();
+    }
+
+    /** Was this player told a make was fitted a moment ago (the make now standing up)? */
+    static boolean toldLately(java.util.UUID player) {
+        Long at = TOLD.get(player);
+        return at != null && System.currentTimeMillis() - at < TOLD_FOR_MILLIS;
     }
 
     /** A make tile, drawn as locked: grey, with the world's words first under its name. Never pressable into a make. */

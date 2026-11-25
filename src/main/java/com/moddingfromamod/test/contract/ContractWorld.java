@@ -24,9 +24,9 @@ import com.moddingfromamod.world.WorldMakes;
  *   <li>a {@link MakeFacts#HOSTILE hostile} make is not for this world: {@code HIDDEN};</li>
  *   <li>a make it rates {@link #LOCKED_FROM} or more, or whose facts could not be read, waits until the player has
  *       earned it: {@code LOCKED} with {@link #LOCKED_WORDS};</li>
- *   <li>everything else is made, but at most {@link #MOST_AT_ONCE} at once and no bigger than size step
- *       {@link #BIGGEST_STEP}: {@code FIT}, stated up front ({@link Answers#limits}, stamp {@link #STAMP}) and in each
- *       answer;</li>
+ *   <li>everything else is made, but at most {@link #MOST_AT_ONCE} at once, no bigger than size step
+ *       {@link #BIGGEST_STEP}, no tougher than {@link #TOUGHEST} health and hitting no harder than {@link #HARDEST}:
+ *       {@code FIT}, stated up front ({@link Answers#limits}, stamp {@link #STAMP}) and in each answer;</li>
  *   <li>a tag, number or kind it has never heard of is simply allowed.</li>
  * </ul>
  *
@@ -45,12 +45,17 @@ public final class ContractWorld implements ModdyPlugin {
     public static final double MOST_AT_ONCE = 3;
     /** The biggest Builder size step here. */
     public static final double BIGGEST_STEP = 3;
+    /** The most health a creature has here, in health points. */
+    public static final double TOUGHEST = 40;
+    /** The most damage a hit deals here, in health points. */
+    public static final double HARDEST = 6;
     /** The limits' stamp: it would change if the limits did. */
-    public static final String STAMP = "contract-v1";
+    public static final String STAMP = "contract-v2";
 
     /** This world's limits, every make. */
     public static final Map<String, Double> LIMITS = Map.of(MakeFacts.COUNT_MADE, MOST_AT_ONCE,
-            MakeFacts.BUILDER_SIZE_STEP, BIGGEST_STEP);
+            MakeFacts.BUILDER_SIZE_STEP, BIGGEST_STEP, MakeFacts.HEALTH_HALF_HEARTS, TOUGHEST,
+            MakeFacts.ATTACK_DAMAGE_HALF_HEARTS, HARDEST);
 
     public ContractWorld() {
     }
