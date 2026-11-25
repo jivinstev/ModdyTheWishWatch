@@ -742,6 +742,126 @@ public final class ContractWorldGameTest {
         });
     }
 
+    /** Every stamped stack he holds (inventory and Wish Bag): which wish made it, by wish id. */
+    private static Map<String, com.moddingfromamod.world.WishedItem.Made> stampedHeld(ServerPlayer p) {
+        Map<String, com.moddingfromamod.world.WishedItem.Made> out = new java.util.HashMap<>();
+        List<net.minecraft.world.item.ItemStack> all = new ArrayList<>();
+        for (int i = 0; i < p.getInventory().getContainerSize(); i++) {
+            all.add(p.getInventory().getItem(i));
+        }
+        all.addAll(com.moddingfromamod.bag.WishBagService.contents(p.level().getServer(), p.getUUID()));
+        for (var st : all) {
+            com.moddingfromamod.world.WishedItem.madeBy(st).ifPresent(m -> out.put(m.wishId(), m));
+        }
+        return out;
+    }
+
+    @GameTest(template = "empty_test", batch = "contract_world_wished_items", timeoutTicks = 40000)
+    public static void everyItemAWishHandsOverSaysWhichWishMadeIt(GameTestHelper helper) {
+        ServerPlayer p = setUp(helper, "gtcontractitems");
+        var server = helper.getLevel().getServer();
+        var level = helper.getLevel();
+        Set<String> had = Set.copyOf(BuilderSpecStore.all(RuntimeConfig.playersDir(), p.getStringUUID()).keySet());
+        Map<String, String> o = new java.util.LinkedHashMap<>();
+        o.put("stock", "sword");
+        o.put("shape", "shape:on_hit");
+        o.put("effect", "effect:lightning");
+        o.put("power", "lightning");
+        o.put("strength", "1");
+        BuilderSpec sword = new BuilderSpec(BuilderSpec.CURRENT, BuilderSpec.Kind.ITEM, "", "", 2, List.of(), "", 1, "", "", o);
+        AtomicReference<BuilderMake.Result> made = new AtomicReference<>();
+        BuilderMake.make(p, sword, BuilderAllowlist.REVIEWED).thenAcceptAsync(made::set);
+        AtomicReference<Integer> step = new AtomicReference<>(0);
+        AtomicReference<String> alias = new AtomicReference<>();
+        AtomicReference<Set<String>> before = new AtomicReference<>(Set.of());
+        AtomicReference<String> fail = new AtomicReference<>();
+        com.moddingfromamod.test.RealTime.succeedWhen(helper, () -> {
+            helper.assertTrue(fail.get() == null, Component.literal(String.valueOf(fail.get())));
+            BuilderMake.Result r = made.get();
+            helper.assertTrue(r != null && r.outcome() == BuilderMake.Outcome.MADE, Component.literal("the sword: " + r));
+            Map<String, com.moddingfromamod.world.WishedItem.Made> held = stampedHeld(p);
+            Set<String> fresh = new java.util.HashSet<>(held.keySet());
+            fresh.removeAll(before.get());
+            switch (step.get()) {
+                case 0 -> {
+                    // the Builder: its sword says which wish made it, and that the wish was his
+                    helper.assertTrue(fresh.size() == 1, Component.literal("the Builder's sword is stamped: " + held));
+                    var m = held.get(fresh.iterator().next());
+                    helper.assertTrue(m.maker().equals(p.getUUID()) && !m.wishId().startsWith(
+                            com.moddingfromamod.world.WishedItem.AGAIN), Component.literal("his wish: " + m));
+                    BuilderSpecStore.Made kept = null;
+                    for (var k : BuilderSpecStore.all(RuntimeConfig.playersDir(), p.getStringUUID()).values()) {
+                        if (!had.contains(k.id())) {
+                            kept = k;
+                        }
+                    }
+                    helper.assertTrue(kept != null, Component.literal("the sword is on his shelf"));
+                    alias.set(kept.alias() == null || kept.alias().isBlank() ? kept.id() : kept.alias());
+                    before.set(held.keySet());
+                    // "Make another one" and a hotbar fire: the kept make, made again as a recipe
+                    WishService.Outcome again = WishService.submit(p, "gt contract sword again", WishSource.PRESET,
+                            com.moddingfromamod.wishbuilder.BuilderAgain.recipeId(kept.id()));
+                    helper.assertTrue(again == WishService.Outcome.FULFILLING, Component.literal("made again: " + again));
+                    step.set(1);
+                    helper.fail(Component.literal("waiting for the sword made again"));
+                }
+                case 1 -> {
+                    helper.assertTrue(fresh.size() == 1 && held.get(fresh.iterator().next()).maker().equals(p.getUUID()),
+                            Component.literal("the recipe's sword says its own wish: " + held));
+                    before.set(held.keySet());
+                    try {
+                        // "Give me one": no new wish, so it names the kept thing given again
+                        var given = com.moddingfromamod.wish.WishGiveAgain.give(p, alias.get());
+                        helper.assertTrue(given == com.moddingfromamod.wish.WishGiveAgain.Result.GAVE,
+                                Component.literal("given again: " + given));
+                        var now = stampedHeld(p);
+                        helper.assertTrue(now.containsKey(com.moddingfromamod.world.WishedItem.AGAIN + alias.get())
+                                        && now.get(com.moddingfromamod.world.WishedItem.AGAIN + alias.get()).maker().equals(p.getUUID()),
+                                Component.literal("Give me one is stamped as the kept thing given again: " + now.keySet()));
+                        before.set(now.keySet());
+                        // the Magician's hand-over: a made item handed over by its give command inside its wish's scope
+                        String magicianWish = "gt-contract-magician-" + System.nanoTime();
+                        var ran = com.moddingfromamod.mob.SpawnScope.during(magicianWish,
+                                com.moddingfromamod.item.delivery.DeliveryPlan.Kind.HANDOVER,
+                                () -> com.moddingfromamod.wish.WishExecutor.runOne(server, level, p.position(), p,
+                                        "wishdatapack " + alias.get() + " give"));
+                        helper.assertTrue(ran.success(), Component.literal("the give ran: " + ran.joined()));
+                        now = stampedHeld(p);
+                        helper.assertTrue(now.containsKey(magicianWish), Component.literal("the Magician's hand-over says its wish: "
+                                + now.keySet()));
+                        // a plain vanilla gift handed over the same way is NOT stamped: it keeps stacking with his own
+                        String giftWish = "gt-contract-gift-" + System.nanoTime();
+                        com.moddingfromamod.mob.SpawnScope.during(giftWish,
+                                com.moddingfromamod.item.delivery.DeliveryPlan.Kind.HANDOVER,
+                                () -> com.moddingfromamod.wish.WishExecutor.runOne(server, level, p.position(), p,
+                                        "give " + p.getScoreboardName() + " minecraft:melon_slice 4"));
+                        boolean melons = false;
+                        for (int i = 0; i < p.getInventory().getContainerSize(); i++) {
+                            var st = p.getInventory().getItem(i);
+                            if (st.is(net.minecraft.world.item.Items.MELON_SLICE)) {
+                                melons = true;
+                                helper.assertTrue(com.moddingfromamod.world.WishedItem.madeBy(st).isEmpty(),
+                                        Component.literal("a plain gift is not wish-made"));
+                            }
+                        }
+                        helper.assertTrue(melons, Component.literal("the melon slices were handed over"));
+                        before.set(stampedHeld(p).keySet());
+                        // the Apprentice: a typed wish, its first tile pressed
+                        offered(p, "a lightning sword");
+                        com.moddingfromamod.wish.ApprenticeService.pressForTest(p, com.moddingfromamod.wishbuilder.ApprenticeWords.OFFER + 0);
+                    } catch (RuntimeException | AssertionError e) {
+                        fail.set(e.getMessage() == null ? e.toString() : e.getMessage());
+                        throw e;
+                    }
+                    step.set(2);
+                    helper.fail(Component.literal("waiting for the Apprentice's sword"));
+                }
+                default -> helper.assertTrue(fresh.size() == 1 && held.get(fresh.iterator().next()).maker().equals(p.getUUID()),
+                        Component.literal("the Apprentice's sword says its wish: " + held.keySet()));
+            }
+        });
+    }
+
     private static int count(String in, String what) {
         int n = 0;
         for (int i = in.indexOf(what); i >= 0; i = in.indexOf(what, i + 1)) {
