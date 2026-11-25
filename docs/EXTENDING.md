@@ -291,6 +291,26 @@ the limits the world gave.
   once per creature: "✨ Your creatures are stronger now! This world lets them do more." or "✨ Your creatures are held
   back a little in this world for now.", swept like any line. So "the strongest dragon ever" made in an early round is
   held down and comes out fully later, without being wished again.
+- **Where a finished make goes** (#70): `landing(facts, ask)` returns a `world/Landing`, asked once per new make,
+  before its first placing step, with the facts as this world fits it and the same `WishAsk`. Cheap and free of side
+  effects; an exception or a null answer means `LANDS`.
+
+  | Answer | What happens |
+  |---|---|
+  | `Landing.LANDS` (the default) | it appears where it was aimed, as always |
+  | `Landing.KEPT` | it is made and kept on his shelf as any make, but **not placed**: a creature is sculpted and not spawned (no preview stands), an item is made and not given. It is put on his hotbar as a wish for its recipe (`builder:<id>`), in the first empty slot, or in his Wish Bag when the hotbar is full (he is never asked to give a slot up; with no room in either he is told, and it stays on his shelf). Fired, it appears where he aims it, like any hotbar wish |
+  | `Landing.KEPT_AS_ITEM` | an item make hands over the real item, as `LANDS` does; a creature is kept as `KEPT` |
+
+  Then the world is told with `handedOver(HandedOver)`: the player, the make's id and kind (`creature` or `item`), its
+  name, the hotbar slot it went to (0 to 8, or `-1` for his Wish Bag or the real item) and `realItem`. He is told
+  where it went ("🎯 Red cat is on your hotbar. Aim and use it to make it appear."). A kept make is **not charged when
+  it is kept**; firing its hotbar wish is a make-again, charged by `WishCharge` like any other, so it is never paid for
+  twice.
+
+  It covers every Builder and Apprentice **creature, ride and item** (a machine or magic block too). These always land,
+  and `landing` is not asked: a change to something he already has, a real mob, supplies, and (not yet) buildings,
+  pictures, events and every Magician make. A creature made several at once is handed over as one wish, which makes
+  one each time it is fired. With no world answering nothing changes.
 - **Where the core asks:** every Builder and Apprentice make and every Builder change (`BuilderMake.make`, whatever page
   drew its tile); every tile of the Builder's pages and its tune dialog, per draw; each ranked make on the Apprentice's page, as it opens; a recipe, "Make another one" and a
   hotbar fire (`WishService.submit`, by the facts of what the recipe makes, fitted at fire); "Give me one"; each thing on

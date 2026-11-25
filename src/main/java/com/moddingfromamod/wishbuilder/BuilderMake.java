@@ -349,7 +349,7 @@ public final class BuilderMake {
                 wishId -> { },
                 ok -> ok ? "✪ Your " + name + " is changed! The rest is just as the Magician made it."
                         : "The Builder couldn't change your " + name + " this time.", "The change to your " + name,
-                (wishId, ok, free) -> { });
+                com.moddingfromamod.world.Landing.LANDS, (wishId, ok, free) -> { });
     }
 
     /**
@@ -398,7 +398,7 @@ public final class BuilderMake {
                 wishId -> { },
                 ok -> ok ? "✪ Your " + name + " is changed! The rest is just as the Magician made it."
                         : "The Builder couldn't change your " + name + " this time.", "The change to your " + name,
-                (wishId, ok, free) -> { });
+                com.moddingfromamod.world.Landing.LANDS, (wishId, ok, free) -> { });
     }
 
     /** {@link #magicianBuilding} with the GameTest's seams (a server, a person, a dispatch, no bank). */
@@ -416,7 +416,7 @@ public final class BuilderMake {
                 wishId -> { },
                 ok -> ok ? "✪ Your " + name + " is changed! The rest is just as the Magician made it."
                         : "The Builder couldn't change your " + name + " this time.", "The change to your " + name,
-                (wishId, ok, free) -> { });
+                com.moddingfromamod.world.Landing.LANDS, (wishId, ok, free) -> { });
     }
 
     static String magicianText(MagicianCreature.Thing thing) {
@@ -504,16 +504,28 @@ public final class BuilderMake {
         } catch (IllegalArgumentException e) {
             return done(Outcome.REFUSED, null, "", e.getMessage());
         }
+        // WHERE IT GOES (#70): a world may keep a new make and hand it over as a hotbar wish instead of it appearing.
+        // Asked before the first placing step; a kept creature is sculpted and not spawned.
+        final com.moddingfromamod.world.Landing landing = editOf != null || !keepable(spec)
+                ? com.moddingfromamod.world.Landing.LANDS
+                : com.moddingfromamod.wish.MakeGate.landing(MakeFacts.of(spec), askOf(who, textOf(spec), null, apprentice));
+        if (landing != com.moddingfromamod.world.Landing.LANDS) {
+            LOGGER.info("builder make {} for {}: kept by this world ({})", newId, person.name(), landing);
+            calls = held(calls);
+        }
         final String madeId = newId;
         final List<BuilderLowering.Call> made = calls;
         ASKED.put(madeId, asked);   // until it is kept: its creature's size is fitted from what he asked
 
         return execute(server, person, calls, protocol, charge, card, textOf(spec), newId, editOf, apprentice,
                 editOf == null ? "" : BuilderAgain.recipeId(editOf), asked.toJson().toString(), wishId -> remember(who, wishId, asked),
-                ok -> ok ? BuilderWords.ready(spec) : BuilderWords.failed(spec), BuilderWords.subject(spec),
+                ok -> ok ? BuilderWords.ready(spec) : BuilderWords.failed(spec), BuilderWords.subject(spec), landing,
                 (wishId, ok, free) -> {
                     if (ok) {
                         keep(who, madeId, BuilderLowering.refOf(made, madeId), asked, wishId);
+                        if (landing != com.moddingfromamod.world.Landing.LANDS) {
+                            handOver(server, who, madeId, spec, landing);
+                        }
                     }
                     ASKED.remove(madeId);
                     settleFree(who, wishId, free, apprentice, ok, ok ? madeId : editOf, spec);
@@ -572,7 +584,7 @@ public final class BuilderMake {
                                                      String logged,
                                                      java.util.function.Consumer<UUID> remembered,
                                                      java.util.function.Function<Boolean, String> says, String subject,
-                                                     Settle after) {
+                                                     com.moddingfromamod.world.Landing landing, Settle after) {
         UUID who = person.id();
         final List<BuilderLowering.Call> toRun = card ? calls
                 : calls.stream().filter(c -> !"finish_building".equals(c.tool())).toList();
@@ -595,7 +607,8 @@ public final class BuilderMake {
         if (free) {
             LOGGER.info("builder make {} for {}: the free change of {} (the last Apprentice make)", wish.shortId(), person.name(), editOf);
         }
-        if (charge && !free) {
+        // a kept make (#70) is charged when he fires its hotbar wish (a make-again), never twice
+        if (charge && !free && landing == com.moddingfromamod.world.Landing.LANDS) {
             var ask = com.moddingfromamod.wish.WishAsk.of(who, WishSource.BUILDER, apprentice
                             ? com.moddingfromamod.wish.WishAsk.Magic.APPRENTICE : com.moddingfromamod.wish.WishAsk.Magic.BUILDER)
                     .withText(text).withRecipe(recipe);
@@ -620,6 +633,9 @@ public final class BuilderMake {
             return done(Outcome.FAILED, wish.id(), "", "the marshal would not take the make");
         }
         run.markBuilderMade();
+        if (landing != com.moddingfromamod.world.Landing.LANDS) {
+            run.markKept();
+        }
         // A MAKE LOOKS AND LANDS LIKE A WISH. The same three things WishService.submit does
         // for a typed wish, in the same order: lock where it manifests to where he is looking NOW (aim, then clamp,
         // kept on the run so plan_wish's kind slide and every placing tool use it — before this a make had no anchor,
@@ -667,7 +683,8 @@ public final class BuilderMake {
                 // never did, so every item it made was announced and never handed over.
                 // Only the LAST make_item is his (a snack machine's food is made first, and the machine pours it);
                 // the whole reply is read, because a machine's names its command past textOf's 400 characters.
-                String give = error || !"make_item".equals(call.tool()) || call != lastItemOf(toRun) ? null
+                String give = error || !"make_item".equals(call.tool()) || call != lastItemOf(toRun)
+                        || landing == com.moddingfromamod.world.Landing.KEPT ? null
                         : handOverCommand(fullTextOf(reply));
                 if (give != null) {
                     JsonObject g = new JsonObject();
@@ -760,6 +777,67 @@ public final class BuilderMake {
                 FreeEdit.failed(who, wishId);
             }
         }
+    }
+
+    /**
+     * Can a world keep this make and hand it over (#70)? A Builder or Apprentice creature, ride or item kept on his
+     * shelf (so its hotbar wish can make it again); a real mob and supplies are not kept, so they land.
+     */
+    static boolean keepable(BuilderSpec spec) {
+        return switch (spec.kind()) {
+            case CREATURE, RIDE, ITEM, MACHINE, MAGIC_BLOCK ->
+                    !Catalogue.prefix(spec.from()).equals("mob") && !BuilderSupplies.is(spec);
+            default -> false;
+        };
+    }
+
+    /** A kept make's calls (#70): its creature sculpted and kept, not spawned (no spawn, no extra spawns). */
+    static List<BuilderLowering.Call> held(List<BuilderLowering.Call> calls) {
+        List<BuilderLowering.Call> out = new ArrayList<>(calls.size());
+        for (BuilderLowering.Call c : calls) {
+            if (c.tool().equals("run_command") && c.args().toString().contains("wishmob spawn")) {
+                continue;   // the more-than-one spawns
+            }
+            if (c.tool().equals("sculpt_creature")) {
+                JsonObject a = c.args().deepCopy();
+                a.addProperty("spawn", false);
+                out.add(new BuilderLowering.Call(c.tool(), a));
+            } else {
+                out.add(c);
+            }
+        }
+        return out;
+    }
+
+    /**
+     * Hand a kept make over (#70, server thread): a wish on his hotbar (or in his Wish Bag) that makes it where he aims
+     * it, or, for an item a world asked {@code KEPT_AS_ITEM} of, the real item already in his hand; then the world is
+     * told. He is told where it went.
+     */
+    private static void handOver(MinecraftServer server, UUID who, String madeId, BuilderSpec spec,
+                                 com.moddingfromamod.world.Landing landing) {
+        boolean item = BuilderLowering.kindOf(spec).equals("item");
+        boolean real = item && landing == com.moddingfromamod.world.Landing.KEPT_AS_ITEM;
+        String name = BuilderLowering.label(spec);
+        int slot = -1;
+        ServerPlayer p = server.getPlayerList().getPlayer(who);
+        if (!real) {
+            if (p == null) {
+                LOGGER.info("builder make {}: kept, and he left before it could be handed over (it is on his shelf)", madeId);
+                return;
+            }
+            slot = com.moddingfromamod.wish.WishHotbar.addKept(p, BuilderAgain.recipeId(madeId), name,
+                    com.moddingfromamod.marshal.WatchIcons.forKind(BuilderLowering.kindOf(spec)));
+            if (slot < -1) {
+                return;   // no room anywhere: he was told; it is on his shelf
+            }
+            p.sendSystemMessage(net.minecraft.network.chat.Component.literal(slot >= 0
+                    ? "🎯 " + name + " is on your hotbar. Aim and use it to make it appear."
+                    : "🎯 " + name + " is in your Wish Bag. Put it on your hotbar to make it appear."));
+        }
+        LOGGER.info("builder make {}: handed over ({}, slot {})", madeId, real ? "the real item" : "a hotbar wish", slot);
+        com.moddingfromamod.wish.MakeGate.handedOver(new com.moddingfromamod.world.HandedOver(who, madeId,
+                BuilderLowering.kindOf(spec), name, real ? -1 : slot, real));
     }
 
     /**
