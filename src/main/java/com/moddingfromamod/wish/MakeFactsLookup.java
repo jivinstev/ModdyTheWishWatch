@@ -93,6 +93,9 @@ public final class MakeFactsLookup {
                 JsonArray effects = new JsonArray();
                 (spec.effects() == null ? List.<String>of() : spec.effects()).forEach(effects::add);
                 o.add("effects", effects);
+                if (spec.baseItem() != null && !spec.baseItem().isBlank()) {
+                    o.addProperty("base_item", spec.baseItem());
+                }
                 if (spec.params() != null) {
                     o.add("params", spec.params().deepCopy());
                 }
@@ -112,5 +115,27 @@ public final class MakeFactsLookup {
             }
             case RULE, SUPPLIES -> null;
         };
+    }
+
+    /**
+     * Have the make facts read the game itself (#14): an item's attack damage from its own attribute modifiers, and the
+     * health and attack damage a creature made from another one inherits, from this world's record of it (else a new
+     * creature's own numbers, as the sculpt gives it). Installed when a world answers makes.
+     */
+    public static void readTheGame() {
+        MakeFacts.itemAttack(com.moddingfromamod.item.ItemStats::attackDamage);
+        MakeFacts.inherits(MakeFactsLookup::inherited);
+    }
+
+    static com.google.gson.JsonObject inherited(String startFrom) {
+        var base = com.moddingfromamod.species.SpeciesRegistry.get(
+                com.moddingfromamod.runtime.ModelRepository.sanitizeKey(startFrom == null ? "" : startFrom));
+        if (base != null) {
+            return base.toJson();
+        }
+        com.google.gson.JsonObject none = new com.google.gson.JsonObject();
+        none.addProperty("id", "inherits_nothing");
+        var fresh = com.moddingfromamod.species.Species.fromJson(none);
+        return fresh == null ? null : fresh.toJson();
     }
 }

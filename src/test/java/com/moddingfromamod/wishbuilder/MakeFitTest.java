@@ -41,6 +41,8 @@ class MakeFitTest {
             out.add(Map.of(MakeFacts.HEALTH_HALF_HEARTS, h));
         }
         out.add(Map.of(MakeFacts.ATTACK_DAMAGE_HALF_HEARTS, 3.0));
+        out.add(Map.of(MakeFacts.ATTACK_DAMAGE_HALF_HEARTS, 6.0));
+        out.add(Map.of(MakeFacts.HEALTH_HALF_HEARTS, 40.0, MakeFacts.ATTACK_DAMAGE_HALF_HEARTS, 6.0));
         out.add(Map.of(MakeFacts.BUILDER_SIZE_STEP, 2.0, MakeFacts.COUNT_MADE, 2.0, MakeFacts.BUILDER_STRENGTH_STEP, 2.0,
                 MakeFacts.AMOUNT_ITEMS, 16.0, "notAFact", 0.0));
         return out;
@@ -54,10 +56,16 @@ class MakeFitTest {
 
     @Test
     void aFittedMakeSatisfiesItsLimitsAndOnlyEverGetsLess() {
-        List<BuilderSpec> leaves = BuilderPageFitTest.leaves();
+        List<BuilderSpec> leaves = new ArrayList<>(BuilderPageFitTest.leaves());
         assertTrue(leaves.size() > 100, "the walk reached only " + leaves.size() + " makes");
+        // the two #14 makes: the strongest sword, and a giant tough creature
+        leaves.add(sword(3));
+        leaves.add(toughest());
+        MakeFacts.itemAttack(MADE_UP);   // a sword's attack damage, as the game would read it
         List<String> bad = new ArrayList<>();
         int fitted = 0;
+        int live = 0;
+        try {
         for (BuilderSpec s : leaves) {
             for (Map<String, Double> l : spread()) {
                 MakeFit.Fitted f = MakeFit.fit(s, l);
@@ -65,8 +73,22 @@ class MakeFitTest {
                     continue;
                 }
                 MakeFacts after = MakeFacts.of(f.spec());
-                if (!MakeFit.satisfies(after, l)) {
+                MakeFacts before = MakeFacts.of(s);
+                if (!MakeFit.satisfiesHere(after, l)) {
                     bad.add(s.toJson() + " under " + l + " → " + after);
+                }
+                for (String k : MakeFacts.NUMBERS) {
+                    if (before.number(k).isPresent() && after.number(k).orElse(0) > before.number(k).getAsDouble() + 1e-9) {
+                        bad.add("a fit raised " + k + ": " + s.toJson() + " → " + f.spec().toJson());
+                    }
+                }
+                // what is left over a limit is only ever a creature's health or damage, put on the live creature
+                if (!MakeFit.satisfies(after, l)) {
+                    live++;
+                    if (!MakeFit.livesFitted(after) || !MakeFit.LIVE.containsAll(MakeFit.over(after, l))
+                            || !f.lowered().containsAll(MakeFit.over(after, l))) {
+                        bad.add("left over a limit, not fitted live: " + s.toJson() + " under " + l + " → " + after);
+                    }
                 }
                 if (f.changed()) {
                     fitted++;
@@ -75,13 +97,17 @@ class MakeFitTest {
                             || f.spec().kind() != s.kind() || !f.spec().from().equals(s.from())) {
                         bad.add("a fit made more or something else: " + s.toJson() + " → " + f.spec().toJson());
                     }
-                } else if (!MakeFit.satisfies(MakeFacts.of(s), l)) {
+                } else if (!MakeFit.satisfiesHere(MakeFacts.of(s), l)) {
                     bad.add("said it fits unchanged but does not: " + s.toJson() + " under " + l);
                 }
             }
         }
+        } finally {
+            MakeFacts.itemAttack(null);
+        }
         assertTrue(bad.isEmpty(), bad.size() + " failures, e.g.\n" + String.join("\n", bad.subList(0, Math.min(10, bad.size()))));
         assertTrue(fitted > 100, "only " + fitted + " fits changed anything: the spread does not reach the knobs");
+        assertTrue(live > 0, "no make was fitted live: the spread does not reach a tough creature");
     }
 
     private static int num(String v) {
@@ -111,7 +137,7 @@ class MakeFitTest {
     }
 
     @Test
-    void healthAndDamageAreFittedByADiscreteSearchOrNotAtAll() {
+    void healthAndDamageAreSearchedThenFittedLive() {
         BuilderSpec cat = new BuilderSpec(BuilderSpec.CURRENT, BuilderSpec.Kind.CREATURE, "preset:species/cat", "", 4,
                 List.of(), "friendly", 1, "", "", Map.of());
         double health = MakeFacts.of(cat).number(MakeFacts.HEALTH_HALF_HEARTS).orElse(-1);
@@ -120,9 +146,11 @@ class MakeFitTest {
         MakeFit.Fitted within = MakeFit.fit(cat, Map.of(MakeFacts.HEALTH_HALF_HEARTS, health));
         assertTrue(within.fits() && !within.changed());
         // over it: every size and strength step is tried, highest first, each re-derived; the cat's health is its
-        // ready-made's whatever its size, so no step lowers it and it is not fitted (locked), never made wrong
+        // ready-made's whatever its size, so no step lowers it: the last step fits it on the live creature, and the
+        // make itself is not changed
         MakeFit.Fitted over = MakeFit.fit(cat, Map.of(MakeFacts.HEALTH_HALF_HEARTS, health - 1));
-        assertFalse(over.fits(), over.toString());
+        assertTrue(over.fits() && over.spec().equals(cat) && over.lowered().equals(List.of(MakeFacts.HEALTH_HALF_HEARTS)),
+                over.toString());
         // the search tries every lower combination, the most kept first
         List<BuilderSpec> tried = MakeFit.steps(cat);
         assertTrue(tried.size() >= 3, tried.size() + " steps");
@@ -131,7 +159,79 @@ class MakeFitTest {
                 List.of(), "friendly", 1, "", "", Map.of());
         double damage = MakeFacts.of(imp).number(MakeFacts.ATTACK_DAMAGE_HALF_HEARTS).orElse(-1);
         assertTrue(damage > 0, MakeFacts.of(imp).toString());
-        assertFalse(MakeFit.fit(imp, Map.of(MakeFacts.ATTACK_DAMAGE_HALF_HEARTS, damage - 1)).fits());
+        assertEquals(List.of(MakeFacts.ATTACK_DAMAGE_HALF_HEARTS),
+                MakeFit.fit(imp, Map.of(MakeFacts.ATTACK_DAMAGE_HALF_HEARTS, damage - 1)).lowered());
+    }
+
+    /**
+     * A stand-in for the game's own item numbers (ItemStats, read at run time on a server): made-up values, so nothing
+     * of the game's is copied here. A diamond sword hits for 9, a stone one for 6.
+     */
+    private static final java.util.function.Function<String, java.util.OptionalDouble> MADE_UP = id -> switch (id) {
+        case "minecraft:diamond_sword" -> java.util.OptionalDouble.of(9);
+        case "minecraft:stone_sword" -> java.util.OptionalDouble.of(6);
+        default -> java.util.OptionalDouble.empty();
+    };
+
+    private static BuilderSpec sword(int strength) {
+        Map<String, String> o = new LinkedHashMap<>();
+        o.put("stock", "sword");
+        o.put("shape", "shape:on_hit");
+        o.put("effect", "effect:lightning");
+        o.put("power", "lightning");
+        o.put("strength", String.valueOf(strength));
+        return new BuilderSpec(BuilderSpec.CURRENT, BuilderSpec.Kind.ITEM, "", "", 2, List.of(), "", 1, "", "", o);
+    }
+
+    @Test
+    void theStrongestSwordEverGivesTheStrongestSwordTheWorldAllows() {
+        MakeFacts.itemAttack(MADE_UP);
+        try {
+            BuilderSpec strongest = sword(3);
+            assertEquals(9.0, MakeFacts.of(strongest).number(MakeFacts.ATTACK_DAMAGE_HALF_HEARTS).orElse(-1));
+            // a world that allows 7: the strongest sword it allows is the stone one, at full strength
+            MakeFit.Fitted f = MakeFit.fit(strongest, Map.of(MakeFacts.ATTACK_DAMAGE_HALF_HEARTS, 7.0));
+            assertTrue(f.fits() && f.changed(), f.toString());
+            assertEquals(BuilderItemPowers.TIER_BASIC, f.spec().opt("tier"));
+            assertEquals("3", f.spec().opt("strength"), "the most strength kept");
+            assertEquals(6.0, MakeFacts.of(f.spec()).number(MakeFacts.ATTACK_DAMAGE_HALF_HEARTS).orElse(-1));
+            // a world that allows less than any sword: no sword is fitted wrong, it is locked
+            assertFalse(MakeFit.fit(strongest, Map.of(MakeFacts.ATTACK_DAMAGE_HALF_HEARTS, 5.0)).fits());
+            // the property, under damage limits too: derive(fit(spec, L)) keeps within L
+            for (BuilderSpec s : List.of(sword(1), sword(2), sword(3))) {
+                for (double l : new double[] {5, 6, 7, 9, 12}) {
+                    MakeFit.Fitted g = MakeFit.fit(s, Map.of(MakeFacts.ATTACK_DAMAGE_HALF_HEARTS, l));
+                    if (g.fits()) {
+                        assertTrue(MakeFit.satisfies(MakeFacts.of(g.spec()), Map.of(MakeFacts.ATTACK_DAMAGE_HALF_HEARTS, l)),
+                                s.toJson() + " under " + l + " → " + g.spec().toJson());
+                    }
+                }
+            }
+        } finally {
+            MakeFacts.itemAttack(null);
+        }
+    }
+
+    /** A giant long-neck dinosaur: a ready-made body with 120 health, at the biggest size. */
+    static BuilderSpec toughest() {
+        return new BuilderSpec(BuilderSpec.CURRENT, BuilderSpec.Kind.CREATURE, "preset:bodies/long_neck_dinosaur", "",
+                4, List.of(), "friendly", 1, "", "", Map.of());
+    }
+
+    @Test
+    void aGiantToughCreatureIsMadeGiantAndFittedOnTheLiveEntity() {
+        BuilderSpec dragon = toughest();
+        double health = MakeFacts.of(dragon).number(MakeFacts.HEALTH_HALF_HEARTS).orElse(-1);
+        assertTrue(health > 40, MakeFacts.of(dragon).toString());
+        MakeFit.Fitted f = MakeFit.fit(dragon, Map.of(MakeFacts.HEALTH_HALF_HEARTS, 40.0));
+        // no size or strength lowers its health, so it is made as it is (giant) and fitted on the live creature
+        assertTrue(f.fits(), f.toString());
+        assertEquals(dragon, f.spec(), "the make itself is not changed: it is made at its own size");
+        assertEquals(List.of(MakeFacts.HEALTH_HALF_HEARTS), f.lowered());
+        assertTrue(MakeFit.satisfiesHere(MakeFacts.of(f.spec()), Map.of(MakeFacts.HEALTH_HALF_HEARTS, 40.0)));
+        // an item is never fitted live: only a creature is
+        assertFalse(MakeFit.satisfiesHere(new MakeFacts("item", Map.of(MakeFacts.ATTACK_DAMAGE_HALF_HEARTS, 9.0),
+                java.util.Set.of(), true), Map.of(MakeFacts.ATTACK_DAMAGE_HALF_HEARTS, 7.0)));
     }
 
     @Test
@@ -152,8 +252,10 @@ class MakeFitTest {
                 MakeFit.fitCommands(List.of("wishmob spawn d 9 at castle:door"), Map.of(MakeFacts.COUNT_MADE, 3.0), store));
         assertEquals(List.of("wishmob spawn d 2"),
                 MakeFit.fitCommands(List.of("wishmob spawn d 2"), Map.of(MakeFacts.COUNT_MADE, 3.0), store));
-        // its health is its own: a limit on it cannot be fitted here
-        assertNull(MakeFit.fitCommands(List.of("wishmob spawn d"), Map.of(MakeFacts.HEALTH_HALF_HEARTS, 40.0), store));
+        // its health is its own and is never changed in the store: the creature is fitted on the live entity at spawn,
+        // so the command is kept as it is
+        assertEquals(List.of("wishmob spawn d"),
+                MakeFit.fitCommands(List.of("wishmob spawn d"), Map.of(MakeFacts.HEALTH_HALF_HEARTS, 40.0), store));
         Map<String, Double> l = new LinkedHashMap<>();
         l.put(MakeFacts.COUNT_MADE, 0.0);
         assertNull(MakeFit.fitCommands(List.of("wishmob spawn d 2"), l, store));

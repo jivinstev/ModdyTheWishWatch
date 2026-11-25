@@ -112,8 +112,8 @@ test world below does, with a toy formula of its own).
 
   | Number | Unit | Present for |
   |---|---|---|
-  | `healthHalfHearts` | health points (one is half a heart) | a Builder creature or ride (its ready-made's own), a stored creature |
-  | `attackDamageHalfHearts` | health points | a Builder creature or ride (its ready-made's own), a stored creature |
+  | `healthHalfHearts` | health points (one is half a heart) | a Builder creature or ride (what it is made with: a body's own; a ready-made species' record in this world, else a new creature's), a stored creature |
+  | `attackDamageHalfHearts` | health points | a Builder creature or ride (as health), a stored creature; a Builder item with a base item: hitting with it in the main hand, read at run time from the item's own attribute modifiers and the player's base attack damage (nothing of the game's numbers is copied into the mod, so another version or another mod's item answers for itself) |
   | `movementSpeedAttribute` | the game's `movement_speed` attribute value (a zombie is 0.23) | a stored creature |
   | `scaleTimes` | times its normal size | a Builder creature or ride, a stored creature |
   | `builderSizeStep` | the Builder's size pick, 1 to 4 | a Builder creature, ride, building or event |
@@ -216,9 +216,25 @@ the limits the world gave.
 | `builderStrengthStep`, `durationTicks`, `radiusBlocks` | a lower strength |
 | `countMade` | fewer at once (a Builder make; a recipe's `wishmob spawn <id> <count>`) |
 | `amountItems` | fewer in a bundle of supplies |
-| `healthHalfHearts`, `attackDamageHalfHearts` | a discrete search, nothing assumed about which way they move: every lower combination of the size and strength steps is tried, the most kept first, and the first whose re-derived facts fit is made; none: locked. (No Builder knob moves a ready-made's health or damage today, so over the limit a Builder make is locked; a stored thing's own is never changed) |
+| `healthHalfHearts`, `attackDamageHalfHearts` | a discrete search, nothing assumed about which way they move: every lower combination of an item's material (its tier, stepped down), the size and the strength steps is tried, the most kept first, and the first whose re-derived facts fit is made. An item none fits is locked. A creature or ride none fits is made as it is and **fitted on the live creature** (below); a stored thing's own record is never changed |
 | `movementSpeedAttribute`, `extentBlocks` | nothing: not clampable, so over the limit is locked |
 
+- **Fitted on the live creature** (`wish/LiveFit`): the last step for a creature's health and attack damage. At spawn
+  (and when the creature is loaded or rebuilt), after its species has set its numbers, the core puts ONE attribute
+  modifier per stat on the entity that holds the stats (a wish creature, or a rig's carrier; never a display part),
+  `ADD_VALUE`, worked out to bring the value to the limit. Each has a fixed id, so a world module keeps its own
+  modifiers on ids of its own and is left alone:
+
+  | Stat | Modifier id |
+  |---|---|
+  | `minecraft:max_health` | `moddingfromamod:world_fit/max_health` |
+  | `minecraft:attack_damage` | `moddingfromamod:world_fit/attack_damage` |
+
+  It is never stacked (fitting again removes it first and works it out afresh), and the value is read again after it
+  is put on. It is the entity's own: its save keeps it in this world, and it is never written into the make, the
+  species, the shelf or any wish store, so the same make comes out at its own strength in another world. It covers every
+  creature made here: Builder, Apprentice, "Make another one" and the Magician's. The player is told once, as for any
+  fitted make.
 - **Where the core asks:** every Builder and Apprentice make and every Builder change (`BuilderMake.make`, whatever page
   drew its tile); every tile of the Builder's pages and its tune dialog, per draw; a recipe, "Make another one" and a
   hotbar fire (`WishService.submit`, by the facts of what the recipe makes, fitted at fire); "Give me one"; each thing on
@@ -233,7 +249,7 @@ the limits the world gave.
   brief.
 - **Cheap, and free of side effects:** a menu asks once per tile per draw, on the server thread. Default methods only.
 - **Example:** `ContractWorld` (the contract test world below): hostile makes hidden, a make its own toy rating puts at
-  4 or more locked, everything else fitted to three at once and size step 3.
+  4 or more locked, everything else fitted to three at once, size step 3, 40 health and 6 attack damage.
 
 ### `WorldModuleType`
 *`com.moddingfromamod.world.WorldModuleType`, read with `all`.* **A kind of world**: code that runs for one world and

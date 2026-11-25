@@ -503,7 +503,7 @@ public final class WatchMenu extends ChestMenu {
         }
         var facts = MakeFactsLookup.forThing(null, kind, c.id());
         MakeVerdict v = MakeGate.ask(facts, WishAsk.replay(viewer, c.recipeId()).withText(c.name()));
-        return v.makes() && !com.moddingfromamod.wishbuilder.MakeFit.satisfies(facts, v.limits()) ? v.tooMuch() : v;
+        return v.makes() && !com.moddingfromamod.wishbuilder.MakeFit.satisfiesHere(facts, v.limits()) ? v.tooMuch() : v;
     }
 
     /**
