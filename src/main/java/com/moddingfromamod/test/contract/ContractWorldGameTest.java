@@ -902,6 +902,7 @@ public final class ContractWorldGameTest {
         var server = helper.getLevel().getServer();
         AtomicReference<BuilderMake.Result> building = new AtomicReference<>();
         AtomicReference<BuilderMake.Result> event = new AtomicReference<>();
+        AtomicReference<BuilderMake.Result> picture = new AtomicReference<>();
         BuilderMake.make(p, example(BuilderSpec.Kind.BUILDING), BuilderAllowlist.REVIEWED).thenAcceptAsync(building::set);
         com.moddingfromamod.test.RealTime.succeedWhen(helper, () -> {
             BuilderMake.Result b = building.get();
@@ -927,6 +928,18 @@ public final class ContractWorldGameTest {
             var told = ContractWorld.handedOver(p.getUUID());
             helper.assertTrue(told.size() == 2 && told.get(0).kind().equals("building") && told.get(1).kind().equals("event"),
                     Component.literal("the world is told of both: " + told));
+            // a picture has no replay the world may keep it by: it lands, and the world is told so
+            if (picture.get() == null && !BuilderMake.making(p.getUUID())) {
+                BuilderMake.make(p, example(BuilderSpec.Kind.PICTURE), BuilderAllowlist.REVIEWED)
+                        .thenAcceptAsync(r -> picture.compareAndSet(null, r));
+            }
+            BuilderMake.Result pic = picture.get();
+            helper.assertTrue(pic != null && pic.outcome() == BuilderMake.Outcome.MADE, Component.literal("the picture: " + pic));
+            var notKept = ContractWorld.notKept(p.getUUID());
+            helper.assertTrue(notKept.size() == 1 && notKept.get(0).kind().equals("picture")
+                            && notKept.get(0).why() == com.moddingfromamod.world.NotKept.Why.NO_REPLAY_RECIPE
+                            && hotbarSlotOf(p, com.moddingfromamod.wishbuilder.BuilderAgain.recipeId(pic.madeId())) < 0,
+                    Component.literal("the picture landed, and the world is told it was not kept: " + notKept));
         });
     }
 

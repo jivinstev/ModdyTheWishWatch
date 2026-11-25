@@ -53,6 +53,15 @@ class KeptWishTest {
         assertNotNull(KeptWish.refusal("run_command", j("{\"command\":[\"time set day\",\"execute as @p at @s run setblock ~ ~ ~ stone\"]}"),
                 Landing.KEPT));
         assertNotNull(KeptWish.refusal("run_command", j("{\"command\":\"wishmob spawn d\"}"), Landing.KEPT));
+        assertNotNull(KeptWish.refusal("run_command", j("{\"command\":[\"execute as @a run summon minecraft:pig ~ ~ ~\"]}"),
+                Landing.KEPT), "execute as @a run summon: parsed through the chain");
+        assertNotNull(KeptWish.refusal("run_command", j("{\"command\":[\"execute at @s positioned ~ ~1 ~ run execute as @s run minecraft:setblock ~ ~ ~ stone\"]}"),
+                Landing.KEPT), "a nested chain, a namespaced root");
+        assertNotNull(KeptWish.refusal("run_command", j("{\"command\":[\"function mypack:build_tower\"]}"), Landing.KEPT),
+                "a function may place anything: refused");
+        assertNotNull(KeptWish.refusal("run_command", j("{\"command\":[\"execute as @s run function mypack:build_tower\"]}"),
+                Landing.KEPT));
+        assertNull(KeptWish.refusal("run_command", j("{\"command\":[\"execute if entity @s run time set day\"]}"), Landing.KEPT));
         assertNull(KeptWish.refusal("run_command", j("{\"command\":[\"time set day\"]}"), Landing.KEPT));
         assertNull(KeptWish.refusal("run_command", j("{\"command\":[\"say summon\"]}"), Landing.KEPT), "a word, not a command");
         assertNotNull(KeptWish.refusal("run_command", j("{\"command\":[\"wishdatapack sword give\"]}"), Landing.KEPT));

@@ -76,6 +76,8 @@ public final class KeptHandOver {
             if (taught.isEmpty()) {
                 LOGGER.warn("[kept] wish {}: kept, and it taught no recipe, so nothing could be handed over",
                         run.shortId());
+                MakeGate.notKept(new com.moddingfromamod.world.NotKept(run.playerId(), kind, landing,
+                        com.moddingfromamod.world.NotKept.Why.NOTHING_TAUGHT));
                 return;
             }
             String recipe = taught.get(taught.size() - 1);

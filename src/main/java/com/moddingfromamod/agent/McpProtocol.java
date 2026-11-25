@@ -1176,16 +1176,28 @@ public final class McpProtocol {
                 ? args.get("kind").getAsString() : null;
         String about = args != null && args.has("about") && args.get("about").isJsonPrimitive()
                 ? args.get("about").getAsString().strip() : "";
-        var asked = com.moddingfromamod.wish.MakeGate.landing(
-                com.moddingfromamod.wishbuilder.MakeFacts.cautious(kind),
-                com.moddingfromamod.wish.WishAsk.of(run.playerId(), com.moddingfromamod.wish.WishSource.TYPED,
-                        com.moddingfromamod.wish.WishAsk.Magic.MAGICIAN));
-        var decided = KeptWish.decide(kind, "new".equalsIgnoreCase(about), asked);
+        boolean isNew = "new".equalsIgnoreCase(about);
+        String k = KeptWish.kindOf(kind);
+        // asked on the server thread, as every WorldMakes question is (this is the MCP dispatch thread)
+        com.moddingfromamod.world.Landing asked;
+        try {
+            asked = AgentBridge.onServer(() -> com.moddingfromamod.wish.MakeGate.landing(
+                    com.moddingfromamod.wishbuilder.MakeFacts.cautious(k),
+                    com.moddingfromamod.wish.WishAsk.of(run.playerId(), com.moddingfromamod.wish.WishSource.TYPED,
+                            com.moddingfromamod.wish.WishAsk.Magic.MAGICIAN)));
+        } catch (RuntimeException e) {
+            LOGGER.warn("[kept] wish {}: the world could not be asked where it goes ({}); it lands", wishId, e.toString());
+            asked = com.moddingfromamod.world.Landing.LANDS;
+        }
+        var decided = KeptWish.decide(k, isNew, asked);
         if (asked != com.moddingfromamod.world.Landing.LANDS && decided == com.moddingfromamod.world.Landing.LANDS) {
             LOGGER.warn("[kept] wish {}: this world asked {} for a {} ({}); it lands: only a new creature, building, "
-                    + "event or item has a recipe to hand over", wishId, asked, kind, about.isEmpty() ? "?" : about);
+                    + "event or item has a recipe to hand over", wishId, asked, k, isNew ? "new" : "a change");
+            var told = new com.moddingfromamod.world.NotKept(run.playerId(), k, asked, isNew
+                    ? com.moddingfromamod.world.NotKept.Why.NO_REPLAY_RECIPE : com.moddingfromamod.world.NotKept.Why.A_CHANGE);
+            AgentBridge.onServerRun(() -> com.moddingfromamod.wish.MakeGate.notKept(told));
         }
-        if (run.lockLanding(decided, kind == null ? null : kind.strip().toLowerCase(java.util.Locale.ROOT))
+        if (run.lockLanding(decided, k)
                 && decided != com.moddingfromamod.world.Landing.LANDS) {
             LOGGER.info("[kept] wish {}: kept by this world ({}, a {})", wishId, decided, kind);
         }

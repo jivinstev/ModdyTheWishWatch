@@ -48,6 +48,15 @@ public final class KeptWish {
         return asked == Landing.KEPT_AS_ITEM && !k.equals("item") ? Landing.KEPT : asked;
     }
 
+    /** The plan's kind in the closed vocabulary a world is told: one of the plan's kinds, else {@code other}. */
+    public static String kindOf(String kind) {
+        String k = kind == null ? "" : kind.strip().toLowerCase(Locale.ROOT);
+        return switch (k) {
+            case "creature", "building", "event", "item", "picture" -> k;
+            default -> "other";
+        };
+    }
+
     /** What the agent is told on its plan, once: do the work, place nothing, teach it, finish. */
     public static String brief(Landing l) {
         if (l == null || l == Landing.LANDS) {
@@ -107,18 +116,24 @@ public final class KeptWish {
         return null;
     }
 
-    /** Does this one command place something (an {@code execute … run} is read through to what it runs)? */
+    /**
+     * Does this one command place something? Parsed as {@code CommandGuard} parses it ({@code CommandGuard.runChain}):
+     * the command and every {@code execute … run} tail, each by its root word. {@code function} is refused outright: a
+     * datapack function may place anything, and nothing can show beforehand that it will not.
+     */
     static boolean places(String command, Landing l) {
-        String[] w = command == null ? new String[0] : command.strip().replaceFirst("^/", "").split("\\s+");
-        for (int i = 0; i < w.length; i++) {
-            String word = w[i].toLowerCase(Locale.ROOT);
-            boolean head = i == 0 || w[i - 1].equalsIgnoreCase("run");
-            if (!head || !PLACING.contains(word)) {
+        String c = command == null ? "" : command.strip();
+        if (c.startsWith("/")) {
+            c = c.substring(1);
+        }
+        for (String step : com.moddingfromamod.wish.CommandGuard.runChain(c)) {
+            String root = com.moddingfromamod.wish.CommandGuard.rootOf(step);
+            if (!PLACING.contains(root)) {
                 continue;
             }
+            String[] w = step.strip().split("\\s+");
             // the one exception: an item kept as the real item is handed over by its own give
-            if (word.equals("wishdatapack") && l == Landing.KEPT_AS_ITEM && i + 2 < w.length
-                    && w[i + 2].equalsIgnoreCase("give")) {
+            if (root.equals("wishdatapack") && l == Landing.KEPT_AS_ITEM && w.length == 3 && w[2].equalsIgnoreCase("give")) {
                 continue;
             }
             return true;

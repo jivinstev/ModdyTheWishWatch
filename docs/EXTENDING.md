@@ -335,10 +335,20 @@ the limits the world gave.
 
   **Always land, and the world's answer is not used:** a change to something he already has (a Magician plan whose
   `about` is not `new`), a real mob, supplies, a rule, a **picture** (not yet kept), and a Magician wish of any kind
-  but `creature`, `building`, `event` or `item` (no replay recipe places it, `wish/ReplayContract`). When the world
-  asked to keep one of those, the core logs a warning and it lands; it is never dropped silently. A Magician wish that
-  taught no recipe has nothing to hand over: logged, and what its tools saved stays where they saved it. With no world
+  but `creature`, `building`, `event` or `item` (no replay recipe places it, `wish/ReplayContract`). A Builder change is
+  not asked at all.
+
+  **When the world asked to keep a make and the core did not**, the world is told, once per make, with
+  `notKept(NotKept)`: the player, the kind (`creature`, `item`, `building`, `event`, `picture` or `other`), what it
+  asked, and why (`NO_REPLAY_RECIPE`: it landed; `A_CHANGE`: a change to his thing, changed where it stands;
+  `NOTHING_TAUGHT`: a kept Magician wish finished having taught no recipe, so nothing could be handed over and nothing
+  was placed). Data only, never words. It is also logged as a warning; it is never dropped silently. With no world
   answering nothing changes and nothing is asked.
+
+  The Magician's `run_command` is read the way `CommandGuard` reads it (`CommandGuard.runChain`: the command and each
+  `execute … run` tail, by root word), never by searching its text. `function` is refused outright during a kept wish:
+  a datapack function may place anything, and nothing can show beforehand that it will not. The "place nothing" text
+  the agent reads is the core's own, with no world's words in it.
 - **Where the core asks:** every Builder and Apprentice make and every Builder change (`BuilderMake.make`, whatever page
   drew its tile); every tile of the Builder's pages and its tune dialog, per draw; each ranked make on the Apprentice's page, as it opens; a recipe, "Make another one" and a
   hotbar fire (`WishService.submit`, by the facts of what the recipe makes, fitted at fire); "Give me one"; each thing on

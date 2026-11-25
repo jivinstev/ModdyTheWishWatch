@@ -507,9 +507,17 @@ public final class BuilderMake {
         // WHERE IT GOES (#70): a world may keep a new make and hand it over as a hotbar wish instead of it appearing.
         // Asked EXACTLY ONCE, here, before the first placing step, and locked into the make (as its aim is): never asked
         // again while it is made. A kept creature is sculpted and not spawned; nothing is charged until it is fired.
-        final com.moddingfromamod.world.Landing landing = editOf != null || !keepable(spec)
-                ? com.moddingfromamod.world.Landing.LANDS
+        // A change is not asked (it is changed where it stands). A kind with no replay recipe lands even when the world
+        // asked to keep it, and the world is told so (notKept), never only a log line.
+        final com.moddingfromamod.world.Landing worldAsked = editOf != null ? com.moddingfromamod.world.Landing.LANDS
                 : com.moddingfromamod.wish.MakeGate.landing(MakeFacts.of(spec), askOf(who, textOf(spec), null, apprentice));
+        final com.moddingfromamod.world.Landing landing = keepable(spec) ? worldAsked : com.moddingfromamod.world.Landing.LANDS;
+        if (worldAsked != com.moddingfromamod.world.Landing.LANDS && landing == com.moddingfromamod.world.Landing.LANDS) {
+            LOGGER.warn("builder make {} for {}: this world asked {} for a {}; it lands: no replay recipe makes it again",
+                    newId, person.name(), worldAsked, spec.kind().id());
+            com.moddingfromamod.wish.MakeGate.notKept(new com.moddingfromamod.world.NotKept(who,
+                    BuilderLowering.kindOf(spec), worldAsked, com.moddingfromamod.world.NotKept.Why.NO_REPLAY_RECIPE));
+        }
         if (landing != com.moddingfromamod.world.Landing.LANDS) {
             LOGGER.info("builder make {} for {}: kept by this world ({})", newId, person.name(), landing);
             calls = held(calls);

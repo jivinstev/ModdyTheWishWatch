@@ -160,6 +160,19 @@ public final class ContractWorldKeptMagicianGameTest {
             if (pic.run().landing() != Landing.LANDS || pp.toString().contains("KEPT") || error(painted)) {
                 return "a picture lands: " + pic.run().landing() + " " + painted;
             }
+            var notKept = ContractWorld.notKept(owner);
+            if (notKept.size() != 1 || !notKept.get(0).kind().equals("picture") || notKept.get(0).asked() != Landing.KEPT
+                    || notKept.get(0).why() != com.moddingfromamod.world.NotKept.Why.NO_REPLAY_RECIPE) {
+                return "the world is told the picture landed instead: " + notKept;
+            }
+            // a placing command through an execute chain, and a datapack function, are refused while kept
+            Wish fn = wish(owner, "a tower");
+            fn.call("plan_wish", "{\"kind\":\"building\",\"about\":\"new\",\"steps\":[\"a tower\"]}");
+            JsonObject f = fn.call("run_command", "{\"command\":[\"function mypack:build_tower\"]}");
+            JsonObject ex = fn.call("run_command", "{\"command\":[\"execute as @a run summon minecraft:pig ~ ~ ~\"]}");
+            if (!error(f) || !error(ex) || fn.reached().get("run_command").get() != 0) {
+                return "a function and an execute chain are refused while kept: " + f + " " + ex;
+            }
             // with no world answering, nothing is asked and nothing is refused
             Plugins.shared().replaceForTest(WorldMakes.class, null);
             Plugins.shared().hideForTest(WorldMakes.class, true);
