@@ -1,0 +1,68 @@
+# The redstone-wishes branch's test jar.
+#
+# Every push to the long-lived `redstone-wishes` branch builds the mod (Gate A: compile, unit tests, the jar and its
+# checks), then runs Gate B's `ci` shard and the redstone GameTests (tools/redstone-gametests.txt). It uploads the store jar as an artifact a person
+# can install into a NeoForge 1.21.8 game to try the branch. The jar is a test build: it is never released or published.
+# Download it from the run's page (Actions -> "Redstone branch jar" -> the run -> Artifacts).
+name: Redstone branch jar
+
+on:
+  push:
+    branches: [redstone-wishes]
+  workflow_dispatch:
+
+concurrency:
+  group: redstone-jar-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  jar:
+    name: Build, test and upload the jar
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Cache Gradle and the NeoForm decompile
+        uses: actions/cache@v6
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ runner.os }}-${{ hashFiles('gradle.properties', 'build.gradle', 'versions/*.properties', 'gradle/wrapper/gradle-wrapper.properties') }}
+      - name: The datapack compiler's Python dependency
+        run: python3 -m pip install --break-system-packages ply
+      - name: ./gradlew build (Gate A and the jar)
+        run: ./gradlew build --console=plain
+      - name: Gate B, the ci shard
+        run: ./gradlew runGameTestServer -Pshard=ci --console=plain
+      - name: Gate B, the redstone GameTests (the classes listed in tools/redstone-gametests.txt)
+        run: |
+          classes=$(grep -v '^#' tools/redstone-gametests.txt | tr -s '\n' ',' | sed 's/,$//')
+          if [ -z "$classes" ]; then echo "no redstone GameTests listed yet"; exit 0; fi
+          ./gradlew runGameTestServer -Pshard=default -Pgametests="$classes" --console=plain
+
+      - name: Name the jar after the commit
+        id: name
+        run: echo "name=moddingfromamod-redstone-${GITHUB_SHA::8}" >> "$GITHUB_OUTPUT"
+      - name: Upload the jar
+        uses: actions/upload-artifact@v5
+        with:
+          name: ${{ steps.name.outputs.name }}
+          path: build/libs/*.jar
+          retention-days: 30
+      - name: Test reports
+        if: failure()
+        uses: actions/upload-artifact@v5
+        with:
+          name: redstone-test-reports
+          path: |
+            build/reports/tests/
+            run/gametest/logs/
+          retention-days: 7
