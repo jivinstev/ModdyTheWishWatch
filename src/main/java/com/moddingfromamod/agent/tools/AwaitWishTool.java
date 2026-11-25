@@ -972,9 +972,6 @@ public final class AwaitWishTool implements McpTool {
                     decision.logAction(), graded.latencyMs(), graded.costUsd(), graded.modelId(),
                     note.isEmpty() ? graded.raw() : note, "", 0, decision.redirectShown(), false,
                     wish.playerId() == null ? "" : wish.playerId().toString(), graded.arm());
-            if (decision.verdict().wellbeing()) {
-                com.moddingfromamod.agent.ActionLog.grownUpNote(wish.shortId(), wish.text());
-            }
         } catch (RuntimeException e) {
             LOGGER.debug("could not log the input grade: {}", e.toString());
         }

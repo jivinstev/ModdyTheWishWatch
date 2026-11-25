@@ -166,10 +166,10 @@ afford it, charging and refunding, and the words a menu, the guide book and `/mo
 
 | Method | Asked | Thread |
 |---|---|---|
-| `refuses(ask)` | **what a new charge implements.** `ask` is a `WishAsk` (below). Asked as a wish starts, before anything runs or opens: typed words before the Apprentice's page or the re-wish reader opens (so a world that refuses typed words right now refuses them before any page), a Builder or Apprentice make before it is built, a recipe press, "Make another one" and a hotbar fire before the rate limiter. `Optional.empty()` lets it start; a value refuses it and **is the line the player reads**, said once by the core and nothing else with it. Your line is written by a world, so it passes the text sweep a chat line passes; a line that does not is replaced by "✨ That wish can't be made here right now. Try a different wish!". `Optional.of("")` refuses and says nothing more (you said your own words; a Builder make then adds "Your wish bank is empty. It fills up again soon."). **A child in distress is never refused**: the core lets that wish through whatever you answer (`ask.distress()` tells you). **Cheap and free of side effects**: the core may ask more than once for one wish (again when what answers turns out different), and a menu will ask while it draws, once per tile per draw; do your bookkeeping in `charge(ask, wishId)`. The default asks `refusesAtSubmit` and maps `true` to `Optional.of("")` | server |
-| `refusesAtSubmit(player, distress, text, recipe)` | still supported, asked by the default `refuses`, so a charge written before `refuses` behaves as it did; `true` refuses (say why to the player yourself). Never refuse a child in `distress`. `recipe` is true for a wish served with no model that was named by what started it: a button, a "make another one" or a hotbar fire (of a Builder make too, whose `text` is then the thing's own name), `/moddy try`, a Builder or Apprentice make (whose `text` starts `Builder: `); false for typed words, also when a cached recipe his words matched serves them | server |
+| `refuses(ask)` | **what a new charge implements.** `ask` is a `WishAsk` (below). Asked as a wish starts, before anything runs or opens: typed words before the Apprentice's page or the re-wish reader opens (so a world that refuses typed words right now refuses them before any page), a Builder or Apprentice make before it is built, a recipe press, "Make another one" and a hotbar fire before the rate limiter. `Optional.empty()` lets it start; a value refuses it and **is the line the player reads**, said once by the core and nothing else with it. Your line is written by a world, so it passes the text sweep a chat line passes; a line that does not is replaced by "✨ That wish can't be made here right now. Try a different wish!". `Optional.of("")` refuses and says nothing more (you said your own words; a Builder make then adds "Your wish bank is empty. It fills up again soon."). **Cheap and free of side effects**: the core may ask more than once for one wish (again when what answers turns out different), and a menu will ask while it draws, once per tile per draw; do your bookkeeping in `charge(ask, wishId)`. The default asks `refusesAtSubmit` and maps `true` to `Optional.of("")` | server |
+| `refusesAtSubmit(player, distress, text, recipe)` | still supported, asked by the default `refuses`, so a charge written before `refuses` behaves as it did; `true` refuses (say why to the player yourself). `distress` is always `false` (see [Removed, kept for older world jars](#removed-kept-for-older-world-jars)). `recipe` is true for a wish served with no model that was named by what started it: a button, a "make another one" or a hotbar fire (of a Builder make too, whose `text` is then the thing's own name), `/moddy try`, a Builder or Apprentice make (whose `text` starts `Builder: `); false for typed words, also when a cached recipe his words matched serves them | server |
 | `restLeft(ask)` | `ask` is a `WishAsk` (below); at a hotbar proxy it is `WishAsk.replay(player, recipe)`: `PRESET`, its recipe id, `REPLAY`, also when the proxy only lands in his inventory and no wish is in flight. How many ticks that wish still rests for that player, from now: `0` ready, `-1` (the default) you do not say. Asked right after every fire of a hotbar proxy, whatever came of it, and the proxy's vanilla cooldown sweep is set to your answer: the rest a fire you allowed started, the time left on one you refused because it is still resting (so the sweep never restarts), `0` for one you refused for another reason; `-1` keeps the core's one second. Asked again whenever a proxy is put in his inventory (added, given back after a knock-out, at login, after a respawn or a change of dimension), where an answer above `0` puts the sweep back at what is left, because the game keeps no cooldown across a logout or a respawn and his client loses its own on any respawn or change of dimension. **A query with no side effects**: answering must never start, restart or change a rest, since the core asks whenever it likes. Refuse a resting wish through `refuses` (or `refusesAtSubmit`) as before | server |
-| `waiveIfEmpty(player, wishId)` | a wish let through on nothing because of distress: never charge it | server |
+| `waiveIfEmpty(player, wishId)` | **removed; never asked.** Kept so older world jars still load; deleted in a later release (see [Removed, kept for older world jars](#removed-kept-for-older-world-jars)) | — |
 | `charge(ask, wishId)` | a wish served with no model starts (a recipe, a hotbar fire, "Make another one", a Builder or Apprentice make), after the rate limiter: a fire the limiter refuses never reaches it. Where a charge takes its price and starts a rest (keyed by `ask.recipe()`). The default asks `charge(player, wishId, agent)` | server |
 | `charge(player, wishId, agent)` | still supported, asked by the default `charge(ask, wishId)`: `agent` is false | server |
 | `atPickup(wish)` | the AI picks a wish up, after the safety and world-rule checks | **an agent thread**: do not touch the world directly; hop to the server thread (`server.submit(…).join()`) as the example does |
@@ -181,8 +181,8 @@ afford it, charging and refunding, and the words a menu, the guide book and `/mo
 - **`WishAsk`** (`com.moddingfromamod.wish.WishAsk`) is the value a hook that takes one is asked about, the same shape
   at every such hook: `player()` (UUID), `source()` (`WishSource`), `recipe()` (the id `/moddy again` takes, also the
   `builder:<id>` of the kept make a Builder edit changes, or the key `/moddy give` takes for "Give me one"; `""` when
-  none), `magic()`, `text()` (the wish's words: typed words, a recipe's words, a Builder make's `Builder: …`) and
-  `distress()`. The magic is told truthfully at each start: `BUILDER` for a Builder make (and a Builder change on a
+  none), `magic()` and `text()` (the wish's words: typed words, a recipe's words, a Builder make's `Builder: …`).
+  (`distress()` and `withDistress(…)` remain only for older world jars: always `false`, and a no-op.) The magic is told truthfully at each start: `BUILDER` for a Builder make (and a Builder change on a
   thing the Magician made); `APPRENTICE` for typed words the Apprentice's page or the re-wish reader will answer, and
   for a make an Apprentice tile pressed; `REPLAY` for a thing made again with no model (a recipe button, a cached
   recipe his typed words matched, "Make another one", a hotbar fire, "Give me one"); `MAGICIAN` for typed words the
@@ -259,8 +259,7 @@ the limits the world gave.
   his watch (so a Magician result the world locks stays on his shelf and is shown locked, and one it hides is not on
   this world's watch).
 - **Order and the rules that do not bend:** the safety layers and a world's rules file run first, so a refused wish is
-  never fitted into an allowed one; nothing is charged for a make that is hidden or locked; **a child in distress is
-  never stopped or fitted** (as with the charge); the answer is a VIEW, worked out when asked and never written to his
+  never fitted into an allowed one; nothing is charged for a make that is hidden or locked; the answer is a VIEW, worked out when asked and never written to his
   shelf or any store, because the shelf follows him to every world.
 - **The Apprentice's tiles** (`wishbuilder/ApprenticeFit`): fitted AFTER ranking and outside the matcher, so its
   ranking, gold-set floors and tree fingerprint are the same in every world. Each ranked make is asked through the
@@ -397,6 +396,26 @@ plugins.add(SettingsOverride.class, new SettingsOverride() {
     }
 });
 ```
+
+### Removed, kept for older world jars
+
+These were part of the "a child in distress" path, which read four self-harm phrasings in the safety lexicon and let
+such a wish through whatever a charge answered. That word matcher has been removed (a fixed phrase list is not a
+dependable way to notice a child in real distress, and keeping it gave a false sense of security). A server that wants
+wellbeing handling builds its own, with the hooks above (`WishCharge.refuses(ask)` is shown every wish's words as it
+starts, through `WishAsk.text()`) and NeoForge's own chat events.
+
+The methods stay, with these meanings, **so a world jar compiled against an older release still loads**:
+
+| Method | Now | Deleted when |
+|---|---|---|
+| `WishAsk.distress()` | always `false` | in the first release that already breaks world jars for another reason, and no later than the third release after 1.0.9 (the last release with the matcher) |
+| `WishAsk.withDistress(boolean)` | returns the same ask, unchanged | as above |
+| `WishCharge.waiveIfEmpty(player, wishId)` | never asked by the core; an override still loads and never runs | as above |
+| the `distress` parameter of `WishCharge.refusesAtSubmit` | always `false`; the signature stays so an existing override still overrides it | as above (the method itself stays: it is still supported) |
+
+Each is marked `@Deprecated(forRemoval = true)` (the parameter is documented on its method). Stop calling them now: a
+check on `distress()` is a branch that can no longer be taken.
 
 ## Internal seams (do not build on these)
 

@@ -69,7 +69,7 @@ class SafetyLexiconTest {
             n++;
             String prompt = o.get("prompt").getAsString();
             l.check(prompt).ifPresent(v -> fired.add(prompt + "  ->  " + v.overallLabel()
-                    + " wellbeing=" + v.wellbeing() + " " + v.reasonNames()));
+                    + " " + v.reasonNames()));
         }
         assertTrue(n >= 50, "the " + (com.moddingfromamod.CorpusSource.real() ? "real-wish corpus" : "public fixture")
                 + " should not have shrunk to " + n + " rows");
@@ -93,20 +93,19 @@ class SafetyLexiconTest {
     }
 
     @Test
-    void selfHarmIsAWellbeingNoteAndNotABlock() {
-        // §1: a wish that reads as real distress is NEVER blocked. Blocking a child in distress is
-        // the worst possible answer, so WELLBEING deliberately sets no band at all — a caller that
-        // read "the lexicon returned something" as "refuse" would get this exactly backwards.
-        SafetyVerdict v = shipped().check("make me a knife to hurt myself").orElseThrow();
-        assertTrue(v.wellbeing());
-        assertEquals(SafetyVerdict.Band.FINE, v.overall());
-        assertTrue(v.reasonNames().contains("SELF_HARM"));
+    void anOverrideLineNamingAnAxisThatNoLongerExistsIsIgnored() {
+        // An override written for an older release may still carry WELLBEING lines. That axis is
+        // gone; its lines are skipped like any unknown axis, and every other line still loads.
+        SafetyLexicon l = of("SEXUAL\tporn\tSEXUAL", "WELLBEING\tcut myself\tSELF_HARM",
+                "DANGER\theroin\tDRUGS");
+        assertEquals(2, l.size(), "the old axis's line is skipped, never guessed at");
+        assertTrue(l.check("i want to cut myself").isEmpty());
+        assertTrue(l.check("give me heroin").isPresent(), "a line below the skipped one still loads");
     }
 
     @Test
-    void aRespawnRequestIsNotADistressSignal() {
-        // "kill me" is in the real corpus. In Minecraft it means "put me back at my bed", and a
-        // grown-up note that fires on every respawn is a note nobody reads.
+    void aRespawnRequestDoesNotTripTheFloor() {
+        // "kill me" is in the real corpus. In Minecraft it means "put me back at my bed".
         for (String wish : List.of("kill me", "kill myself", "kill me please", "how do i kill me")) {
             assertTrue(shipped().check(wish).isEmpty(), "the floor fired on: " + wish);
         }
@@ -152,13 +151,11 @@ class SafetyLexiconTest {
 
     @Test
     void severalHitsCombineIntoOneVerdict() {
-        SafetyLexicon l = of("SEXUAL\tporn\tSEXUAL", "DANGER\theroin\tDRUGS",
-                "WELLBEING\tcut myself\tSELF_HARM");
-        SafetyVerdict v = l.check("porn and heroin and cut myself").orElseThrow();
+        SafetyLexicon l = of("SEXUAL\tporn\tSEXUAL", "DANGER\theroin\tDRUGS");
+        SafetyVerdict v = l.check("porn and heroin").orElseThrow();
         assertEquals(SafetyVerdict.Band.CLEARLY, v.sexual());
         assertEquals(SafetyVerdict.Band.CLEARLY, v.danger());
         assertEquals(SafetyVerdict.Band.FINE, v.violence());
-        assertTrue(v.wellbeing());
         assertTrue(v.redirect().isEmpty(),
                 "the floor never proposes a redirect: §2 gives one to LIKELY alone, and this list "
                         + "only ever produces CLEARLY");
@@ -233,14 +230,14 @@ class SafetyLexiconTest {
                 "SEXUAL\tporn\tSEXUAL",
                 "DANGER\tcocaine\t#",          // the offending line: a bare comment marker
                 "DANGER\theroin\tDRUGS",
-                "WELLBEING\tcut myself\tSELF_HARM");
+                "DANGER\tfentanyl\tDRUGS");
         assertEquals(4, l.size(),
                 "every line must survive: the bad field costs its own REASON, never the rest of "
                         + "the file");
         assertTrue(l.check("give me heroin").isPresent(),
                 "a term BELOW the malformed line must still fire — this is the bug");
-        assertTrue(l.check("i want to cut myself").map(SafetyVerdict::wellbeing).orElse(false),
-                "the wellbeing row was last in the file and is the one that matters most");
+        assertTrue(l.check("some fentanyl").isPresent(),
+                "the last row in the file must still fire too");
         assertEquals(SafetyVerdict.Reason.OTHER,
                 l.check("some cocaine").orElseThrow().reasons().get(0),
                 "the line itself keeps its band and degrades to OTHER, which is what an "

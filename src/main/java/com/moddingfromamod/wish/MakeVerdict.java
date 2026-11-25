@@ -15,7 +15,6 @@ import com.moddingfromamod.world.WorldLimits;
  *
  * <ul>
  *   <li>No answer (or {@code null}) and no limits: allowed, as with no world at all.</li>
- *   <li>A child in distress is never stopped or fitted (as with the charge): allowed, whatever the world answered.</li>
  *   <li>Hidden: not offered here; pressed anyway (a replay, a hotbar fire, a stale page) it says {@link #HIDDEN_LINE}.</li>
  *   <li>Locked: shown, not made; its line is the world's words when they pass the text sweep a chat line passes, else
  *       {@link #LOCKED_FALLBACK}.</li>
@@ -64,15 +63,11 @@ public record MakeVerdict(MakeView.State state, String line, Map<String, Double>
     }
 
     /**
-     * @param distress the safety lexicon read this wish as a child in distress (decides first)
      * @param view     the world's answer about this make ({@code null} reads as allowed)
      * @param upFront  the world's limits for every make ({@link com.moddingfromamod.world.WorldMakes#limits})
      * @param sweeps   true when a line passes the text sweep
      */
-    public static MakeVerdict decide(boolean distress, MakeView view, Map<String, Double> upFront, Predicate<String> sweeps) {
-        if (distress) {
-            return ALLOWED;
-        }
+    public static MakeVerdict decide(MakeView view, Map<String, Double> upFront, Predicate<String> sweeps) {
         MakeView v = view == null ? MakeView.ALLOWED : view;
         switch (v.state()) {
             case HIDDEN -> {

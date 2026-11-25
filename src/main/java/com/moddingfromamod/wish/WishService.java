@@ -222,9 +222,7 @@ public final class WishService {
         // A lexicon CLEARLY is a term so unambiguous a seven-year-old could not have meant anything
         // else, so it is answered here rather than ten seconds later at the dequeue point — §12.3's
         // acknowledged-then-blocked gap is 8–25 s and this is what keeps the unambiguous half of it
-        // at zero. WELLBEING is NOT a CLEARLY and never reaches this branch: it sets no band, so
-        // overall() stays FINE and the wish goes on to be answered kindly with a grown-up note
-        // (§1 — blocking a child in distress is the worst answer available).
+        // at zero.
         //
         // ⚠ NO WISH ID EXISTS YET, so neither record below carries one — the same shape as the
         // EMPTY and THROTTLED records above and for the same reason: the book has not been written
@@ -242,19 +240,6 @@ public final class WishService {
             com.moddingfromamod.agent.ActionLog.safety("", "input", lexicon.get(),
                     com.moddingfromamod.safety.SafetyInputGate.Act.BLOCK.name(), 0L, 0.0,
                     "lexicon", "", "", 0, false, false, player.getStringUUID());
-            if (lexicon.get().wellbeing()) {
-                // THE NOTE, AND NOT THE WARM LINE (§12.1 decision 1B, scoped here deliberately).
-                //
-                // Reaching this branch takes a wellbeing phrasing AND a banded term in one wish —
-                // a wellbeing term sets no band, so overall() could not be CLEARLY on its own. The
-                // wish is therefore over, and SafetyWords.WELLBEING_NOTICED ends "I'm still making
-                // your wish!", which would be false. A kind sentence containing one lie is worse
-                // than the grown-up note on its own, and the note is what §1 actually promises; a
-                // second wording for a rare compound case would be a fifth string in SafetyWords
-                // for the sake of never leaving one unsaid. Recorded in the CS-D2 ledger row as a
-                // judgement rather than left for somebody to find.
-                com.moddingfromamod.agent.ActionLog.grownUpNote("", text);
-            }
             com.moddingfromamod.agent.ActionLog.wish(text, "BLOCKED", source.name(), "",
                     player.getStringUUID());
             return Outcome.BLOCKED;
@@ -263,9 +248,7 @@ public final class WishService {
         // wish arrives. HERE, below the safety floor (a CLEARLY is answered as one, never as "you
         // have no wishes") and ABOVE the rate limiter, both graders and the book, for the floor's
         // own reason: a wish that is going to be refused must cost no token, no model call and no
-        // worker. A no-op on a world whose rules declare no wish_bank. A child in
-        // distress is never refused (CHILD_SAFETY.md §1): his wish goes on, waived, below.
-        final boolean distress = lexicon.map(v -> v.wellbeing()).orElse(false);
+        // worker. A no-op on a world whose rules declare no wish_bank.
 
         // ── A PRESSED RECIPE STARTS NO MODEL (step 1, docs/OPEN_DOOR_PLAN.md §8.1). Resolved
         // HERE, once, because three model calls below are only worth starting for a wish the agent
@@ -277,8 +260,8 @@ public final class WishService {
         //     the child's words sent to the grader, to grade a phrase that is our own recipe's;
         //   · the world-rules grade likewise is enforced only at pickup;
         //   · the reference prefetch warms a lookup for an agent that will never run.
-        // The L0 lexicon above still reads every press (local, free), so a CLEARLY still refuses
-        // and a wellbeing phrasing still gets its grown-up note. A TYPED wish that happens to
+        // The L0 lexicon above still reads every press (local, free), so a CLEARLY still refuses.
+        // A TYPED wish that happens to
         // match a recipe by its words keeps every call: those are a child's own words.
         Optional<WishTemplates.Match> found = replay != null ? Optional.of(replay)
                 : WishCatalog.templates().byId(namedTemplateId, text);
@@ -318,14 +301,14 @@ public final class WishService {
         // that refuses this wish refuses it before anything opens. Told truthfully what will answer, which is decided
         // here with nothing done: a named recipe is a REPLAY; typed words the Apprentice's route or the re-wish reader
         // will answer are APPRENTICE; a cached recipe his words match is a REPLAY of it; anything else goes to the
-        // Magician. A child in distress is never refused (ChargeRefusal). With no charge, nothing here changes a thing.
+        // Magician. With no charge, nothing here changes a thing.
         final WishRoute.Route route = named.isEmpty()
                 ? ApprenticeService.route(player, hint, WishIntent.isQuestion(text)) : null;
         final boolean readerTakes = named.isEmpty() && route != WishRoute.Route.APPRENTICE
                 && Rewish.wouldRead(player, text, source, hint);
         TypedMatch typed = named.isEmpty() && route != WishRoute.Route.APPRENTICE && !readerTakes
                 ? typedMatch(player, text, source) : null;
-        WishAsk ask = askFor(player, source, text, distress, named, namedTemplateId, route, readerTakes, typed);
+        WishAsk ask = askFor(player, source, text, named, namedTemplateId, route, readerTakes, typed);
         WorldSays world = askWorld(player, ask, text, source, named.isPresent() ? named : typed == null ? Optional.empty() : typed.matched());
         if (world.refused()) {
             return Outcome.NOT_HERE;
@@ -346,7 +329,7 @@ public final class WishService {
             // the reader found no instant way after all, and his words go on as typed: the charge is asked again about
             // what answers them now.
             typed = typedMatch(player, text, source);
-            ask = askFor(player, source, text, distress, named, namedTemplateId, route, false, typed);
+            ask = askFor(player, source, text, named, namedTemplateId, route, false, typed);
             world = askWorld(player, ask, text, source, named.isPresent() ? named : typed.matched());
             if (world.refused()) {
                 return Outcome.NOT_HERE;
@@ -415,9 +398,6 @@ public final class WishService {
         if (models) {
             com.moddingfromamod.reference.WishBriefs.atSubmit(wish.id(), text);
         }
-        if (distress) {
-            WishCharge.get().waiveIfEmpty(player, wish.id());
-        }
         // A wish was made on this world — what "went to another world after a refusal" counts.
         com.moddingfromamod.world.WorldRulesLog.submit(wish.shortId(), player.getStringUUID());
 
@@ -425,35 +405,9 @@ public final class WishService {
         // string says what enforcement WOULD have done and nothing is actually done — CS-S2 owns
         // turning these into a refusal, and it needs a base rate first (§8: "shadow mode is the
         // first thing that ships, so a base rate exists before anything is blocked").
-        //
-        // ── AND THE ONE WARM LINE THE CHILD GETS (§12.1, decision 1B; chunk CS-D2).
-        //
-        // A lexicon WELLBEING hit is the only thing that says anything to him, and the wish then
-        // carries on exactly as it would have: this is not a refusal, not a redirect, and not a
-        // condition on anything below. Decided BEFORE the record is written and written into it as
-        // `childTold`, because §6's rule is that the grade is logged before any action is taken and
-        // a record that disagreed with what was said would make the one number this decision
-        // creates unreadable.
-        lexicon.ifPresent(v -> {
-            boolean tell = com.moddingfromamod.safety.SafetyInputGate.saysTheWellbeingLine(
-                    v, com.moddingfromamod.safety.SafetyVerdict.unavailable());
-            com.moddingfromamod.agent.ActionLog.safety(wish.shortId(), "input", v,
-                    inputAction(v), 0L, 0.0, "lexicon", "", "", 0, false, tell,
-                    player.getStringUUID());
-            if (v.wellbeing()) {
-                com.moddingfromamod.agent.ActionLog.grownUpNote(wish.shortId(), text);
-            }
-            if (tell) {
-                // SAID ONCE, from here and nowhere else. The dequeue point writes a SECOND
-                // grown-up note for the same wish (AwaitWishTool, on the combined verdict) and
-                // deliberately says nothing to the child: a note is a record and can be written
-                // twice harmlessly, while a line is an event and a child told twice about one
-                // sentence he typed would read as being fussed over. There is no line-sending
-                // code anywhere but here, which is what makes "once" structural rather than
-                // remembered.
-                WishFeedback.wellbeingNoticed(player);
-            }
-        });
+        lexicon.ifPresent(v -> com.moddingfromamod.agent.ActionLog.safety(wish.shortId(), "input", v,
+                inputAction(v), 0L, 0.0, "lexicon", "", "", 0, false, false,
+                player.getStringUUID()));
 
         // A wish that points at something already in the world can never be answered from the
         // cache, however well the keywords match: a template is a fixed list of commands and cannot
@@ -529,13 +483,7 @@ public final class WishService {
         // than being told "Moddy's on it" and then — two minutes later, or forty
         // seconds later at the dequeue — "Moddy fell asleep". The lexicon has ALREADY graded this
         // wish above (a CLEARLY never gets this far), so L0 grades every input throughout.
-        //
-        // ⚠ A WELLBEING-FLAGGED WISH IS NEVER TURNED AWAY FOR TIREDNESS. Two reasons, both from
-        // docs/CHILD_SAFETY.md: §1 says a child in distress is never refused, and
-        // SafetyInputGate.actionOf already refuses to close on an outage for exactly this row. And
-        // the warm line above has just told him "I'm still making your wish!" — refusing now would
-        // make that sentence a lie. It goes on to the agent like any other day.
-        if (tired.isPresent() && !lexicon.map(v -> v.wellbeing()).orElse(false)) {
+        if (tired.isPresent()) {
             WishBook.get(player.getServer()).complete(wish.id(), WishStatus.REJECTED,
                     "Moddy was tired (" + tired.get().cause().wire() + ") — this new wish was "
                             + "not started. " + tired.get().detail());
@@ -683,11 +631,10 @@ public final class WishService {
     }
 
     /** What the world's charge is told about this wish (see the call in submit for the rule). */
-    private static WishAsk askFor(ServerPlayer player, WishSource source, String text, boolean distress,
+    private static WishAsk askFor(ServerPlayer player, WishSource source, String text,
                                   Optional<WishTemplates.Match> named, String namedTemplateId, WishRoute.Route route,
                                   boolean readerTakes, TypedMatch typed) {
-        WishAsk base = WishAsk.of(player.getUUID(), source, WishAsk.Magic.MAGICIAN).withText(text)
-                .withDistress(distress);
+        WishAsk base = WishAsk.of(player.getUUID(), source, WishAsk.Magic.MAGICIAN).withText(text);
         if (named.isPresent()) {
             String id = named.get().templateId();
             return base.withMagic(WishAsk.Magic.REPLAY)
@@ -706,7 +653,7 @@ public final class WishService {
      * A recipe made again (a button, "Make another one", a hotbar fire, a cached recipe his words matched): ask the world
      * whether that thing is made here ({@link MakeGate}, #14), by the facts of what the recipe makes. Hidden or locked is
      * said (once) and logged, and the wish goes no further: nothing is charged or started. Asked after the safety lexicon
-     * and before the charge; a child in distress is never stopped. Typed words the Magician or the Apprentice will answer
+     * and before the charge. Typed words the Magician or the Apprentice will answer
      * are asked where their make is known (the Apprentice's tiles and make, the Magician's result).
      */
     /** What the world said about a recipe: refused (said and logged), or its commands fitted to its limits (or null). */
@@ -872,9 +819,6 @@ public final class WishService {
      * fields to know whether a child was refused will one day forget to, which is why the prefix
      * exists at all — see {@code tools/safety-report.py}, which keeps the two under separate
      * headings.
-     *
-     * <p>WELLBEING is not a refusal. A distress flag on an otherwise FINE wish is a pass with a
-     * grown-up note beside it (§1), so it only appears when nothing else earned a band.
      */
     public static String inputAction(com.moddingfromamod.safety.SafetyVerdict v) {
         return (com.moddingfromamod.safety.ChildSafetyConfig.enforcing() ? "" : "SHADOW_")

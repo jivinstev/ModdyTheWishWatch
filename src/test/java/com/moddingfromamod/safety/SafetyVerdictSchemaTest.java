@@ -106,7 +106,7 @@ class SafetyVerdictSchemaTest {
                     "required names a property that does not exist: " + e.getAsString());
         }
         // Everything the parse path reads must be offered at all.
-        for (String field : List.of("violence", "sexual", "hate", "danger", "wellbeing",
+        for (String field : List.of("violence", "sexual", "hate", "danger",
                 "reasons", "redirect", "stageIndex")) {
             assertTrue(props.has(field), "the schema no longer offers " + field);
         }
@@ -144,7 +144,7 @@ class SafetyVerdictSchemaTest {
         // still a real answer ("no single step is responsible"), a reply that dodges the schema
         // parses to NO_STAGE, and the divert message must still name something in both cases.
         SafetyVerdict noStage = new SafetyVerdict(SafetyVerdict.Band.LIKELY,
-                SafetyVerdict.Band.FINE, SafetyVerdict.Band.FINE, SafetyVerdict.Band.FINE, false,
+                SafetyVerdict.Band.FINE, SafetyVerdict.Band.FINE, SafetyVerdict.Band.FINE,
                 List.of(SafetyVerdict.Reason.GORE), "a rubber chicken",
                 SafetyVerdict.Provenance.HAIKU, SafetyVerdict.NO_STAGE);
         String msg = SafetyPlanGate.divertMessage(noStage, List.of("Make it gory"));

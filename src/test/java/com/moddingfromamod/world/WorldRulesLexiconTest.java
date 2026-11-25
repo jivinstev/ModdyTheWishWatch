@@ -26,9 +26,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  */
 class WorldRulesLexiconTest {
 
-    /** A list that flags one made-up word, and notes another as wellbeing only. */
+    /** A list that flags one made-up word. */
     private static final SafetyLexicon LEXICON = SafetyLexicon.load(new StringReader(
-            "VIOLENCE\tzorblax\tOTHER\nWELLBEING\tmopeful\tOTHER\n"));
+            "VIOLENCE\tzorblax\tOTHER\n"));
 
     private static String file(String workshop, String rule, String why, String brief) {
         return "{\"store\":\"world-rules\",\"v\":1,\"world\":\"isles\",\"workshop\":\"" + workshop + "\","
@@ -80,12 +80,6 @@ class WorldRulesLexiconTest {
     void theBriefIsTheAgentsAndIsNotJudgedHere() {
         assertTrue(parse(file("Moddy's Workshop", "Time is the same for every island", "so the sun rises",
                 "never zorblax anything")).ok(), "the agent's brief is not a line he reads");
-    }
-
-    @Test
-    void aWellbeingNoteAloneRefusesNothing() {
-        assertTrue(parse(file("Moddy's Workshop", "Time is the same for every mopeful island", "so the sun rises",
-                "grant it")).ok(), "the sweep does not refuse a wellbeing note, and neither does the file check");
     }
 
     /**

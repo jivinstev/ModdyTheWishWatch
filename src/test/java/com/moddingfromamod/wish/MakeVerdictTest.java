@@ -17,42 +17,34 @@ class MakeVerdictTest {
 
     @Test
     void noAnswerAndNoLimitsIsTheGameAsItIs() {
-        assertEquals(MakeVerdict.ALLOWED, MakeVerdict.decide(false, null, Map.of(), PASSES));
-        assertEquals(MakeVerdict.ALLOWED, MakeVerdict.decide(false, MakeView.ALLOWED, Map.of(), PASSES));
-    }
-
-    @Test
-    void aChildInDistressIsNeverStoppedOrFitted() {
-        assertEquals(MakeVerdict.ALLOWED, MakeVerdict.decide(true, MakeView.HIDDEN, Map.of(), PASSES));
-        assertEquals(MakeVerdict.ALLOWED, MakeVerdict.decide(true, MakeView.locked("later"), Map.of(), PASSES));
-        assertEquals(MakeVerdict.ALLOWED, MakeVerdict.decide(true, MakeView.fit(Map.of(MakeFacts.COUNT_MADE, 1.0)),
-                Map.of(MakeFacts.COUNT_MADE, 1.0), PASSES));
+        assertEquals(MakeVerdict.ALLOWED, MakeVerdict.decide(null, Map.of(), PASSES));
+        assertEquals(MakeVerdict.ALLOWED, MakeVerdict.decide(MakeView.ALLOWED, Map.of(), PASSES));
     }
 
     @Test
     void hiddenAndLockedSayTheirLineAndAWorldsWordsAreSwept() {
-        MakeVerdict h = MakeVerdict.decide(false, MakeView.HIDDEN, Map.of(), PASSES);
+        MakeVerdict h = MakeVerdict.decide(MakeView.HIDDEN, Map.of(), PASSES);
         assertTrue(h.hidden() && !h.makes() && h.line().equals(MakeVerdict.HIDDEN_LINE));
-        MakeVerdict l = MakeVerdict.decide(false, MakeView.locked("Unlocks after the lighthouse"), Map.of(), PASSES);
+        MakeVerdict l = MakeVerdict.decide(MakeView.locked("Unlocks after the lighthouse"), Map.of(), PASSES);
         assertTrue(l.locked() && l.line().equals("Unlocks after the lighthouse"));
-        assertEquals(MakeVerdict.LOCKED_FALLBACK, MakeVerdict.decide(false, MakeView.locked("bad words"), Map.of(), PASSES).line());
-        assertEquals(MakeVerdict.LOCKED_FALLBACK, MakeVerdict.decide(false, MakeView.locked(""), Map.of(), PASSES).line());
-        assertEquals(MakeVerdict.LOCKED_FALLBACK, MakeVerdict.decide(false, MakeView.locked("x"), Map.of(), s -> {
+        assertEquals(MakeVerdict.LOCKED_FALLBACK, MakeVerdict.decide(MakeView.locked("bad words"), Map.of(), PASSES).line());
+        assertEquals(MakeVerdict.LOCKED_FALLBACK, MakeVerdict.decide(MakeView.locked(""), Map.of(), PASSES).line());
+        assertEquals(MakeVerdict.LOCKED_FALLBACK, MakeVerdict.decide(MakeView.locked("x"), Map.of(), s -> {
             throw new IllegalStateException("the sweep broke");
         }).line());
     }
 
     @Test
     void fitJoinsTheWorldsUpFrontLimitsWithTheAnswersTheTighterWinning() {
-        MakeVerdict v = MakeVerdict.decide(false, MakeView.fit(Map.of(MakeFacts.COUNT_MADE, 5.0, MakeFacts.SCALE_TIMES, 2.0)),
+        MakeVerdict v = MakeVerdict.decide(MakeView.fit(Map.of(MakeFacts.COUNT_MADE, 5.0, MakeFacts.SCALE_TIMES, 2.0)),
                 Map.of(MakeFacts.COUNT_MADE, 3.0, MakeFacts.AMOUNT_ITEMS, 16.0), PASSES);
         assertTrue(v.makes() && v.state() == MakeView.State.FIT);
         assertEquals(Map.of(MakeFacts.COUNT_MADE, 3.0, MakeFacts.SCALE_TIMES, 2.0, MakeFacts.AMOUNT_ITEMS, 16.0), v.limits());
         // up-front limits alone fit an allowed make
-        assertEquals(MakeView.State.FIT, MakeVerdict.decide(false, MakeView.ALLOWED,
+        assertEquals(MakeView.State.FIT, MakeVerdict.decide(MakeView.ALLOWED,
                 Map.of(MakeFacts.COUNT_MADE, 3.0), PASSES).state());
         // a key the core does not know is ignored: nothing to fit
-        assertEquals(MakeVerdict.ALLOWED, MakeVerdict.decide(false, MakeView.fit(Map.of("powerLevel", 1.0)), Map.of(), PASSES));
+        assertEquals(MakeVerdict.ALLOWED, MakeVerdict.decide(MakeView.fit(Map.of("powerLevel", 1.0)), Map.of(), PASSES));
     }
 
     @Test
