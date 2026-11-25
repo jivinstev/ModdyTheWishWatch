@@ -36,7 +36,7 @@ class MakeFactsTest {
     @Test
     void theVocabularyIsPinnedAndDocumented() throws Exception {
         assertEquals(List.of("fights", "hostile", "boss", "changes_blocks", "builds", "summons", "gives_items",
-                "world_rule", "decorative", "harmless"), MakeFacts.TAGS,
+                "world_rule", "decorative", "harmless", "vehicle"), MakeFacts.TAGS,
                 "a tag added, renamed or dropped is a change every world jar reads: update docs/EXTENDING.md with it");
         String doc = Files.readString(Path.of("docs/EXTENDING.md"));
         for (String t : MakeFacts.TAGS) {
@@ -46,6 +46,10 @@ class MakeFactsTest {
         assertEquals(List.of("healthHalfHearts", "attackDamageHalfHearts", "movementSpeedAttribute", "scaleTimes",
                 "builderSizeStep", "builderStrengthStep", "countMade", "amountItems", "radiusBlocks", "durationTicks",
                 "extentBlocks", "armorPoints", "knockbackResistanceFraction"), MakeFacts.NUMBERS.subList(0, 13),
+                "a shipped number was renamed, removed or reordered: add new ones at the end, never change these");
+        // #102: what a creature's moves do, added at the end
+        assertEquals(List.of("moveDamageHalfHeartsPerSecond", "effectiveDamageHalfHeartsPerSecond",
+                "healHalfHeartsPerSecond"), MakeFacts.NUMBERS.subList(13, 16),
                 "a shipped number was renamed, removed or reordered: add new ones at the end, never change these");
         for (String n : MakeFacts.NUMBERS) {
             assertTrue(doc.contains("`" + n + "`"), "docs/EXTENDING.md does not describe the number " + n);
@@ -354,5 +358,37 @@ class MakeFactsTest {
         assertEquals("machine", c.kind());
         assertEquals(Map.of(MakeFacts.COUNT_MADE, 3.0, MakeFacts.DURATION_TICKS, 60.0), c.numbers());
         assertEquals(Set.of(MakeFacts.GIVES_ITEMS, MakeFacts.FIGHTS), c.tags());
+    }
+
+    @Test
+    void aCreaturesMovesAreCountedAndAVehicleIsSaid() {
+        // #102: a friendly creature whose attack is its ranged move no longer reads as harmless in the a-second numbers
+        JsonObject spitter = JsonParser.parseString("{\"id\":\"gt_spit\",\"powers\":[\"friendly\"],\"health\":40,"
+                + "\"damage\":6,\"abilities\":[\"ranged\",\"heal\"]}").getAsJsonObject();
+        MakeFacts f = MakeFacts.ofArtifact("creature", spitter);
+        assertEquals(6.0, f.number(MakeFacts.ATTACK_DAMAGE_HALF_HEARTS).orElse(-1), "the bite's number keeps its meaning");
+        assertEquals(1.5, f.number(MakeFacts.MOVE_DAMAGE_HALF_HEARTS_PER_SECOND).orElse(-1), 1e-9);
+        assertEquals(1.5, f.number(MakeFacts.EFFECTIVE_DAMAGE_HALF_HEARTS_PER_SECOND).orElse(-1), 1e-9,
+                "a friendly creature never bites: only its moves");
+        assertEquals(0.8, f.number(MakeFacts.HEAL_HALF_HEARTS_PER_SECOND).orElse(-1), 1e-9);
+        // a guard bites once a second too
+        JsonObject guard = JsonParser.parseString("{\"id\":\"gt_guard\",\"powers\":[\"friendly\"],\"base\":\"guardian\","
+                + "\"health\":40,\"damage\":6}").getAsJsonObject();
+        MakeFacts g = MakeFacts.ofArtifact("creature", guard);
+        assertEquals(6.0, g.number(MakeFacts.EFFECTIVE_DAMAGE_HALF_HEARTS_PER_SECOND).orElse(-1), 1e-9);
+        assertTrue(g.number(MakeFacts.MOVE_DAMAGE_HALF_HEARTS_PER_SECOND).isEmpty(), "no move, no move number");
+        assertTrue(g.number(MakeFacts.HEAL_HALF_HEARTS_PER_SECOND).isEmpty());
+        assertFalse(g.has(MakeFacts.VEHICLE));
+        // a stored car is a vehicle, and a Builder car too
+        JsonObject car = JsonParser.parseString("{\"id\":\"gt_car\",\"powers\":[\"friendly\",\"rideable\"],"
+                + "\"behaves\":\"vehicle\",\"health\":40,\"damage\":0}").getAsJsonObject();
+        assertTrue(MakeFacts.ofArtifact("creature", car).has(MakeFacts.VEHICLE));
+        MakeFacts builderCar = MakeFacts.of(spec(BuilderSpec.Kind.RIDE, "preset:bodies/car", 2, List.of(), "friendly", 1, Map.of()));
+        assertTrue(builderCar.has(MakeFacts.VEHICLE), builderCar.toString());
+        assertEquals(0.0, builderCar.number(MakeFacts.EFFECTIVE_DAMAGE_HALF_HEARTS_PER_SECOND).orElse(-1), 1e-9);
+        MakeFacts builderBear = MakeFacts.of(spec(BuilderSpec.Kind.CREATURE, "preset:bodies/bear", 2, List.of(), "guard", 1, Map.of()));
+        assertFalse(builderBear.has(MakeFacts.VEHICLE), builderBear.toString());
+        assertTrue(builderBear.number(MakeFacts.EFFECTIVE_DAMAGE_HALF_HEARTS_PER_SECOND).orElse(0) > 0,
+                "a guard bear bites: " + builderBear);
     }
 }

@@ -628,6 +628,16 @@ public record Species(String id, String name, Body body, String texture, int tin
                 abilityPacks, ownerId, voice, throwsItem, behaves);
     }
 
+    /** The same creature with this armour and knockback resistance; a null leaves that one as it is (#101). */
+    public Species withDefence(Double newArmor, Double newKnockback) {
+        if (newArmor == null && newKnockback == null) {
+            return this;
+        }
+        return new Species(id, name, body, texture, tint, scale, health, speed, damage,
+                newArmor == null ? armor : newArmor, newKnockback == null ? knockbackResistance : newKnockback, powers,
+                modelKey, base, abilities, abilityPacks, ownerId, voice, throwsItem, behaves);
+    }
+
     /** The same creature with this voice. */
     public Species withVoice(Voice v) {
         return new Species(id, name, body, texture, tint, scale, health, speed, damage, armor,

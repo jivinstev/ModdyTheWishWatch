@@ -42,4 +42,15 @@ class CoverageMapOrderTest {
         assertEquals(List.of("idle", "Bar", "Bar/settle", "Foo", "Foo/settle", "Foo2", "Foo2/settle", "Foo_C",
                 "Foo_C/settle", "Foo_Z", "Foo_Z/settle", "FooBar", "FooBar/settle", "Zed", "Zed/settle"), owners);
     }
+
+    @Test
+    void aSettleWindowWaitsItsMinimumThenForQuietButNeverPastItsMost() {
+        long t0 = 1_000_000;
+        org.junit.jupiter.api.Assertions.assertFalse(CoverageMap.settled(t0, t0 + 100, true), "never before its minimum");
+        org.junit.jupiter.api.Assertions.assertTrue(CoverageMap.settled(t0, t0 + CoverageMap.SETTLE_MS, true));
+        org.junit.jupiter.api.Assertions.assertFalse(CoverageMap.settled(t0, t0 + CoverageMap.SETTLE_MS, false),
+                "the mod still working: wait");
+        org.junit.jupiter.api.Assertions.assertTrue(CoverageMap.settled(t0, t0 + CoverageMap.SETTLE_MAX_MS, false),
+                "a thread that never stops cannot hold the run");
+    }
 }

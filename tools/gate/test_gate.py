@@ -584,9 +584,29 @@ class CoverageMap(unittest.TestCase):
         wide = covmap.build([{"methods": dict(TABLE, **many), "units": {
             "AGameTest": ["x/Foo#a"] + sorted(many), "CGameTest": ["x/Foo#b"], "BGameTest": ["x/Bar#c"],
             "__idle__": ["x/Baz#tick"]}}], "c1", "t1", BLOBS, "full")
-        self.assertEqual(len(covmap.compare(a, wide)), 1, "eight more methods of nine is not noise")
+        notes = []
+        self.assertTrue(covmap.compare(a, wide, notes=notes), "eight more methods of nine, and the maps agree on "
+                        "too little overall: a problem")
         self.assertEqual(covmap.compare(a, wide, ["AGameTest"]), [], "unless the class is listed")
         self.assertLess(covmap.noise(a, wide)["agree"], 1.0)
+
+    def test_spread_noise_is_named_but_a_broken_mapping_run_fails(self):
+        # 100 classes of 100 methods; one class gains 8 (over its own allowance): within the run's, named in notes
+        methods = {"x/M%d#m" % i: {"file": "x/M.java", "lines": [[i, i]]} for i in range(10000)}
+        def units(extra):
+            u = {"C%d" % c: ["x/M%d#m" % (c * 100 + i) for i in range(100)] for c in range(100)}
+            for c, ms in extra.items():
+                u[c] = u[c][:max(0, len(u[c]) - ms)]
+            return u
+        a = covmap.build([{"methods": methods, "units": units({})}], "c", "t", {}, "full")
+        one = covmap.build([{"methods": methods, "units": units({"C1": 8})}], "c", "t", {}, "full")
+        notes = []
+        self.assertEqual(covmap.compare(a, one, notes=notes), [])
+        self.assertEqual(len(notes), 1)
+        self.assertTrue(notes[0].startswith("C1:"))
+        broken = covmap.build([{"methods": methods, "units": units({"C%d" % c: 8 for c in range(40)})}], "c", "t", {},
+                              "full")
+        self.assertTrue(covmap.compare(a, broken), "forty classes over: the mapping process is broken")
 
     def test_costs_keep_the_last_samples_and_their_rounded_median(self):
         c = None

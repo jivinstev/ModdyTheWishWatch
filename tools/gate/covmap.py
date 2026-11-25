@@ -128,40 +128,63 @@ def unplaced(m: Optional[dict], tier: Iterable[str]) -> List[str]:
     return sorted(c for c in tier if c not in placed)
 
 
-# Timer noise a class may show between two maps of one commit without being called unstable: a server-tick service
-# whose period happens to fall inside one run's window for the class and not the other's (measured on the whole tier:
-# 99.2% of class-method entries agree, median per-class agreement 0.998). A class that differs by more than both of these
-# must be listed in corpus/gate-covmap-unstable.json with what was measured.
+# Timer noise two maps of one commit may show (measured on the whole tier, four times, locally and on GitHub's
+# runners). Per class: at most NOISE_METHODS methods, or under 1 - NOISE_AGREEMENT of the class's methods (a
+# server-tick service whose period falls inside one run's window for the class). Beyond that, the noise is SPREAD, not
+# a property of a class: two full maps put a different handful of classes over the per-class allowance every time (9
+# locally, 6 on GitHub, none in common), so per run up to NOISE_CLASSES of the tier's classes (at least
+# NOISE_CLASSES_MIN) may go over it, by name, while the maps agree on at least NOISE_TOTAL of all class-method entries.
+# The ambient sets may differ by NOISE_AMBIENT of their size. A broken mapping process is far outside all of these:
+# with the batch order random (fixed by GameTestBatchOrderMixin), 264 of 360 classes went over, at 94% agreement.
+# A class that keeps going over is listed in corpus/gate-covmap-unstable.json with what was measured.
 NOISE_METHODS = 5
 NOISE_AGREEMENT = 0.95
+NOISE_CLASSES = 0.02
+NOISE_CLASSES_MIN = 3
+NOISE_TOTAL = 0.99
+NOISE_AMBIENT = 0.005
 
 
 def agreement(x: Set[str], y: Set[str]) -> float:
     return len(x & y) / float(max(1, len(x | y)))
 
 
-def compare(a: dict, b: dict, unstable: Iterable[str] = ()) -> List[str]:
-    """Two maps of the SAME commit must agree on every class's methods, but for timer noise (at most NOISE_METHODS
-    methods, or NOISE_AGREEMENT of the class's methods) and the listed timing-dependent classes. Costs and build times
-    are not compared: wall clock varies by runner."""
+def compare(a: dict, b: dict, unstable: Iterable[str] = (), notes: Optional[List[str]] = None) -> List[str]:
+    """Two maps of the SAME commit must agree on every class's methods, but for timer noise (see NOISE_*) and the listed
+    timing-dependent classes. Returns the problems (the refresh fails); the classes that went over the per-class
+    allowance within the run's allowance are appended to `notes`, by name. Costs and build times are never compared:
+    wall clock varies by runner."""
     problems = []
     if a.get("commit") != b.get("commit"):
         problems.append("the maps are of different commits (%s, %s)" % (a.get("commit"), b.get("commit")))
     da, db = decode(a), decode(b)
     allowed = set(unstable)
+    over = []
+    entries = differing = 0
     for k in sorted(set(da["units"]) | set(db["units"])):
-        if k in allowed:
-            continue
         x, y = da["units"].get(k), db["units"].get(k)
         if x is None or y is None:
-            problems.append("%s is in only one map" % k)
+            if k not in allowed:
+                problems.append("%s is in only one map" % k)
+            continue
+        entries += len(x | y)
+        differing += len(x ^ y)
+        if k in allowed:
             continue
         diff = x ^ y
         if len(diff) > NOISE_METHODS and agreement(x, y) < NOISE_AGREEMENT:
-            problems.append("%s: %d method(s) only in the first, %d only in the second, agreement %.3f (e.g. %s)" % (
+            over.append("%s: %d method(s) only in the first, %d only in the second, agreement %.3f (e.g. %s)" % (
                 k, len(x - y), len(y - x), agreement(x, y), sorted(diff)[0]))
+    total = 1.0 - differing / float(max(1, entries))
+    room = max(NOISE_CLASSES_MIN, int(NOISE_CLASSES * len(da["units"])))
+    if over and (len(over) > room or total < NOISE_TOTAL):
+        problems += over
+        problems.append("%d class(es) over the per-class allowance (at most %d may be), agreement %.4f overall "
+                        "(at least %.2f must be)" % (len(over), room, total, NOISE_TOTAL))
+    elif over and notes is not None:
+        notes += over
     amb = da["ambient"] ^ db["ambient"]
-    if len(amb) > NOISE_METHODS:
+    if len(amb) > max(NOISE_METHODS, NOISE_AMBIENT * len(da["ambient"] | db["ambient"])):
         problems.append("the ambient sets differ by %d method(s)" % len(amb))
     return problems
 
@@ -296,7 +319,7 @@ def merge_cmd(a) -> int:
         union = build(every, commit, tree, blobs, p.get("mode", "full"), previous, planned)
     if not maps:
         problems.append("no job produced an analysis: no map")
-        g.write_json(os.path.join(a.out, "problems.json"), {"problems": problems})
+        g.write_json(os.path.join(a.out, "problems.json"), {"problems": problems, "publish": False})
         g.write_json(os.path.join(a.out, "record.json"), _record(problems, a.run_url))
         g.write_text(os.path.join(a.out, "report.md"), "**The coverage map refresh failed.**\n\n" +
                      "\n".join("- " + x for x in problems) + "\n")
@@ -304,8 +327,9 @@ def merge_cmd(a) -> int:
         return 1
     m = maps[0]
     measured = []
+    timer_noise: List[str] = []
     for r, other in enumerate(maps[1:], start=1):
-        for x in compare(m, other, load_unstable()):
+        for x in compare(m, other, load_unstable(), timer_noise):
             problems.append("determinism: replica 0 and replica %d differ: %s" % (r, x))
         measured.append(noise(m, other))
     if union is not None:
@@ -320,6 +344,8 @@ def merge_cmd(a) -> int:
             for c, s in per.items():
                 seconds.setdefault(c, []).append(s)
     costs = costs_update(old_costs, {c: statistics.median(v) for c, v in seconds.items()})
+    # a map with a job missing is not published: the previous map stays, and the issue says why
+    missing = [x for x in problems if "left no analysis" in x]
     gone = dropped(previous, m, tier)
     if gone:
         problems.append("the mapping run DROPPED %d class(es) the previous map placed: %s (they run on every pull "
@@ -329,7 +355,8 @@ def merge_cmd(a) -> int:
     m["unplaced"] = still
     g.write_json(os.path.join(a.out, "map.json.gz"), m, compress=True)
     g.write_json(os.path.join(a.out, "costs.json"), costs)
-    g.write_json(os.path.join(a.out, "problems.json"), {"problems": problems})
+    publish = not missing
+    g.write_json(os.path.join(a.out, "problems.json"), {"problems": problems, "publish": publish})
     g.write_json(os.path.join(a.out, "record.json"), _record(problems, a.run_url))
     size = os.path.getsize(os.path.join(a.out, "map.json.gz"))
     lines = ["**Coverage map %s** at `%s` (gate tree `%s`)%s" % (
@@ -340,11 +367,18 @@ def merge_cmd(a) -> int:
         lines.append("\nDeterminism: the replicas agree on %.2f%% of %d class-method entries; %d of %d classes differ "
                      "at all, median agreement %.4f." % (100 * n["agree"], n["entries"], n["differingClasses"],
                                                         n["classes"], n["medianClass"]))
+    if timer_noise:
+        lines.append("\nOver the per-class allowance this time, within the run's (timer noise; a class that keeps "
+                     "appearing here belongs in corpus/gate-covmap-unstable.json):")
+        lines += ["- " + x for x in timer_noise]
     if not_placed:
         lines.append("\nThis run mapped but did not place (no test of theirs ran under coverage): %s" %
                      ", ".join(not_placed))
     if still:
         lines.append("\nUnplaced, so they run on every pull request: %s" % ", ".join(still))
+    if not publish:
+        lines.append("\n**Not published**: %d mapping job(s) left no analysis, and a map without their classes is "
+                     "not one to select by. The previous map stays." % len(missing))
     if problems:
         lines += ["", "### Problems", ""] + ["- " + x for x in problems]
     g.write_text(os.path.join(a.out, "report.md"), "\n".join(lines) + "\n")

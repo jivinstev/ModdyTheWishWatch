@@ -146,9 +146,9 @@ public final class GameTestAdapter {
                 for (String cls : mappedClasses()) {
                     h.register(CoverageMap.settleId(cls), (Consumer<GameTestHelper>) helper -> {
                         CoverageMap.enter(cls);
-                        long until = System.currentTimeMillis() + CoverageMap.SETTLE_MS;
+                        long start = System.currentTimeMillis();
                         helper.runAfterDelay(CoverageMap.SETTLE_TICKS, () -> helper.succeedWhen(() -> {
-                            if (System.currentTimeMillis() < until) {
+                            if (!CoverageMap.settled(start, System.currentTimeMillis(), CoverageMap.quiet())) {
                                 throw GameTestCompat.failure(new IllegalStateException("settling"));
                             }
                         }));
