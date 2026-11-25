@@ -36,4 +36,11 @@ final class RefitWords {
         }
         return Math.min(health, newMax);
     }
+
+    /** {@code values} with one more stat at the end (a creature's drawn size), for {@link #compare}. */
+    static double[] with(double[] values, double more) {
+        double[] out = java.util.Arrays.copyOf(values, values.length + 1);
+        out[values.length] = more;
+        return out;
+    }
 }

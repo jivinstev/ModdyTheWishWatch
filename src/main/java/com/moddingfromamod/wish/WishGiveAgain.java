@@ -182,6 +182,12 @@ public final class WishGiveAgain {
         if (paid.refused()) {
             return Result.BANK_EMPTY;
         }
+        // (D) one of a kept thing, given again: no new wish made it, so it is stamped as the kept thing given again
+        // (never his words: the thing's key and his UUID), unless the copy already says which wish made it
+        if (com.moddingfromamod.item.delivery.WishedItems.isWished(stack)
+                && com.moddingfromamod.world.WishedItem.madeBy(stack).isEmpty()) {
+            com.moddingfromamod.world.WishedItem.stamp(stack, com.moddingfromamod.world.WishedItem.AGAIN + key, player.getUUID());
+        }
         var landed = com.moddingfromamod.item.delivery.WishDelivery.give(player, stack, "",
                 com.moddingfromamod.item.delivery.DeliveryPlan.Kind.HANDOVER, false);
         if (landed.isEmpty()) {

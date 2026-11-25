@@ -158,9 +158,18 @@ public final class ContractWorldGameTest {
             }
             helper.assertTrue(kept != null, Component.literal("the make is on his shelf"));
             BuilderSpec s = kept.read();
-            helper.assertTrue(s.count() == 3 && s.size() <= 3,
-                    Component.literal("made within the limits: count " + s.count() + ", size " + s.size()));
-            helper.assertValueEqual(tagged(helper, kept.id()), 3, Component.literal("cats standing"));
+            // (C) his shelf keeps the make as he ASKED for it; what stands is this world's fit of it
+            helper.assertTrue(s.count() == 6 && s.size() == 4,
+                    Component.literal("kept as asked: count " + s.count() + ", size " + s.size()));
+            helper.assertValueEqual(tagged(helper, kept.id()), 3, Component.literal("cats standing: made within the limits"));
+            var species = SpeciesRegistry.get(kept.id());
+            double stands = 0;
+            for (double scale : rigScales(helper, p, kept.id()).values()) {
+                stands = Math.max(stands, scale);
+            }
+            helper.assertTrue(species != null && stands > 0 && stands < species.scale() - 1e-6,
+                    Component.literal("each stands at size step 3, smaller than asked: " + stands + " of "
+                            + (species == null ? "?" : species.scale())));
             String words = said(p, chat);
             helper.assertTrue(words.contains("for this world"), Component.literal("he is told it was fitted: " + words));
         });
@@ -303,7 +312,12 @@ public final class ContractWorldGameTest {
                 }
             }
             helper.assertTrue(kept != null, Component.literal("the sword is on his shelf"));
-            BuilderSpec made = kept.read();
+            // (C) his shelf keeps the sword he asked for; this world makes the strongest one it allows of it
+            BuilderSpec asked = kept.read();
+            helper.assertTrue(asked.opt("strength").equals("3") && asked.opt("tier").isEmpty(),
+                    Component.literal("kept as asked: " + asked.toJson()));
+            BuilderSpec made = com.moddingfromamod.wish.MakeGate.build(asked, BuilderAllowlist.REVIEWED,
+                    com.moddingfromamod.wish.WishAsk.replay(p.getUUID(), "")).spec();
             var madeFacts = com.moddingfromamod.wishbuilder.MakeFacts.of(made);
             helper.assertTrue(made.opt("strength").equals("3") && !made.opt("tier").isEmpty()
                             && madeFacts.number(com.moddingfromamod.wishbuilder.MakeFacts.ATTACK_DAMAGE_HALF_HEARTS)
@@ -706,6 +720,131 @@ public final class ContractWorldGameTest {
         return sp != null && p.getStringUUID().equals(sp.ownerId());
     }
 
+    /** The drawn scales of the rigs of {@code speciesId} standing near {@code p}, by carrier. */
+    private static Map<java.util.UUID, Double> rigScales(GameTestHelper helper, ServerPlayer p, String speciesId) {
+        Map<java.util.UUID, Double> out = new java.util.HashMap<>();
+        for (var e : helper.getLevel().getAllEntities()) {
+            if (e instanceof net.minecraft.world.entity.LivingEntity le && !(e instanceof ServerPlayer) && le.distanceTo(p) < 64
+                    && speciesId.equals(com.moddingfromamod.wish.LiveFit.speciesOf(le))) {
+                var rig = com.moddingfromamod.vanilla.VanillaRigAnimator.rigOf(le);
+                out.put(le.getUUID(), rig != null ? rig.scale()
+                        : le.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.SCALE));
+            }
+        }
+        return out;
+    }
+
+    @GameTest(template = "empty_test", batch = "contract_world_kept_as_asked", timeoutTicks = 40000)
+    public static void aMakeIsKeptAsAskedAndComesOutBiggerWhenTheLimitsRise(GameTestHelper helper) {
+        ServerPlayer p = setUp(helper, "gtcontractasked");
+        MockPlayerNetwork.afterTest(helper, ContractWorld::forgetRounds);
+        Set<String> had = Set.copyOf(BuilderSpecStore.all(RuntimeConfig.playersDir(), p.getStringUUID()).keySet());
+        // a giant cat (size 4) in the first round: made at size 3, the biggest this world allows now
+        AtomicReference<BuilderMake.Result> made = new AtomicReference<>();
+        BuilderMake.make(p, cats("friendly", 4, 1), BuilderAllowlist.REVIEWED).thenAcceptAsync(made::set);
+        AtomicReference<String> id = new AtomicReference<>();
+        AtomicReference<Map<java.util.UUID, Double>> first = new AtomicReference<>();
+        com.moddingfromamod.test.RealTime.succeedWhen(helper, () -> {
+            BuilderMake.Result r = made.get();
+            helper.assertTrue(r != null && r.outcome() == BuilderMake.Outcome.MADE, Component.literal("the cat: " + r));
+            if (id.get() == null) {
+                BuilderSpecStore.Made kept = null;
+                for (var m : BuilderSpecStore.all(RuntimeConfig.playersDir(), p.getStringUUID()).values()) {
+                    if (!had.contains(m.id())) {
+                        kept = m;
+                    }
+                }
+                helper.assertTrue(kept != null, Component.literal("the cat is on his shelf"));
+                helper.assertTrue(kept.read().size() == 4, Component.literal("his shelf keeps it as he asked (size 4), never as "
+                        + "this world fitted it: " + kept.spec()));
+                Map<java.util.UUID, Double> now = rigScales(helper, p, kept.id());
+                helper.assertTrue(now.size() == 1, Component.literal("one cat stands: " + now));
+                first.set(now);
+                id.set(kept.id());
+                // a later round lets every size be made; the same cat made again comes out at its asked size
+                ContractWorld.round(p.getUUID(), 2);
+                WishService.Outcome o = WishService.submit(p, "gt contract again", WishSource.PRESET,
+                        com.moddingfromamod.wishbuilder.BuilderAgain.recipeId(kept.id()));
+                helper.assertTrue(o == WishService.Outcome.FULFILLING, Component.literal("made again: " + o));
+            }
+            Map<java.util.UUID, Double> now = rigScales(helper, p, id.get());
+            helper.assertTrue(now.size() == 2, Component.literal("the cat made again stands: " + now));
+            double was = first.get().values().iterator().next();
+            double again = 0;
+            for (var e : now.entrySet()) {
+                if (!first.get().containsKey(e.getKey())) {
+                    again = e.getValue();
+                }
+            }
+            var species = SpeciesRegistry.get(id.get());
+            helper.assertTrue(again > was + 1e-6 && species != null && Math.abs(again - species.scale()) < 1e-6,
+                    Component.literal("made again after the limits rose, it is bigger, at its asked size: " + was + " then "
+                            + again + " (asked " + (species == null ? "?" : species.scale()) + ")"));
+            var kept = BuilderSpecStore.get(p.getStringUUID(), id.get());
+            helper.assertTrue(kept != null && kept.read().size() == 4, Component.literal("and still kept as asked"));
+        });
+    }
+
+    @GameTest(template = "empty_test", batch = "contract_world_redraw", timeoutTicks = 40000)
+    public static void aStandingCreatureGrowsOnARaiseAndShrinksBackOnALower(GameTestHelper helper) {
+        ServerPlayer p = setUp(helper, "gtcontractredraw");
+        MockPlayerNetwork.afterTest(helper, ContractWorld::forgetRounds);
+        Set<String> had = Set.copyOf(BuilderSpecStore.all(RuntimeConfig.playersDir(), p.getStringUUID()).keySet());
+        AtomicReference<BuilderMake.Result> made = new AtomicReference<>();
+        BuilderMake.make(p, cats("friendly", 4, 1), BuilderAllowlist.REVIEWED).thenAcceptAsync(made::set);
+        AtomicReference<String> id = new AtomicReference<>();
+        AtomicReference<Double> small = new AtomicReference<>();
+        AtomicReference<Integer> step = new AtomicReference<>(0);
+        StringBuilder chat = new StringBuilder();
+        AtomicReference<Integer> toldBefore = new AtomicReference<>(0);
+        com.moddingfromamod.test.RealTime.succeedWhen(helper, () -> {
+            BuilderMake.Result r = made.get();
+            helper.assertTrue(r != null && r.outcome() == BuilderMake.Outcome.MADE, Component.literal("the cat: " + r));
+            if (id.get() == null) {
+                for (var m : BuilderSpecStore.all(RuntimeConfig.playersDir(), p.getStringUUID()).values()) {
+                    if (!had.contains(m.id())) {
+                        id.set(m.id());
+                    }
+                }
+                helper.assertTrue(id.get() != null, Component.literal("the cat is on his shelf"));
+            }
+            Map<java.util.UUID, Double> now = rigScales(helper, p, id.get());
+            helper.assertTrue(now.size() == 1, Component.literal("one cat stands: " + now));
+            double scale = now.values().iterator().next();
+            var species = SpeciesRegistry.get(id.get());
+            helper.assertTrue(species != null, Component.literal("its species"));
+            switch (step.get()) {
+                case 0 -> {
+                    helper.assertTrue(scale < species.scale() - 1e-6,
+                            Component.literal("the first round: it stands at size step 3, smaller than asked: " + scale));
+                    small.set(scale);
+                    said(p, chat);
+                    toldBefore.set(count(chat.toString(), com.moddingfromamod.wish.LiveFit.UNLEASHED));
+                    ContractWorld.round(p.getUUID(), 2);   // RAISE: every size
+                    step.set(1);
+                    helper.fail(Component.literal("waiting for it to grow"));
+                }
+                case 1 -> {
+                    helper.assertTrue(Math.abs(scale - species.scale()) < 1e-6,
+                            Component.literal("raised, the cat standing there grows to its asked size: " + scale + " of "
+                                    + species.scale()));
+                    helper.assertTrue(count(said(p, chat), com.moddingfromamod.wish.LiveFit.UNLEASHED) == toldBefore.get() + 1,
+                            Component.literal("told once: " + chat));
+                    toldBefore.set(count(chat.toString(), com.moddingfromamod.wish.LiveFit.HELD_DOWN));
+                    ContractWorld.round(p.getUUID(), 1);   // LOWER: back to size step 3
+                    step.set(2);
+                    helper.fail(Component.literal("waiting for it to shrink"));
+                }
+                default -> {
+                    helper.assertTrue(Math.abs(scale - small.get()) < 1e-6,
+                            Component.literal("lowered, it shrinks back: " + scale + ", was " + small.get()));
+                    helper.assertTrue(count(said(p, chat), com.moddingfromamod.wish.LiveFit.HELD_DOWN) == toldBefore.get() + 1,
+                            Component.literal("told once: " + chat));
+                }
+            }
+        });
+    }
+
     @GameTest(template = "empty_test", batch = "contract_world_shipped_starter", timeoutTicks = 40000)
     public static void aBuilderStarterHasItsShippedStatsAndTheWorldHoldsThemDown(GameTestHelper helper) {
         ServerPlayer p = setUp(helper, "gtcontractshipped");
@@ -802,6 +941,127 @@ public final class ContractWorldGameTest {
             }
             helper.assertTrue(Math.abs(beast.getMaxHealth() - ContractWorld.TOUGHEST_LATER) < 0.01,
                     Component.literal("a later round unleashes it: " + beast.getMaxHealth()));
+        });
+    }
+
+    /** Every stamped stack he holds (inventory and Wish Bag): which wish made it, by wish id. */
+    private static Map<String, com.moddingfromamod.world.WishedItem.Made> stampedHeld(ServerPlayer p) {
+        Map<String, com.moddingfromamod.world.WishedItem.Made> out = new java.util.HashMap<>();
+        List<net.minecraft.world.item.ItemStack> all = new ArrayList<>();
+        for (int i = 0; i < p.getInventory().getContainerSize(); i++) {
+            all.add(p.getInventory().getItem(i));
+        }
+        all.addAll(com.moddingfromamod.bag.WishBagService.contents(p.level().getServer(), p.getUUID()));
+        for (var st : all) {
+            com.moddingfromamod.world.WishedItem.madeBy(st).ifPresent(m -> out.put(m.wishId(), m));
+        }
+        return out;
+    }
+
+    @GameTest(template = "empty_test", batch = "contract_world_wished_items", timeoutTicks = 40000)
+    public static void everyItemAWishHandsOverSaysWhichWishMadeIt(GameTestHelper helper) {
+        ServerPlayer p = setUp(helper, "gtcontractitems");
+        var server = helper.getLevel().getServer();
+        var level = helper.getLevel();
+        Set<String> had = Set.copyOf(BuilderSpecStore.all(RuntimeConfig.playersDir(), p.getStringUUID()).keySet());
+        Map<String, String> o = new java.util.LinkedHashMap<>();
+        o.put("stock", "sword");
+        o.put("shape", "shape:on_hit");
+        o.put("effect", "effect:lightning");
+        o.put("power", "lightning");
+        o.put("strength", "1");
+        BuilderSpec sword = new BuilderSpec(BuilderSpec.CURRENT, BuilderSpec.Kind.ITEM, "", "", 2, List.of(), "", 1, "", "", o);
+        AtomicReference<BuilderMake.Result> made = new AtomicReference<>();
+        BuilderMake.make(p, sword, BuilderAllowlist.REVIEWED).thenAcceptAsync(made::set);
+        AtomicReference<Integer> step = new AtomicReference<>(0);
+        AtomicReference<String> alias = new AtomicReference<>();
+        AtomicReference<Set<String>> before = new AtomicReference<>(Set.of());
+        AtomicReference<String> fail = new AtomicReference<>();
+        com.moddingfromamod.test.RealTime.succeedWhen(helper, () -> {
+            helper.assertTrue(fail.get() == null, Component.literal(String.valueOf(fail.get())));
+            BuilderMake.Result r = made.get();
+            helper.assertTrue(r != null && r.outcome() == BuilderMake.Outcome.MADE, Component.literal("the sword: " + r));
+            Map<String, com.moddingfromamod.world.WishedItem.Made> held = stampedHeld(p);
+            Set<String> fresh = new java.util.HashSet<>(held.keySet());
+            fresh.removeAll(before.get());
+            switch (step.get()) {
+                case 0 -> {
+                    // the Builder: its sword says which wish made it, and that the wish was his
+                    helper.assertTrue(fresh.size() == 1, Component.literal("the Builder's sword is stamped: " + held));
+                    var m = held.get(fresh.iterator().next());
+                    helper.assertTrue(m.maker().equals(p.getUUID()) && !m.wishId().startsWith(
+                            com.moddingfromamod.world.WishedItem.AGAIN), Component.literal("his wish: " + m));
+                    BuilderSpecStore.Made kept = null;
+                    for (var k : BuilderSpecStore.all(RuntimeConfig.playersDir(), p.getStringUUID()).values()) {
+                        if (!had.contains(k.id())) {
+                            kept = k;
+                        }
+                    }
+                    helper.assertTrue(kept != null, Component.literal("the sword is on his shelf"));
+                    alias.set(kept.alias() == null || kept.alias().isBlank() ? kept.id() : kept.alias());
+                    before.set(held.keySet());
+                    // "Make another one" and a hotbar fire: the kept make, made again as a recipe
+                    WishService.Outcome again = WishService.submit(p, "gt contract sword again", WishSource.PRESET,
+                            com.moddingfromamod.wishbuilder.BuilderAgain.recipeId(kept.id()));
+                    helper.assertTrue(again == WishService.Outcome.FULFILLING, Component.literal("made again: " + again));
+                    step.set(1);
+                    helper.fail(Component.literal("waiting for the sword made again"));
+                }
+                case 1 -> {
+                    helper.assertTrue(fresh.size() == 1 && held.get(fresh.iterator().next()).maker().equals(p.getUUID()),
+                            Component.literal("the recipe's sword says its own wish: " + held));
+                    before.set(held.keySet());
+                    try {
+                        // "Give me one": no new wish, so it names the kept thing given again
+                        var given = com.moddingfromamod.wish.WishGiveAgain.give(p, alias.get());
+                        helper.assertTrue(given == com.moddingfromamod.wish.WishGiveAgain.Result.GAVE,
+                                Component.literal("given again: " + given));
+                        var now = stampedHeld(p);
+                        var givenAgain = now.entrySet().stream().filter(e -> !before.get().contains(e.getKey())
+                                && e.getKey().startsWith(com.moddingfromamod.world.WishedItem.AGAIN)).findFirst();
+                        helper.assertTrue(givenAgain.isPresent() && givenAgain.get().getValue().maker().equals(p.getUUID()),
+                                Component.literal("Give me one is stamped as the kept thing given again: " + now.keySet()));
+                        before.set(now.keySet());
+                        // the Magician's hand-over: a made item handed over by its give command inside its wish's scope
+                        String magicianWish = "gt-contract-magician-" + System.nanoTime();
+                        var ran = com.moddingfromamod.mob.SpawnScope.during(magicianWish,
+                                com.moddingfromamod.item.delivery.DeliveryPlan.Kind.HANDOVER,
+                                () -> com.moddingfromamod.wish.WishExecutor.runOne(server, level, p.position(), p,
+                                        "wishdatapack " + alias.get() + " give"));
+                        helper.assertTrue(ran.success(), Component.literal("the give ran: " + ran.joined()));
+                        now = stampedHeld(p);
+                        helper.assertTrue(now.containsKey(magicianWish), Component.literal("the Magician's hand-over says its wish: "
+                                + now.keySet()));
+                        // a plain vanilla gift handed over the same way is NOT stamped: it keeps stacking with his own
+                        String giftWish = "gt-contract-gift-" + System.nanoTime();
+                        com.moddingfromamod.mob.SpawnScope.during(giftWish,
+                                com.moddingfromamod.item.delivery.DeliveryPlan.Kind.HANDOVER,
+                                () -> com.moddingfromamod.wish.WishExecutor.runOne(server, level, p.position(), p,
+                                        "give " + p.getScoreboardName() + " minecraft:melon_slice 4"));
+                        boolean melons = false;
+                        for (int i = 0; i < p.getInventory().getContainerSize(); i++) {
+                            var st = p.getInventory().getItem(i);
+                            if (st.is(net.minecraft.world.item.Items.MELON_SLICE)) {
+                                melons = true;
+                                helper.assertTrue(com.moddingfromamod.world.WishedItem.madeBy(st).isEmpty(),
+                                        Component.literal("a plain gift is not wish-made"));
+                            }
+                        }
+                        helper.assertTrue(melons, Component.literal("the melon slices were handed over"));
+                        before.set(stampedHeld(p).keySet());
+                        // the Apprentice: a typed wish, its first tile pressed
+                        offered(p, "a lightning sword");
+                        com.moddingfromamod.wish.ApprenticeService.pressForTest(p, com.moddingfromamod.wishbuilder.ApprenticeWords.OFFER + 0);
+                    } catch (RuntimeException | AssertionError e) {
+                        fail.set(e.getMessage() == null ? e.toString() : e.getMessage());
+                        throw e;
+                    }
+                    step.set(2);
+                    helper.fail(Component.literal("waiting for the Apprentice's sword"));
+                }
+                default -> helper.assertTrue(fresh.size() == 1 && held.get(fresh.iterator().next()).maker().equals(p.getUUID()),
+                        Component.literal("the Apprentice's sword says its wish: " + held.keySet()));
+            }
         });
     }
 

@@ -188,6 +188,22 @@ public final class BuilderMake {
         return com.moddingfromamod.wish.MakeGate.build(spec, allow, askOf(who, textOf(spec), null, true));
     }
 
+    /**
+     * Would {@code player}'s make of {@code spec} start, or does this world (its view of the make, or its charge)
+     * refuse it? Asked BEFORE anything is said about making it, so a make that is hidden, locked or refused is never
+     * announced: {@link #make} then says why, once. A VIEW: nothing is made, charged or said.
+     */
+    public static boolean wouldStart(ServerPlayer player, BuilderSpec spec, BuilderAllowlist allow, String editOf,
+                                     boolean apprentice) {
+        String text = textOf(spec);
+        if (!com.moddingfromamod.wish.MakeGate.build(spec, allow, askOf(player.getUUID(), text, editOf, apprentice)).makes()) {
+            return false;
+        }
+        boolean free = editOf != null && FreeEdit.isFree(player.getUUID(), editOf);
+        return free || !com.moddingfromamod.wish.ChargeGate.ask(askOf(player.getUUID(), text, editOf, apprentice),
+                com.moddingfromamod.wish.ChargeRefusal.Where.MAKE).refused();
+    }
+
     /** A Builder change on a thing the Magician made, asked of the world's charge: the refusal to return, or null. */
     private static CompletableFuture<Result> refusedChange(ServerPlayer player, String text) {
         var refusal = com.moddingfromamod.wish.ChargeGate.ask(
@@ -240,7 +256,10 @@ public final class BuilderMake {
                 return done(Outcome.BANK_EMPTY, null, "", refusal.line());
             }
         }
-        return runCapped(player.level().getServer(), Who.of(player), capped, allow, protocol(),
+        // (C): the shelf and the recipe keep the make as he ASKED for it (within the allowlist), never as this world
+        // fitted it: a fitted value is never kept, so making it again after the limits rise comes out bigger
+        BuilderSpec asked = allow == null ? spec : allow.capped(spec);
+        return runCapped(player.level().getServer(), Who.of(player), capped, asked, allow, protocol(),
                 true, takeCard, editOf, apprentice);
     }
 
@@ -281,7 +300,8 @@ public final class BuilderMake {
                                                 BuilderAllowlist allow, McpProtocol protocol, boolean charge,
                                                 boolean card, String editOf) {
         // an item is made at this world's tier, whoever wrote the spec (a saved make, the Apprentice).
-        return runCapped(server, person, allow == null ? spec : allow.capped(spec), allow, protocol, charge, card, editOf,
+        BuilderSpec allowed = allow == null ? spec : allow.capped(spec);
+        return runCapped(server, person, allowed, allowed, allow, protocol, charge, card, editOf,
                 false);
     }
 
@@ -439,12 +459,18 @@ public final class BuilderMake {
     public static CompletableFuture<Result> runApprentice(MinecraftServer server, Who person, BuilderSpec spec,
                                                           BuilderAllowlist allow, McpProtocol protocol, boolean charge,
                                                           boolean card) {
-        return runCapped(server, person, allow == null ? spec : allow.capped(spec), allow, protocol, charge, card, null, true);
+        BuilderSpec allowed = allow == null ? spec : allow.capped(spec);
+        return runCapped(server, person, allowed, allowed, allow, protocol, charge, card, null, true);
     }
 
+    /**
+     * {@code spec} is what is made now (this world's fit of it); {@code asked} is what he asked for, which is what the
+     * shelf and the recipe keep. A creature is lowered at its ASKED size, and its size is fitted where it stands, at
+     * every spawn ({@code LiveFit.drawnScale}), so a fire after the limits change comes out at the new fit.
+     */
     private static CompletableFuture<Result> runCapped(MinecraftServer server, Who person, BuilderSpec spec,
-                                                       BuilderAllowlist allow, McpProtocol protocol, boolean charge,
-                                                       boolean card, String editOf, boolean apprentice) {
+                                                       BuilderSpec asked, BuilderAllowlist allow, McpProtocol protocol,
+                                                       boolean charge, boolean card, String editOf, boolean apprentice) {
         UUID who = person.id();
         List<String> problems = allow == null ? List.of() : allow.problems(spec);
         if (!problems.isEmpty()) {
@@ -472,19 +498,61 @@ public final class BuilderMake {
         List<BuilderLowering.Call> calls;
         try {
             calls = BuilderLowering.lower(spec, newId, LibraryPresets.SHIPPED, edit);
+            if (!asked.equals(spec)) {
+                calls = askedSize(calls, BuilderLowering.lower(asked, newId, LibraryPresets.SHIPPED, edit));
+            }
         } catch (IllegalArgumentException e) {
             return done(Outcome.REFUSED, null, "", e.getMessage());
         }
         final String madeId = newId;
+        final List<BuilderLowering.Call> made = calls;
+        ASKED.put(madeId, asked);   // until it is kept: its creature's size is fitted from what he asked
+
         return execute(server, person, calls, protocol, charge, card, textOf(spec), newId, editOf, apprentice,
-                editOf == null ? "" : BuilderAgain.recipeId(editOf), spec.toJson().toString(), wishId -> remember(who, wishId, spec),
+                editOf == null ? "" : BuilderAgain.recipeId(editOf), asked.toJson().toString(), wishId -> remember(who, wishId, asked),
                 ok -> ok ? BuilderWords.ready(spec) : BuilderWords.failed(spec), BuilderWords.subject(spec),
                 (wishId, ok, free) -> {
                     if (ok) {
-                        keep(who, madeId, BuilderLowering.refOf(calls, madeId), spec, wishId);
+                        keep(who, madeId, BuilderLowering.refOf(made, madeId), asked, wishId);
                     }
+                    ASKED.remove(madeId);
                     settleFree(who, wishId, free, apprentice, ok, ok ? madeId : editOf, spec);
                 });
+    }
+
+    /** The asked spec of each make still being made, by its id, until its shelf row is written. */
+    private static final Map<String, BuilderSpec> ASKED = new ConcurrentHashMap<>();
+
+    /**
+     * What the make {@code makeId} was asked as while it is still being made (its shelf row not written yet), or null:
+     * a creature it spawns is fitted from this before its make is kept ({@code LiveFit.drawnScale}).
+     */
+    public static BuilderSpec askedWhileMaking(String makeId) {
+        return makeId == null ? null : ASKED.get(makeId);
+    }
+
+    /**
+     * The calls of a make fitted to this world, with each creature sculpted at its ASKED size ({@code asked} the calls
+     * of the make as asked): the size is fitted where the creature stands, at every spawn, never kept in its record.
+     */
+    static List<BuilderLowering.Call> askedSize(List<BuilderLowering.Call> fitted, List<BuilderLowering.Call> asked) {
+        List<BuilderLowering.Call> out = new java.util.ArrayList<>(fitted.size());
+        for (BuilderLowering.Call c : fitted) {
+            BuilderLowering.Call at = null;
+            for (BuilderLowering.Call a : asked) {
+                if (a.tool().equals("sculpt_creature") && c.tool().equals("sculpt_creature")) {
+                    at = a;
+                }
+            }
+            if (at != null && at.args().has("scale") && c.args().has("scale")) {
+                com.google.gson.JsonObject args = c.args().deepCopy();
+                args.add("scale", at.args().get("scale").deepCopy());
+                out.add(new BuilderLowering.Call(c.tool(), args));
+            } else {
+                out.add(c);
+            }
+        }
+        return out;
     }
 
     /** What happens once a make's outcome is known (server thread): what it keeps, and the free change settled. */

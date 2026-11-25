@@ -65,12 +65,14 @@ public final class ContractWorld implements ModdyPlugin {
 
     /** A later round's most health: the same creature, let out further. */
     public static final double TOUGHEST_LATER = 80;
+    /** A later round's biggest Builder size step: every size. */
+    public static final double BIGGEST_STEP_LATER = 4;
 
     private static final Map<UUID, Integer> ROUNDS = new java.util.concurrent.ConcurrentHashMap<>();
 
     /**
      * Start round {@code round} for {@code player} (1 is the first) and tell the core, as a world does when what it
-     * answers changes: from round 2 his creatures may have {@link #TOUGHEST_LATER} health.
+     * answers changes: from round 2 his creatures may have {@link #TOUGHEST_LATER} health and size step {@link #BIGGEST_STEP_LATER}.
      */
     public static void round(UUID player, int round) {
         ROUNDS.put(player, round);
@@ -85,6 +87,7 @@ public final class ContractWorld implements ModdyPlugin {
         }
         Map<String, Double> later = new java.util.HashMap<>(LIMITS);
         later.put(MakeFacts.HEALTH_HALF_HEARTS, TOUGHEST_LATER);
+        later.put(MakeFacts.BUILDER_SIZE_STEP, BIGGEST_STEP_LATER);
         return Map.copyOf(later);
     }
 

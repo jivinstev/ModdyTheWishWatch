@@ -162,6 +162,7 @@ public final class LiveFit {
         int raised = 0;
         int lowered = 0;
         int same = 0;
+        int resized = 0;
         if (server == null || player == null) {
             return new Refit(0, 0, 0);
         }
@@ -174,6 +175,7 @@ public final class LiveFit {
                 if (speciesId == null || !player.equals(ownerOf(speciesId))) {
                     continue;
                 }
+                double sizeWas = drawnNow(mob);
                 double[] before = values(mob);
                 double oldMax = mob.getMaxHealth();
                 double oldHealth = mob.getHealth();
@@ -181,7 +183,11 @@ public final class LiveFit {
                 double newMax = mob.getMaxHealth();
                 mob.setHealth((float) RefitWords.healthAfter(oldHealth, oldMax, newMax));
                 double[] after = values(mob);
-                int moved = RefitWords.compare(before, after);
+                double sizeNow = drawnScale(com.moddingfromamod.species.SpeciesRegistry.get(speciesId));
+                if (Math.abs(sizeNow - sizeWas) > 1e-6) {
+                    resized++;
+                }
+                int moved = RefitWords.compare(RefitWords.with(before, sizeWas), RefitWords.with(after, sizeNow));
                 if (moved < 0) {
                     lowered++;
                 } else if (moved > 0) {
@@ -190,6 +196,12 @@ public final class LiveFit {
                     same++;
                 }
             }
+        }
+        if (resized > 0) {
+            // its size is drawn again where it stands: once for this change, never per tick. Each rig asks on its
+            // next tick whether what it was built from is what it would build now (its drawn scale is in that
+            // print), and only those whose size changed are reshaped; a wish creature sets its scale again.
+            com.moddingfromamod.species.SpeciesRegistry.touch();
         }
         Refit r = new Refit(raised, lowered, same);
         String line = r.line();
@@ -200,6 +212,16 @@ public final class LiveFit {
         LOGGER.info("world limits changed for {}: {} creature(s) raised, {} lowered, {} as they were; told: {}", player,
                 raised, lowered, same, p == null ? "not online" : line.isEmpty() ? "nothing moved" : line);
         return r;
+    }
+
+    /** The size {@code mob} is drawn at now: a rig's built scale, else its own scale. */
+    static double drawnNow(LivingEntity mob) {
+        var rig = com.moddingfromamod.vanilla.VanillaRigAnimator.rigOf(mob);
+        if (rig != null) {
+            return rig.scale();
+        }
+        var inst = mob.getAttribute(Attributes.SCALE);
+        return inst == null ? 1.0 : inst.getBaseValue();
     }
 
     private static double[] values(LivingEntity mob) {
@@ -228,5 +250,71 @@ public final class LiveFit {
         } catch (IllegalArgumentException notAUuid) {
             return null;
         }
+    }
+
+    // ── a creature's size, fitted where it stands (C) ─────────────────────────────────────────────────────────────
+
+    private static final Map<String, Double> SCALES = new java.util.concurrent.ConcurrentHashMap<>();
+
+    /**
+     * The size {@code species} stands at in this world now: its own (asked) scale, fitted to this world's limits at
+     * every spawn and never kept in its record or its make. A Builder creature is fitted the way its kept make is
+     * (its asked spec through the one gate and fitting a make goes through, the size it would be made at now); any
+     * creature is held to a {@code scaleTimes} limit. With no world answering, its own scale. Cheap: remembered per
+     * species, limits stamp and reader generation. Server thread.
+     */
+    public static double drawnScale(com.moddingfromamod.species.Species species) {
+        if (species == null) {
+            return 1.0;
+        }
+        if (!MakeGate.anyWorld()) {
+            return species.scale();
+        }
+        UUID owner = ownerOf(species.id());
+        var limits = MakeGate.limits(owner);
+        String key = species.id() + "|" + species.scale() + "|" + owner + "|" + limits.stamp() + "|"
+                + MakeFacts.generation() + "|" + (com.moddingfromamod.wishbuilder.BuilderMake.askedWhileMaking(species.id())
+                != null);
+        Double hit = SCALES.get(key);
+        if (hit != null) {
+            return hit;
+        }
+        double scale = species.scale();
+        try {
+            scale = fittedScale(species, owner);
+        } catch (RuntimeException e) {
+            LOGGER.warn("live fit: {}'s size could not be fitted, standing at its own: {}", species.id(), e.toString());
+        }
+        if (SCALES.size() > 4096) {
+            SCALES.clear();
+        }
+        SCALES.put(key, scale);
+        return scale;
+    }
+
+    private static double fittedScale(com.moddingfromamod.species.Species species, UUID owner) {
+        double scale = species.scale();
+        var kept = owner == null ? null
+                : com.moddingfromamod.wishbuilder.BuilderSpecStore.get(owner.toString(), species.id());
+        var making = com.moddingfromamod.wishbuilder.BuilderMake.askedWhileMaking(species.id());
+        if (owner != null && (making != null || kept != null && !kept.magicianTouched())) {
+            var asked = making != null ? making : kept.read();
+            if (asked != null && (asked.kind() == com.moddingfromamod.wishbuilder.BuilderSpec.Kind.CREATURE
+                    || asked.kind() == com.moddingfromamod.wishbuilder.BuilderSpec.Kind.RIDE)) {
+                var allow = com.moddingfromamod.wishbuilder.BuilderSettings.forPlayer(owner).allow();
+                var built = MakeGate.build(asked, allow, WishAsk.replay(owner, ""));
+                double was = MakeFacts.of(allow.capped(asked)).number(MakeFacts.SCALE_TIMES).orElse(0);
+                double now = MakeFacts.of(built.spec()).number(MakeFacts.SCALE_TIMES).orElse(0);
+                if (built.makes() && was > 0 && now > 0) {
+                    scale = species.scale() * now / was;   // as much smaller (or as large again) as its make is fitted
+                }
+            }
+        }
+        // any creature: no bigger than this world's most size, whoever made it
+        MakeFacts facts = new MakeFacts(com.moddingfromamod.wishbuilder.BuilderSpec.Kind.CREATURE.id(),
+                Map.of(MakeFacts.SCALE_TIMES, scale), java.util.Set.of(), true);
+        MakeVerdict v = MakeGate.ask(facts, WishAsk.replay(owner == null ? new UUID(0L, 0L) : owner, ""));
+        Double most = v.makes() ? v.limits().get(MakeFacts.SCALE_TIMES) : null;
+        return most == null ? scale : Math.min(scale, most);
     }
 }

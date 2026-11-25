@@ -153,6 +153,26 @@ child's own spawn egg, carries neither marker. Note the last row: a mob **your w
 is inside the same scope and is marked too; a world that spawns mobs from its own functions tags them itself and checks
 its own tag first.
 
+## Telling a wished item stack from any other: `WishedItem`
+
+`com.moddingfromamod.world.WishedItem.madeBy(stack)` is the item twin of `Wished`: the one documented way to ask "did
+a player's wish make this item stack, and whose wish was it?". It returns `Optional<Made>`, where `Made` holds
+`wishId` (the wish's id) and `maker` (the UUID of the player whose wish it was); it is empty for anything else. Read
+it rather than the component, whose shape may change. `WishedItem.of(wishId, maker)` is the same decision on the two
+stamped strings.
+
+- **Stamped at hand-over** (`WishDelivery.give`, the one path every wish's items take): a Builder or Apprentice make,
+  "Make another one", a hotbar fire, and the Magician's `make_item` and give. It lives in the stack's
+  `minecraft:custom_data` (which a stock client accepts) under `ModdyMadeBy`. **Ids only, never the player's words**
+  nor any name he typed.
+- **"Give me one"** makes no new wish: its stack names the kept thing it was given again, `wishId` `again:<its key>`,
+  with the player it was given to as the maker (a copy that already says which wish made it keeps that).
+- **A plain vanilla gift is not stamped, so `madeBy` answers "not wish-made" for it** (a wish's 32 melon slices): a
+  mark would stop it stacking with his own melon slices, which the owner decided against (`WishedItems.TAG_PLAIN_GIFTS`,
+  false). Only an item a wish MADE is stamped; it already carries the wish's own data and never stacks with a vanilla
+  one. If that switch is turned on, plain gifts are stamped too.
+- It does not fit items to a world's limits; that is the make facts' and the fit's job.
+
 ## Documented extension points
 
 ### `WishCharge`
@@ -264,7 +284,9 @@ the limits the world gave.
 - **When this player's limits change, tell the core**: `WorldMakes.limitsChanged(player)` (a round begins, a level is
   earned; server thread). The core never polls `limits(player)`. Every living creature that player's wishes made, a
   wish creature or a rig's carrier, wherever it stands, is fitted again from its own UNFITTED numbers (each fit removed
-  and worked out afresh). A raise keeps how hurt it was (half its hearts before, half after: never healed to full,
+  and worked out afresh), and drawn again at the size it is fitted to now: it grows on a raise and shrinks back on a
+  lower. Only creatures whose size changes are reshaped, once for the change and never per tick (in place, on the
+  carrier they already have). A raise keeps how hurt it was (half its hearts before, half after: never healed to full,
   never left half-empty); a lower keeps what it has, up to its new most. The player is told ONCE for the change, not
   once per creature: "✨ Your creatures are stronger now! This world lets them do more." or "✨ Your creatures are held
   back a little in this world for now.", swept like any line. So "the strongest dragon ever" made in an early round is
@@ -277,6 +299,15 @@ the limits the world gave.
 - **Order and the rules that do not bend:** the safety layers and a world's rules file run first, so a refused wish is
   never fitted into an allowed one; nothing is charged for a make that is hidden or locked; the answer is a VIEW, worked out when asked and never written to his
   shelf or any store, because the shelf follows him to every world.
+- **Kept as asked, fitted every time.** A Builder or Apprentice make is kept on his shelf, and remembered as the
+  recipe "Make another one" and a hotbar fire make again, **as he asked for it** (within the server's allowlist),
+  never as this world fitted it. It is fitted afresh at every make and every fire: how many and how strong when it is
+  made, and a creature's **size where it stands, at every spawn** (`LiveFit.drawnScale`: the kept make fitted through
+  the same gate, and any creature held to a `scaleTimes` limit). So a creature made under tight limits and made again
+  after they rise comes out bigger, up to the new limit, without being wished again. A creature already standing is
+  fitted again when its limits change (`WorldMakes.limitsChanged`): its health, damage, armour and knockback at once,
+  and its size drawn again. A make kept by 1.0.10, which kept the fitted spec, stays as it was kept: the asked
+  values were never stored, so there is nothing to bring back, and it is fitted from there like any other.
 - **The Apprentice's tiles** (`wishbuilder/ApprenticeFit`): fitted AFTER ranking and outside the matcher, so its
   ranking, gold-set floors and tree fingerprint are the same in every world. Each ranked make is asked through the
   same gate and fitting its press goes through: one this world hides, or that no fit could bring within its limits, is

@@ -85,6 +85,25 @@ is the `neoforge-1.21.8` branch. A tag `moddingfromamod-<version>-mc1.21.8` (or 
 release to Modrinth and CurseForge (`.github/port-publish.json`). Nothing is published that a person has not played.
 `tools/store-release.sh <version>` builds and checks the same jar locally.
 
+**`main` is the upstream of a weekly version ladder** ([`docs/RELEASING.md`](docs/RELEASING.md)).
+- **Every integrate is a new version.** Whoever takes `main` into `neoforge-1.21.8` (a worker mid-week, or the weekly
+  round) does it the same way:
+  1. If `main` names no version past the newest `moddingfromamod-*-mc1.21.8` release, open a `Version X.Y.Z: …` PR on
+     `main` that changes only `mod_version`, to the next patch.
+  2. Merge `main` into `neoforge-1.21.8` with a merge commit titled `Merge main into neoforge-1.21.8: X.Y.Z, …`.
+  3. Port CI releases 1.21.8.
+
+  A mid-week integrate starts no cascade, so 1.21.8 may lead the other version branches.
+- **The weekly round** (MMVU keep-current) runs the plan issue on Tuesday (Actions, no model) and the round on
+  Wednesday morning Pacific (a Claude scheduled task).
+  - The plan offers "take `main`" as a box, ticked by default; the round then bumps the version and integrates the
+    same way, by itself.
+  - Either way, the round carries `neoforge-1.21.8` up the other version branches and pre-releases them.
+- **A hotfix:** a pair of pull requests, `main` first, then `neoforge-1.21.8`, with the version bump.
+- **Promotion:** only the owner's `/promote`, after playing the build.
+
+Never cascade by hand. The plan workflow and the round task are installed only by MMVU's Setup, never edited by hand.
+
 **A fix lands on `main` first.** `main` holds every change; `neoforge-1.21.8` is `main` at a release point, and a
 higher `neoforge-<mc>` branch holds only its port's own changes plus `main` merged upward. A hotfix the release line
 needs before the next release point is made on `main` and **cherry-picked down** in the same change, never committed to
