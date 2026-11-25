@@ -72,6 +72,21 @@ def never_started(log_text: str) -> bool:
     return "gt-adapter:" not in log_text and any(u in log_text for u in UNRESOLVED)
 
 
+def gradle_error(log_text: str, most: int = 25) -> str:
+    """Gradle's own account of a failed build: the lines from "What went wrong" to "* Try" (or a compile error)."""
+    lines = log_text.splitlines()
+    for i, ln in enumerate(lines):
+        if "What went wrong" in ln:
+            out = []
+            for x in lines[i:i + most]:
+                if x.startswith("* Try"):
+                    break
+                out.append(x)
+            return "\n".join(out).rstrip()
+    errs = [ln for ln in lines if ": error:" in ln]
+    return "\n".join(errs[:most])
+
+
 def attempt(name: str, out_dir: str, shard: str, classes: List[str], not_classes: List[str], exclude: List[str],
             timeout_min: float, extra: List[str], tries: int = 3) -> dict:
     """One server, run again (up to `tries` times, with a growing pause) only when Gradle never started it for want of a
@@ -126,6 +141,11 @@ def _attempt(name: str, out_dir: str, shard: str, classes: List[str], not_classe
                 pass
         proc.wait()
     text = g.read_text(log_path)
+    if "gt-adapter:" not in text:
+        # the server never started: say what Gradle said, or the job's log is all a person has
+        why = gradle_error(text)
+        if why:
+            print("gate: %s: Gradle failed before the server started:\n%s" % (name, why), flush=True)
     records = sorted(glob.glob(os.path.join(home, "gate-runs", "*.json")))
     record = g.read_json(records[-1]) if records else None
     return {"log": g.parse_log(text), "record": record, "timedOut": timed_out,
