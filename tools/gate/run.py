@@ -39,14 +39,38 @@ def gradle_cmd(shard: str, rundir: str, home: str, classes: List[str], not_class
     return cmd + list(extra)
 
 
+# Gradle could not resolve a dependency (a busy repository answering 429, a dropped connection): the server never started
+UNRESOLVED = ("Could not resolve all", "Received status code 429", "Could not GET ", "Connection reset")
+
+
+def never_started(log_text: str) -> bool:
+    """The attempt failed before any GameTest server ran, for want of a download: worth running again."""
+    return "gt-adapter:" not in log_text and any(u in log_text for u in UNRESOLVED)
+
+
 def attempt(name: str, out_dir: str, shard: str, classes: List[str], not_classes: List[str], exclude: List[str],
-            timeout_min: float, extra: List[str]) -> dict:
+            timeout_min: float, extra: List[str], tries: int = 3) -> dict:
+    """One server, run again (up to `tries` times, with a growing pause) only when Gradle never started it for want of a
+    download. A server that started and failed is never re-run here: that is the retry rule's business."""
+    for i in range(tries):
+        a = _attempt(name, out_dir, shard, classes, not_classes, exclude, timeout_min, extra)
+        if i == tries - 1 or not never_started(g.read_text(os.path.join(out_dir, a["logFile"]))):
+            return a
+        print("gate: %s: Gradle could not resolve a dependency; trying again in %d s" % (name, 60 * (i + 1)), flush=True)
+        time.sleep(60 * (i + 1))
+    return a
+
+
+def _attempt(name: str, out_dir: str, shard: str, classes: List[str], not_classes: List[str], exclude: List[str],
+             timeout_min: float, extra: List[str]) -> dict:
     """One server. Returns {"log": parsed log, "record": the server's run record or None, "timedOut", "seconds"}."""
     home = os.path.abspath(os.path.join(out_dir, name + "-home"))
     shutil.rmtree(home, ignore_errors=True)
     os.makedirs(home, exist_ok=True)
     log_path = os.path.join(out_dir, name + ".log")
-    cmd = gradle_cmd(shard, "gate-" + name, home, classes, not_classes, exclude, extra)
+    # its own run directory (CLAUDE.md: two servers in one directory die on session.lock and still say BUILD SUCCESSFUL)
+    rundir = "gate-%s-%s" % (os.path.basename(os.path.normpath(out_dir)), name)
+    cmd = gradle_cmd(shard, rundir, home, classes, not_classes, exclude, extra)
     print("gate: %s: %s" % (name, " ".join(c if len(c) < 200 else c[:200] + "...(%d chars)" % len(c) for c in cmd)),
           flush=True)
     started = time.time()
@@ -140,6 +164,17 @@ def run_job(args) -> int:
     os.makedirs(out_dir, exist_ok=True)
     expect = expected_classes(tier, classes, not_classes)
     extra = list(args.gradle_arg or [])
+    covmap = getattr(args, "covmap_tools", None)
+    if covmap:
+        # a coverage-mapping run (docs/GATE_B.md, "The coverage map"): the JaCoCo agent on, every class in batches of
+        # its own; its pass/fail is not a Gate B verdict, so nothing is retried
+        tools = os.path.abspath(covmap)
+        agent = sorted(glob.glob(os.path.join(tools, "org.jacoco.agent-*-runtime.jar")))
+        if not agent:
+            raise SystemExit("gate: no JaCoCo agent in %s (./gradlew covmapTools)" % tools)
+        extra += ["-Pcovagent=" + agent[-1], "-Pcovmap=" + os.path.join(out_dir, "exec")]
+        shutil.rmtree(os.path.join(out_dir, "exec"), ignore_errors=True)
+        args.retry = False
 
     first = attempt("run", out_dir, args.shard, classes, not_classes, exclude, args.timeout, extra)
     problems = check_attempt(first, expect, known)
@@ -192,6 +227,19 @@ def run_job(args) -> int:
         "problems": problems,
     }
     result["verdict"] = job_verdict(result)
+    if covmap:
+        import covmap as cm
+        jars = sorted(glob.glob(os.path.join(os.path.abspath(covmap), "*.jar")))
+        jars = [j for j in jars if "agent" not in os.path.basename(j)]
+        try:
+            analysis = cm.analyze(os.path.join(g.ROOT, "build", "classes", "java", "main"),
+                                  os.path.join(out_dir, "exec"), os.path.join(out_dir, "analysis.json"), jars)
+            placed = sorted(u for u in analysis["units"] if u not in cm.PSEUDO and "#__" not in u)
+            result["covmap"] = {"units": placed, "notPlaced": [c for c in expect if c not in placed]}
+        except Exception as e:  # noqa: BLE001 - said in the result, and the merge refuses a job without its analysis
+            result["problems"].append("the coverage analysis failed: %s" % e)
+        # under coverage a failed test still maps; the verdict is whether the job produced a usable map
+        result["verdict"] = "red" if result["problems"] else "green"
     g.write_json(os.path.join(out_dir, "job.json"), result)
     print(summary(result))
     return 0 if result["verdict"] == "green" else 1

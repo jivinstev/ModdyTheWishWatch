@@ -233,3 +233,61 @@ def report(records: List[dict], top: int = 15, register: Optional[Dict[str, dict
     lines += ["  slower:       %s %.1f s (was %.1f s)" % (n, t["secRecent"], t["secBefore"]) for n, t in slower] \
         or ["  slower:       none"]
     return "\n".join(lines) + "\n"
+
+
+# ---------------------------------------------------------------------------------------------- pull request runs
+
+ARTIFACT = "gate-run-record"
+
+
+def pr_record(job: dict, run: dict) -> dict:
+    """A pull request's Gate B job result as a stored record: the job's own rows, said to be a PR run."""
+    rec = dict(job)
+    prs = run.get("pull_requests") or []
+    rec["kind"] = "pr"
+    rec["label"] = "pr%s" % prs[0]["number"] if prs else "run%s" % run.get("id")
+    rec["runUrl"] = run.get("html_url", "")
+    rec["fullTier"] = False   # a pull request's run is never full-tier evidence, whatever it selected
+    return rec
+
+
+def harvest(data_dir: str, repo: str, workflow: str = "ci.yml", days: int = 3) -> List[str]:
+    """Store the Gate B record of every pull request run of `workflow` that finished in the last `days` days.
+
+    A pull request's token cannot write gate-data (and a fork's never could), so the PR job only uploads its result as
+    an artifact (`gate-run-record`) and the nightly, which can write, collects them. Idempotent: a record lands on the
+    same path however often it is collected.
+    """
+    import io
+    import json
+    import zipfile
+    since = time.strftime("%Y-%m-%d", time.gmtime(time.time() - days * 86400))
+
+    def gh(path: str) -> bytes:
+        out = subprocess.run(["gh", "api", "-H", "Accept: application/vnd.github+json", path],
+                             stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        if out.returncode != 0:
+            raise RuntimeError("gh api %s: %s" % (path, out.stderr.decode("utf-8", "replace")))
+        return out.stdout
+
+    stored = []
+    page = 1
+    while True:
+        runs = json.loads(gh("repos/%s/actions/workflows/%s/runs?status=completed&created=%%3E%%3D%s&per_page=100&page=%d"
+                             % (repo, workflow, since, page)).decode("utf-8")).get("workflow_runs", [])
+        for run in runs:
+            if run.get("event") != "pull_request":
+                continue
+            arts = json.loads(gh("repos/%s/actions/runs/%d/artifacts" % (repo, run["id"])).decode("utf-8"))
+            for art in arts.get("artifacts", []):
+                if art.get("name") != ARTIFACT or art.get("expired"):
+                    continue
+                z = zipfile.ZipFile(io.BytesIO(gh("repos/%s/actions/artifacts/%d/zip" % (repo, art["id"]))))
+                if "job.json" not in z.namelist():
+                    continue
+                job = json.loads(z.read("job.json").decode("utf-8"))
+                stored.append(store(data_dir, pr_record(job, run)))
+        if len(runs) < 100:
+            break
+        page += 1
+    return stored

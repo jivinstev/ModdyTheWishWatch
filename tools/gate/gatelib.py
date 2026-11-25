@@ -21,6 +21,10 @@ JAVA_ROOT = os.path.join("src", "main", "java")
 SHARDS = {"default": "moddingfromamod", "ci": "moddingfromamod_ci"}
 FULL_TIER = "ci,default"
 
+# the synthetic tests a coverage-mapping run adds (testing/gt/CoverageMap: its idle window, each class's settle
+# window): not tests of the tier
+COVMAP_SYNTHETIC = "covmapidle."
+
 # the one line a GameTest server prints when it finished (CLAUDE.md: never anchor on "All")
 RESULT_LINE = re.compile(r"([0-9]+) required tests (passed|failed)")
 FOUND_LINE = re.compile(r"gt-adapter: ([0-9]+) tests found")
@@ -145,6 +149,20 @@ def scan_tier(root: str = ROOT) -> Dict[str, dict]:
     return out
 
 
+def scan_sources(sources: Dict[str, str]) -> Dict[str, dict]:
+    """scan_tier over file texts by repo path (a commit's, read through git), not the work tree."""
+    out: Dict[str, dict] = {}
+    for path, text in sources.items():
+        if not path.endswith(".java") or "@GameTestHolder" not in text:
+            continue
+        ns = holder_namespace(strip_java(text, strings=False))
+        if ns is None:
+            continue
+        cls = os.path.basename(path)[:-len(".java")]
+        out[cls] = {"ns": ns, "tests": len(_TEST.findall(strip_java(text))), "path": path}
+    return out
+
+
 def tier_classes(tier: Dict[str, dict], shard: str) -> Dict[str, dict]:
     """The classes of a -Pshard list (`ci`, `default`, `ci,default`, `all`)."""
     names = list(SHARDS) if shard.strip() in ("", "all") else [s.strip() for s in shard.split(",") if s.strip()]
@@ -182,7 +200,8 @@ def gate_tree(rev: str = "HEAD", root: str = ROOT) -> str:
 
 def ours(test_id: str) -> bool:
     """A test of this mod's shards (not the vanilla server's own `minecraft:always_pass`)."""
-    return test_id.split(":", 1)[0] in SHARDS.values()
+    ns, _, local = test_id.partition(":")
+    return ns in SHARDS.values() and not local.startswith(COVMAP_SYNTHETIC)
 
 
 def test_class(test_id: str, known: Iterable[str]) -> str:
