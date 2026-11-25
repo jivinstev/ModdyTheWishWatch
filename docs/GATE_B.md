@@ -179,10 +179,22 @@ line numbers no longer hold, so every class that reached any of its methods is s
 selects the whole tier. A missing map selects the whole tier. Every way a map can be wrong or old makes a selection
 LARGER, never blind; and the nightly full tier still runs everything.
 
-**Determinism.** For one commit the method sets are deterministic, but for classes whose path depends on timing or
-randomness. The weekly run maps every share twice and `gate.py covmap-compare` requires the two maps to agree on every
-class's methods and on the ambient set; costs are not compared. The classes allowed to differ are listed, with what was
-measured, in `corpus/gate-covmap-unstable.json`; any other difference fails the refresh and opens `covmap-red`.
+**Determinism.** For one commit the method sets are deterministic, but for code whose timing varies: a server-tick
+service whose period falls inside one run's window for a class and not the other's. The weekly run maps every share
+twice and `gate.py covmap-compare` holds the two maps to what was measured (`covmap.py` NOISE_*):
+
+- a class may differ by at most 5 methods, or by under 5% of its methods;
+- beyond that, up to 2% of the classes (at least 3) may differ in one run, each named in the refresh's summary,
+  provided the maps agree on at least 99% of all class-method entries. The noise is spread, not a property of a class:
+  two full maps put a different handful of classes over the per-class allowance each time (9 in one local pair, 6 on
+  GitHub's runners, none in common);
+- the ambient sets may differ by 0.5%;
+- costs are never compared (wall clock varies by runner).
+
+A class that keeps going over is listed, with what was measured, in `corpus/gate-covmap-unstable.json` (empty today).
+Anything more fails the refresh and opens `covmap-red`. Measured: with the batch order fixed and the settle window
+waiting for quiet, two maps on GitHub's runners agree on 99.25% of 226,908 entries (median class 0.997). With the
+batch order random (the game's own), they agreed on 90% and 327 of 360 classes differed, which the check fails at once.
 
 ```bash
 ./gradlew covmapTools
