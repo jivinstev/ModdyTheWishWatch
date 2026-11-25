@@ -21,8 +21,7 @@ import com.google.gson.JsonObject;
  * <b>Compile the ready-made skeletons into the precompiled store</b>. Not a test: the second half of
  * {@code ./tools/precompile-ready-mades.sh} ({@code ./gradlew precompileReadyMades -Pskeletons=DIR}). The first half
  * runs {@code ReadyMadePrecompileGameTest} with {@code precompiled.record=DIR}, which writes every skeleton a Builder
- * or Apprentice power asked for; this compiles each one with the bundled CBScript compiler (Python, at build time
- * only), under {@link ReadyMadeSkeleton#NAMESPACE} and {@link ReadyMadeSkeleton#DESC}, and writes
+ * or Apprentice power asked for; this compiles each one with the CBScript compiler (in the jar), under {@link ReadyMadeSkeleton#NAMESPACE} and {@link ReadyMadeSkeleton#DESC}, and writes
  * {@code src/main/resources/precompiled/ready-mades.json.gz} and its readable {@code manifest.json}.
  *
  * <p>{@code -Pskeletons=store} recompiles the skeletons the store already holds (a compiler-only change needs no
@@ -39,7 +38,7 @@ public final class PrecompiledPacksBuild {
         }
         Path out = Path.of(args.length > 1 && !args[1].isBlank() ? args[1] : "src/main/resources/precompiled");
         if (!CbScriptCompiler.available()) {
-            throw new IllegalStateException("the CBScript compiler cannot run here: " + CbScriptCompiler.unavailableReason());
+            throw new IllegalStateException("the CBScript compiler is turned off (-D" + CbScriptCompiler.OFF_PROPERTY + "=off)");
         }
         Map<String, String> sources = new TreeMap<>();
         if ("store".equals(args[0])) {
@@ -97,7 +96,7 @@ public final class PrecompiledPacksBuild {
         }
         JsonObject manifest = new JsonObject();
         manifest.addProperty("_comment", "#2655: the ready-made packs compiled at build time, so no Builder or "
-                + "Apprentice power needs Python. Generated: do not edit. Regenerate with "
+                + "Apprentice power waits for a compile. Generated: do not edit. Regenerate with "
                 + "./tools/precompile-ready-mades.sh (PrecompiledFingerprintTest fails Gate A when it is stale).");
         manifest.addProperty("fingerprint", fingerprint);
         manifest.addProperty("entries", entries.size());

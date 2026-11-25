@@ -15,17 +15,18 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.network.chat.Component;
 
 /**
- * <b>Every Builder and Apprentice power is made with NO Python</b>. Each power the Builder offers — every
+ * <b>Every Builder and Apprentice power is made with NO compiler</b>. Each power the Builder offers — every
  * special move of a creature, every (stock item, power, strength), every magic block (look, trigger, what it does,
  * strength), every "turn into" pick in the ability test, every item and machine preset — is made through the real
- * Builder ({@link BuilderMake}, the real tools) while the CBScript compiler's Python is switched OFF
- * ({@code cbscript.python=off}), so a make stands only if its pack came from the precompiled store
- * ({@link PrecompiledPacks}). The packs are not loaded (the tools' own A/B seams skip activation): what they DO is the
- * ability tests' job, which a {@code -Ptestprops=cbscript.python=off} Gate B run proves the same way.
+ * Builder ({@link BuilderMake}, the real tools) while the CBScript compiler is switched OFF
+ * ({@code cbscript.compiler=off}), so a make stands only if its pack came from the precompiled store
+ * ({@link PrecompiledPacks}): a ready-made is made instantly, with nothing compiled. The packs are not loaded (the
+ * tools' own A/B seams skip activation): what they DO is the ability tests' job, which a
+ * {@code -Ptestprops=cbscript.compiler=off} Gate B run proves the same way.
  *
  * <p>A make that fails here is a ready-made the store does not hold: a template, a catalogue, the compiler or a
  * tool's rendering changed without {@code ./tools/precompile-ready-mades.sh}. That script runs this test with
- * {@code -Ptestprops=precompiled.record=<dir>} (Python ON), and every skeleton it asks for is written there to be
+ * {@code -Ptestprops=precompiled.record=<dir>} (the compiler ON), and every skeleton it asks for is written there to be
  * compiled into the store.
  */
 @GameTestHolder(ModdingFromAModMod.MODID)
@@ -33,7 +34,7 @@ public final class ReadyMadePrecompileGameTest {
 
     private static final org.slf4j.Logger LOGGER = org.slf4j.LoggerFactory.getLogger(ModdingFromAModMod.MODID);
 
-    private static final String PY = ModdingFromAModMod.MODID + ".cbscript.python";
+    private static final String PY = com.moddingfromamod.datapack.CbScriptCompiler.OFF_PROPERTY;
     private static final String SKIP_ITEM = ModdingFromAModMod.MODID + ".skipItemActivate";
     private static final String SKIP_EFFECT = ModdingFromAModMod.MODID + ".skipEffectActivate";
 
@@ -193,9 +194,9 @@ public final class ReadyMadePrecompileGameTest {
     }
 
     @GameTest(template = "empty_test", batch = "readyMadePrecompile", timeoutTicks = 400000)
-    public static void everyBuilderPowerIsMadeWithNoPython(GameTestHelper helper) {
+    public static void everyBuilderPowerIsMadeWithNoCompiler(GameTestHelper helper) {
         boolean recording = System.getProperty(ModdingFromAModMod.MODID + ".precompiled.record") != null;
-        // -Ptestprops=precompiled=verify (the regeneration's last step): Python ON, every pack compiled AND built from the
+        // -Ptestprops=precompiled=verify (the regeneration's last step): the compiler ON, every pack compiled AND built from the
         // store, and the two must be the same files.
         boolean verifying = "verify".equals(PrecompiledPacks.mode());
         PrecompiledPacks.clearMismatches();
@@ -219,7 +220,7 @@ public final class ReadyMadePrecompileGameTest {
             String se = System.getProperty(SKIP_EFFECT);
             BuilderMake.riseMillis = 0;
             if (!recording && !verifying) {
-                System.setProperty(PY, "off");   // a PC with no Python: only the precompiled store can build a pack
+                System.setProperty(PY, "off");   // no compiler: only the precompiled store can build a pack
             }
             System.setProperty(SKIP_ITEM, "true");
             System.setProperty(SKIP_EFFECT, "true");
@@ -233,10 +234,10 @@ public final class ReadyMadePrecompileGameTest {
                             .get(120, TimeUnit.SECONDS).get(120, TimeUnit.SECONDS);
                     doneCount[0]++;
                     // a make its tool REFUSES is a Builder tile that fails in front of the player, with or
-                    // without Python, so it fails this test too (it used to be logged and passed: found two
+                    // without the compiler, so it fails this test too (it used to be logged and passed: found two
                     // looks, a Cookie Jar and a Fishing Rod, refused by make_item's real-item hint).
                     String detail = String.valueOf(made.detail());
-                    boolean buildFailed = detail.contains("compiler") || detail.contains("Python")
+                    boolean buildFailed = detail.contains("compiler")
                             || detail.contains("precompiled") || detail.contains("compile");
                     if (made.outcome() != BuilderMake.Outcome.MADE && !buildFailed) {
                         wrong.add(m.label() + ": refused by its tool (not a build): " + detail);
@@ -269,7 +270,7 @@ public final class ReadyMadePrecompileGameTest {
         helper.onEachTick(() -> {
             if (done[0] && !wrong.isEmpty() && !recording) {
                 throw com.moddingfromamod.testing.gt.GameTestCompat.assertion(wrong.size() + " of " + makes.size()
-                        + " Builder powers could not be made: refused by a tool, or not without Python (run ./tools/precompile-ready-mades.sh "
+                        + " Builder powers could not be made: refused by a tool, or not without compiling (run ./tools/precompile-ready-mades.sh "
                         + "if a template, a catalogue, the compiler or a tool's rendering changed): " + wrong);
             }
         });

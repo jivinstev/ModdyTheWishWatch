@@ -48,7 +48,8 @@
     {"glob": "CONTRIBUTING.md", "why": "states the licence policy"},
     {"glob": "*.NOTICE.txt", "why": "a third-party notice kept beside what it covers (each one has a THIRD_PARTY.md row)"},
     {"glob": "third_party/*.txt", "why": "the full licence texts of what the jar bundles (each one has a THIRD_PARTY.md row); never source code"},
-    {"glob": "THIRD_PARTY_NOTICES.md", "why": "the table of what the jar bundles and each component's licence"}
+    {"glob": "THIRD_PARTY_NOTICES.md", "why": "the table of what the jar bundles and each component's licence"},
+    {"glob": "third_party/moddy-cbscript/*", "why": "a sha-pinned vendored copy of moddy-cbscript (tools/cbscript.SOURCE), whose own licence scan and register cover it; its foreign copyrights have THIRD_PARTY.md rows (PENDING #142), and it cannot carry markers (CbScriptBundleSourceTest)"}
   ],
 
   "jar_licences": {

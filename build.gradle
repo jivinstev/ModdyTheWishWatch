@@ -59,7 +59,14 @@ tasks.withType(JavaCompile).configureEach { options.compilerArgs += ['-Xmaxerrs'
 sourceSets.main.resources {
     srcDir('src/generated/resources')
     exclude("src/generated/**/.cache")
+    // The CBScript compiler's parser tables, its .cblib libraries and CBSCRIPT_LESSONS.md (vendored, below).
+    srcDir('third_party/moddy-cbscript/src/main/resources')
 }
+
+// THE CBSCRIPT COMPILER, compiled into this jar from source: moddy-cbscript's Java port, vendored at a named commit by
+// tools/refresh-cbscript-bundle.sh (third_party/moddy-cbscript, its SOURCE in src/main/resources/tools/cbscript.SOURCE).
+// It is what made the Magician stop needing Python: CbScriptCompiler calls it in-process.
+sourceSets.main.java.srcDir('third_party/moddy-cbscript/src/main/java')
 
 repositories {
     maven { name = 'NeoForged'; url = 'https://maven.neoforged.net/releases' }
@@ -800,7 +807,11 @@ tasks.named('jar') {
     }
     // each bundled component's full licence text (the public repo's third_party/, staged here under root/)
     def thirdParty = file('third_party').isDirectory() ? file('third_party') : file('docs/public-repo/root/third_party')
-    if (thirdParty.isDirectory()) from(thirdParty) { into 'META-INF/third_party' }
+    // (the vendored CBScript compiler's SOURCES are compiled into the jar, not copied: only its licence and notices)
+    if (thirdParty.isDirectory()) from(thirdParty) {
+        into 'META-INF/third_party'
+        exclude 'moddy-cbscript/src/**', 'moddy-cbscript/README.md'
+    }
     if (BUNDLE_MODEL) {
         def dir = file(BUNDLE_MODEL)
         // checked when the jar task runs, after storeApprenticeModel has filled the cache
