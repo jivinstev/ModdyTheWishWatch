@@ -1,0 +1,42 @@
+{
+ "schema": 1,
+ "about": "GameTest classes whose method set differs between two coverage maps of one commit by more than timer noise (more than 5 methods and under 95% agreement, tools/gate/covmap.py NOISE_*), because the path they take depends on timing: what runs while they wait, a stress run's interleaving. The determinism check (gate.py covmap-compare, the weekly map's two replicas) ignores these and only these; the published map is the union of the replicas, so their sets are the larger of the two. Add a row only with the measured difference; remove one when a refresh shows the class within the noise. docs/GATE_B.md, 'The coverage map'.",
+ "classes": [
+  {
+   "class": "ArtifactMemoryGameTest",
+   "measured": "2026-11-25, two full maps of one commit: 22 and 0 methods differed, agreement 0.922"
+  },
+  {
+   "class": "BuildGroundGameTest",
+   "measured": "2026-11-25, two full maps of one commit: 0 and 22 methods differed, agreement 0.897"
+  },
+  {
+   "class": "BuilderMenusGameTest",
+   "measured": "2026-11-25, two full maps of one commit: 5 and 112 methods differed, agreement 0.930"
+  },
+  {
+   "class": "ClearViewGameTest",
+   "measured": "2026-11-25, two full maps of one commit: 6 and 0 methods differed, agreement 0.878"
+  },
+  {
+   "class": "CrossClassStressGameTest",
+   "measured": "2026-11-25, two full maps of one commit: 0 and 149 methods differed, agreement 0.696"
+  },
+  {
+   "class": "ItemRefGameTest",
+   "measured": "2026-11-25, two full maps of one commit: 105 and 0 methods differed, agreement 0.809"
+  },
+  {
+   "class": "ItemYieldGameTest",
+   "measured": "2026-11-25, two full maps of one commit: 105 and 0 methods differed, agreement 0.798"
+  },
+  {
+   "class": "NoOpDoesNotAbortBatchGameTest",
+   "measured": "2026-11-25, two full maps of one commit: 18 and 2 methods differed, agreement 0.880"
+  },
+  {
+   "class": "StoreLatchGameTest",
+   "measured": "2026-11-25, two full maps of one commit: 2 and 4 methods differed, agreement 0.900"
+  }
+ ]
+}

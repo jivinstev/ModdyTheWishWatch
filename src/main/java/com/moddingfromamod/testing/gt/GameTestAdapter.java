@@ -87,8 +87,17 @@ public final class GameTestAdapter {
      * on purpose (ReadyMadeNudgeGameTest sat 15 minutes when one class was one batch).
      */
     private static String batchOf(Found f) {
-        return CoverageMap.on() ? "covmap_" + f.method().getDeclaringClass().getSimpleName() + "_" + f.spec().batch()
+        return CoverageMap.on() ? CoverageMap.batchName(f.method().getDeclaringClass().getSimpleName(), f.spec().batch())
                 : f.spec().batch();
+    }
+
+    /** The GameTest classes this server registered, in order (a mapping run gives each a settle window). */
+    private static List<String> mappedClasses() {
+        LinkedHashSet<String> out = new LinkedHashSet<>();
+        for (Found f : found()) {
+            out.add(f.method().getDeclaringClass().getSimpleName());
+        }
+        return new ArrayList<>(out);
     }
 
     /** How many tests this server registered (after the shard, the class filter and the flake register). */
@@ -133,6 +142,18 @@ public final class GameTestAdapter {
                     CoverageMap.enter(CoverageMap.IDLE);
                     helper.runAfterDelay(CoverageMap.IDLE_TICKS, helper::succeed);
                 });
+                // each class's settle window: what it left running is still its own
+                for (String cls : mappedClasses()) {
+                    h.register(CoverageMap.settleId(cls), (Consumer<GameTestHelper>) helper -> {
+                        CoverageMap.enter(cls);
+                        long until = System.currentTimeMillis() + CoverageMap.SETTLE_MS;
+                        helper.runAfterDelay(CoverageMap.SETTLE_TICKS, () -> helper.succeedWhen(() -> {
+                            if (System.currentTimeMillis() < until) {
+                                throw GameTestCompat.failure(new IllegalStateException("settling"));
+                            }
+                        }));
+                    });
+                }
             }
         }));
         modBus.addListener(RegisterGameTestsEvent.class, e -> {
@@ -161,8 +182,19 @@ public final class GameTestAdapter {
                 e.registerTest(id, new FunctionGameTestInstance(ResourceKey.create(Registries.TEST_FUNCTION, id), data));
             }
             if (CoverageMap.on()) {
+                for (String cls : mappedClasses()) {
+                    Holder<TestEnvironmentDefinition> settle = e.registerEnvironment(
+                            ResourceLocation.fromNamespaceAndPath(CoverageMap.IDLE_ID.getNamespace(),
+                                    "batch/" + CoverageMap.settleBatch(cls).toLowerCase(Locale.ROOT)),
+                            new TestEnvironmentDefinition.AllOf(List.of()));
+                    ResourceLocation sid = CoverageMap.settleId(cls);
+                    e.registerTest(sid, new FunctionGameTestInstance(ResourceKey.create(Registries.TEST_FUNCTION, sid),
+                            new TestData<>(settle, ResourceLocation.fromNamespaceAndPath(sid.getNamespace(), "empty_test"),
+                                    2000, 0, true, net.minecraft.world.level.block.Rotation.NONE, false, 1, 1, false)));
+                }
                 Holder<TestEnvironmentDefinition> idle = e.registerEnvironment(
-                        ResourceLocation.fromNamespaceAndPath(CoverageMap.IDLE_ID.getNamespace(), "batch/covmap_idle"),
+                        ResourceLocation.fromNamespaceAndPath(CoverageMap.IDLE_ID.getNamespace(),
+                                "batch/" + CoverageMap.IDLE_BATCH),
                         new TestEnvironmentDefinition.AllOf(List.of()));
                 e.registerTest(CoverageMap.IDLE_ID, new FunctionGameTestInstance(
                         ResourceKey.create(Registries.TEST_FUNCTION, CoverageMap.IDLE_ID),

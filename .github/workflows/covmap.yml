@@ -1,0 +1,201 @@
+# Coverage map: which production methods each GameTest class executes, built on GitHub runners (docs/GATE_B.md,
+# "The coverage map"). Targeted Gate B reads it to pick the GameTests a pull request's change can reach.
+#
+#   Sunday     a FULL map: every class of the ci,default tier, mapped TWICE (two replicas of the same split). The two
+#              maps must agree but for costs and the classes listed in corpus/gate-covmap-unstable.json: the
+#              determinism check. The first replica's map is published.
+#   every day  a PARTIAL map: only the classes the map has not placed, and those whose own source file changed since
+#              the map recorded it. Merged into the current map. Skipped when there are none.
+#
+#   plan     reads the current map and its costs from the gate-covmap branch and shares the classes among runners.
+#   map      one runner a share: Gate B with the JaCoCo agent on (each class in batches of its own, dumped when the
+#            running class changes), then tools/gate/CovmapAnalyze.java turns the dumps into methods per class.
+#            Coverage slows the server and changes the batches, so its pass/fail is NOT a Gate B result and is ignored;
+#            what counts is that every class ran and was placed.
+#   publish  builds the map, compares the replicas, reports any class the previous map placed and this one DROPPED,
+#            and replaces the one commit on the data-only gate-covmap branch (map.json.gz, costs.json, report.md).
+#            A failed refresh keeps the previous map and opens or updates the one issue labelled covmap-red.
+#
+# A pull request that changes the map's machinery runs it too, as a dry run: a full map, twice, compared; nothing
+# published and no issue.
+#
+# Why a branch of its own, force-pushed as ONE commit: every reader fetches it by name (`git fetch --depth=1 origin
+# gate-covmap`), nothing waits on a pull request, and the map's history does not pile up in every clone (a map is a
+# few hundred KB gzipped; a year of daily commits would be most of a clone). A release asset was the other choice,
+# and it would sit among the mod's releases a player browses.
+name: Coverage map
+
+on:
+  schedule:
+    - cron: "41 4 * * 0"    # Sunday: full, twice
+    - cron: "41 12 * * *"   # every day: partial
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "full (every class) or partial (unplaced and changed classes only)"
+        type: choice
+        options: [partial, full]
+        default: partial
+      replicas:
+        description: "Map each share this many times (2 checks determinism)"
+        type: string
+        default: "1"
+  # a change to the map's own machinery maps the whole tier twice, as a dry run: nothing published, no issue
+  pull_request:
+    branches: [main]
+    paths:
+      - ".github/workflows/covmap.yml"
+      - "tools/gate/covmap.py"
+      - "tools/gate/CovmapAnalyze.java"
+      - "src/main/java/com/moddingfromamod/testing/gt/CoverageMap.java"
+
+concurrency:
+  group: covmap-${{ github.event.pull_request.number || 'main' }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  DRY: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+jobs:
+  plan:
+    name: Plan
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      run: ${{ steps.plan.outputs.run }}
+      matrix: ${{ steps.plan.outputs.matrix }}
+      plan: ${{ steps.plan.outputs.plan }}
+    steps:
+      - uses: actions/checkout@v7
+      - &currentMap
+        name: The current map (the gate-covmap branch), if there is one
+        run: |
+          mkdir -p current
+          if git fetch --quiet --depth=1 origin gate-covmap; then
+            for f in map.json.gz costs.json; do git show "FETCH_HEAD:$f" > "current/$f" 2>/dev/null || rm -f "current/$f"; done
+          fi
+          ls -la current
+      - id: plan
+        env:
+          MODE: ${{ inputs.mode || ((github.event.schedule == '41 4 * * 0' || github.event_name == 'pull_request') && 'full' || 'partial') }}
+          REPLICAS: ${{ inputs.replicas || ((github.event.schedule == '41 4 * * 0' || github.event_name == 'pull_request') && '2' || '1') }}
+        run: |
+          python3 tools/gate/gate.py covmap-plan --mode "$MODE" --replicas "$REPLICAS" --jobs 6 \
+            --map current/map.json.gz --costs current/costs.json --out plan.json > matrix.json
+          if python3 -c 'import json,sys; sys.exit(0 if json.load(open("plan.json", encoding="utf-8"))["jobs"] else 1)'; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "run=false" >> "$GITHUB_OUTPUT"
+            echo "Nothing to map: every class is placed and no test file changed." >> "$GITHUB_STEP_SUMMARY"
+          fi
+          echo "matrix=$(cat matrix.json)" >> "$GITHUB_OUTPUT"
+          echo "plan=$(python3 -c 'import json; print(json.dumps(json.load(open("plan.json", encoding="utf-8"))))')" >> "$GITHUB_OUTPUT"
+
+  map:
+    name: Map ${{ matrix.job }}.${{ matrix.replica }}
+    needs: plan
+    if: needs.plan.outputs.run == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 150
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.plan.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Cache Gradle and the NeoForm decompile
+        uses: actions/cache@v6
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ runner.os }}-${{ hashFiles('gradle.properties', 'build.gradle', 'versions/*.properties', 'gradle/wrapper/gradle-wrapper.properties') }}
+      - name: The datapack compiler's Python dependency
+        run: python3 -m pip install --break-system-packages ply
+      - name: The JaCoCo agent and core
+        run: ./gradlew covmapTools --console=plain
+      - name: Map this share
+        env:
+          PLAN: ${{ needs.plan.outputs.plan }}
+        run: |
+          printf '%s' "$PLAN" > plan.json
+          python3 tools/gate/gate.py run --shard ci,default --plan plan.json --job ${{ matrix.job }} \
+            --label job-${{ matrix.job }}-r${{ matrix.replica }} --kind covmap \
+            --covmap-tools build/covmap-tools --timeout 140 --out covmap-job
+      - name: Keep the analysis
+        if: always()
+        uses: actions/upload-artifact@v5
+        with:
+          name: covmap-job-${{ matrix.job }}-r${{ matrix.replica }}
+          path: |
+            covmap-job/job.json
+            covmap-job/analysis.json
+            covmap-job/*.log
+          retention-days: 7
+          if-no-files-found: warn
+
+  publish:
+    name: Publish
+    needs: [plan, map]
+    if: always() && needs.plan.outputs.run == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: write   # the gate-covmap branch
+      issues: write     # the covmap-red issue
+    steps:
+      - uses: actions/checkout@v7
+      - *currentMap
+      - uses: actions/download-artifact@v5
+        with:
+          pattern: covmap-job-*
+          path: jobs
+      - name: Build the map
+        id: merge
+        env:
+          PLAN: ${{ needs.plan.outputs.plan }}
+        run: |
+          printf '%s' "$PLAN" > plan.json
+          set +e
+          python3 tools/gate/gate.py covmap-merge --plan plan.json --map current/map.json.gz --costs current/costs.json \
+            --run-url "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
+            --out new jobs/covmap-job-*
+          echo "status=$?" >> "$GITHUB_OUTPUT"
+          cat new/report.md >> "$GITHUB_STEP_SUMMARY"
+      - name: Replace the map on gate-covmap
+        if: env.DRY != 'true' && hashFiles('new/map.json.gz') != ''
+        run: |
+          git worktree add --quiet --detach publish
+          cd publish
+          git checkout --quiet --orphan gate-covmap-next
+          git rm -rfq .
+          cp ../new/map.json.gz ../new/costs.json ../new/report.md .
+          printf '%s\n' "# gate-covmap" "" "Data only: the coverage map targeted Gate B reads, replaced by each refresh (one commit, force-pushed)." \
+            "Written by .github/workflows/covmap.yml; see docs/GATE_B.md on the default branch." > README.md
+          git add -A
+          git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+            commit --quiet -m "Coverage map at ${GITHUB_SHA::12}"
+          git push --force --quiet origin HEAD:refs/heads/gate-covmap
+      - name: Keep the map (a dry run's, to read)
+        if: always()
+        uses: actions/upload-artifact@v5
+        with:
+          name: covmap-built
+          path: new/
+          retention-days: 7
+          if-no-files-found: ignore
+      - name: Open, update or close the covmap-red issue
+        if: env.DRY != 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python3 tools/gate/gate.py issue --record new/record.json --report new/report.md --label covmap-red \
+            --title "Coverage map: the refresh failed or changed unexpectedly"
+      - name: The verdict
+        run: test "${{ steps.merge.outputs.status }}" = "0"

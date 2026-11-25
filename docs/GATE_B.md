@@ -118,3 +118,111 @@ The report answers three questions without re-running anything:
   names them (`excluded`), so its green says exactly what it covered. The nightly still runs them, and reports a
   failure of one as `known-flaky` rather than red: that is how a fix is seen to hold.
 - `test_gate.py` checks every row names a real GameTest class, an issue and where it was seen.
+
+## The coverage map
+
+For every GameTest class of the tier, which production METHODS it executes. Targeted Gate B reads it to run only the
+GameTests a change can reach (below). `.github/workflows/covmap.yml` builds it on GitHub's runners.
+
+**How it is built.** A mapping run is Gate B with the JaCoCo agent on (`-Pcovagent`, `-Pcovmap`; `./gradlew
+covmapTools` fetches the agent and core jars into `build/covmap-tools/`). `testing/gt/CoverageMap` then gives every
+class batches of its own, so no two classes run at once, removes what the previous class left in the world, and dumps
+the agent's data each time the running class changes. Two things make the result the same every run:
+
+- **The batches run in a fixed order.** The game groups tests into batches through a hash map keyed by identity, so
+  the order of batches differs in every JVM. On a mapping run only, `testing/mixin/GameTestBatchOrderMixin` sorts them
+  by environment name: the idle window first, then each class's batches together, class after class. (Measured before
+  it: two maps of one commit disagreed for 264 of 360 classes, because what a class left running landed in a
+  different neighbour each run.)
+- **Each class has a settle window.** After its last batch, a synthetic test of its own waits 40 ticks and 1.5 s, so
+  what the class left running (a listener it registered, a make on a worker thread, a poll it started) counts as its
+  own, not as whichever class runs next. `tools/gate/CovmapAnalyze.java` (run as a single-file program
+with the JaCoCo core jars, never compiled into the mod) turns each job's dumps into the methods each class executed,
+and a table of every method's source file and line ranges. `gate.py covmap-merge` builds the map from the jobs.
+
+- **A method's id** is `package/Class#name`, with what a recompile renumbers folded away: a lambda counts as the method
+  that holds it, an anonymous class is `Outer$anon`, overloads share a name. Folding only makes a method bigger, so a
+  change can only select more.
+- **Ambient methods** are what runs with no test of ours running: start-up, a 400-tick idle window, shutdown. They are
+  kept apart from every class's set; a change to one of them runs the whole tier.
+- **Weekly, FULL**: every class, mapped twice by two replicas of the same split (the determinism check, below).
+  **Daily, PARTIAL**: only the classes the map has not placed, and those whose own source file changed since the map
+  recorded it, merged into the current map. Skipped when there are none. Six runners share a run.
+- **Its pass/fail is not a Gate B result.** Coverage slows the server and the batches differ, so a test that fails
+  under coverage still maps; what counts is that every class ran and was placed. The nightly full tier is the verdict.
+- **A class the run DROPPED** (the previous map placed it, this one did not) is reported in the run's summary and in
+  the `covmap-red` issue, never silently forgotten. It is unplaced until a run places it again, and an unplaced class
+  runs on every pull request.
+- **A failed refresh** keeps the previous map and opens or updates the one issue labelled `covmap-red`; the next good
+  refresh closes it.
+
+**Where it lives, and why there.** On the data-only branch `gate-covmap`: one commit holding `map.json.gz`,
+`costs.json` and the last run's `report.md`, replaced (force-pushed) by every refresh. Every reader fetches it by name,
+`git fetch --depth=1 origin gate-covmap`, and nothing waits on a pull request. It is not on `gate-data`, whose records
+are kept forever, because a map is replaced daily: a year of maps there would be most of every clone. It is not a
+release asset, because it would sit among the mod's releases a player browses, and Port CI reads those.
+
+**What it records.** The commit and gate tree it was built at, the method table, each production file's blob at that
+commit (line ranges hold only for a file whose blob is still that one), the ambient set, and each class's methods with
+the commit that class was last mapped at. Costs are kept beside it (`costs.json`): the seconds each class held a
+server for under coverage, the rounded median of its last five measurements (wall clock varies by runner; method sets
+do not).
+
+**How stale it can be.** A class's methods are at most a week old (the weekly full run), or a day for a class whose own
+test file changed (the daily partial run). A production file that changed since the map recorded it is taken whole: its
+line numbers no longer hold, so every class that reached any of its methods is selected. A map older than ten days
+selects the whole tier. A missing map selects the whole tier. Every way a map can be wrong or old makes a selection
+LARGER, never blind; and the nightly full tier still runs everything.
+
+**Determinism.** For one commit the method sets are deterministic, but for classes whose path depends on timing or
+randomness. The weekly run maps every share twice and `gate.py covmap-compare` requires the two maps to agree on every
+class's methods and on the ambient set; costs are not compared. The classes allowed to differ are listed, with what was
+measured, in `corpus/gate-covmap-unstable.json`; any other difference fails the refresh and opens `covmap-red`.
+
+```bash
+./gradlew covmapTools
+python3 tools/gate/gate.py covmap-plan --mode full --jobs 1 --out /tmp/cm/plan.json
+python3 tools/gate/gate.py run --plan /tmp/cm/plan.json --job 0 --label job-0-r0 --kind covmap \
+  --covmap-tools build/covmap-tools --out /tmp/cm/j0
+python3 tools/gate/gate.py covmap-merge --plan /tmp/cm/plan.json --out /tmp/cm/map /tmp/cm/j0
+```
+
+## Targeted Gate B
+
+`gate.py select --base origin/main [--head REV] --map map.json.gz` lists the GameTest classes a change can reach,
+and why, one line a class (`tools/gate/selection.py`, pure: changed files and hunks, the map and the tier in, a
+selection out; `test_gate.py` pins every rule). The change is what the head changed since its merge base with the base
+branch, so `main`'s commits merged into a branch are not its changes, and a file both sides changed is.
+
+What it selects:
+
+- **the `ci` shard**, always: nothing runs less than it did before;
+- **every class the map has not placed** (a new GameTest, one a mapping run could not place);
+- **a changed GameTest class** itself, and **the GameTest classes that name a changed class** (its simple name as a
+  word, in their code or string literals, never their comments);
+- **every class the map saw execute a changed method.** A hunk inside a method's lines is that method. A hunk outside
+  every method (an import, a field, a signature, a new method) is the whole file: every class that reached any of its
+  methods. A changed compile-time constant (`static final … =`) also reaches every file that names its class, because
+  the constant is copied into them and they never execute its file. A file that changed between the map's commit and
+  the merge base has its hunks carried back through that drift (`git diff -U0 <map commit> <merge base>`): a line the
+  drift left alone moves by it, a line the drift changed stands for the whole range it came from;
+- **a new class** is reached only through code that names it, which changed in the same diff, so that code's hunks
+  carry the selection; one the game finds by itself (`@EventBusSubscriber`, `@Mod`, `@Mixin`) runs the whole tier,
+  unless only a client finds it (`Dist.CLIENT`);
+- **a data file** in `corpus/` or a client asset in `src/main/resources/assets/` is read by the sources that name it
+  (its file name): the GameTests among them, and what reaches the others.
+
+**The whole tier** for anything the map cannot see: build configuration (`build.gradle`, `gradle.properties` but for
+a `mod_version`-only bump, `versions/`, `gradle/`), mixins, resources the game reads by path (`data/`, `lessons/`, the
+starter library, `precompiled/`), the bundled datapack compiler, the GameTest harness (`testing/gt/`, `testing/mixin/`,
+the filter, the shards, the timings, the watchdog: what decides which tests run and how), a change to code that runs
+with no test running (start-up, the idle tick, shutdown; a static initialiser instead reaches its file and every file
+naming its class), a path with no rule, and no map or a map older than ten days.
+
+**Nothing beyond `ci`** for a path no GameTest reads: `docs/`, `.github/`, `art/`, `src/test/` (Gate A), `tools/`
+but the compiler bundle, `third_party/`'s licence texts, the gate tools' own `corpus/gate-*` files, the port ledger
+`.port/`, and the top-level `*.md` files.
+
+**Measured** (`gate.py backtest`, every pull request merged since the move, 65, against a full map of the tier):
+see the pull request that switched CI to it for the numbers, and re-run it with
+`gate.py backtest --prs <list> --map <map>` to see them for any set of changes.

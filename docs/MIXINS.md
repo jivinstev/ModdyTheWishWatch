@@ -75,6 +75,7 @@ the sound ledger is switched on only by a test or the behaviour harness (a dev `
 
 | mixin | config | target | injection | purpose |
 |---|---|---|---|---|
+| `GameTestBatchOrderMixin` | `moddingfromamod.gametest.mixins.json` | `GameTestBatchFactory#divideIntoBatches` | `@ModifyReturnValue` | on a coverage-mapping run only (`testing/gt/CoverageMap`), batches run in the order of their environment names, so a class's batches and its settle window run together and in the same place every run; any other run keeps the game's own order |
 | `GameTestCrashGuardMixin` | `moddingfromamod.gametest.mixins.json` | `GameTestInfo#tick` | `@WrapMethod` | one test's exception fails that test, not the whole run (1.21.8's `fail` takes only a `GameTestException`); names the test the stall watchdog sees |
 | `GameTestWallClockMixin` | `moddingfromamod.gametest.mixins.json` | `GameTestInfo#startTest`, `#tickInternal` | `@Inject` HEAD; `@ModifyExpressionValue` on the `timeoutTicks` read | a test's `timeoutTicks` is also that much wall-clock time at 20 ticks a second |
 | `SoundSentMixin` | `moddingfromamod.gametest.mixins.json` | `ServerCommonPacketListenerImpl#send` | `@Inject` HEAD | every sound packet to a player, for the sound ledger (`seam/SoundLedger`); a no-op unless a test switched the ledger on. Moved here from the public config: nothing in a player's game turns the ledger on |
