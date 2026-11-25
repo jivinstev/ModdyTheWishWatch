@@ -64,8 +64,6 @@ class LocalOnlyCoverageTest {
             Map.entry("agent/WorkerStopper.java", "stops worker processes; it calls nothing"),
             Map.entry("worker/WorkerMain.java", "the worker process's own main"),
             Map.entry("config/CliHarnessProbe.java", "the Magician setup's check that a program is installed, host-pressed"),
-            Map.entry("datapack/CbScriptCompiler.java", "the bundled CBScript compiler, a local Python process"),
-            Map.entry("datapack/PythonCheck.java", "checks the local Python install, a local process"),
             Map.entry("provenance/GitSync.java",
                     "opt-in (wish_git_sync, off by default) git commit of the player's own wish files to his own repo; "
                             + "carries nothing to a model or a third-party service"),

@@ -62,9 +62,8 @@ Moddy is made for children. Everything a player reads or types goes through the 
 - **Gate A** is `./gradlew build`: compile, every unit test (`gate-a.gradle` configures the `test` task: one retry of a
   failed test, recorded, and the ambient API keys removed so a test that needs one fails here rather than in CI).
 - **Gate B** boots a headless dedicated server and runs every `@GameTest` in the chosen shards. `-Pshard` takes a
-  comma-separated list (`ci`, `default`, or `all`); `-Pgametests=ClassA,ClassB` runs only those classes. Gate B needs
-  Python 3 with `ply` (`pip install ply`) for the datapack compiler; without it every datapack test fails with a
-  message that blames the catalogue, not the missing package.
+  comma-separated list (`ci`, `default`, or `all`); `-Pgametests=ClassA,ClassB` runs only those classes. The datapack
+  compiler is in the jar (no Python needed).
 - **Gate C** is a real client. Anything a player can see or hear needs it; a clean compile and green headless tests do
   not prove a texture, a sound, a menu or a creative tab. On Linux without a display, `xvfb-run` works with software
   rendering.
@@ -174,10 +173,8 @@ or the jar from `build/libs/` in a NeoForge 1.21.8 install):
    API keys** (shown only when a key is set). One press sets the four model choices, checks the program is installed
    and signed in, runs the Magician check (every safety grader, one forced refusal and one small test wish, about 3
    minutes) and turns the Magician on, with progress on the action bar and one result line; a failure says the one
-   thing to do. The setup also checks for a working **Python 3** (`datapack/PythonCheck`: the Windows Store stub and
-   Python 2 are recognised, then a tiny compile proves the bundled compiler runs); Python missing never blocks turning
-   the Magician on, it adds one result line saying what to install, and a power wished without it gets one clear tool
-   error (`PythonCheck.agentMessage`). **Choose models myself** keeps the per-choice pages (each model, how it is
+   thing to do. Powers need nothing installed: the CBScript compiler is in the jar (`NoPythonTest` and
+   `NoPythonGameTest` hold a player's game to starting no Python). **Choose models myself** keeps the per-choice pages (each model, how it is
    paid for, fallbacks); a change there re-checks the programs at once and says the Magician is off until **Turn on
    (about 3 minutes)** passes.
 
@@ -242,15 +239,16 @@ change.
   ran.
 - **Don't compile while a gate is running** (it rewrites `build/resources` under the running server), and **don't edit
   a shell script while it runs** (bash reads it by byte offset).
-- **The CBScript compiler ships bundled** in the jar (`tools/cbscript.zip`); a version-specific id or spelling belongs
-  in the compiler, not in a lesson.
-  Rebuild it with `./tools/refresh-cbscript-bundle.sh --ref <branch|commit>`, which also writes `tools/cbscript.SOURCE`.
+- **The CBScript compiler is built into the jar**: moddy-cbscript's Java port, vendored at `third_party/moddy-cbscript`
+  (do not edit it there: fix it in moddy-cbscript, where its parity corpus holds it to the Python compiler). It runs
+  in-process, so no player needs Python. A version-specific id or spelling belongs in the compiler, not in a lesson.
+  Re-vendor it with `./tools/refresh-cbscript-bundle.sh --ref <branch|commit>`, which also writes `tools/cbscript.SOURCE`.
 - **Builder and Apprentice powers are precompiled** (`datapack/PrecompiledPacks`, `datapack/ReadyMadeSkeleton`): every
-  template is compiled at build time with sentinels where a player's values go, and Java puts the values back, so no
-  player needs Python for them. Changed a template in `effects/` or `items/`, a catalogue, the bundled compiler, or how
+  template is compiled at build time with sentinels where a player's values go, and Java puts the values back, so a
+  Builder power is made with nothing compiled. Changed a template in `effects/` or `items/`, a catalogue, the compiler, or how
   a tool renders a ready-made? Run `./tools/precompile-ready-mades.sh` and commit `src/main/resources/precompiled/`:
   `PrecompiledFingerprintTest` (Gate A) and `ReadyMadePrecompileGameTest` (Gate B, every Builder power made with
-  Python off) fail until you do. A value the compiler would rewrite (a selector argument, an old component spelling)
+  the compiler off) fail until you do. A value the compiler would rewrite (a selector argument, an old component spelling)
   stays literal in the skeleton, so it is a different precompiled pack, never a wrong one (`PrecompiledEquivalenceTest`).
 - **A rule tested only where it is defined is not tested where it runs.** Drive the real entry point (the tool the
   agent calls, the real command), and check that a guard's enabling condition is actually written by shipped code.

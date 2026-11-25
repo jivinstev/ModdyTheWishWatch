@@ -127,9 +127,6 @@ jobs:
             ~/.gradle/caches
             ~/.gradle/wrapper
           key: gradle-${{ runner.os }}-${{ hashFiles('gradle.properties', 'build.gradle', 'versions/*.properties', 'gradle/wrapper/gradle-wrapper.properties') }}
-      - &ply
-        name: The datapack compiler's Python dependency
-        run: python3 -m pip install --break-system-packages ply
       - name: ./gradlew build
         run: ./gradlew build --console=plain
       - name: The rig films' rules (which films, when; the part-drift check can still go red)
@@ -160,14 +157,27 @@ jobs:
           distribution: temurin
           java-version: '21'
       - *gradle-cache
-      - *ply
+      - &noPython
+        # A player's game never starts Python (the datapack compiler is in the jar; NoPythonTest, NoPythonGameTest).
+        # The game server runs with `python` and `python3` on PATH replaced by stubs that record being started and
+        # fail, and the job fails if any was.
+        name: No Python for the game
+        run: |
+          mkdir -p "$RUNNER_TEMP/no-python"
+          for n in python python3; do
+            printf '#!/bin/sh\necho "$0 $*" >> "%s/python-started"\nexit 127\n' "$RUNNER_TEMP" > "$RUNNER_TEMP/no-python/$n"
+            chmod +x "$RUNNER_TEMP/no-python/$n"
+          done
       - &gameTests
         name: Run the game tests
         run: |
           set -o pipefail
-          ./gradlew runGameTestServer -Pshard="$SHARD" -Prundir=gt-run --console=plain 2>&1 | tee gametest.log
+          PATH="$RUNNER_TEMP/no-python:$PATH" ./gradlew runGameTestServer -Pshard="$SHARD" -Prundir=gt-run --console=plain 2>&1 | tee gametest.log
           line="$(grep -Eo '[0-9]+ required tests (passed|failed)' gametest.log | tail -1)"
           echo "result: ${line:-no result line (the server never ran the tests)}"
+          if [ -s "$RUNNER_TEMP/python-started" ]; then
+            echo "the game started Python:"; cat "$RUNNER_TEMP/python-started"; exit 1
+          fi
           grep -Eq 'required tests passed' <<<"$line" && ! grep -q 'required tests failed' gametest.log
 
   gate-b-tier:
@@ -184,7 +194,7 @@ jobs:
           distribution: temurin
           java-version: '21'
       - *gradle-cache
-      - *ply
+      - *noPython
       - *gameTests
 
   rig-films:
@@ -200,7 +210,6 @@ jobs:
           distribution: temurin
           java-version: '21'
       - *gradle-cache
-      - *ply
       - name: A virtual display and software OpenGL
         run: sudo apt-get update -qq && sudo apt-get install -y -qq xvfb libgl1-mesa-dri mesa-utils
       - name: Every rig film the scoreboard names
