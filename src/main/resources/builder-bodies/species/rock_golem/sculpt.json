@@ -1,8 +1,8 @@
 {
  "base": "guardian",
  "behaves_like": "bruiser",
- "damage": 0,
- "health": 200,
+ "damage": 15,
+ "health": 100,
  "id": "rock_golem",
  "name": "Rock Golem",
  "note": "Big friendly stone golem: grey speckled stone body, chunky wide torso, long arms, moss patches, glowing cyan eyes and a small calm mouth so it reads gentle-giant not scary. Friendly guardian so it fights monsters for him.",

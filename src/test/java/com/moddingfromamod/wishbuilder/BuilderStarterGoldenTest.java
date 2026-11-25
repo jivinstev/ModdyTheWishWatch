@@ -100,6 +100,31 @@ class BuilderStarterGoldenTest {
         return out;
     }
 
+    /**
+     * #99, a deliberate change this fixture predates: every stock creature has a reviewed stat line, so a body's sculpt
+     * now sends its reviewed health and damage (the bear's 30/6 where it sent 30/0, the duck's 8/1 where it sent none
+     * and was read as 20/3). The recorded sculpt takes the body's shipped numbers; the rest of every saved make still
+     * re-makes byte for byte. A species preset's are added by {@link #withShipped}.
+     */
+    static JsonArray withReviewedStats(JsonArray calls, String preset) {
+        JsonArray out = calls.deepCopy();
+        if (!preset.startsWith("bodies/")) {
+            return out;
+        }
+        JsonObject sculpt = LibraryPresets.SHIPPED.read(preset);
+        for (JsonElement c : out) {
+            JsonObject args = c.getAsJsonObject().getAsJsonObject("args");
+            if (sculpt != null && c.getAsJsonObject().get("tool").getAsString().equals("sculpt_creature") && args != null) {
+                for (String k : new String[] {"health", "damage"}) {
+                    if (sculpt.has(k)) {
+                        args.add(k, sculpt.get(k).deepCopy());
+                    }
+                }
+            }
+        }
+        return out;
+    }
+
     @Test
     void everySavedStarterMakeLowersAsItDidBefore() throws Exception {
         JsonObject before = fixture();
@@ -109,7 +134,7 @@ class BuilderStarterGoldenTest {
             BuilderSpec.Kind kind = BuilderSpec.Kind.of(key.substring(0, key.indexOf('/')));
             String preset = key.substring(key.indexOf('/') + 1);
             JsonArray now = BuilderStarterGolden.lowered(BuilderSpec.read(BuilderStarterGolden.saved(kind, preset)));
-            if (!normal(withShipped(withNatural(before.getAsJsonArray(key), preset), preset)).equals(normal(now))) {
+            if (!normal(withReviewedStats(withShipped(withNatural(before.getAsJsonArray(key), preset), preset), preset)).equals(normal(now))) {
                 wrong.add(key + "\n  before: " + before.get(key) + "\n  now:    " + now);
             }
         }

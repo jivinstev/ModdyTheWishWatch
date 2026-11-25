@@ -507,6 +507,14 @@ public final class AwaitWishTool implements McpTool {
         if (!world.briefNote().isEmpty()) {
             sb.append(world.briefNote()).append('\n');
         }
+        // #69: this world's limits, as data only (fact keys and numbers, never words a world wrote)
+        if (com.moddingfromamod.wish.MakeGate.anyWorld() && wish.playerId() != null) {
+            String limits = com.moddingfromamod.agent.ToolArgFit.brief(
+                    com.moddingfromamod.wish.MakeGate.limits(wish.playerId()).limits());
+            if (!limits.isEmpty()) {
+                sb.append(limits).append('\n');
+            }
+        }
 
         sb.append("\nDECIDE WHERE IT APPEARS FIRST: the wish is already anchored to the spot the "
           + "child was pointing the watch at, and that's where the sparkles are gathering. Call "

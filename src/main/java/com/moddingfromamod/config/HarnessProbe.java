@@ -75,12 +75,4 @@ public interface HarnessProbe {
     default boolean installed(SupportedModels.Harness harness) {
         return true;
     }
-
-    /**
-     * Is there a working Python 3 for the Magician's powers? Blocking (a second or two): never on the server
-     * thread. Null: not checked (a stub that does not say), and then nothing is said about Python.
-     */
-    default com.moddingfromamod.datapack.PythonCheck.Verdict python() {
-        return null;
-    }
 }

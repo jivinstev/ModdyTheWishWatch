@@ -277,7 +277,7 @@ public final class PrecompiledPacks {
     }
 
     /**
-     * What the store was compiled FROM: every effect and item template, both catalogues and the bundled compiler,
+     * What the store was compiled FROM: every effect and item template, both catalogues and the CBScript compiler (its vendored tree's digest),
      * hashed by path and content under the source tree's {@code src/main/resources}. The store's manifest records it,
      * and {@code PrecompiledFingerprintTest} fails Gate A when it no longer matches.
      */
@@ -289,10 +289,19 @@ public final class PrecompiledPacks {
                         || f.getFileName().toString().equals("catalogue.json")).forEach(files::add);
             }
         }
-        files.add(resources.resolve("tools/cbscript.zip"));
         files.sort(java.util.Comparator.comparing(f -> resources.relativize(f).toString().replace('\\', '/')));
         try {
             MessageDigest md = MessageDigest.getInstance("SHA-256");
+            // The compiler: the vendored tree's digest as its SOURCE records it (CbScriptBundleSourceTest holds the
+            // record to the tree). Only the digest, so re-naming the same tree's branch changes nothing.
+            String tree = "";
+            for (String line : Files.readAllLines(resources.resolve("tools/cbscript.SOURCE"), StandardCharsets.UTF_8)) {
+                if (line.startsWith("tree-sha256:")) {
+                    tree = line.substring("tree-sha256:".length()).strip();
+                }
+            }
+            md.update(("compiler " + tree).getBytes(StandardCharsets.UTF_8));
+            md.update((byte) 0);
             for (Path f : files) {
                 md.update(resources.relativize(f).toString().replace('\\', '/').getBytes(StandardCharsets.UTF_8));
                 md.update((byte) 0);

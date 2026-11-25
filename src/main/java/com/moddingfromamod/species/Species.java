@@ -458,8 +458,28 @@ public record Species(String id, String name, Body body, String texture, int tin
 
     // ===================== JSON =====================
 
+    /**
+     * The version a species RECORD is written at (docs/STORE_MIGRATIONS.md), inline in each record as {@code "v"} so a
+     * migration is applied to, and counted on, the records written before it. A record with none is v1. An older build
+     * ignores the field and reads the record as before.
+     * <ul>
+     *   <li>v2 (#99): read under the library-copy rule ({@link LibraryCopies}).</li>
+     * </ul>
+     */
+    public static final int RECORD_VERSION = 2;
+
+    /** The version a stored record was written at: its {@code "v"}, or 1 when it has none. */
+    public static int recordVersion(JsonObject o) {
+        try {
+            return o != null && o.has("v") && o.get("v").isJsonPrimitive() ? o.get("v").getAsInt() : 1;
+        } catch (RuntimeException e) {
+            return 1;
+        }
+    }
+
     public JsonObject toJson() {
         JsonObject o = new JsonObject();
+        o.addProperty("v", RECORD_VERSION);
         o.addProperty("id", id);
         o.addProperty("name", name);
         o.addProperty("body", body.name().toLowerCase(Locale.ROOT));
@@ -514,8 +534,22 @@ public record Species(String id, String name, Body body, String texture, int tin
         return o;
     }
 
-    /** Parse a species. Missing fields take sane defaults; bad ones are clamped, never fatal. */
+    /**
+     * Parse a species. Missing fields take sane defaults; bad ones are clamped, never fatal. A creature with no health
+     * or attack damage of its own gets its size's ({@link PowerBand}), measured from its vanilla model shape and scale;
+     * {@link #fromJson(JsonObject, double)} measures a sculpted body instead.
+     */
     public static Species fromJson(JsonObject o) {
+        return fromJson(o, Double.NaN);
+    }
+
+    /**
+     * Parse a species whose body's solid volume at scale 1 is {@code bodyVolume} cubic blocks (its sculpt's boxes;
+     * NaN when it has none). Only a field that is absent (or not a number) takes its band's default (#100): a tiny
+     * thing about 6 health and 1 damage, a huge one about 160 and 12, a boss half as much health again, a vehicle no
+     * hit. Before #100 every such creature got a flat 20 and 3, whatever it was.
+     */
+    public static Species fromJson(JsonObject o, double bodyVolume) {
         if (o == null) {
             return null;
         }
@@ -555,6 +589,13 @@ public record Species(String id, String name, Body body, String texture, int tin
         if (s.archetype() != null) {
             s = s.withBehaves(s.archetype());
         }
+        boolean noHealth = !isNumber(o, "health");
+        boolean noDamage = !isNumber(o, "damage");
+        if (noHealth || noDamage) {
+            PowerBand.Band band = PowerBand.forCreature(bodyVolume, s.body(), s.scale());
+            s = s.withStats(noHealth ? PowerBand.defaultHealth(band, s.powers().contains(Power.BOSS)) : null,
+                    noDamage ? PowerBand.defaultDamage(band, s.archetype() == Archetype.VEHICLE) : null);
+        }
         return s.isValid() ? s : null;
     }
 
@@ -568,6 +609,23 @@ public record Species(String id, String name, Body body, String texture, int tin
         } catch (IllegalArgumentException e) {
             return Voice.NONE;
         }
+    }
+
+    /**
+     * <b>The same creature with its shipped stat line</b> (#99): health, attack damage, armour and knockback resistance
+     * from {@code shipped} (a library creature's own {@code species.json}), each only where the record states it.
+     * Everything else (its look, name, powers, moves, instinct, owner) is kept. A world's copy of a library creature
+     * is a pure copy (an edit of one always forks it, {@code ForkPolicy}), so reading its numbers again from the
+     * shipped record changes nothing a player chose.
+     */
+    public Species withShippedStats(JsonObject shipped) {
+        if (shipped == null) {
+            return this;
+        }
+        return new Species(id, name, body, texture, tint, scale, dbl(shipped, "health", health), speed,
+                dbl(shipped, "damage", damage), dbl(shipped, "armor", armor),
+                dbl(shipped, "knockbackResistance", knockbackResistance), powers, modelKey, base, abilities,
+                abilityPacks, ownerId, voice, throwsItem, behaves);
     }
 
     /** The same creature with this voice. */
@@ -755,6 +813,23 @@ public record Species(String id, String name, Body body, String texture, int tin
 
     private static String str(JsonObject o, String k, String fallback) {
         return o.has(k) && o.get(k).isJsonPrimitive() ? o.get(k).getAsString() : fallback;
+    }
+
+    /** Whether {@code o} states {@code k} as a number (absent, null or a word is not one). */
+    private static boolean isNumber(JsonObject o, String k) {
+        try {
+            return o.has(k) && o.get(k).isJsonPrimitive() && o.get(k).getAsJsonPrimitive().isNumber()
+                    || o.has(k) && o.get(k).isJsonPrimitive() && !Double.isNaN(Double.parseDouble(o.get(k).getAsString()));
+        } catch (RuntimeException e) {
+            return false;
+        }
+    }
+
+    /** The same creature with this health and attack damage; a null leaves that one as it is. */
+    private Species withStats(Double newHealth, Double newDamage) {
+        return new Species(id, name, body, texture, tint, scale, newHealth == null ? health : newHealth, speed,
+                newDamage == null ? damage : newDamage, armor, knockbackResistance, powers, modelKey, base, abilities,
+                abilityPacks, ownerId, voice, throwsItem, behaves);
     }
 
     private static double dbl(JsonObject o, String k, double fallback) {

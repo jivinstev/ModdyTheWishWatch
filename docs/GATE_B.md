@@ -22,6 +22,9 @@ tests are `python3 tools/gate/test_gate.py`, which Gate A's CI job runs.
 - **A test that skips is counted and reported, never a pass.** Nothing in the tier can skip today; the record keeps
   the column so a future skip is a red `skipped`, not a quiet green.
 - The vanilla server adds its own `minecraft:always_pass` to every run; it is not ours and is not counted.
+- **A player's game never starts Python** (the datapack compiler is in the jar). With `--no-python`, which every
+  workflow passes, the game runs with `python` and `python3` on its PATH replaced by stubs that record being started
+  and fail, and a job whose game started one is red. The driver itself is Python; only the game is denied it.
 
 The job writes `job.json` (the result above, with the commit and the gate tree) next to the server's logs.
 

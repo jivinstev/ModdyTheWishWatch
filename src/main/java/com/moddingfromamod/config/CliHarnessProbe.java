@@ -29,12 +29,6 @@ public final class CliHarnessProbe implements HarnessProbe {
                 : com.moddingfromamod.agent.MuseExec.locate()) != null;
     }
 
-    /** The real Python check: every candidate, then a tiny compile with the bundled compiler. */
-    @Override
-    public com.moddingfromamod.datapack.PythonCheck.Verdict python() {
-        return com.moddingfromamod.datapack.PythonCheck.checkNow();
-    }
-
     @Override
     public Result probe(SupportedModels.Harness h, Function<String, String> env) {
         String bin = h == SupportedModels.Harness.CLAUDE_CODE ? com.moddingfromamod.agent.ClaudeCli.locate()
