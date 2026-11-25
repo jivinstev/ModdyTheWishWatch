@@ -6,7 +6,6 @@ import com.moddingfromamod.agent.ActionLog;
 import com.moddingfromamod.safety.ChatStrikes;
 import com.moddingfromamod.safety.SafetyChatSweep;
 import com.moddingfromamod.safety.SafetyLexicon;
-import com.moddingfromamod.world.WorldFacts;
 import com.moddingfromamod.world.WorldPeople;
 
 import net.minecraft.ChatFormatting;
@@ -22,7 +21,7 @@ import net.neoforged.neoforge.event.server.ServerStoppingEvent;
  * <b>The chat sweep's wiring</b> — public chat and the chat commands, through
  * {@link SafetyChatSweep}, on a world whose manifest turns it on ({@link WorldPeople}). The decision is
  * all in the pure class; this posts the answer: cancels what is held back, tells the sender, writes
- * the {@code safety} record (no words) and the grown-up note (local only), and remembers delivered
+ * the {@code safety} record (no words), and remembers delivered
  * lines in {@link ChatHistory} for a report.
  *
  * <p>Priority HIGHEST so nothing downstream (a decorator, another mod) sees a message that will not
@@ -84,7 +83,6 @@ public final class ChatGuard {
      * step 4: a sign, a book or an anvil name — text a player PLACES — on a world whose
      * {@code people.placedText} is {@code sweep}. HERE, beside the chat sweep, so this file stays the
      * chat's one caller of the lexicon (CHILD_SAFETY.md's choke-point census). True when it may stand.
-     * A wellbeing phrasing is never refused, and leaves a grown-up note.
      *
      * @param what "sign", "book" or "name" — said back to him
      */
@@ -100,11 +98,6 @@ public final class ChatGuard {
             v = PlacedText.check(text, SafetyLexicon.shared());
         } catch (RuntimeException e) {
             return true;    // the floor failing never stops a child building
-        }
-        if (v.wellbeing()) {
-            String world = WorldFacts.current().name();
-            ActionLog.grownUpNote("", p.getGameProfile().getName() + " wrote on a " + what
-                    + (world.isEmpty() ? "" : " on " + world) + ": " + text.strip());
         }
         if (!v.refused()) {
             return true;
@@ -151,14 +144,8 @@ public final class ChatGuard {
             ActionLog.safety("", "chat", d.verdict(), d.logAction(), 0L, 0.0, "lexicon", null,
                     surface.label(), 0, false, !d.tell().isEmpty(), p.getUUID().toString());
         }
-        if (d.note()) {
-            String world = WorldFacts.current().name();
-            ActionLog.grownUpNote("", p.getGameProfile().getName() + " said in "
-                    + surface.label() + (world.isEmpty() ? "" : " on " + world) + ": " + text);
-        }
         if (!d.tell().isEmpty()) {
-            p.sendSystemMessage(Component.literal(d.tell()).withStyle(
-                    d.act() == SafetyChatSweep.Act.WELLBEING ? ChatFormatting.LIGHT_PURPLE : ChatFormatting.AQUA));
+            p.sendSystemMessage(Component.literal(d.tell()).withStyle(ChatFormatting.AQUA));
         }
         String name = p.getGameProfile().getName();
         HISTORY.said(name, surface.label(), d.deliver() ? text : HELD_MARK, to, now);

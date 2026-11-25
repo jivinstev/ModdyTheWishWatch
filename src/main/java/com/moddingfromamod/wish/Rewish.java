@@ -221,7 +221,8 @@ public final class Rewish {
                         return "passed";
                     }
                     BuilderMake.modify(p, settings.allow(), builderId, a.ops()).thenAccept(r -> {
-                        if (r.outcome() == BuilderMake.Outcome.BUSY || r.outcome() == BuilderMake.Outcome.BANK_EMPTY) {
+                        if (r.outcome() == BuilderMake.Outcome.BUSY || r.outcome() == BuilderMake.Outcome.BANK_EMPTY
+                            || r.outcome() == BuilderMake.Outcome.NOT_HERE) {
                             p.getServer().execute(() -> p.sendSystemMessage(Component.literal(why(r))));
                         } else if (r.outcome() == BuilderMake.Outcome.REFUSED) {
                             // the editor refused it after all (a step past the Builder's end): his words go on as typed
@@ -404,7 +405,7 @@ public final class Rewish {
     static String why(BuilderMake.Result r) {
         return switch (r.outcome()) {
             case BUSY -> "Your last change is still on its way. Wish it again in a moment!";
-            case BANK_EMPTY -> r.detail();
+            case BANK_EMPTY, NOT_HERE -> r.detail();
             default -> "The Builder couldn't change that this time.";
         };
     }
@@ -412,6 +413,7 @@ public final class Rewish {
     private static void said(ServerPlayer p, java.util.concurrent.CompletableFuture<BuilderMake.Result> f) {
         f.thenAccept(r -> {
             if (r.outcome() == BuilderMake.Outcome.BUSY || r.outcome() == BuilderMake.Outcome.BANK_EMPTY
+                            || r.outcome() == BuilderMake.Outcome.NOT_HERE
                     || r.outcome() == BuilderMake.Outcome.REFUSED) {
                 p.getServer().execute(() -> p.sendSystemMessage(Component.literal(why(r))));
             }

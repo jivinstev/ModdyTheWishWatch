@@ -38,17 +38,13 @@ import com.moddingfromamod.agent.ActionLog;
  * block id, a shape name and a command's tag are not things a child reads, and a false positive on
  * one of them refuses a wish that was never a problem.
  *
- * <h2>Three outcomes, and the middle one is the important one</h2>
+ * <h2>Two outcomes</h2>
  *
  * <ul>
  *   <li><b>{@code CLEARLY}</b> on any axis → {@link Act#BLOCK}. The tool body never runs, and the
  *       refusal <b>names the field</b> and says to rewrite that one field in kid-safe words —
  *       {@code RefusalRedirectTest}'s rule, because a refusal naming no alternative makes an agent
  *       improvise, which is worse than the sentence objected to.</li>
- *   <li><b>{@code WELLBEING}</b> → {@link Act#WELLBEING}: the call <b>passes</b> and a grown-up
- *       note is written. §1's rule is that distress is never blocked; the novelty here is that the
- *       distress is in something the AGENT said to the child, which is worth a parent's eye for a
- *       reason of its own.</li>
  *   <li>anything else → {@link Act#PASS}.</li>
  * </ul>
  *
@@ -68,26 +64,6 @@ public final class SafetyTextSweep {
     public enum Act {
         /** Nothing to say; run the tool. */
         PASS,
-        /**
-         * Run the tool, and write a grown-up note. Deliberately <b>not</b> a refusal — §1.
-         *
-         * <p>⚠ <b>Renamed from NOTE</b> (a maintainer's decision 12.9, "one vocabulary: WELLBEING
-         * everywhere"). It was called NOTE on the reasoning that the log word had to be one
-         * {@code tools/safety-report.py} already knew — and that reasoning had already expired
-         * when it was written: CS-S2 put {@code WELLBEING} in the report's own enforcing
-         * vocabulary, so the word this layer avoided inventing was not an invention at all. What
-         * the old name actually bought was an asymmetry — the input layer logging
-         * {@code WELLBEING} and this one logging {@code PASS} for the same finding — which makes
-         * "how often is a distress flag raised, and where" a question you cannot answer by
-         * counting one field. {@code wellbeing:true} is still written beside it, and remains what
-         * a consumer filters on.
-         *
-         * <p>Note also that NOTE would have been the wrong word even if it were free: at the
-         * input and plan layers NOTE means the {@code MAYBE} guidance handed to the agent, which
-         * is a different thing entirely from a grown-up note. One word, two meanings, in one
-         * vocabulary.
-         */
-        WELLBEING,
         /**
          * Refuse the call; the agent rewrites the field and calls the tool again.
          *
@@ -272,9 +248,6 @@ public final class SafetyTextSweep {
         // The FIRST field that trips is the one reported. A refusal naming two fields invites the
         // agent to rewrite both and re-check neither; naming one gives it a single thing to do,
         // and if a second field is also bad the next call finds it.
-        Field wellbeingField = null;
-        SafetyVerdict wellbeingVerdict = null;
-        String wellbeingText = "";
         for (Field f : fields) {
             for (String text : readAll(args, f)) {
                 Optional<SafetyVerdict> hit = lexicon.check(text);
@@ -283,21 +256,9 @@ public final class SafetyTextSweep {
                 }
                 SafetyVerdict v = hit.get();
                 if (v.overall() == SafetyVerdict.Band.CLEARLY) {
-                    return decide(Act.BLOCK, refusal(tool, f), f.label(), v, wishId, tool, "");
-                }
-                if (v.wellbeing() && wellbeingField == null) {
-                    // Remembered rather than returned: a CLEARLY later in the same call must still
-                    // win, because it is the one that refuses. §1's precedence is about a WELLBEING
-                    // hit never being turned INTO a refusal, not about it suppressing one.
-                    wellbeingField = f;
-                    wellbeingVerdict = v;
-                    wellbeingText = text;
+                    return decide(Act.BLOCK, refusal(tool, f), f.label(), v, wishId, tool);
                 }
             }
-        }
-        if (wellbeingField != null) {
-            return decide(Act.WELLBEING, "", wellbeingField.label(), wellbeingVerdict, wishId, tool,
-                    wellbeingText);
         }
         return Decision.PASS;
     }
@@ -324,26 +285,17 @@ public final class SafetyTextSweep {
      * counts the calls.
      *
      * <p><b>The logged word is {@link Act}'s own name</b>, so the enum and the {@code action}
-     * field cannot drift — {@code BLOCK} or {@code WELLBEING}, never a third spelling invented
-     * here. That is decision 12.9's whole content: this used to write {@code PASS} for a
-     * wellbeing hit while the input layer wrote {@code WELLBEING} for the same finding, so the two
-     * could not be counted together. {@code PASS} itself never reaches this method — a call with
-     * nothing to say returns {@link Decision#PASS} unlogged, which is the paragraph above.
+     * field cannot drift — {@code BLOCK}, never a second spelling invented here. {@code PASS}
+     * itself never reaches this method — a call with nothing to say returns {@link Decision#PASS}
+     * unlogged, which is the paragraph above.
      */
     private static Decision decide(Act assessed, String message, String field, SafetyVerdict verdict,
-                                   String wishId, String tool, String noteText) {
+                                   String wishId, String tool) {
         boolean enforcing = ChildSafetyConfig.enforcing();
         ActionLog.safety(wishId, "text", verdict,
                 (enforcing ? "" : "SHADOW_") + assessed.name(),
                 0L, 0.0, "lexicon", null, tool, 0, false, false,
                 com.moddingfromamod.agent.AgentContext.currentPlayerId());
-        if (assessed == Act.WELLBEING && !noteText.isEmpty()) {
-            // The note is written in EVERY mode, shadow included: it is not an action taken against
-            // the child, it is a line in a file a grown-up reads, and the whole point of shadow
-            // mode is to collect exactly this.
-            ActionLog.grownUpNote(wishId, "Moddy was about to say, in " + tool + "." + field
-                    + ": " + noteText);
-        }
         if (!enforcing) {
             // Shadow acts on nothing — the refusal included, because a tool result the agent reads
             // is an action.

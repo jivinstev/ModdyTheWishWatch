@@ -186,7 +186,7 @@ public final class VanillaRigBridge {
             // The creature's own numbers, then the state it was carrying. Order matters:
             // applyVitals raises MAX_HEALTH before setting health, or a 200-health creature is
             // clamped to the carrier's default and stays there.
-            int landed = DisplayRig.applyVitals(rig.living(), vitals);
+            int landed = DisplayRig.applyVitals(rig.living(), vitals, id);
             for (var effect : carried) {
                 // Not INVISIBILITY: the rig applies its own, infinite and hidden, to keep the
                 // carrier from being drawn (DisplayRig.hide). Copying a finite one over it

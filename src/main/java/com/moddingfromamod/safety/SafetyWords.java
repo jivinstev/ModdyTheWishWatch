@@ -25,11 +25,6 @@ package com.moddingfromamod.safety;
  *       removed for the same reason.</li>
  * </ul>
  *
- * <p><b>{@link #WELLBEING_NOTICED} is the one deliberate exception to the fourth rule</b>, and it is
- * only an exception because it is not a refusal: nothing is being withheld, so there is nothing to
- * explain away, and the alternative to acknowledging what a child just said is pretending not to
- * have heard it. It still names no category and still ends pointing forward.
- *
  * <p>The wording is a maintainer's to tune (§12.5). The shape — short, warm, forward-looking, no
  * explanation — is not.
  */
@@ -53,25 +48,6 @@ public final class SafetyWords {
 
     /** …and the tail, so the sentence still ends by pointing forward. */
     public static final String REDIRECT_SUFFIX = " — here goes!";
-
-    /**
-     * <b>The one thing this layer says that is not about a wish at all.</b>
-     *
-     * <p>§12.1, decision 1B: the child hears this when the <b>lexicon</b> flags {@code WELLBEING}
-     * on his own words — never on the model's flag, which CS-S1b measured over-firing, and never
-     * as a refusal. The wish goes on being granted in the same breath, which is why the sentence
-     * has to end saying so: a warm line followed by silence would read as the wish having been
-     * taken away for saying it, which is the one lesson this must not teach.
-     *
-     * <p>Three things it deliberately does not do. It does not name what he typed (§5 — naming the
-     * category is a vocabulary lesson he did not ask for). It does not tell him to stop or promise
-     * that a grown-up has been told; the grown-up note is a separate, quieter mechanism and
-     * announcing it would make the watch feel like a tell-tale. And it does not ask him a question
-     * — a seven-year-old owes a game no answer, and an unanswered prompt is worse than none.
-     */
-    public static final String WELLBEING_NOTICED =
-            "💛 That sounds like a big feeling. Telling a grown-up you trust really helps — "
-                    + "and I'm still making your wish!";
 
     /** A plan that went somewhere it cannot go. The wish ends; the world is untouched. */
     public static final String PLAN_STOPPED =
@@ -105,11 +81,6 @@ public final class SafetyWords {
         return r.isEmpty() ? sayBlocked() : REDIRECT_PREFIX + r + REDIRECT_SUFFIX;
     }
 
-    /** @see #WELLBEING_NOTICED */
-    public static String sayWellbeingNoticed() {
-        return WELLBEING_NOTICED;
-    }
-
     /** @see #PLAN_STOPPED */
     public static String sayPlanStopped() {
         return PLAN_STOPPED;
@@ -128,6 +99,6 @@ public final class SafetyWords {
      */
     public static java.util.List<String> all() {
         return java.util.List.of(BLOCKED, sayRedirect("a zombie that bonks villagers with a rubber "
-                + "chicken"), PLAN_STOPPED, UNAVAILABLE, WELLBEING_NOTICED);
+                + "chicken"), PLAN_STOPPED, UNAVAILABLE);
     }
 }

@@ -256,7 +256,7 @@ public final class WorldRules {
     /**
      * {@link #parse(String, String, List)} judging the words a child reads with {@code lexicon}, so a test names its
      * own list. A line the lexicon puts CLEARLY in a band refuses the file, as the text sweep refuses such a line in his
-     * chat ({@code SafetyTextSweep}); a wellbeing note alone does not.
+     * chat ({@code SafetyTextSweep}).
      */
     public static Parsed parse(String text, String expectWorld, List<WorldRuleType> pluginTypes,
                                com.moddingfromamod.safety.SafetyLexicon lexicon) {

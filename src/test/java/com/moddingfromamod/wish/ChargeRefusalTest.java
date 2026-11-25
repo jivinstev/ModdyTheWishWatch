@@ -2,6 +2,7 @@ package com.moddingfromamod.wish;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Optional;
@@ -61,13 +62,6 @@ class ChargeRefusalTest {
     }
 
     @Test
-    void aChildInDistressIsNeverRefused() {
-        WishAsk distress = typed().withDistress(true);
-        assertFalse(ChargeRefusal.decide(distress, Optional.of("No."), ChargeRefusal.Where.WISH, PASSES).refused());
-        assertFalse(ChargeRefusal.decide(distress, Optional.of(""), ChargeRefusal.Where.MAKE, PASSES).refused());
-    }
-
-    @Test
     void anOlderChargeIsPassedTheRecipeFlagItAlwaysWas() {
         // named by what started it: a button, an again, a hotbar fire, /moddy try, a Builder or Apprentice make
         assertTrue(WishAsk.replay(HIM, "fire_sword").namedRecipe(), "a hotbar fire or a recipe button");
@@ -85,11 +79,19 @@ class ChargeRefusalTest {
     }
 
     @Test
-    void anAskCarriesItsWordsAndDistress() {
-        WishAsk a = typed().withDistress(true).withRecipe("x").withMagic(WishAsk.Magic.MAGICIAN);
+    void anAskCarriesItsWords() {
+        WishAsk a = typed().withRecipe("x").withMagic(WishAsk.Magic.MAGICIAN);
         assertEquals("a red dragon", a.text());
-        assertTrue(a.distress());
         assertEquals("", WishAsk.of(HIM, WishSource.TYPED, WishAsk.Magic.MAGICIAN).withText(null).text());
-        assertFalse(WishAsk.of(HIM, WishSource.TYPED, WishAsk.Magic.MAGICIAN).distress(), "no distress unless said");
+    }
+
+    /** Kept only so older world jars still load (docs/EXTENDING.md): always false, and setting it changes nothing. */
+    @Test
+    @SuppressWarnings("removal")
+    void theRemovedDistressFlagIsAlwaysFalseForOlderWorldJars() {
+        WishAsk a = typed();
+        assertFalse(a.distress());
+        assertSame(a, a.withDistress(true), "withDistress is a no-op");
+        assertFalse(a.withDistress(true).distress());
     }
 }

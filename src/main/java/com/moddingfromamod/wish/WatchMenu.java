@@ -427,7 +427,15 @@ public final class WatchMenu extends ChestMenu {
                                              WatchPanel.Grid grid, boolean library) {
         List<WatchRow.Creation> creations = new ArrayList<>();
         for (String row : creationRows) {
-            creations.add(WatchRow.Creation.decode(row));
+            WatchRow.Creation c = WatchRow.Creation.decode(row);
+            // #14: this world's view of each thing on his shelf, worked out now and never written anywhere: a thing it
+            // hides is not on this world's watch (it stays on his shelf for every other world), a thing it locks is
+            // shown with the world's words first, its "Make another one" refused in them.
+            MakeVerdict v = viewOf(viewerId, c);
+            if (v.hidden()) {
+                continue;
+            }
+            creations.add(v.locked() ? c.withFirstLine(v.line()) : c);
         }
         List<WatchPanel.PresetRow> presets = new ArrayList<>();
         // ONE TILE PER THING HE MADE: a taught recipe whose own commands
@@ -471,6 +479,32 @@ public final class WatchMenu extends ChestMenu {
         }
         return WatchPanel.lay(presets, happening, creations, page, grid, wayBack && !library,
                 !library && com.moddingfromamod.wishbuilder.BuilderSettings.forPlayer(viewer).enabled());
+    }
+
+    /** This world's view of one thing on a watch: allowed when no world answers, or the viewer is not a player. */
+    public static MakeVerdict viewOf(String viewerId, WatchRow.Creation c) {
+        if (!MakeGate.anyWorld() || viewerId == null || viewerId.isBlank()) {
+            return MakeVerdict.ALLOWED;
+        }
+        java.util.UUID viewer;
+        try {
+            viewer = java.util.UUID.fromString(viewerId);
+        } catch (IllegalArgumentException notAUuid) {
+            return MakeVerdict.ALLOWED;
+        }
+        String kind = switch (c.kind() == null ? "" : c.kind()) {
+            case "species" -> "creature";
+            case "build" -> "building";
+            case "item" -> "item";
+            case "painting", "picture" -> "picture";
+            default -> "";
+        };
+        if (kind.isEmpty()) {
+            return MakeVerdict.ALLOWED;   // a wish, an event or a rule tile: asked where it is made again
+        }
+        var facts = MakeFactsLookup.forThing(null, kind, c.id());
+        MakeVerdict v = MakeGate.ask(facts, WishAsk.replay(viewer, c.recipeId()).withText(c.name()));
+        return v.makes() && !com.moddingfromamod.wishbuilder.MakeFit.satisfiesHere(facts, v.limits()) ? v.tooMuch() : v;
     }
 
     /**

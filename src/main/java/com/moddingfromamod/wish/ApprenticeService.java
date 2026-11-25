@@ -8,6 +8,7 @@ import com.moddingfromamod.wishbuilder.ApprenticeWords;
 import com.moddingfromamod.wishbuilder.BuilderAllowlist;
 import com.moddingfromamod.wishbuilder.BuilderMenus;
 import com.moddingfromamod.wishbuilder.BuilderSettings;
+import com.moddingfromamod.wishbuilder.BuilderSpec;
 import com.moddingfromamod.wishbuilder.BuilderTree;
 import com.moddingfromamod.wishbuilder.LibraryPresets;
 import java.io.IOException;
@@ -273,6 +274,11 @@ public final class ApprenticeService {
                 return true;
             }
         }
+        // #68: what this world shows of the ranked makes, AFTER ranking and outside the matcher: kept, fitted (made
+        // fitted at the press, said once), locked, or dropped. No world answering: exactly the ranked answer.
+        com.moddingfromamod.wishbuilder.ApprenticeFit.Shown shown = com.moddingfromamod.wishbuilder.ApprenticeFit.fit(answer,
+                MakeGate.anyWorld() ? pick -> judge(p, settings, pick) : null);
+        answer = shown.answer();
         if (answer.offers().isEmpty()) {
             PENDING.remove(p.getUUID());
             p.closeContainer();
@@ -310,8 +316,29 @@ public final class ApprenticeService {
         }
         PickPage page = ApprenticeWords.page(settings.allow(), LibraryPresets.SHIPPED, tree(settings.allow()),
                 answer.offers(), tagged ? answer : null, tagged ? notes : null, offered, priced, offered);
+        page = com.moddingfromamod.wishbuilder.ApprenticeFit.page(page, shown.locked());
         MenuKit.pick(p, "apprentice", page, ApprenticeService::press);
         return true;
+    }
+
+    /** This world's view of one ranked make: the same gate and fitting its press goes through, nothing made. */
+    static com.moddingfromamod.wishbuilder.BuilderPageFit.Judged judge(ServerPlayer p, BuilderSettings settings,
+                                                                       Apprentice.Pick pick) {
+        BuilderSpec spec;
+        try {
+            spec = BuilderMenus.apprenticeSpec(p, settings, tree(settings.allow()), pick);
+        } catch (RuntimeException e) {
+            return com.moddingfromamod.wishbuilder.BuilderPageFit.Judged.KEEP;   // said at the press, as it always was
+        }
+        MakeGate.Built built = com.moddingfromamod.wishbuilder.BuilderMake.askApprentice(p.getUUID(), spec, settings.allow());
+        if (built.makes()) {
+            return built.lowered().isEmpty() ? com.moddingfromamod.wishbuilder.BuilderPageFit.Judged.KEEP
+                    : com.moddingfromamod.wishbuilder.BuilderPageFit.Judged.FIT;
+        }
+        MakeVerdict v = built.verdict();
+        return v.locked() && !built.unfit() && !MakeVerdict.TOO_MUCH.equals(v.line())
+                ? new com.moddingfromamod.wishbuilder.BuilderPageFit.Judged(com.moddingfromamod.wishbuilder.BuilderPageFit.Seen.LOCK, v.line())
+                : com.moddingfromamod.wishbuilder.BuilderPageFit.Judged.DROP;
     }
 
     /**
@@ -396,6 +423,12 @@ public final class ApprenticeService {
         PENDING.remove(player);
         PREFERS.remove(player);
         com.moddingfromamod.wishbuilder.FreeEdit.forget(player);
+    }
+
+    /** Test seam: the offers a page waiting on this player holds, in its tiles' order; empty when none. */
+    public static List<Apprentice.Pick> pendingPicksForTest(UUID player) {
+        Pending pd = PENDING.get(player);
+        return pd == null ? List.of() : pd.offers();
     }
 
     /** Test seam: is a page waiting on this player, and how many offers does it hold. */
