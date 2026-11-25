@@ -458,8 +458,28 @@ public record Species(String id, String name, Body body, String texture, int tin
 
     // ===================== JSON =====================
 
+    /**
+     * The version a species RECORD is written at (docs/STORE_MIGRATIONS.md), inline in each record as {@code "v"} so a
+     * migration is applied to, and counted on, the records written before it. A record with none is v1. An older build
+     * ignores the field and reads the record as before.
+     * <ul>
+     *   <li>v2 (#99): read under the library-copy rule ({@link LibraryCopies}).</li>
+     * </ul>
+     */
+    public static final int RECORD_VERSION = 2;
+
+    /** The version a stored record was written at: its {@code "v"}, or 1 when it has none. */
+    public static int recordVersion(JsonObject o) {
+        try {
+            return o != null && o.has("v") && o.get("v").isJsonPrimitive() ? o.get("v").getAsInt() : 1;
+        } catch (RuntimeException e) {
+            return 1;
+        }
+    }
+
     public JsonObject toJson() {
         JsonObject o = new JsonObject();
+        o.addProperty("v", RECORD_VERSION);
         o.addProperty("id", id);
         o.addProperty("name", name);
         o.addProperty("body", body.name().toLowerCase(Locale.ROOT));
