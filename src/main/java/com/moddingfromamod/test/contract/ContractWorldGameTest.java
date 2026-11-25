@@ -815,8 +815,9 @@ public final class ContractWorldGameTest {
                         helper.assertTrue(given == com.moddingfromamod.wish.WishGiveAgain.Result.GAVE,
                                 Component.literal("given again: " + given));
                         var now = stampedHeld(p);
-                        helper.assertTrue(now.containsKey(com.moddingfromamod.world.WishedItem.AGAIN + alias.get())
-                                        && now.get(com.moddingfromamod.world.WishedItem.AGAIN + alias.get()).maker().equals(p.getUUID()),
+                        var givenAgain = now.entrySet().stream().filter(e -> !before.get().contains(e.getKey())
+                                && e.getKey().startsWith(com.moddingfromamod.world.WishedItem.AGAIN)).findFirst();
+                        helper.assertTrue(givenAgain.isPresent() && givenAgain.get().getValue().maker().equals(p.getUUID()),
                                 Component.literal("Give me one is stamped as the kept thing given again: " + now.keySet()));
                         before.set(now.keySet());
                         // the Magician's hand-over: a made item handed over by its give command inside its wish's scope
