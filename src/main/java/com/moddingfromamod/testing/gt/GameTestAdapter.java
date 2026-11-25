@@ -61,6 +61,9 @@ public final class GameTestAdapter {
                             if (g == null || com.moddingfromamod.testing.GameTestClassFilter.excluded(m)) {
                                 continue;   // excluded: the flake register, left out of a release run
                             }
+                            if (!com.moddingfromamod.testing.GameTestClassFilter.allowsMethod(m)) {
+                                continue;   //: the filter names other tests of this class (a retry runs one alone)
+                            }
                             if (!com.moddingfromamod.testing.GameTestClassFilter.bedrockCaseAllowed(m)) {
                                 continue;   //: a Bedrock case the coverage map did not pick for this change
                             }
@@ -88,6 +91,11 @@ public final class GameTestAdapter {
                 : f.spec().batch();
     }
 
+    /** How many tests this server registered (after the shard, the class filter and the flake register). */
+    public static int registeredCount() {
+        return found == null ? -1 : found.size();
+    }
+
     /** Only where tests can run: on a player's server this registers nothing (no stray registry entries). */
     public static void register(IEventBus modBus) {
         if (!net.neoforged.neoforge.gametest.GameTestHooks.isGametestEnabled()) {
@@ -97,7 +105,9 @@ public final class GameTestAdapter {
         modBus.addListener(RegisterEvent.class, e -> e.register(Registries.TEST_FUNCTION, h -> {
             for (Found f : found()) {
                 Method m = f.method();
-                h.register(ResourceLocation.fromNamespaceAndPath(f.ns(), f.id()), (Consumer<GameTestHelper>) helper -> {
+                ResourceLocation testId = ResourceLocation.fromNamespaceAndPath(f.ns(), f.id());
+                h.register(testId, (Consumer<GameTestHelper>) helper -> {
+                    com.moddingfromamod.testing.GateBTimings.started(testId.toString());
                     CoverageMap.enter(CoverageMap.unitOf(m));
                     Set<UUID> live = TestHygiene.before();   //: a wish this body puts in flight ends with it
                     try {
