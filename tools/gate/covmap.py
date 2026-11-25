@@ -296,7 +296,7 @@ def merge_cmd(a) -> int:
         union = build(every, commit, tree, blobs, p.get("mode", "full"), previous, planned)
     if not maps:
         problems.append("no job produced an analysis: no map")
-        g.write_json(os.path.join(a.out, "problems.json"), {"problems": problems})
+        g.write_json(os.path.join(a.out, "problems.json"), {"problems": problems, "publish": False})
         g.write_json(os.path.join(a.out, "record.json"), _record(problems, a.run_url))
         g.write_text(os.path.join(a.out, "report.md"), "**The coverage map refresh failed.**\n\n" +
                      "\n".join("- " + x for x in problems) + "\n")
@@ -320,6 +320,8 @@ def merge_cmd(a) -> int:
             for c, s in per.items():
                 seconds.setdefault(c, []).append(s)
     costs = costs_update(old_costs, {c: statistics.median(v) for c, v in seconds.items()})
+    # a map with a job missing is not published: the previous map stays, and the issue says why
+    missing = [x for x in problems if "left no analysis" in x]
     gone = dropped(previous, m, tier)
     if gone:
         problems.append("the mapping run DROPPED %d class(es) the previous map placed: %s (they run on every pull "
@@ -329,7 +331,8 @@ def merge_cmd(a) -> int:
     m["unplaced"] = still
     g.write_json(os.path.join(a.out, "map.json.gz"), m, compress=True)
     g.write_json(os.path.join(a.out, "costs.json"), costs)
-    g.write_json(os.path.join(a.out, "problems.json"), {"problems": problems})
+    publish = not missing
+    g.write_json(os.path.join(a.out, "problems.json"), {"problems": problems, "publish": publish})
     g.write_json(os.path.join(a.out, "record.json"), _record(problems, a.run_url))
     size = os.path.getsize(os.path.join(a.out, "map.json.gz"))
     lines = ["**Coverage map %s** at `%s` (gate tree `%s`)%s" % (
@@ -345,6 +348,9 @@ def merge_cmd(a) -> int:
                      ", ".join(not_placed))
     if still:
         lines.append("\nUnplaced, so they run on every pull request: %s" % ", ".join(still))
+    if not publish:
+        lines.append("\n**Not published**: %d mapping job(s) left no analysis, and a map without their classes is "
+                     "not one to select by. The previous map stays." % len(missing))
     if problems:
         lines += ["", "### Problems", ""] + ["- " + x for x in problems]
     g.write_text(os.path.join(a.out, "report.md"), "\n".join(lines) + "\n")

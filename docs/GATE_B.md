@@ -155,11 +155,14 @@ and a table of every method's source file and line ranges. `gate.py covmap-merge
 - **A class the run DROPPED** (the previous map placed it, this one did not) is reported in the run's summary and in
   the `covmap-red` issue, never silently forgotten. It is unplaced until a run places it again, and an unplaced class
   runs on every pull request.
-- **A failed refresh** keeps the previous map and opens or updates the one issue labelled `covmap-red`; the next good
-  refresh closes it.
+- **A failed refresh** opens or updates the one issue labelled `covmap-red`; the next good refresh closes it. A refresh
+  with a mapping job missing publishes nothing (the previous map stays: a map without that job's classes is not one to
+  select by); one whose replicas disagree beyond the noise publishes their union (larger, never blind) and says so.
 
 **Where it lives, and why there.** On the data-only branch `gate-map`: one commit holding `map.json.gz`,
-`costs.json` and the last run's `report.md`, replaced (force-pushed) by every refresh. Every reader fetches it by name,
+`costs.json` and the last run's `report.md`, replaced (force-pushed) by every refresh. **Nothing else may push to
+`gate-map`**: the coverage-map workflow on `main` is its only writer (a pull request's run is a dry run and pushes
+nothing). Every reader fetches it by name,
 `git fetch --depth=1 origin gate-map`, and nothing waits on a pull request. It is not on `gate-data`, whose records
 are kept forever, because a map is replaced daily: a year of maps there would be most of every clone. It is not a
 release asset, because it would sit among the mod's releases a player browses, and Port CI reads those.
