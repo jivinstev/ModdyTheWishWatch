@@ -4,7 +4,7 @@ import java.util.OptionalDouble;
 
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.EquipmentSlotGroup;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -24,7 +24,7 @@ public final class ItemStats {
 
     /** The attack damage of item {@code id} in the main hand, or empty when it is no item or adds no attack damage. */
     public static OptionalDouble attackDamage(String id) {
-        ResourceLocation key = ResourceLocation.tryParse(id == null ? "" : id);
+        Identifier key = Identifier.tryParse(id == null ? "" : id);
         if (key == null || !BuiltInRegistries.ITEM.containsKey(key)) {
             return OptionalDouble.empty();
         }

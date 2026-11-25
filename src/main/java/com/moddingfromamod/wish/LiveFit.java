@@ -9,7 +9,7 @@ import com.moddingfromamod.ModdingFromAModMod;
 import com.moddingfromamod.wishbuilder.MakeFacts;
 import com.moddingfromamod.wishbuilder.MakeFit;
 import net.minecraft.core.Holder;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
@@ -38,20 +38,20 @@ public final class LiveFit {
     }
 
     /** The modifier a world's health limit puts on a creature. Documented in {@code docs/EXTENDING.md}. */
-    public static final ResourceLocation MAX_HEALTH_ID =
-            ResourceLocation.fromNamespaceAndPath(ModdingFromAModMod.MODID, "world_fit/max_health");
+    public static final Identifier MAX_HEALTH_ID =
+            Identifier.fromNamespaceAndPath(ModdingFromAModMod.MODID, "world_fit/max_health");
     /** The modifier a world's attack damage limit puts on a creature. */
-    public static final ResourceLocation ATTACK_DAMAGE_ID =
-            ResourceLocation.fromNamespaceAndPath(ModdingFromAModMod.MODID, "world_fit/attack_damage");
+    public static final Identifier ATTACK_DAMAGE_ID =
+            Identifier.fromNamespaceAndPath(ModdingFromAModMod.MODID, "world_fit/attack_damage");
     /** The modifier a world's armour limit puts on a creature. */
-    public static final ResourceLocation ARMOR_ID =
-            ResourceLocation.fromNamespaceAndPath(ModdingFromAModMod.MODID, "world_fit/armor");
+    public static final Identifier ARMOR_ID =
+            Identifier.fromNamespaceAndPath(ModdingFromAModMod.MODID, "world_fit/armor");
     /** The modifier a world's knockback resistance limit puts on a creature. */
-    public static final ResourceLocation KNOCKBACK_RESISTANCE_ID =
-            ResourceLocation.fromNamespaceAndPath(ModdingFromAModMod.MODID, "world_fit/knockback_resistance");
+    public static final Identifier KNOCKBACK_RESISTANCE_ID =
+            Identifier.fromNamespaceAndPath(ModdingFromAModMod.MODID, "world_fit/knockback_resistance");
 
     /** One stat fitted live: its fact, the attribute that holds it, and the fixed id of its modifier. */
-    record Stat(String fact, Holder<Attribute> attribute, ResourceLocation id) {
+    record Stat(String fact, Holder<Attribute> attribute, Identifier id) {
     }
 
     /** Every stat fitted live, one per {@code MakeFit.LIVE} fact. */
@@ -108,7 +108,7 @@ public final class LiveFit {
     }
 
     /** One stat: its fit removed, then put back worked out from the value without it. True when one is on. */
-    static boolean fit(LivingEntity mob, Holder<Attribute> attribute, ResourceLocation id, Double limit) {
+    static boolean fit(LivingEntity mob, Holder<Attribute> attribute, Identifier id, Double limit) {
         var inst = mob.getAttribute(attribute);
         if (inst == null) {
             return false;   // the carrier does not hold this stat (a horse holds no attack damage)
@@ -130,7 +130,7 @@ public final class LiveFit {
     }
 
     /** The modifier on {@code mob} for this stat's fit, or null: for a test that it is there once, and only there. */
-    public static AttributeModifier modifierOn(LivingEntity mob, Holder<Attribute> attribute, ResourceLocation id) {
+    public static AttributeModifier modifierOn(LivingEntity mob, Holder<Attribute> attribute, Identifier id) {
         var inst = mob.getAttribute(attribute);
         return inst == null ? null : inst.getModifier(id);
     }
