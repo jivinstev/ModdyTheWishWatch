@@ -563,7 +563,7 @@ public final class ContractWorldGameTest {
                 String sp = species;
                 var ran = com.moddingfromamod.mob.SpawnScope.during(wish + "-again",
                         com.moddingfromamod.item.delivery.DeliveryPlan.Kind.HANDOVER,
-                        () -> com.moddingfromamod.wish.WishExecutor.runOne(server, level, at, null, "wishmob spawn " + sp + " 1"));
+                        () -> com.moddingfromamod.wish.WishExecutor.runOne(server, level, at, p, "wishmob spawn " + sp + " 1"));
                 helper.assertTrue(ran.success(), Component.literal("the recipe's spawn ran: " + ran.joined()));
                 replay.set(b2);
                 builder.set(now);
