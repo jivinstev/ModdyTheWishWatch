@@ -302,12 +302,19 @@ public record MakeFacts(String kind, Map<String, Double> numbers, Set<String> ta
         // the shipped library's facts of a spec never change at run time: a bounded memo, so a menu drawn under a
         // world's limits (every tile's make, read and fitted) does not lower the same spec again and again
         String key = spec.toJson().toString();
+        long gen = generation;
         MakeFacts hit = MEMO.get(key);
         if (hit != null) {
             return hit;
         }
         MakeFacts f = of(spec, LibraryPresets.SHIPPED);
-        MEMO.put(key, f);
+        // #92: worked out under readers that have been replaced since it began (an item's attack read before the game
+        // could be read), it is not remembered: the next ask works it out again with the readers there are now
+        synchronized (MEMO) {
+            if (gen == generation) {
+                MEMO.put(key, f);
+            }
+        }
         return f;
     }
 
@@ -590,7 +597,25 @@ public record MakeFacts(String kind, Map<String, Double> numbers, Set<String> ta
      */
     public static void itemAttack(java.util.function.Function<String, java.util.OptionalDouble> read) {
         itemAttack = read;
-        MEMO.clear();
+        forget();
+    }
+
+    private static volatile long generation;
+
+    /**
+     * Which readers facts are worked out under: it moves on each time a reader is installed ({@link #itemAttack},
+     * {@link #inherits}). A fact worked out under an older one is never remembered, and a page's facts worked out under
+     * one are dropped when it moves ({@code BuilderPageFacts}), so nothing read from a half-ready game is kept.
+     */
+    public static long generation() {
+        return generation;
+    }
+
+    private static void forget() {
+        synchronized (MEMO) {
+            generation++;
+            MEMO.clear();
+        }
     }
 
     private static volatile java.util.function.Function<String, JsonObject> inherits;
@@ -602,7 +627,7 @@ public record MakeFacts(String kind, Map<String, Double> numbers, Set<String> ta
      */
     public static void inherits(java.util.function.Function<String, JsonObject> read) {
         inherits = read;
-        MEMO.clear();
+        forget();
     }
 
     private static JsonObject startsFrom(String id) {

@@ -190,6 +190,10 @@ public final class WorldModuleHost {
 
     @SubscribeEvent
     public static void onServerStarted(ServerStartedEvent event) {
+        // #92: the make facts read the game itself (an item's attack damage, a creature's inherited numbers) from the
+        // moment the server stands, whether or not a world answers yet: no fact is ever worked out before they can be
+        // read, whatever asks first (a world answering later, a test, a page walk). Cheap: nothing is read until asked.
+        com.moddingfromamod.wish.MakeFactsLookup.readTheGame();
         stopAll();
         MinecraftServer server = event.getServer();
         Map<String, WorldModuleType> types = modules();
@@ -220,8 +224,6 @@ public final class WorldModuleHost {
         // #14: a world that answers makes has its Builder pages' facts worked out now, in the background, so a page drawn
         // later is a comparison. A world that answers none starts nothing.
         if (WorldMakes.get() != WorldMakes.NONE) {
-            // an item's attack damage and a creature's inherited numbers are the game's own, read at run time
-            com.moddingfromamod.wish.MakeFactsLookup.readTheGame();
             com.moddingfromamod.wishbuilder.BuilderPageFacts.forWorld(
                     com.moddingfromamod.wishbuilder.BuilderSettings.current().allow());
         }
