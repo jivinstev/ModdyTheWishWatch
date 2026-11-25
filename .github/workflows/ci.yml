@@ -13,7 +13,8 @@
 #   gate-a           compile, the unit tests, the mod jar and its checks (./gradlew build).
 #   gate-b-ci        a headless game server running the `ci` shard: one GameTest per wish class, MCP, two wishes at
 #                    once. Every pull request and every push to main.
-#   gate-b-tier      the whole default tier (`ci,default`). Pushes to main only: it is the long one.
+#   gate-b-tier      the whole default tier (`ci,default`) on one runner, when started by hand. The nightly
+#                    (nightly.yml, docs/GATE_B.md) runs the same tier on main every night, split across runners.
 #   rig-films        Gate C's rig films (tools/gate-c-rig.sh: a real client under Xvfb filming each creature take, a
 #                    failed film re-run once, FLAKY red). Only on a pull request that touches what they measure
 #                    (`tools/rig-films.py --needed`: the atom rig, the films, the sculpt tool, the creature lesson, the
@@ -132,6 +133,8 @@ jobs:
         run: python3 -m pip install --break-system-packages ply
       - name: ./gradlew build
         run: ./gradlew build --console=plain
+      - name: The gate tools' own rules (tools/gate/test_gate.py, docs/GATE_B.md)
+        run: python3 tools/gate/test_gate.py
       - name: The rig films' rules (which films, when; the part-drift check can still go red)
         run: |
           python3 tools/rig-films.py --self-test

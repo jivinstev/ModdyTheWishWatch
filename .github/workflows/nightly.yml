@@ -1,0 +1,168 @@
+# Nightly: the whole GameTest tier (`ci,default`) on main, split across parallel runners (docs/GATE_B.md).
+#
+#   plan     is there anything new to test? The run is skipped when main's gate-relevant tree (tools/gate/gatelib.py:
+#            every file but docs/, .github/, art/, src/test/ and top-level *.md) already had a green night. Otherwise it
+#            shares the tier's classes among JOBS runners, weighing each class by what it cost in the last nights.
+#   tier     one runner a share. tools/gate/gate.py run boots one GameTest server on it, checks the server ran every test
+#            it registered and every class it was given, and retries each failed test ONCE, by itself (`flaky` if it
+#            then passes). Job 0 runs every class the other jobs were not given, so a class the plan never saw still
+#            runs somewhere.
+#   verdict  merges the jobs: every class of the tier ran, each with as many tests as its source declares, none twice.
+#            A missing job, a short count or a failed test is red. The run is recorded, one file, on the data-only
+#            gate-data branch (runs/<month>/...), and the one issue labelled nightly-red is opened, updated or closed.
+#
+# A pull request that changes this workflow or tools/gate/ runs it too, as a dry run: the whole tier, no record, no
+# issue (a pull request's token cannot write, and its result is not main's). Standard runners on a public repository
+# cost no Actions minutes, and nothing here needs a secret beyond the workflow's own GITHUB_TOKEN.
+name: Nightly
+
+on:
+  schedule:
+    - cron: "23 9 * * *"   # 09:23 UTC, the small hours in the Americas
+  workflow_dispatch:
+    inputs:
+      force:
+        description: "Run even when main's gate-relevant tree already had a green night"
+        type: boolean
+        default: false
+      jobs:
+        description: "How many runners share the tier"
+        type: string
+        default: "4"
+  pull_request:
+    branches: [main]
+    paths:
+      - ".github/workflows/nightly.yml"
+      - "tools/gate/**"
+
+concurrency:
+  group: nightly-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+env:
+  DRY: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  plan:
+    name: Plan
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      run: ${{ steps.decide.outputs.run }}
+      matrix: ${{ steps.plan.outputs.matrix }}
+      plan: ${{ steps.plan.outputs.plan }}
+    steps:
+      - uses: actions/checkout@v7
+      - &gateData
+        name: The gate-data branch (run history), or an empty one
+        run: |
+          if git fetch --quiet origin gate-data; then
+            git worktree add --quiet -B gate-data gate-data FETCH_HEAD
+          else
+            echo "no gate-data branch yet: no history (the first record starts it)"
+            git worktree add --quiet --detach gate-data
+            git -C gate-data checkout --quiet --orphan gate-data
+            git -C gate-data rm -rfq .
+          fi
+      - id: decide
+        run: |
+          if [ "${{ github.event_name }}" = "schedule" ] || { [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.force }}" != "true" ]; }; then
+            echo "run=$(python3 tools/gate/gate.py should-run --data gate-data --kind nightly)" >> "$GITHUB_OUTPUT"
+          else
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          fi
+      - id: plan
+        if: steps.decide.outputs.run == 'true'
+        env:
+          JOBS: ${{ inputs.jobs || '4' }}
+        run: |
+          python3 tools/gate/gate.py plan --shard ci,default --jobs "$JOBS" --history gate-data --out plan.json > matrix.json
+          echo "matrix=$(cat matrix.json)" >> "$GITHUB_OUTPUT"
+          echo "plan=$(python3 -c 'import json,sys; print(json.dumps(json.load(open("plan.json", encoding="utf-8"))))')" >> "$GITHUB_OUTPUT"
+
+  tier:
+    name: Tier ${{ matrix.job }}
+    needs: plan
+    if: needs.plan.outputs.run == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.plan.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Cache Gradle and the NeoForm decompile
+        uses: actions/cache@v6
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ runner.os }}-${{ hashFiles('gradle.properties', 'build.gradle', 'versions/*.properties', 'gradle/wrapper/gradle-wrapper.properties') }}
+      - name: The datapack compiler's Python dependency
+        run: python3 -m pip install --break-system-packages ply
+      - name: This job's share of the tier
+        env:
+          PLAN: ${{ needs.plan.outputs.plan }}
+        run: |
+          printf '%s' "$PLAN" > plan.json
+          python3 tools/gate/gate.py run --shard ci,default --plan plan.json --job ${{ matrix.job }} \
+            --kind nightly --label job-${{ matrix.job }} --timeout 100 --out gate-job
+      - name: Keep the result and the logs
+        if: always()
+        uses: actions/upload-artifact@v5
+        with:
+          name: gate-job-${{ matrix.job }}
+          path: |
+            gate-job/job.json
+            gate-job/*.log
+            run/gate-*/gateb-timings.tsv
+          retention-days: 14
+          if-no-files-found: warn
+
+  verdict:
+    name: Verdict
+    needs: [plan, tier]
+    if: always() && needs.plan.outputs.run == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write    # the run record, on the gate-data branch
+      issues: write      # the nightly-red issue
+    steps:
+      - uses: actions/checkout@v7
+      - *gateData
+      - uses: actions/download-artifact@v5
+        with:
+          pattern: gate-job-*
+          path: jobs
+      - name: Merge the jobs into one verdict
+        id: merge
+        env:
+          PLAN: ${{ needs.plan.outputs.plan }}
+        run: |
+          printf '%s' "$PLAN" > plan.json
+          set +e
+          python3 tools/gate/gate.py merge --kind nightly --plan plan.json \
+            --run-url "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
+            --out run-record.json --report report.md jobs/gate-job-*
+          echo "status=$?" >> "$GITHUB_OUTPUT"
+          cat report.md >> "$GITHUB_STEP_SUMMARY"
+      - name: Record the run on gate-data
+        if: env.DRY != 'true'
+        run: python3 tools/gate/gate.py record --data gate-data --publish run-record.json
+      - name: Open, update or close the nightly-red issue
+        if: env.DRY != 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 tools/gate/gate.py issue --record run-record.json --report report.md --label nightly-red
+      - name: The verdict
+        run: |
+          python3 -c 'import json; r=json.load(open("run-record.json", encoding="utf-8")); print(r["verdict"].upper(), r["counts"])'
+          test "${{ steps.merge.outputs.status }}" = "0"

@@ -313,10 +313,14 @@ neoForge.runs {
         } else {
             systemProperty 'neoforge.enabledGameTestNamespaces', shardNames.values().join(',')
         }
-        // -Pgametests=A,B,C runs only those GameTest classes (GameTestClassFilter, via
-        // GameTestRegistryMixin). tools/gate-b.sh passes gate-select.py --policy targeted's list.
+        // -Pgametests=A,B,C.method runs only those GameTest classes (or that one test of a class), and
+        // -Pgatenotclasses=D,E every class but those (GameTestClassFilter, read by GameTestAdapter). tools/gate/gate.py
+        // passes them: the targeted selection, one job's share of a split run, a failed test retried by itself.
         if (project.hasProperty('gametests')) {
             systemProperty "${project.mod_id}.gameTestClasses", project.property('gametests').toString()
+        }
+        if (project.hasProperty('gatenotclasses')) {
+            systemProperty "${project.mod_id}.gameTestNotClasses", project.property('gatenotclasses').toString()
         }
         // G2: the branch's gate-relevant patch id (gate-select.py --patch-id), recorded so a
         // green run of the same patch is REUSED after a base merge instead of re-run.
