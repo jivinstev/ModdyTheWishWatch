@@ -50,12 +50,12 @@ public final class PowerLine {
             }
         }
         return best == null ? "nothing in the game"
-                : "a " + best.name() + " (" + num(best.health()) + " health, " + num(best.damage()) + " damage)";
+                : ("aeiou".indexOf(best.name().charAt(0)) >= 0 ? "an " : "a ") + best.name() + " (" + num(best.health()) + " health, " + num(best.damage()) + " damage)";
     }
 
     /**
-     * The power line: {@code "Power: 60 health, 6 damage: like a hoglin (40 health, 6 damage). Its size (medium,
-     * solid volume 1.6 blocks) is about 35 health, 5 damage."} {@code bodyVolume} is its sculpt's solid volume at scale
+     * The power line: {@code "Power: 60 health, 6 damage: like an elder guardian (80 health, 8 damage). Its size is
+     * medium: about 35 health, 5 damage."} {@code bodyVolume} is its sculpt's solid volume at scale
      * 1 (NaN when it has none).
      */
     public static String of(Species s, double bodyVolume) {

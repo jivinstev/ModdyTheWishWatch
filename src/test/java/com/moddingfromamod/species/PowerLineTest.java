@@ -17,7 +17,7 @@ class PowerLineTest {
     @Test
     void itComparesWithAVanillaMobOfItsOwnKind() {
         assertTrue(PowerLine.likeVanilla(20, 3).startsWith("a zombie"), PowerLine.likeVanilla(20, 3));
-        assertTrue(PowerLine.likeVanilla(100, 15).startsWith("a iron golem"), PowerLine.likeVanilla(100, 15));
+        assertTrue(PowerLine.likeVanilla(100, 15).startsWith("an iron golem"), PowerLine.likeVanilla(100, 15));
         assertTrue(PowerLine.likeVanilla(8, 4).startsWith("a wolf"), PowerLine.likeVanilla(8, 4));
         // a creature with no hit is compared with gentle mobs only
         assertTrue(PowerLine.likeVanilla(10, 0).matches("a (pig|cow) .*"), PowerLine.likeVanilla(10, 0));
