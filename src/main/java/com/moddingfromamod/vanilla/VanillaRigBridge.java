@@ -126,7 +126,7 @@ public final class VanillaRigBridge {
         List<CreatureSculpt.Part> parts = StandInSculpt.manifest(species, sculpted);
         boolean standIn = StandInSculpt.isStandIn(sculpted);
 
-        double scale = species == null ? 1.0 : species.scale();
+        double scale = species == null ? 1.0 : com.moddingfromamod.wish.LiveFit.drawnScale(species);   // (C)
         // A summoned helper is built at the scale it was given (RigAbilities.summon).
         var scaleAttr = mob.getAttribute(net.minecraft.world.entity.ai.attributes.Attributes.SCALE);
         if (mob.isMinion() && scaleAttr != null) {

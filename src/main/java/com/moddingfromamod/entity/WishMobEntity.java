@@ -178,7 +178,7 @@ public class WishMobEntity extends PathfinderMob {
         set(Attributes.ARMOR, s.armor());
         set(Attributes.KNOCKBACK_RESISTANCE, s.knockbackResistance());
         // SCALE resizes the model AND the hitbox — no renderer work needed for a giant creature.
-        set(Attributes.SCALE, s.scale());
+        set(Attributes.SCALE, com.moddingfromamod.wish.LiveFit.drawnScale(s));   // (C) fitted where it stands
         if (freshSpawn) {
             this.setHealth((float) s.health());
         } else {
@@ -448,7 +448,7 @@ public class WishMobEntity extends PathfinderMob {
             helper.setMinion(true);
             level.addFreshEntity(helper);
             // Minions are small and weak, so summoning is dramatic rather than a difficulty spike.
-            helper.setBaseScale(s.scale() * 0.5);
+            helper.setBaseScale(com.moddingfromamod.wish.LiveFit.drawnScale(s) * 0.5);
         }
         return true;
     }

@@ -706,6 +706,71 @@ public final class ContractWorldGameTest {
         return sp != null && p.getStringUUID().equals(sp.ownerId());
     }
 
+    /** The drawn scales of the rigs of {@code speciesId} standing near {@code p}, by carrier. */
+    private static Map<java.util.UUID, Double> rigScales(GameTestHelper helper, ServerPlayer p, String speciesId) {
+        Map<java.util.UUID, Double> out = new java.util.HashMap<>();
+        for (var e : helper.getLevel().getAllEntities()) {
+            if (e instanceof net.minecraft.world.entity.LivingEntity le && !(e instanceof ServerPlayer) && le.distanceTo(p) < 64
+                    && speciesId.equals(com.moddingfromamod.wish.LiveFit.speciesOf(le))) {
+                var rig = com.moddingfromamod.vanilla.VanillaRigAnimator.rigOf(le);
+                out.put(le.getUUID(), rig != null ? rig.scale()
+                        : le.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.SCALE));
+            }
+        }
+        return out;
+    }
+
+    @GameTest(template = "empty_test", batch = "contract_world_kept_as_asked", timeoutTicks = 40000)
+    public static void aMakeIsKeptAsAskedAndComesOutBiggerWhenTheLimitsRise(GameTestHelper helper) {
+        ServerPlayer p = setUp(helper, "gtcontractasked");
+        MockPlayerNetwork.afterTest(helper, ContractWorld::forgetRounds);
+        Set<String> had = Set.copyOf(BuilderSpecStore.all(RuntimeConfig.playersDir(), p.getStringUUID()).keySet());
+        // a giant cat (size 4) in the first round: made at size 3, the biggest this world allows now
+        AtomicReference<BuilderMake.Result> made = new AtomicReference<>();
+        BuilderMake.make(p, cats("friendly", 4, 1), BuilderAllowlist.REVIEWED).thenAcceptAsync(made::set);
+        AtomicReference<String> id = new AtomicReference<>();
+        AtomicReference<Map<java.util.UUID, Double>> first = new AtomicReference<>();
+        com.moddingfromamod.test.RealTime.succeedWhen(helper, () -> {
+            BuilderMake.Result r = made.get();
+            helper.assertTrue(r != null && r.outcome() == BuilderMake.Outcome.MADE, Component.literal("the cat: " + r));
+            if (id.get() == null) {
+                BuilderSpecStore.Made kept = null;
+                for (var m : BuilderSpecStore.all(RuntimeConfig.playersDir(), p.getStringUUID()).values()) {
+                    if (!had.contains(m.id())) {
+                        kept = m;
+                    }
+                }
+                helper.assertTrue(kept != null, Component.literal("the cat is on his shelf"));
+                helper.assertTrue(kept.read().size() == 4, Component.literal("his shelf keeps it as he asked (size 4), never as "
+                        + "this world fitted it: " + kept.spec()));
+                Map<java.util.UUID, Double> now = rigScales(helper, p, kept.id());
+                helper.assertTrue(now.size() == 1, Component.literal("one cat stands: " + now));
+                first.set(now);
+                id.set(kept.id());
+                // a later round lets every size be made; the same cat made again comes out at its asked size
+                ContractWorld.round(p.getUUID(), 2);
+                WishService.Outcome o = WishService.submit(p, "gt contract again", WishSource.PRESET,
+                        com.moddingfromamod.wishbuilder.BuilderAgain.recipeId(kept.id()));
+                helper.assertTrue(o == WishService.Outcome.FULFILLING, Component.literal("made again: " + o));
+            }
+            Map<java.util.UUID, Double> now = rigScales(helper, p, id.get());
+            helper.assertTrue(now.size() == 2, Component.literal("the cat made again stands: " + now));
+            double was = first.get().values().iterator().next();
+            double again = 0;
+            for (var e : now.entrySet()) {
+                if (!first.get().containsKey(e.getKey())) {
+                    again = e.getValue();
+                }
+            }
+            var species = SpeciesRegistry.get(id.get());
+            helper.assertTrue(again > was + 1e-6 && species != null && Math.abs(again - species.scale()) < 1e-6,
+                    Component.literal("made again after the limits rose, it is bigger, at its asked size: " + was + " then "
+                            + again + " (asked " + (species == null ? "?" : species.scale()) + ")"));
+            var kept = BuilderSpecStore.get(p.getStringUUID(), id.get());
+            helper.assertTrue(kept != null && kept.read().size() == 4, Component.literal("and still kept as asked"));
+        });
+    }
+
     private static int count(String in, String what) {
         int n = 0;
         for (int i = in.indexOf(what); i >= 0; i = in.indexOf(what, i + 1)) {
