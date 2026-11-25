@@ -28,14 +28,14 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 
 /**
- * <b>With the Magician off, nothing offers the Magician as if it would work</b> (#78). Seen on 1.0.9: with the
+ * <b>Hardening: the Magician is offered only when it will answer this player</b> (#78). Seen on 1.0.9: with the
  * Magician never set up, the Apprentice's page had no fitting make and offered "✪ Moddy wishes it from scratch";
  * pressing it sent the words back to the Apprentice, which opened the same page again.
  *
  * <p>Walks every place that offers the Magician as the next step, for the host and a guest (a Wish Magician by role
  * whose world has no Magician) and for a Crafter: the Apprentice's no-fit answer and its page's last tile (and what
  * pressing it does), the wish box, the 📖 page's "Typed wishes" toggle, the watch's "✍ Wish for something new"
- * tooltip, a thing's "Wish about this", the Crafter's sign-up lines; and, in its own batch, the re-wish reader's
+ * tooltip and a thing's "Wish about this"; and, in its own batch, the re-wish reader's
  * "Did you mean…" page. Each asks {@link MagicianDoor#offered}. The host's no-fit answer names the setup.
  *
  * <p>The overrides are hidden, so the mod runs as the public one does (Magician off) whatever plug-ins are loaded:
@@ -55,9 +55,7 @@ public final class MagicianOffOffersGameTest {
     private static boolean saysMagicianWorks(String s) {
         return s.contains(ApprenticeWords.MAGICIAN_INSTEAD_LABEL) || s.contains(Rewish.ASK_MAGICIAN)
                 || s.contains("Magician magic") || s.contains(ThingPage.WISH_ABOUT_MAGICIAN)
-                || s.contains(WishCompose.MAGICIAN_SIGN_UP) || s.contains("A Wish Magician could")
-                || s.contains(ApprenticeWords.TO_THE_MAGICIAN) || s.contains("can become Wish Magicians")
-                || s.contains(ApprenticeWords.NAME_MAGICIAN);
+                || s.contains(ApprenticeWords.TO_THE_MAGICIAN);
     }
 
     private static String tilesOf(ServerPlayer p) {
@@ -149,22 +147,17 @@ public final class MagicianOffOffersGameTest {
             }
             SettingsCommand.hostForTest(null);
 
-            // ── a Crafter (the door open): no sign-up lines for a Magician the world does not have ──
+            // ── a Crafter (the door open): never offered the Magician, as before (his sign-up lines are not an offer) ──
             System.setProperty(WorldCrafters.OPEN_PROPERTY, "true");
             CrafterService.forgetForTest(p.getUUID());
             helper.assertTrue(CrafterService.isCrafter(p), Component.literal("control: off the list, door open: a Crafter"));
-            TuneDialog box = WishCompose.boxFor(p, "");
-            helper.assertFalse(saysMagicianWorks(box.toString()), Component.literal("a Crafter's box: no sign-up line: " + box.body()));
-            int mark = MockPlayerNetwork.chat(p).size();
-            CrafterService.greet(p);
+            helper.assertFalse(MagicianDoor.offered(p), Component.literal("a Crafter is never offered the Magician"));
             p.closeContainer();
             WishService.submit(p, "a lion", WishSource.TYPED);
-            ApprenticeService.pressForTest(p, ApprenticeWords.NONE);
-            WishService.submit(p, "a pet wolf called sir fluffy", WishSource.TYPED);
+            String crafterTiles = tilesOf(p);
+            helper.assertTrue(crafterTiles.contains(ApprenticeWords.NONE_LABEL) && !saysMagicianWorks(crafterTiles),
+                    Component.literal("a Crafter's page ends in \"None of these\": " + crafterTiles));
             p.closeContainer();
-            List<String> said = since(p, mark);
-            helper.assertTrue(said.stream().noneMatch(MagicianOffOffersGameTest::saysMagicianWorks),
-                    Component.literal("a Crafter hears no \"become a Wish Magician\": " + said));
         } finally {
             SettingsCommand.hostForTest(null);
             Plugins.shared().hideForTest(SettingsOverride.class, false);

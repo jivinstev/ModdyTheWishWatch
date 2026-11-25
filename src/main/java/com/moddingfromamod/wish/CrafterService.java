@@ -167,8 +167,7 @@ public final class CrafterService {
         Seen s = SEEN.getOrDefault(p.getUUID(), new Seen(Crafters.Role.CRAFTER, "", 0L, 0));
         int made = s.made() + 1;
         long now = System.currentTimeMillis();
-        boolean say = Crafters.nudgeAfterMade(made) && Crafters.mayNudge(s.nudgedAt(), now)
-                && MagicianDoor.on(p.getUUID());   // #78: no Wish Magician to become while the Magician is off
+        boolean say = Crafters.nudgeAfterMade(made) && Crafters.mayNudge(s.nudgedAt(), now);
         SEEN.put(p.getUUID(), new Seen(s.role(), s.rank(), say ? now : s.nudgedAt(), made));
         if (say) {
             p.sendSystemMessage(Component.literal(Crafters.AFTER_MADE).withStyle(ChatFormatting.GRAY)
@@ -224,8 +223,7 @@ public final class CrafterService {
         WorldCrafters.Rank rk = r == Crafters.Role.CRAFTER ? rank(p) : null;
         SEEN.put(p.getUUID(), new Seen(r, rk == null ? "" : rk.name(), 0L, 0));
         if (r == Crafters.Role.CRAFTER) {
-            p.sendSystemMessage(Component.literal(Crafters.welcome(Crafters.title(r, rk), MagicianDoor.on(p.getUUID())))
-                    .withStyle(ChatFormatting.AQUA));
+            p.sendSystemMessage(Component.literal(Crafters.welcome(Crafters.title(r, rk))).withStyle(ChatFormatting.AQUA));
         }
     }
 

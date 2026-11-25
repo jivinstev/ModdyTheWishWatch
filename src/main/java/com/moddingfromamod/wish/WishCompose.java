@@ -177,9 +177,6 @@ public final class WishCompose {
             d = magicianOffDialog(title(player), prefill, MagicianDoor.hostMayTurnOn(player));
         } else if (offersChoice(player)) {
             d = dialog(title(player), prefill, ApprenticeService.prefersApprentice(player), priced);
-        } else if (saysBoth(player) && !MagicianDoor.on(player.getUUID())) {
-            // #78: no "sign up to be a Magician" line on a world with no Magician: just who answers
-            d = crafterDialog(title(player), prefill, priced);
         } else if (saysBoth(player)) {
             d = crafterDialog(title(player), prefill, priced, CrafterService.signupShown(), CrafterService.signupUrl());
         } else {
@@ -288,13 +285,6 @@ public final class WishCompose {
         return new TuneDialog(title,
                 List.of(new TuneDialog.Line(magicWords(true, priced)), new TuneDialog.Line(MAGICIAN_SIGN_UP, shown, url)),
                 plain.inputs(), ACTION, plain.command());
-    }
-
-    /** A Crafter's box while the Magician is off: one line, the magic he has; nothing to sign up for (#78). */
-    public static TuneDialog crafterDialog(String title, String prefill, boolean priced) {
-        TuneDialog plain = dialog(title, prefill, LABEL_EITHER);
-        return new TuneDialog(title, List.of(new TuneDialog.Line(magicWords(true, priced))), plain.inputs(), ACTION,
-                plain.command());
     }
 
     /** The ✪ line while the Magician is off: the host's ends in a link that opens the setup. */
