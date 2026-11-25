@@ -352,6 +352,9 @@ public final class Rewish {
 
     /** The tile on an offer page that sends his words on as typed: the Magician's, or a Crafter's Apprentice. */
     static final String ELSE_ID = "rewish:else";
+    /** Its words: the Magician's where he would answer the words ({@link MagicianDoor#offered}), the Apprentice's otherwise. */
+    public static final String ASK_MAGICIAN = "✪ Ask the Magician";
+    public static final String SOMETHING_ELSE = "✨ Something else";
 
     /**
      * A CLOSE answer: a page of the things it may mean, one tile each saying what it would do,
@@ -375,8 +378,10 @@ public final class Rewish {
             tiles.add(new PickPage.Tile("rewish:" + c, a.intent() == RewishReader.Intent.COPY ? "minecraft:nether_star"
                     : "minecraft:crafting_table", tileWords(a, names.getOrDefault(c, c)), List.of("Moddy does it right now"), false));
         }
-        tiles.add(new PickPage.Tile(ELSE_ID, "minecraft:writable_book", crafter ? "✨ Something else" : "✪ Ask the Magician",
-                List.of(crafter ? "The Apprentice reads your words" : "The Magician reads your words"), false));
+        // "✪ Ask the Magician" only where he would answer (#78); otherwise the words go on to the Apprentice, and say so
+        boolean magician = MagicianDoor.offered(p);
+        tiles.add(new PickPage.Tile(ELSE_ID, "minecraft:writable_book", magician ? ASK_MAGICIAN : SOMETHING_ELSE,
+                List.of(magician ? "The Magician reads your words" : "The Apprentice reads your words"), false));
         com.moddingfromamod.ui.MenuKit.pick(p, "rewish", PickPage.of("Did you mean…", tiles, false), (pl, id) -> {
             pl.closeContainer();
             if (id.startsWith("rewish:") && !id.equals(ELSE_ID)) {
