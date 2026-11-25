@@ -1002,6 +1002,41 @@ public final class ContractWorldGameTest {
         });
     }
 
+    /**
+     * #102: this world reads what a creature's moves do and whether it is a vehicle, through the live store. A friendly
+     * creature whose attack is all moves (no bite) reads as strong by its a-second number, which its bite number alone
+     * never showed; a vehicle never takes this world's point for fighting.
+     */
+    @GameTest(template = "empty_test", batch = "contract_world_move_facts", timeoutTicks = 200)
+    public static void theWorldReadsWhatACreaturesMovesDoAndLeavesAVehicleOutOfAFight(GameTestHelper helper) {
+        var server = helper.getLevel().getServer();
+        Species mover = Species.fromJson(com.google.gson.JsonParser.parseString("{\"id\":\"gt_contract_mover\","
+                + "\"powers\":[\"friendly\"],\"health\":20,\"damage\":20,\"abilities\":[\"ranged\",\"slam\",\"charge\"]}")
+                .getAsJsonObject());
+        Species car = Species.fromJson(com.google.gson.JsonParser.parseString("{\"id\":\"gt_contract_car\","
+                + "\"powers\":[\"friendly\",\"rideable\"],\"behaves\":\"vehicle\",\"health\":40,\"damage\":0,"
+                + "\"abilities\":[\"charge\"]}").getAsJsonObject());
+        com.moddingfromamod.testing.SpeciesForTest.put(helper, mover);
+        com.moddingfromamod.testing.SpeciesForTest.put(helper, car);
+        var m = com.moddingfromamod.wish.MakeFactsLookup.forThing(server, "creature", mover.id());
+        helper.assertTrue(m.known() && m.number(com.moddingfromamod.wishbuilder.MakeFacts.ATTACK_DAMAGE_HALF_HEARTS)
+                        .orElse(-1) == 20, Component.literal("its bite number keeps its meaning: " + m));
+        double eff = m.number(com.moddingfromamod.wishbuilder.MakeFacts.EFFECTIVE_DAMAGE_HALF_HEARTS_PER_SECOND).orElse(-1);
+        helper.assertTrue(Math.abs(eff - (5 + 2.5 + 4)) < 1e-6,
+                Component.literal("a friendly creature's moves, a second (no bite): " + eff + " in " + m));
+        var c = com.moddingfromamod.wish.MakeFactsLookup.forThing(server, "ride", car.id());
+        helper.assertTrue(c.has(com.moddingfromamod.wishbuilder.MakeFacts.VEHICLE) && c.has(com.moddingfromamod.wishbuilder.MakeFacts.FIGHTS),
+                Component.literal("a car with a charge is a vehicle (and its move is a fight the world can see): " + c));
+        // this world's own rating reads them: no point for a vehicle's fight; a strong point for 8+ a second of moves
+        int carRating = ContractWorld.rating(c);
+        int sameAsAFighter = ContractWorld.rating(new com.moddingfromamod.wishbuilder.MakeFacts(c.kind(), c.numbers(),
+                Set.of(com.moddingfromamod.wishbuilder.MakeFacts.FIGHTS), true));
+        helper.assertTrue(carRating == sameAsAFighter - 1, Component.literal("a vehicle takes no point for fighting: "
+                + carRating + " vs " + sameAsAFighter));
+        helper.assertTrue(ContractWorld.rating(m) >= 2, Component.literal("fights + strong by its moves: " + ContractWorld.rating(m)));
+        helper.succeed();
+    }
+
     private static int count(String in, String what) {
         int n = 0;
         for (int i = in.indexOf(what); i >= 0; i = in.indexOf(what, i + 1)) {

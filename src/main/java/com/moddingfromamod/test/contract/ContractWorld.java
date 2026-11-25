@@ -110,18 +110,20 @@ public final class ContractWorld implements ModdyPlugin {
     }
 
     /**
-     * This world's own rating (the toy formula the docs' example shows): a point for fighting, one for changing blocks,
-     * two for a world rule, one each for a big creature (scale 1.6+), a tough one (health 60+), a strong one (damage 8+),
-     * a crowd (5+ at once), and the Builder's top strength.
+     * This world's own rating (the toy formula the docs' example shows): a point for fighting (never for a vehicle,
+     * which this world leaves out of a fight), one for changing blocks, two for a world rule, one each for a big creature
+     * (scale 1.6+), a tough one (health 60+), a strong one (a bite of 8+, or 8+ a second with its moves: #102 reads what
+     * its breath, slam or charge does, not its bite alone), a crowd (5+ at once), and the Builder's top strength.
      */
     public static int rating(MakeFacts f) {
         int r = 0;
-        r += f.has(MakeFacts.FIGHTS) ? 1 : 0;
+        r += f.has(MakeFacts.FIGHTS) && !f.has(MakeFacts.VEHICLE) ? 1 : 0;
         r += f.has(MakeFacts.CHANGES_BLOCKS) ? 1 : 0;
         r += f.has(MakeFacts.WORLD_RULE) ? 2 : 0;
         r += f.number(MakeFacts.SCALE_TIMES).orElse(1) >= 1.6 ? 1 : 0;
         r += f.number(MakeFacts.HEALTH_HALF_HEARTS).orElse(0) >= 60 ? 1 : 0;
-        r += f.number(MakeFacts.ATTACK_DAMAGE_HALF_HEARTS).orElse(0) >= 8 ? 1 : 0;
+        r += f.number(MakeFacts.ATTACK_DAMAGE_HALF_HEARTS).orElse(0) >= 8
+                || f.number(MakeFacts.EFFECTIVE_DAMAGE_HALF_HEARTS_PER_SECOND).orElse(0) >= 8 ? 1 : 0;
         r += f.number(MakeFacts.COUNT_MADE).orElse(1) >= 5 ? 1 : 0;
         r += f.number(MakeFacts.BUILDER_STRENGTH_STEP).orElse(1) >= 3 ? 1 : 0;
         return r;

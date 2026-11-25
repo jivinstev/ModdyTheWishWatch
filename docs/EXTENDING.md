@@ -104,7 +104,9 @@ test world below does, with a toy formula of its own).
   - `summons`: makes other creatures appear; `gives_items`: hands items over (supplies, prizes, a creature's treats);
   - `world_rule`: changes a rule for the whole world;
   - `decorative`: does nothing but be there (a picture, a "just for fun" item);
-  - `harmless`: none of `fights`, `hostile`, `boss`, `changes_blocks`, `summons`, `world_rule`.
+  - `harmless`: none of `fights`, `hostile`, `boss`, `changes_blocks`, `summons`, `world_rule`;
+  - `vehicle`: a creature that is a vehicle (a car, a boat, a plane: its life is the vehicle's). It never fights,
+    whatever else it carries, so a world can leave vehicles out of a fight.
 - **`numbers`**, measured, in real game units, the unit in the name (`MakeFacts.NUMBERS`). Read one with
   `facts.number(name)`, an `OptionalDouble`: a number is there only where the make really carries it, and **absent
   means not known, never 0**. The names are a stable vocabulary: additive only, never renamed or given another unit
@@ -125,6 +127,13 @@ test world below does, with a toy formula of its own).
   | `extentBlocks` | blocks: its longest side | a stored building |
   | `armorPoints` | the game's armour points (a full iron suit is 15) | a Builder creature or ride (as health), a stored creature |
   | `knockbackResistanceFraction` | 0 (pushed as anyone) to 1 (never pushed) | a Builder creature or ride (as health), a stored creature |
+  | `moveDamageHalfHeartsPerSecond` | health points a second, to one target | a creature with a move that hurts (`ranged`, `slam`, `charge`), each at its own pace: what its moves alone deal, whatever its instinct (a friendly creature's moves still land on what it fights for him) |
+  | `effectiveDamageHalfHeartsPerSecond` | health points a second, to one target | a Builder creature or ride (as health), a stored creature: its bite once a second when its instinct fights (a friendly one never bites), plus its moves. A creature whose attack is its breath, slam, ranged or charge no longer reads as harmless here, as it does in `attackDamageHalfHearts` (the bite alone, unchanged) |
+  | `healHalfHeartsPerSecond` | health points a second, back to itself | a creature with the `heal` move |
+
+  The three a-second numbers come from the rig's own moves (`species.MovePower`). A move a compiled ability pack or an
+  effect gives a creature (a dragon's breath) lives in a datapack and is not counted, so for such a creature they read
+  low, never high; it carries the `fights` tag as before.
 
   `combine` (several things one recipe makes) keeps each number's largest value; a number none of them carries stays
   absent.
@@ -258,7 +267,7 @@ the limits the world gave.
 | `amountItems` | fewer in a bundle of supplies |
 | `healthHalfHearts`, `attackDamageHalfHearts` | a discrete search, nothing assumed about which way they move: every lower combination of an item's material (its tier, stepped down), the size and the strength steps is tried, the most kept first, and the first whose re-derived facts fit is made. An item none fits is locked. A creature or ride none fits is made as it is and **fitted on the live creature** (below); a stored thing's own record is never changed |
 | `armorPoints`, `knockbackResistanceFraction` | no knob of a make moves them: a creature or ride over the limit is made as it is and fitted on the live creature (below) |
-| `movementSpeedAttribute`, `extentBlocks` | nothing: not clampable, so over the limit is locked |
+| `movementSpeedAttribute`, `extentBlocks`, `moveDamageHalfHeartsPerSecond`, `effectiveDamageHalfHeartsPerSecond`, `healHalfHeartsPerSecond` | nothing: not clampable, so over the limit is locked |
 
 - **Fitted on the live creature** (`wish/LiveFit`): the last step for a creature's health and attack damage. At spawn
   (and when the creature is loaded or rebuilt), after its species has set its numbers, the core puts ONE attribute

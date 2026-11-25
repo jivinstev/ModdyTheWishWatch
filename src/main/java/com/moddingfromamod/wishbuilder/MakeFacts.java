@@ -73,7 +73,9 @@ import com.moddingfromamod.species.Species;
  *   <li>{@link #GIVES_ITEMS}: it hands items over (supplies, a prize table, a creature that drops treats);</li>
  *   <li>{@link #WORLD_RULE}: it changes a rule for the whole world;</li>
  *   <li>{@link #DECORATIVE}: it does nothing but be there (a picture, a "just for fun" item);</li>
- *   <li>{@link #HARMLESS}: none of fights, hostile, boss, changes blocks, summons, world rule.</li>
+ *   <li>{@link #HARMLESS}: none of fights, hostile, boss, changes blocks, summons, world rule;</li>
+ *   <li>{@link #VEHICLE}: a creature that is a vehicle (its life is the vehicle's), so a world can leave it out of a
+ *       fight (#102).</li>
  * </ul>
  *
  * <p><b>{@link #known} false</b> when the facts were not read from the thing itself (an artifact that is gone or does
@@ -97,6 +99,12 @@ public record MakeFacts(String kind, Map<String, Double> numbers, Set<String> ta
     public static final String EXTENT_BLOCKS = "extentBlocks";
     public static final String ARMOR_POINTS = "armorPoints";
     public static final String KNOCKBACK_RESISTANCE_FRACTION = "knockbackResistanceFraction";
+    /** #102: health points a second a creature's moves (ranged, slam, charge) deal one target. */
+    public static final String MOVE_DAMAGE_HALF_HEARTS_PER_SECOND = "moveDamageHalfHeartsPerSecond";
+    /** #102: health points a second a creature deals one target: its bite when it fights, and its moves. */
+    public static final String EFFECTIVE_DAMAGE_HALF_HEARTS_PER_SECOND = "effectiveDamageHalfHeartsPerSecond";
+    /** #102: health points a second a creature's heal move gives it back. */
+    public static final String HEAL_HALF_HEARTS_PER_SECOND = "healHalfHeartsPerSecond";
 
     /**
      * Every number's name, as shipped. Additive only: a name here is never renamed, removed or given another unit
@@ -104,7 +112,8 @@ public record MakeFacts(String kind, Map<String, Double> numbers, Set<String> ta
      */
     public static final List<String> NUMBERS = List.of(HEALTH_HALF_HEARTS, ATTACK_DAMAGE_HALF_HEARTS,
             MOVEMENT_SPEED_ATTRIBUTE, SCALE_TIMES, BUILDER_SIZE_STEP, BUILDER_STRENGTH_STEP, COUNT_MADE, AMOUNT_ITEMS,
-            RADIUS_BLOCKS, DURATION_TICKS, EXTENT_BLOCKS, ARMOR_POINTS, KNOCKBACK_RESISTANCE_FRACTION);
+            RADIUS_BLOCKS, DURATION_TICKS, EXTENT_BLOCKS, ARMOR_POINTS, KNOCKBACK_RESISTANCE_FRACTION,
+            MOVE_DAMAGE_HALF_HEARTS_PER_SECOND, EFFECTIVE_DAMAGE_HALF_HEARTS_PER_SECOND, HEAL_HALF_HEARTS_PER_SECOND);
 
     public static final String FIGHTS = "fights";
     public static final String HOSTILE = "hostile";
@@ -116,10 +125,12 @@ public record MakeFacts(String kind, Map<String, Double> numbers, Set<String> ta
     public static final String WORLD_RULE = "world_rule";
     public static final String DECORATIVE = "decorative";
     public static final String HARMLESS = "harmless";
+    /** #102: a vehicle (a car, a boat, a plane): it never fights, whatever else it carries. */
+    public static final String VEHICLE = "vehicle";
 
     /** The whole vocabulary, in the order the docs list it. A tag a world names that is not here matches nothing. */
     public static final List<String> TAGS = List.of(FIGHTS, HOSTILE, BOSS, CHANGES_BLOCKS, BUILDS, SUMMONS, GIVES_ITEMS,
-            WORLD_RULE, DECORATIVE, HARMLESS);
+            WORLD_RULE, DECORATIVE, HARMLESS, VEHICLE);
 
     /** The tags that make a thing NOT harmless. */
     static final List<String> NOT_HARMLESS = List.of(FIGHTS, HOSTILE, BOSS, CHANGES_BLOCKS, SUMMONS, WORLD_RULE);
@@ -534,6 +545,25 @@ public record MakeFacts(String kind, Map<String, Double> numbers, Set<String> ta
                         a.most(KNOCKBACK_RESISTANCE_FRACTION, knockback);
                     }
                     creatureLives(a, strings(args.get("powers")));
+                    // #102: its moves a second and whether it is a vehicle, from the creature this sculpt makes
+                    // (what it starts from, under what the sculpt names); only when its damage is known
+                    if (!Double.isNaN(damage)) {
+                        JsonObject made = new JsonObject();
+                        JsonObject base = startsFrom(str(args, "start_from"));
+                        if (base != null) {
+                            base.entrySet().forEach(e -> made.add(e.getKey(), e.getValue().deepCopy()));
+                        }
+                        args.entrySet().forEach(e -> made.add(e.getKey(), e.getValue().deepCopy()));
+                        if (made.has(com.moddingfromamod.species.BehavesLike.ARG)) {
+                            made.add("behaves", made.get(com.moddingfromamod.species.BehavesLike.ARG).deepCopy());
+                        }
+                        made.addProperty("id", "facts");
+                        made.addProperty("damage", damage);
+                        Species sp = Species.fromJson(made);
+                        if (sp != null) {
+                            creatureMoves(a, sp);
+                        }
+                    }
                 }
                 if ("guardian".equals(str(args, "base"))) {
                     a.tags.add(FIGHTS);
@@ -830,7 +860,29 @@ public record MakeFacts(String kind, Map<String, Double> numbers, Set<String> ta
         a.most(MOVEMENT_SPEED_ATTRIBUTE, s.speed());
         a.most(ARMOR_POINTS, s.armor());
         a.most(KNOCKBACK_RESISTANCE_FRACTION, s.knockbackResistance());
+        creatureMoves(a, s);
         return a.done();
+    }
+
+    /**
+     * #102: what its moves do a second, and whether it is a vehicle. Its bite counts only when it fights; a move a
+     * compiled pack gives it is not counted ({@link com.moddingfromamod.species.MovePower}).
+     */
+    private static void creatureMoves(Acc a, Species s) {
+        if (s.archetype() == com.moddingfromamod.species.Archetype.VEHICLE) {
+            a.tags.add(VEHICLE);
+        }
+        boolean fights = com.moddingfromamod.vanilla.RigInstinct.of(s).fights();
+        double moves = com.moddingfromamod.species.MovePower.moveDamagePerSecond(s.damage(), s.abilities());
+        if (com.moddingfromamod.species.MovePower.hasDamagingMove(s.abilities())) {
+            a.most(MOVE_DAMAGE_HALF_HEARTS_PER_SECOND, moves);
+        }
+        a.most(EFFECTIVE_DAMAGE_HALF_HEARTS_PER_SECOND,
+                com.moddingfromamod.species.MovePower.meleeDamagePerSecond(s.damage(), fights) + moves);
+        if (s.abilities().contains(com.moddingfromamod.runtime.Abilities.Kind.HEAL)) {
+            a.most(HEAL_HALF_HEARTS_PER_SECOND, com.moddingfromamod.species.MovePower.healPerSecond(s.health(),
+                    s.abilities()));
+        }
     }
 
     private static MakeFacts item(JsonObject stored) {
