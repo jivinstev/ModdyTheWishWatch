@@ -70,7 +70,9 @@ python3 tools/gate/gate.py run --shard ci --out /tmp/gt   # Gate B as CI runs it
   Python needed).
 - **Gate C** is a real client. Anything a player can see or hear needs it; a clean compile and green headless tests do
   not prove a texture, a sound, a menu or a creative tab. On Linux without a display, `xvfb-run` works with software
-  rendering.
+  rendering. The automated Gate C is the rig films, `./tools/gate-c-rig.sh` (every film, ~15 min in CI): CI's
+  `rig-films` job runs them on a pull request that touches the rig, and Port CI runs them as every release's Gate C
+  (`.port/1.21.8/gate-c.json`, recorded in the release's `gates-full.md`).
 - `store_jar=true` in `gradle.properties` makes `./gradlew build` produce the release jar (versioned
   `<mod_version>+mc<minecraft_version>`, the Apprentice model bundled, fetched by `tools/fetch-apprentice-model.sh`).
   `-Pstore_jar=false` builds a plain jar without the 86 MiB model download.
