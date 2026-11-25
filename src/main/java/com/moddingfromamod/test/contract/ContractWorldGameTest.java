@@ -882,6 +882,54 @@ public final class ContractWorldGameTest {
         });
     }
 
+    /** The first example spec of this kind (BuilderExamples), as the Builder's tests make it. */
+    private static BuilderSpec example(BuilderSpec.Kind kind) {
+        for (String json : com.moddingfromamod.wishbuilder.BuilderExamples.ONE_PER_KIND) {
+            BuilderSpec s = BuilderSpec.read(com.google.gson.JsonParser.parseString(json).getAsJsonObject());
+            if (s.kind() == kind) {
+                return s;
+            }
+        }
+        throw new IllegalStateException("no example " + kind);
+    }
+
+    @GameTest(template = "empty_test", batch = "contract_world_kept_build_event", timeoutTicks = 40000)
+    public static void aKeptBuildingAndEventAreSavedNotPlacedAndHandedOver(GameTestHelper helper) {
+        ServerPlayer p = setUp(helper, "gtcontractkeptbuild");
+        ContractWorld.keepFor(p.getUUID(), com.moddingfromamod.world.Landing.KEPT);
+        MockPlayerNetwork.afterTest(helper, () -> ContractWorld.keepFor(p.getUUID(), null));
+        p.getInventory().clearContent();
+        var server = helper.getLevel().getServer();
+        AtomicReference<BuilderMake.Result> building = new AtomicReference<>();
+        AtomicReference<BuilderMake.Result> event = new AtomicReference<>();
+        BuilderMake.make(p, example(BuilderSpec.Kind.BUILDING), BuilderAllowlist.REVIEWED).thenAcceptAsync(building::set);
+        com.moddingfromamod.test.RealTime.succeedWhen(helper, () -> {
+            BuilderMake.Result b = building.get();
+            helper.assertTrue(b != null && b.outcome() == BuilderMake.Outcome.MADE, Component.literal("the building: " + b));
+            if (event.get() == null && !BuilderMake.making(p.getUUID())) {
+                // one make at a time: the event after the building
+                BuilderMake.make(p, example(BuilderSpec.Kind.EVENT), BuilderAllowlist.REVIEWED, null, true)
+                        .thenAcceptAsync(r -> event.compareAndSet(null, r));
+            }
+            BuilderMake.Result e = event.get();
+            helper.assertTrue(e != null && e.outcome() == BuilderMake.Outcome.MADE, Component.literal("the event: " + e));
+            helper.assertTrue(com.moddingfromamod.builder.BuildRegistry.get(b.madeId()) != null
+                            && !com.moddingfromamod.builder.BuildRegistry.standing(b.madeId()),
+                    Component.literal("the kept building is saved and not built"));
+            helper.assertTrue(com.moddingfromamod.event.design.EventDesigns.get(server, e.madeId()) != null
+                            && com.moddingfromamod.event.EventDirector.all(server).stream()
+                            .noneMatch(x -> x.id().equals(e.madeId()) || x.id().startsWith(e.madeId() + "_")),
+                    Component.literal("the kept event's design is kept and nothing is staged"));
+            for (String id : List.of(b.madeId(), e.madeId())) {
+                helper.assertTrue(hotbarSlotOf(p, com.moddingfromamod.wishbuilder.BuilderAgain.recipeId(id)) >= 0,
+                        Component.literal(id + " is a wish on his hotbar"));
+            }
+            var told = ContractWorld.handedOver(p.getUUID());
+            helper.assertTrue(told.size() == 2 && told.get(0).kind().equals("building") && told.get(1).kind().equals("event"),
+                    Component.literal("the world is told of both: " + told));
+        });
+    }
+
     @GameTest(template = "empty_test", batch = "contract_world_redraw", timeoutTicks = 40000)
     public static void aStandingCreatureGrowsOnARaiseAndShrinksBackOnALower(GameTestHelper helper) {
         ServerPlayer p = setUp(helper, "gtcontractredraw");

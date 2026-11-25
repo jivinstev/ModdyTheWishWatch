@@ -634,9 +634,7 @@ public final class BuilderMake {
             return done(Outcome.FAILED, wish.id(), "", "the marshal would not take the make");
         }
         run.markBuilderMade();
-        if (landing != com.moddingfromamod.world.Landing.LANDS) {
-            run.markKept();
-        }
+        run.lockLanding(landing);
         // A MAKE LOOKS AND LANDS LIKE A WISH. The same three things WishService.submit does
         // for a typed wish, in the same order: lock where it manifests to where he is looking NOW (aim, then clamp,
         // kept on the run so plan_wish's kind slide and every placing tool use it — before this a make had no anchor,
@@ -781,27 +779,37 @@ public final class BuilderMake {
     }
 
     /**
-     * Can a world keep this make and hand it over (#70)? A Builder or Apprentice creature, ride or item kept on his
-     * shelf (so its hotbar wish can make it again); a real mob and supplies are not kept, so they land.
+     * Can a world keep this make and hand it over (#70)? A Builder or Apprentice creature, ride, item, building or
+     * event kept on his shelf, so its hotbar wish can make it again (each has a replay command, {@link BuilderAgain}).
+     * A real mob and supplies are not kept, a picture lands (not yet kept), and a rule has nothing to place.
      */
     static boolean keepable(BuilderSpec spec) {
         return switch (spec.kind()) {
-            case CREATURE, RIDE, ITEM, MACHINE, MAGIC_BLOCK ->
+            case CREATURE, RIDE, ITEM, MACHINE, MAGIC_BLOCK, BUILDING, EVENT ->
                     !Catalogue.prefix(spec.from()).equals("mob") && !BuilderSupplies.is(spec);
             default -> false;
         };
     }
 
-    /** A kept make's calls (#70): its creature sculpted and kept, not spawned (no spawn, no extra spawns). */
+    /**
+     * A kept make's calls (#70): everything is made and saved, nothing placed. A creature is sculpted and not spawned
+     * (and its extra spawns dropped), a building saved and not built, an event's design kept and not staged.
+     */
     static List<BuilderLowering.Call> held(List<BuilderLowering.Call> calls) {
         List<BuilderLowering.Call> out = new ArrayList<>(calls.size());
         for (BuilderLowering.Call c : calls) {
             if (c.tool().equals("run_command") && c.args().toString().contains("wishmob spawn")) {
                 continue;   // the more-than-one spawns
             }
-            if (c.tool().equals("sculpt_creature")) {
+            String hold = switch (c.tool()) {
+                case "sculpt_creature" -> "spawn";
+                case "build_structure" -> "build";
+                case "stage_event" -> "now";
+                default -> null;
+            };
+            if (hold != null) {
                 JsonObject a = c.args().deepCopy();
-                a.addProperty("spawn", false);
+                a.addProperty(hold, false);
                 out.add(new BuilderLowering.Call(c.tool(), a));
             } else {
                 out.add(c);
@@ -817,28 +825,10 @@ public final class BuilderMake {
      */
     private static void handOver(MinecraftServer server, UUID who, String madeId, BuilderSpec spec,
                                  com.moddingfromamod.world.Landing landing) {
-        boolean item = BuilderLowering.kindOf(spec).equals("item");
-        boolean real = item && landing == com.moddingfromamod.world.Landing.KEPT_AS_ITEM;
-        String name = BuilderLowering.label(spec);
-        int slot = -1;
-        ServerPlayer p = server.getPlayerList().getPlayer(who);
-        if (!real) {
-            if (p == null) {
-                LOGGER.info("builder make {}: kept, and he left before it could be handed over (it is on his shelf)", madeId);
-                return;
-            }
-            slot = com.moddingfromamod.wish.WishHotbar.addKept(p, BuilderAgain.recipeId(madeId), name,
-                    com.moddingfromamod.marshal.WatchIcons.forKind(BuilderLowering.kindOf(spec)));
-            if (slot < -1) {
-                return;   // no room anywhere: he was told; it is on his shelf
-            }
-            p.sendSystemMessage(net.minecraft.network.chat.Component.literal(slot >= 0
-                    ? "🎯 " + name + " is on your hotbar. Aim and use it to make it appear."
-                    : "🎯 " + name + " is in your Wish Bag. Put it on your hotbar to make it appear."));
-        }
-        LOGGER.info("builder make {}: handed over ({}, slot {})", madeId, real ? "the real item" : "a hotbar wish", slot);
-        com.moddingfromamod.wish.MakeGate.handedOver(new com.moddingfromamod.world.HandedOver(who, madeId,
-                BuilderLowering.kindOf(spec), BuilderAgain.recipeId(madeId), MakeFacts.of(spec), real ? -1 : slot, real));
+        String kind = BuilderLowering.kindOf(spec);
+        com.moddingfromamod.wish.KeptHandOver.give(server, who, madeId, kind, BuilderAgain.recipeId(madeId),
+                BuilderLowering.label(spec), MakeFacts.of(spec),
+                kind.equals("item") && landing == com.moddingfromamod.world.Landing.KEPT_AS_ITEM);
     }
 
     /**
