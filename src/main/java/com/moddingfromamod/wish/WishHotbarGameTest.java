@@ -396,8 +396,9 @@ public final class WishHotbarGameTest {
             var inv = p.getInventory();
             inv.clearContent();
 
-            // NO CHARGE: the one second, as before.
-            Plugins.shared().replaceForTest(WishCharge.class, null);
+            // NO CHARGE: the one second, as before. NONE, not null (#108): a null puts back whatever is REGISTERED, and a
+            // world jar beside the core registers its own charge, so the default would not be what is tested.
+            Plugins.shared().replaceForTest(WishCharge.class, WishCharge.NONE);
             check(helper, WishCharge.get() == WishCharge.NONE, "a charge is in force here, so the default is not tested");
             ItemStack plain = WishHotbar.proxy(cell("Free " + tag, free), p.getUUID());
             WishHotbar.Use use = WishHotbar.use(p, plain);

@@ -162,6 +162,7 @@ public final class LiveFit {
         int raised = 0;
         int lowered = 0;
         int same = 0;
+        int resized = 0;
         if (server == null || player == null) {
             return new Refit(0, 0, 0);
         }
@@ -174,6 +175,7 @@ public final class LiveFit {
                 if (speciesId == null || !player.equals(ownerOf(speciesId))) {
                     continue;
                 }
+                double sizeWas = drawnNow(mob);
                 double[] before = values(mob);
                 double oldMax = mob.getMaxHealth();
                 double oldHealth = mob.getHealth();
@@ -181,7 +183,11 @@ public final class LiveFit {
                 double newMax = mob.getMaxHealth();
                 mob.setHealth((float) RefitWords.healthAfter(oldHealth, oldMax, newMax));
                 double[] after = values(mob);
-                int moved = RefitWords.compare(before, after);
+                double sizeNow = drawnScale(com.moddingfromamod.species.SpeciesRegistry.get(speciesId));
+                if (Math.abs(sizeNow - sizeWas) > 1e-6) {
+                    resized++;
+                }
+                int moved = RefitWords.compare(RefitWords.with(before, sizeWas), RefitWords.with(after, sizeNow));
                 if (moved < 0) {
                     lowered++;
                 } else if (moved > 0) {
@@ -190,6 +196,12 @@ public final class LiveFit {
                     same++;
                 }
             }
+        }
+        if (resized > 0) {
+            // its size is drawn again where it stands: once for this change, never per tick. Each rig asks on its
+            // next tick whether what it was built from is what it would build now (its drawn scale is in that
+            // print), and only those whose size changed are reshaped; a wish creature sets its scale again.
+            com.moddingfromamod.species.SpeciesRegistry.touch();
         }
         Refit r = new Refit(raised, lowered, same);
         String line = r.line();
@@ -200,6 +212,16 @@ public final class LiveFit {
         LOGGER.info("world limits changed for {}: {} creature(s) raised, {} lowered, {} as they were; told: {}", player,
                 raised, lowered, same, p == null ? "not online" : line.isEmpty() ? "nothing moved" : line);
         return r;
+    }
+
+    /** The size {@code mob} is drawn at now: a rig's built scale, else its own scale. */
+    static double drawnNow(LivingEntity mob) {
+        var rig = com.moddingfromamod.vanilla.VanillaRigAnimator.rigOf(mob);
+        if (rig != null) {
+            return rig.scale();
+        }
+        var inst = mob.getAttribute(Attributes.SCALE);
+        return inst == null ? 1.0 : inst.getBaseValue();
     }
 
     private static double[] values(LivingEntity mob) {
