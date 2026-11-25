@@ -478,6 +478,16 @@ public final class BuilderLowering {
                 a.add("recolour", recolour);
             }
         }
+        // #74: its health and attack damage are the ready-made's SHIPPED ones, sent with the sculpt: a Builder pet dragon
+        // has its 60 health in every world. Inheriting them from this world's record of the species made it 20 in a
+        // fresh world, and something else wherever a world had its own record. The shipped record wins over a world's;
+        // a world holds it down with its limits (#14), never by its record of the species.
+        JsonObject shipped = LibraryPresets.SHIPPED.species(Catalogue.bare(preset));
+        for (String k : new String[] {"health", "damage"}) {
+            if (shipped != null && shipped.has(k) && shipped.get(k).isJsonPrimitive()) {
+                a.add(k, shipped.get(k).deepCopy());
+            }
+        }
         List<String> powers = new ArrayList<>(temperPowers(spec.temper()));
         // what the starter does by being itself (a dragon flies and never burns, a T-Rex pounces). The lowering's
         // list replaces the starter's own file, so before this a Builder pet dragon walked and burned.

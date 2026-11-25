@@ -845,6 +845,42 @@ public final class ContractWorldGameTest {
         });
     }
 
+    @GameTest(template = "empty_test", batch = "contract_world_shipped_starter", timeoutTicks = 40000)
+    public static void aBuilderStarterHasItsShippedStatsAndTheWorldHoldsThemDown(GameTestHelper helper) {
+        ServerPlayer p = setUp(helper, "gtcontractshipped");
+        // this world has its own record of the pet dragon (a customised one): 100 health
+        Species custom = Species.fromJson(com.google.gson.JsonParser.parseString(
+                "{\"id\":\"pet_dragon\",\"name\":\"Pet Dragon\",\"powers\":[\"friendly\"],\"health\":100,\"damage\":9}")
+                .getAsJsonObject());
+        MockPlayerNetwork.afterTest(helper, SpeciesRegistry.putForTest(List.of(custom)));
+        Set<String> had = new java.util.HashSet<>();
+        SpeciesRegistry.all().forEach(sp -> had.add(sp.id()));
+        AtomicReference<BuilderMake.Result> made = new AtomicReference<>();
+        BuilderMake.make(p, new BuilderSpec(BuilderSpec.CURRENT, BuilderSpec.Kind.CREATURE, "preset:species/pet_dragon", "",
+                2, List.of(), "friendly", 1, "", "", Map.of()), BuilderAllowlist.REVIEWED).thenAcceptAsync(made::set);
+        com.moddingfromamod.test.RealTime.succeedWhen(helper, () -> {
+            BuilderMake.Result r = made.get();
+            helper.assertTrue(r != null && r.outcome() == BuilderMake.Outcome.MADE, Component.literal("the dragon: " + r));
+            Species dragon = null;
+            for (Species sp : SpeciesRegistry.all()) {
+                if (!had.contains(sp.id()) && sp.id().startsWith("pet_dragon")) {
+                    dragon = sp;
+                }
+            }
+            helper.assertTrue(dragon != null, Component.literal("the Builder's pet dragon is made"));
+            // #74: the SHIPPED ready-made's numbers, not this world's record of the species (and not a fresh world's 20/3)
+            var shipped = com.moddingfromamod.wishbuilder.LibraryPresets.SHIPPED.species("species/pet_dragon");
+            helper.assertTrue(Math.abs(dragon.health() - shipped.get("health").getAsDouble()) < 1e-6
+                            && Math.abs(dragon.damage() - shipped.get("damage").getAsDouble()) < 1e-6,
+                    Component.literal("its own stats are the shipped ones (" + shipped.get("health") + "/" + shipped.get("damage")
+                            + "): " + dragon.health() + "/" + dragon.damage()));
+            // and this world's limits hold it down where it stands (60 health over a limit of 40)
+            List<net.minecraft.world.entity.LivingEntity> fitted = fittedNear(helper, p);
+            helper.assertTrue(!fitted.isEmpty() && Math.abs(fitted.get(0).getMaxHealth() - ContractWorld.TOUGHEST) < 0.01,
+                    Component.literal("held to this world's most: " + (fitted.isEmpty() ? "none fitted" : fitted.get(0).getMaxHealth())));
+        });
+    }
+
     private static int count(String in, String what) {
         int n = 0;
         for (int i = in.indexOf(what); i >= 0; i = in.indexOf(what, i + 1)) {
