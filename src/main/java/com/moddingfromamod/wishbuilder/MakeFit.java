@@ -40,8 +40,9 @@ public final class MakeFit {
 
     private static Map<String, Fact> facts() {
         Map<String, Fact> m = new LinkedHashMap<>();
-        m.put(MakeFacts.HEALTH_HALF_HEARTS, new Fact(MakeFacts.HEALTH_HALF_HEARTS, false, NOTHING));
-        m.put(MakeFacts.ATTACK_DAMAGE_HALF_HEARTS, new Fact(MakeFacts.ATTACK_DAMAGE_HALF_HEARTS, false, NOTHING));
+        // no knob is assumed to move health or damage one way: every size and strength step is tried, highest first
+        m.put(MakeFacts.HEALTH_HALF_HEARTS, new Fact(MakeFacts.HEALTH_HALF_HEARTS, true, MakeFit::steps));
+        m.put(MakeFacts.ATTACK_DAMAGE_HALF_HEARTS, new Fact(MakeFacts.ATTACK_DAMAGE_HALF_HEARTS, true, MakeFit::steps));
         m.put(MakeFacts.MOVEMENT_SPEED_ATTRIBUTE, new Fact(MakeFacts.MOVEMENT_SPEED_ATTRIBUTE, false, NOTHING));
         m.put(MakeFacts.SCALE_TIMES, new Fact(MakeFacts.SCALE_TIMES, true, MakeFit::smaller));
         m.put(MakeFacts.BUILDER_SIZE_STEP, new Fact(MakeFacts.BUILDER_SIZE_STEP, true, MakeFit::smaller));
@@ -196,6 +197,39 @@ public final class MakeFit {
             out.add(with(s, s.size(), s.count(), o));
         }
         return out;
+    }
+
+    /**
+     * Every lower combination of the size and strength steps, highest first (the most size and strength kept that
+     * still fits), for a number no knob is known to move one way: health, attack damage. A discrete search, never a
+     * slope: each candidate is kept only when its RE-DERIVED facts fit ({@link #fit}), and when none does the make is
+     * not fitted at all (locked), never made wrong.
+     */
+    static List<BuilderSpec> steps(BuilderSpec s) {
+        List<BuilderSpec> sizes = new ArrayList<>();
+        sizes.add(s);
+        sizes.addAll(smaller(s));
+        List<BuilderSpec> out = new ArrayList<>();
+        for (BuilderSpec sized : sizes) {
+            out.add(sized);
+            out.addAll(gentler(sized));
+        }
+        out.remove(0);   // the make as it is is not a candidate
+        // highest first: the most steps kept, then the bigger size
+        out.sort((a, b) -> Integer.compare(stepsKept(b), stepsKept(a)));
+        return out;
+    }
+
+    private static int stepsKept(BuilderSpec s) {
+        int strength;
+        try {
+            strength = Integer.parseInt(s.opt("strength").strip());
+        } catch (NumberFormatException none) {
+            strength = 0;
+        }
+        BuilderMobSizes.Level l = s.opt("mobsize").isEmpty() ? null : BuilderMobSizes.of(s.opt("mobsize"));
+        int size = l == null ? s.size() : BuilderMobSizes.ALL.indexOf(l);
+        return size * 10 + strength;
     }
 
     /** Fewer at once. */

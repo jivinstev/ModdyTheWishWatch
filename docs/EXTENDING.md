@@ -112,8 +112,8 @@ test world below does, with a toy formula of its own).
 
   | Number | Unit | Present for |
   |---|---|---|
-  | `healthHalfHearts` | health points (one is half a heart) | a stored creature |
-  | `attackDamageHalfHearts` | health points | a stored creature |
+  | `healthHalfHearts` | health points (one is half a heart) | a Builder creature or ride (its ready-made's own), a stored creature |
+  | `attackDamageHalfHearts` | health points | a Builder creature or ride (its ready-made's own), a stored creature |
   | `movementSpeedAttribute` | the game's `movement_speed` attribute value (a zombie is 0.23) | a stored creature |
   | `scaleTimes` | times its normal size | a Builder creature or ride, a stored creature |
   | `builderSizeStep` | the Builder's size pick, 1 to 4 | a Builder creature, ride, building or event |
@@ -216,7 +216,8 @@ the limits the world gave.
 | `builderStrengthStep`, `durationTicks`, `radiusBlocks` | a lower strength |
 | `countMade` | fewer at once (a Builder make; a recipe's `wishmob spawn <id> <count>`) |
 | `amountItems` | fewer in a bundle of supplies |
-| `healthHalfHearts`, `attackDamageHalfHearts`, `movementSpeedAttribute`, `extentBlocks` | nothing: not clampable, so over the limit is locked |
+| `healthHalfHearts`, `attackDamageHalfHearts` | a discrete search, nothing assumed about which way they move: every lower combination of the size and strength steps is tried, the most kept first, and the first whose re-derived facts fit is made; none: locked. (No Builder knob moves a ready-made's health or damage today, so over the limit a Builder make is locked; a stored thing's own is never changed) |
+| `movementSpeedAttribute`, `extentBlocks` | nothing: not clampable, so over the limit is locked |
 
 - **Where the core asks:** every Builder and Apprentice make and every Builder change (`BuilderMake.make`, whatever page
   drew its tile); every tile of the Builder's pages and its tune dialog, per draw; a recipe, "Make another one" and a

@@ -40,8 +40,9 @@ import com.moddingfromamod.species.Species;
  * unit once shipped. A number is present only where the make really carries it; ABSENT means "not known", never 0
  * ({@link #number} is empty).
  * <ul>
- *   <li>{@link #HEALTH_HALF_HEARTS}: a stored creature's maximum health, in health points (one is half a heart);</li>
- *   <li>{@link #ATTACK_DAMAGE_HALF_HEARTS}: a stored creature's attack damage, in health points;</li>
+ *   <li>{@link #HEALTH_HALF_HEARTS}: a creature's maximum health, in health points (one is half a heart): a stored
+ *       creature's, or a Builder creature's ready-made's own;</li>
+ *   <li>{@link #ATTACK_DAMAGE_HALF_HEARTS}: a creature's attack damage, in health points, the same way;</li>
  *   <li>{@link #MOVEMENT_SPEED_ATTRIBUTE}: a stored creature's {@code movement_speed} attribute value (a zombie is 0.23);</li>
  *   <li>{@link #SCALE_TIMES}: how many times its normal size a creature is (a sculpt's {@code scale});</li>
  *   <li>{@link #BUILDER_SIZE_STEP}: the Builder's size pick, 1 to 4 (a creature, ride, building or event);</li>
@@ -498,6 +499,18 @@ public record MakeFacts(String kind, Map<String, Double> numbers, Set<String> ta
                     a.most(SCALE_TIMES, args.get("scale").getAsDouble());
                 }
                 if (sculpted) {
+                    // its health and attack damage: the sculpt's own (a body is sent whole), else the ready-made's it
+                    // starts from, which the sculpt keeps
+                    JsonObject from = args.has("health") || args.has("damage") ? args
+                            : LibraryPresets.SHIPPED.species("species/" + str(args, "start_from"));
+                    double health = numeric(from == null ? null : from.get("health"));
+                    double damage = numeric(from == null ? null : from.get("damage"));
+                    if (!Double.isNaN(health)) {
+                        a.most(HEALTH_HALF_HEARTS, health);
+                    }
+                    if (!Double.isNaN(damage)) {
+                        a.most(ATTACK_DAMAGE_HALF_HEARTS, damage);
+                    }
                     creatureLives(a, strings(args.get("powers")));
                 }
                 if ("guardian".equals(str(args, "base"))) {
