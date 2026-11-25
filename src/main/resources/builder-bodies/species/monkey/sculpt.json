@@ -5,8 +5,8 @@
   "powers": [
     "friendly"
   ],
-  "damage": 0,
-  "health": 20,
+  "damage": 3,
+  "health": 18,
   "speed": 0.3,
   "note": "Plain base monkey: brown fur (#6B4226, fur pattern) with tan (#D9B48A) face muzzle, belly, ears, hands, feet; long curled tail; cheerful 3-box smile, relaxed brows. Face at -z. No accessories so it can be start_from'd.",
   "palette": [

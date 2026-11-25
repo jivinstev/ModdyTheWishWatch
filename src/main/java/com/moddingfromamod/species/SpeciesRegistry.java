@@ -428,6 +428,7 @@ public final class SpeciesRegistry {
                 purged++;
             }
         }
+        int restatted = restatLibraryCopies();
         // NOTE: there is deliberately no "global creatures" load here any more. It read
         // ~/.moddingfromamod/species/ so a creature could appear in EVERY world — one half of the
         // split brain (see WorldPaths), and the half that could not even be reached: only the
@@ -445,14 +446,56 @@ public final class SpeciesRegistry {
                 filled++;
             }
         }
-        if (purged > 0 || filled > 0 || SHELF.needsConverge()) {
+        if (purged > 0 || filled > 0 || restatted > 0 || SHELF.needsConverge()) {
             save(server);
             if (purged > 0) {
                 LOGGER.info("dropped {} superseded creature definition(s)", purged);
             }
+            if (restatted > 0) {
+                LOGGER.info("{} library creature(s) take their shipped health, damage, armour and knockback again (#99)",
+                        restatted);
+            }
         }
         com.moddingfromamod.runtime.ModelRepository.shelveOwnedModels(ownedModelKeys());
         LOGGER.info("{} wish creature species available", SPECIES.size());
+    }
+
+    /**
+     * <b>A world's copy of a library creature reads its numbers from the shipped record again</b> (#99). The first
+     * spawn of a library creature (a starter's pet dragon) registers a SHARED copy in the world, and every later spawn
+     * reads that copy ({@code WishMobCommands.resolveSpecies}), so a shipped change to its stat line never reached a
+     * world that had spawned one. An edit of a library creature always forks it ({@code ForkPolicy}), so an unowned
+     * copy under a library id is a pure copy: only its health, attack damage, armour and knockback are taken from the
+     * shipped record (nothing about its look, powers or moves), and only where they differ. Returns how many changed.
+     */
+    private static int restatLibraryCopies() {
+        int changed = 0;
+        for (Species s : List.copyOf(SPECIES.values())) {
+            if (!s.ownerId().isEmpty()) {
+                continue;
+            }
+            Path shippedFile;
+            try {
+                shippedFile = com.moddingfromamod.library.WishLibrary.artifactFile("species", s.id(), "species.json");
+            } catch (RuntimeException e) {
+                continue;   // no library on this server: nothing to read again
+            }
+            if (shippedFile == null) {
+                continue;
+            }
+            try {
+                JsonObject shipped = com.google.gson.JsonParser.parseString(
+                        java.nio.file.Files.readString(shippedFile, java.nio.charset.StandardCharsets.UTF_8)).getAsJsonObject();
+                Species next = s.withShippedStats(shipped);
+                if (!next.equals(s)) {
+                    SPECIES.put(s.id(), next);
+                    changed++;
+                }
+            } catch (java.io.IOException | RuntimeException e) {
+                LOGGER.warn("could not read the shipped record of library creature {}: {}", s.id(), e.toString());
+            }
+        }
+        return changed;
     }
 
     /** Model key to owner, for every owned creature — what {@code ModelRepository} shelves by. */

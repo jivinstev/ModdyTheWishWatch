@@ -570,6 +570,23 @@ public record Species(String id, String name, Body body, String texture, int tin
         }
     }
 
+    /**
+     * <b>The same creature with its shipped stat line</b> (#99): health, attack damage, armour and knockback resistance
+     * from {@code shipped} (a library creature's own {@code species.json}), each only where the record states it.
+     * Everything else (its look, name, powers, moves, instinct, owner) is kept. A world's copy of a library creature
+     * is a pure copy (an edit of one always forks it, {@code ForkPolicy}), so reading its numbers again from the
+     * shipped record changes nothing a player chose.
+     */
+    public Species withShippedStats(JsonObject shipped) {
+        if (shipped == null) {
+            return this;
+        }
+        return new Species(id, name, body, texture, tint, scale, dbl(shipped, "health", health), speed,
+                dbl(shipped, "damage", damage), dbl(shipped, "armor", armor),
+                dbl(shipped, "knockbackResistance", knockbackResistance), powers, modelKey, base, abilities,
+                abilityPacks, ownerId, voice, throwsItem, behaves);
+    }
+
     /** The same creature with this voice. */
     public Species withVoice(Voice v) {
         return new Species(id, name, body, texture, tint, scale, health, speed, damage, armor,

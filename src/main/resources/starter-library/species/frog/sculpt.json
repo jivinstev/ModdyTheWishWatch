@@ -7,8 +7,8 @@
     "friendly",
     "leaps"
   ],
-  "damage": 0,
-  "health": 20,
+  "damage": 2,
+  "health": 12,
   "parts": [
     {
       "name": "body",
