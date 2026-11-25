@@ -28,7 +28,9 @@ import com.moddingfromamod.world.WorldMakes;
  *       {@link #BIGGEST_STEP}, no tougher than {@link #TOUGHEST} health, hitting no harder than {@link #HARDEST}, with no more than
  *       {@link #HARDEST_SHELL} armour and {@link #STEADIEST} knockback resistance (raised by a later {@link #round}):
  *       {@code FIT}, stated up front ({@link Answers#limits}, stamp {@link #STAMP}) and in each answer;</li>
- *   <li>a tag, number or kind it has never heard of is simply allowed.</li>
+ *   <li>a tag, number or kind it has never heard of is simply allowed;</li>
+ *   <li>a player whose workshop is open ({@link #keepFor}) has each new make kept and handed over (#70), and every
+ *       hand-over is written down ({@link #handedOver}); everyone else's lands, the default.</li>
  * </ul>
  *
  * <p>Test code: under {@code test/}, never in the jar.
@@ -91,6 +93,32 @@ public final class ContractWorld implements ModdyPlugin {
         return Map.copyOf(later);
     }
 
+    private static final Map<UUID, com.moddingfromamod.world.Landing> KEEPS = new java.util.concurrent.ConcurrentHashMap<>();
+    private static final java.util.List<com.moddingfromamod.world.HandedOver> HANDED =
+            new java.util.concurrent.CopyOnWriteArrayList<>();
+
+    /** Open {@code player}'s workshop (#70): his new makes go where {@code landing} says; null closes it. */
+    public static void keepFor(UUID player, com.moddingfromamod.world.Landing landing) {
+        if (landing == null) {
+            KEEPS.remove(player);
+        } else {
+            KEEPS.put(player, landing);
+        }
+    }
+
+    private static final java.util.List<com.moddingfromamod.world.NotKept> NOT_KEPT =
+            new java.util.concurrent.CopyOnWriteArrayList<>();
+
+    /** Every make it asked to keep that the core did not, for {@code player}, oldest first. */
+    public static java.util.List<com.moddingfromamod.world.NotKept> notKept(UUID player) {
+        return NOT_KEPT.stream().filter(h -> h.player().equals(player)).toList();
+    }
+
+    /** Every hand-over the core told this world of, for {@code player}, oldest first. */
+    public static java.util.List<com.moddingfromamod.world.HandedOver> handedOver(UUID player) {
+        return HANDED.stream().filter(h -> h.player().equals(player)).toList();
+    }
+
     /** Back to the first round for every player (a test's tidy-up). */
     public static void forgetRounds() {
         ROUNDS.clear();
@@ -144,6 +172,22 @@ public final class ContractWorld implements ModdyPlugin {
                 case LOCKED -> MakeView.locked(LOCKED_WORDS);
                 case ALLOWED -> MakeView.fit(limitsFor(ask == null ? null : ask.player()));
             };
+        }
+
+        @Override
+        public com.moddingfromamod.world.Landing landing(MakeFacts facts, WishAsk ask) {
+            return ask == null ? com.moddingfromamod.world.Landing.LANDS
+                    : KEEPS.getOrDefault(ask.player(), com.moddingfromamod.world.Landing.LANDS);
+        }
+
+        @Override
+        public void handedOver(com.moddingfromamod.world.HandedOver what) {
+            HANDED.add(what);
+        }
+
+        @Override
+        public void notKept(com.moddingfromamod.world.NotKept what) {
+            NOT_KEPT.add(what);
         }
 
         @Override

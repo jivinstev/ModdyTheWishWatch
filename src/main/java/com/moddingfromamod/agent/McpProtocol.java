@@ -609,6 +609,19 @@ public final class McpProtocol {
                         ActionLog.toolCall(name, args, out, 0, wishId);
                         return HttpReply.json(200, rpcResult(id, toolContent(out)), sessionId);
                     }
+                    // #70: A WISH THIS WORLD KEEPS. Decided ONCE, at its first plan (WorldMakes.landing, asked with
+                    // the plan's kind), and locked on the run like its aim; then every placing call is refused here,
+                    // in the one dispatch, so nothing a Magician does can place it. A Builder make decides its own.
+                    if ("plan_wish".equals(name) && !runNow.builderMade() && runNow.landing() == null) {
+                        decideLanding(runNow, args, wishId);
+                    }
+                    String keptNo = KeptWish.refusal(name, args, runNow.landing());
+                    if (keptNo != null) {
+                        LOGGER.info("[kept] wish {}: {} refused (it would place)", wishId, name);
+                        out = ToolResult.error(keptNo);
+                        ActionLog.toolCall(name, args, out, 0, wishId);
+                        return HttpReply.json(200, rpcResult(id, toolContent(out)), sessionId);
+                    }
                 }
                 // Where the record of creatures standing in the world is, before the call (the early
                 // reveal, 2026-10-21): afterwards, anything newer stood up DURING it.
@@ -773,6 +786,23 @@ public final class McpProtocol {
                                 // you also say who is asking; an MCP session is one parked agent,
                                 // so it is the worker id.
                                 final McpTool called = tool;
+                                // #69: what this world allows, fitted into the arguments a make fact measures, AFTER
+                                // safety and the world's rules (a refused call never gets here); the core's note is
+                                // added to the result below. No world answering: nothing is touched.
+                                // A Builder make is fitted by the Builder itself (MakeGate.build, the live fit) and says so.
+                                final boolean fitting = runNow != null && !runNow.builderMade()
+                                        && com.moddingfromamod.wish.MakeGate.anyWorld();
+                                final JsonObject askedArgs = fitting ? args.deepCopy() : null;
+                                final var fittedArgs = fitting
+                                        ? ToolArgFit.fit(name, args,
+                                                com.moddingfromamod.wish.MakeGate.limits(runNow.playerId()).limits())
+                                        : java.util.List.<ToolArgFit.Lowered>of();
+                                if (!fittedArgs.isEmpty()) {
+                                    // the action log keeps BOTH, so a replay can tell "the agent asked 10" from "the
+                                    // world allowed 3": logged before the call, whatever its outcome
+                                    LOGGER.info("[world fit] wish {}: {} asked {} fitted {} ({})", wishId, name, askedArgs,
+                                            args, fittedArgs);
+                                }
                                 if (asyncPlan) {
                                     // Opened BEFORE the body, so what it shows the child is held.
                                     com.moddingfromamod.marshal.PlanDeferral.global().hold(runNow.wishId());
@@ -791,6 +821,21 @@ public final class McpProtocol {
                                         out = new ToolResult(out.text() + "\n\n" + PLAN_BEING_CHECKED,
                                                 false, out.imageBase64(), out.imageMime());
                                     }
+                                }
+                                if (runNow != null && runNow.kept() && !out.isError()) {
+                                    afterKept(runNow, name, args, wishId);
+                                    if ("plan_wish".equals(name)) {
+                                        out = new ToolResult(out.text() + KeptWish.brief(runNow.landing()), false,
+                                                out.imageBase64(), out.imageMime());
+                                    }
+                                }
+                                // The note only on a result that stood. The non-live arguments were already fitted
+                                // BEFORE the call, error or not, and that is deliberate: a tool must never run with more
+                                // than this world allows, so do not move the fitting after the call. A failed call made
+                                // nothing, so there is nothing to tell the player about.
+                                if (!fittedArgs.isEmpty() && !out.isError()) {
+                                    out = new ToolResult(out.text() + ToolArgFit.notes(fittedArgs), false,
+                                            out.imageBase64(), out.imageMime());
                                 }
                                 if (!heldBack.isEmpty()) {
                                     LOGGER.info("[internals] wish {}: {} held back {}", wishId, name, heldBack);
@@ -1141,4 +1186,55 @@ public final class McpProtocol {
         return out;
     }
 
+
+    /**
+     * #70: where this Magician wish's make goes, asked of the world ONCE, at its first {@code plan_wish}, with the plan's
+     * kind ({@code MakeFacts.cautious}: nothing is made yet) and locked on the run. A kind with no replay recipe, or an
+     * edit of his thing, lands: when the world asked otherwise, that is logged as a warning, never dropped silently.
+     */
+    private static void decideLanding(com.moddingfromamod.marshal.WishRun run, JsonObject args, String wishId) {
+        if (!com.moddingfromamod.wish.MakeGate.anyWorld()) {
+            run.lockLanding(com.moddingfromamod.world.Landing.LANDS);   // the plain game: nothing asked
+            return;
+        }
+        String kind = args != null && args.has("kind") && args.get("kind").isJsonPrimitive()
+                ? args.get("kind").getAsString() : null;
+        String about = args != null && args.has("about") && args.get("about").isJsonPrimitive()
+                ? args.get("about").getAsString().strip() : "";
+        boolean isNew = "new".equalsIgnoreCase(about);
+        String k = KeptWish.kindOf(kind);
+        // asked on the server thread, as every WorldMakes question is (this is the MCP dispatch thread)
+        com.moddingfromamod.world.Landing asked;
+        try {
+            asked = AgentBridge.onServer(() -> com.moddingfromamod.wish.MakeGate.landing(
+                    com.moddingfromamod.wishbuilder.MakeFacts.cautious(k),
+                    com.moddingfromamod.wish.WishAsk.of(run.playerId(), com.moddingfromamod.wish.WishSource.TYPED,
+                            com.moddingfromamod.wish.WishAsk.Magic.MAGICIAN)));
+        } catch (RuntimeException e) {
+            LOGGER.warn("[kept] wish {}: the world could not be asked where it goes ({}); it lands", wishId, e.toString());
+            asked = com.moddingfromamod.world.Landing.LANDS;
+        }
+        var decided = KeptWish.decide(k, isNew, asked);
+        if (asked != com.moddingfromamod.world.Landing.LANDS && decided == com.moddingfromamod.world.Landing.LANDS) {
+            LOGGER.warn("[kept] wish {}: this world asked {} for a {} ({}); it lands: only a new creature, building, "
+                    + "event or item has a recipe to hand over", wishId, asked, k, isNew ? "new" : "a change");
+            var told = new com.moddingfromamod.world.NotKept(run.playerId(), k, asked, isNew
+                    ? com.moddingfromamod.world.NotKept.Why.NO_REPLAY_RECIPE : com.moddingfromamod.world.NotKept.Why.A_CHANGE);
+            AgentBridge.onServerRun(() -> com.moddingfromamod.wish.MakeGate.notKept(told));
+        }
+        if (run.lockLanding(decided, k)
+                && decided != com.moddingfromamod.world.Landing.LANDS) {
+            LOGGER.info("[kept] wish {}: kept by this world ({}, a {})", wishId, decided, kind);
+        }
+    }
+
+    /** #70, after a kept wish's call stood: a taught recipe is remembered; finishing hands it over, once. */
+    private static void afterKept(com.moddingfromamod.marshal.WishRun run, String name, JsonObject args, String wishId) {
+        if ("add_template".equals(name) && args != null && args.has("id") && args.get("id").isJsonPrimitive()) {
+            run.taught(args.get("id").getAsString());
+        } else if ("finish_wish".equals(name) && run.handOverOnce()) {
+            LOGGER.info("[kept] wish {}: finished; handing over {}", wishId, run.taughtIds());
+            com.moddingfromamod.wish.KeptHandOver.magician(run);
+        }
+    }
 }
