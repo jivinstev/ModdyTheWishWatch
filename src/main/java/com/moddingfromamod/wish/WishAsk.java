@@ -17,10 +17,8 @@ import java.util.UUID;
  * @param magic    what kind of magic grants it
  * @param text     the wish's words as the core holds them (sanitised typed words, a recipe's words, a Builder make's
  *                 {@code Builder: …} line), or {@code ""}
- * @param distress the safety lexicon read these words as a child in distress: such a wish is never refused (the core
- *                 lets it through whatever a charge answers)
  */
-public record WishAsk(UUID player, WishSource source, String recipe, Magic magic, String text, boolean distress) {
+public record WishAsk(UUID player, WishSource source, String recipe, Magic magic, String text) {
 
     /** The kind of magic a wish is granted by. */
     public enum Magic {
@@ -49,11 +47,11 @@ public record WishAsk(UUID player, WishSource source, String recipe, Magic magic
     }
 
     /**
-     * A wish of {@code player}'s from {@code source}, granted by {@code magic}, with no recipe, no words and no distress.
+     * A wish of {@code player}'s from {@code source}, granted by {@code magic}, with no recipe and no words.
      * The kind of magic is always named by the caller: there is no default to assume.
      */
     public static WishAsk of(UUID player, WishSource source, Magic magic) {
-        return new WishAsk(player, source, "", magic, "", false);
+        return new WishAsk(player, source, "", magic, "");
     }
 
     /** A kept thing made again from {@code recipe}: what a hotbar proxy asks about. */
@@ -76,18 +74,33 @@ public record WishAsk(UUID player, WishSource source, String recipe, Magic magic
     }
 
     public WishAsk withRecipe(String recipe) {
-        return new WishAsk(player, source, recipe, magic, text, distress);
+        return new WishAsk(player, source, recipe, magic, text);
     }
 
     public WishAsk withMagic(Magic magic) {
-        return new WishAsk(player, source, recipe, magic, text, distress);
+        return new WishAsk(player, source, recipe, magic, text);
     }
 
     public WishAsk withText(String text) {
-        return new WishAsk(player, source, recipe, magic, text, distress);
+        return new WishAsk(player, source, recipe, magic, text);
     }
 
+    /**
+     * <b>Removed; kept so older world jars still load; deleted in a later release.</b> The core no longer reads a
+     * wish as "a child in distress" (the safety lexicon's wellbeing phrases were removed), so this is always
+     * {@code false}. See {@code docs/EXTENDING.md} ("Removed, kept for older world jars") for when it goes.
+     */
+    @Deprecated(forRemoval = true)
+    public boolean distress() {
+        return false;
+    }
+
+    /**
+     * <b>Removed; kept so older world jars still load; deleted in a later release.</b> Returns this ask unchanged:
+     * there is no distress flag to set any more ({@link #distress()} is always {@code false}).
+     */
+    @Deprecated(forRemoval = true)
     public WishAsk withDistress(boolean distress) {
-        return new WishAsk(player, source, recipe, magic, text, distress);
+        return this;
     }
 }

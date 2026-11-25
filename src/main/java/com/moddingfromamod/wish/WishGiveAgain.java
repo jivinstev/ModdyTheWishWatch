@@ -84,7 +84,8 @@ public final class WishGiveAgain {
     public static final String COMMAND = "/" + ChildCommands.MODDY + " " + ChildCommands.GIVE;
 
     /** What happened, so a caller can report it without re-deriving it. */
-    public enum Result { GAVE, UNKNOWN, AMBIGUOUS, BROKEN, NOTHING_REMEMBERED, BANK_EMPTY }
+    /** {@code NOT_HERE}: this world does not make that thing here, or not yet (#14); said, nothing charged or given. */
+    public enum Result { GAVE, UNKNOWN, AMBIGUOUS, BROKEN, NOTHING_REMEMBERED, BANK_EMPTY, NOT_HERE }
 
     /**
      * Hand back one of the things this child has already been given.
@@ -161,6 +162,20 @@ public final class WishGiveAgain {
      * his Wish Bag — and he is told which, then what is left in his bank.
      */
     private static Result handOver(ServerPlayer player, ItemStack stack, String said, String key, String name) {
+        // the world's view first (#14): a thing it hides or keeps locked here is not handed over, and nothing is charged
+        WishAsk asked = WishAsk.replay(player.getUUID(), key).withText(name);
+        if (MakeGate.anyWorld()) {
+            String kind = SpeciesRegistry.get(key) != null ? "creature" : "item";
+            var facts = MakeFactsLookup.forThing(player.level().getServer(), kind, key);
+            MakeVerdict v = MakeGate.ask(facts, asked);
+            if (v.makes() && !com.moddingfromamod.wishbuilder.MakeFit.satisfiesHere(facts, v.limits())) {
+                v = v.tooMuch();   // one of a kept thing: nothing of it can be made smaller here
+            }
+            if (!v.makes()) {
+                MakeGate.say(player, v);
+                return Result.NOT_HERE;
+            }
+        }
         // the charge is told which thing: a replay of the key /moddy give takes (an item's, or a creature's for its egg)
         var paid = WishCharge.get().chargeAgain(player, WishCharge.Again.GIVE_ONE,
                 WishAsk.replay(player.getUUID(), key).withText(name));

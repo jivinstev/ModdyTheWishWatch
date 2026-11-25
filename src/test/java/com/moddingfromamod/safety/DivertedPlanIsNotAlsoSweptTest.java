@@ -38,10 +38,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * branch that decides whether the call proceeds.
  *
  * <p>The consequence is a log-correctness one rather than a refusal one, which is why it needs a
- * test rather than an eye: the sweep LOGS its hits and writes a grown-up note reading <i>"Moddy was
- * about to say …"</i>. So a diverted {@code plan_wish} whose own {@code status} also tripped the
- * lexicon left a {@code layer:"text"} record and a parent-facing note about a sentence no child
- * ever read. §6's whole premise is that a decision can be explained afterwards from the log, and a
+ * test rather than an eye: the sweep LOGS its hits. So a diverted {@code plan_wish} whose own
+ * {@code status} also tripped the lexicon left a {@code layer:"text"} record about a sentence no
+ * child ever read. §6's whole premise is that a decision can be explained afterwards from the log, and a
  * log that describes things which did not happen cannot be counted.
  *
  * <p>Driven through the real {@code tools/call} dispatch rather than by calling the two gates in
@@ -147,14 +146,14 @@ class DivertedPlanIsNotAlsoSweptTest {
     // ---- the rule ----
 
     @Test
-    void aDivertedPlanWritesNoTextRecordAndNoGrownUpNote(@TempDir Path dir) throws Exception {
+    void aDivertedPlanWritesNoTextRecord(@TempDir Path dir) throws Exception {
         System.setProperty(ModdingFromAModMod.MODID + ".home", dir.toString());
         RuntimeConfig.invalidate();
         ActionLog.resetForTest();
         // A LIKELY plan with a usable redirect is the DIVERT row — the tool body does not run.
         SafetyGrader.forTest(text -> new SafetyVerdict(
                 SafetyVerdict.Band.LIKELY, SafetyVerdict.Band.FINE, SafetyVerdict.Band.FINE,
-                SafetyVerdict.Band.FINE, false, List.of(SafetyVerdict.Reason.GORE),
+                SafetyVerdict.Band.FINE, List.of(SafetyVerdict.Reason.GORE),
                 "a zombie that bonks villagers with a rubber chicken",
                 SafetyVerdict.Provenance.HAIKU, 0));
 
@@ -169,8 +168,6 @@ class DivertedPlanIsNotAlsoSweptTest {
                         .filter(o -> "text".equals(o.get("layer").getAsString())).count(),
                 "a diverted plan reached no child, so there is nothing for a `text` record to "
                         + "describe — the sweep must not have run at all");
-        assertFalse(Files.exists(dir.resolve("grown-up-notes.jsonl")),
-                "and no parent-facing note about a sentence that was never said");
     }
 
     @Test

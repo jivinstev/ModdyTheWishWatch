@@ -6,6 +6,7 @@ import com.google.gson.JsonObject;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -90,6 +91,16 @@ public record BuilderAllowlist(Set<BuilderSpec.Kind> kinds, Set<String> ids, Set
         }
         return new BuilderSpec(spec.version(), spec.kind(), spec.from(), spec.scheme(), spec.size(), spec.powers(),
                 spec.temper(), spec.count(), spec.at(), spec.name(), opts);
+    }
+
+    /**
+     * {@code spec} as THIS world makes it, within the {@code limits} the world gave (#14: a {@code MakeFacts.NUMBERS}
+     * key → its most): {@link #capped(BuilderSpec)} first, then {@link MakeFit#fit}. The one way a make is fitted, from
+     * a menu's Make, an Apprentice tile, a page drawn under limits. {@link MakeFit.Fitted#fits} false: it cannot be made
+     * within them.
+     */
+    public MakeFit.Fitted capped(BuilderSpec spec, Map<String, Double> limits) {
+        return MakeFit.fit(capped(spec), limits);
     }
 
     /**

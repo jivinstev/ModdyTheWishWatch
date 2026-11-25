@@ -259,7 +259,8 @@ public final class WatchMenu extends ChestMenu {
                         world.guide().hasBook(), world.guide().book().title(),
                         starters));
         // a Magician picks who answers his typed wishes, where the Apprentice exists (the Builder is on).
-        if (!CrafterService.isCrafter(player) && com.moddingfromamod.wishbuilder.BuilderSettings.forPlayer(player.getUUID()).enabled()) {
+        // Only where the Magician would answer (#78): with it off there is no Magician magic to switch to.
+        if (MagicianDoor.offered(player) && com.moddingfromamod.wishbuilder.BuilderSettings.forPlayer(player.getUUID()).enabled()) {
             boolean apprentice = ApprenticeService.prefersApprentice(player);
             page = com.moddingfromamod.marshal.GuidePanel.withMode(page,
                     com.moddingfromamod.wishbuilder.ApprenticeWords.modeLabel(apprentice),
@@ -426,7 +427,15 @@ public final class WatchMenu extends ChestMenu {
                                              WatchPanel.Grid grid, boolean library) {
         List<WatchRow.Creation> creations = new ArrayList<>();
         for (String row : creationRows) {
-            creations.add(WatchRow.Creation.decode(row));
+            WatchRow.Creation c = WatchRow.Creation.decode(row);
+            // #14: this world's view of each thing on his shelf, worked out now and never written anywhere: a thing it
+            // hides is not on this world's watch (it stays on his shelf for every other world), a thing it locks is
+            // shown with the world's words first, its "Make another one" refused in them.
+            MakeVerdict v = viewOf(viewerId, c);
+            if (v.hidden()) {
+                continue;
+            }
+            creations.add(v.locked() ? c.withFirstLine(v.line()) : c);
         }
         List<WatchPanel.PresetRow> presets = new ArrayList<>();
         // ONE TILE PER THING HE MADE: a taught recipe whose own commands
@@ -472,6 +481,32 @@ public final class WatchMenu extends ChestMenu {
                 !library && com.moddingfromamod.wishbuilder.BuilderSettings.forPlayer(viewer).enabled());
     }
 
+    /** This world's view of one thing on a watch: allowed when no world answers, or the viewer is not a player. */
+    public static MakeVerdict viewOf(String viewerId, WatchRow.Creation c) {
+        if (!MakeGate.anyWorld() || viewerId == null || viewerId.isBlank()) {
+            return MakeVerdict.ALLOWED;
+        }
+        java.util.UUID viewer;
+        try {
+            viewer = java.util.UUID.fromString(viewerId);
+        } catch (IllegalArgumentException notAUuid) {
+            return MakeVerdict.ALLOWED;
+        }
+        String kind = switch (c.kind() == null ? "" : c.kind()) {
+            case "species" -> "creature";
+            case "build" -> "building";
+            case "item" -> "item";
+            case "painting", "picture" -> "picture";
+            default -> "";
+        };
+        if (kind.isEmpty()) {
+            return MakeVerdict.ALLOWED;   // a wish, an event or a rule tile: asked where it is made again
+        }
+        var facts = MakeFactsLookup.forThing(null, kind, c.id());
+        MakeVerdict v = MakeGate.ask(facts, WishAsk.replay(viewer, c.recipeId()).withText(c.name()));
+        return v.makes() && !com.moddingfromamod.wishbuilder.MakeFit.satisfiesHere(facts, v.limits()) ? v.tooMuch() : v;
+    }
+
     /**
      * A WISH CRAFTER's panel (step 5). His "✍ Wish for something new!" is the same tile in the same
      * slot as a Magician's and opens the same wish box; only its second line differs, because what answers him is
@@ -479,7 +514,8 @@ public final class WatchMenu extends ChestMenu {
      * changes. Who answers is decided again on the server at submit: the lore is a courtesy.
      */
     static WatchPanel.Layout forRole(ServerPlayer player, WatchPanel.Layout l) {
-        if (!CrafterService.isCrafter(player)) {
+        // "Type anything you can imagine" is the Magician's promise: only where he would answer the box (#78)
+        if (MagicianDoor.offered(player)) {
             return l;
         }
         List<WatchPanel.Cell> cells = new ArrayList<>();

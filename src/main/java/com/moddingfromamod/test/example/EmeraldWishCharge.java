@@ -35,10 +35,10 @@ public final class EmeraldWishCharge implements WishCharge {
         return List.of(PRICE_LINE);
     }
 
-    /** Server thread. Never refuse a child in distress: the core asks this before anything is charged. */
+    /** Server thread. The core asks this before anything is charged. */
     @Override
     public boolean refusesAtSubmit(ServerPlayer player, boolean distress, String text, boolean recipe) {
-        if (distress || player.getInventory().countItem(Items.EMERALD) > 0) {
+        if (player.getInventory().countItem(Items.EMERALD) > 0) {
             return false;
         }
         player.sendSystemMessage(Component.literal(NO_EMERALD));

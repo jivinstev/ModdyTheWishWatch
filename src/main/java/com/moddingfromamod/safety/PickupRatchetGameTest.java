@@ -81,7 +81,7 @@ public class PickupRatchetGameTest {
 
     private static String verdictJson(String band, String redirect, int stage) {
         return "{\"violence\":\"" + band + "\",\"sexual\":\"FINE\",\"hate\":\"FINE\",\"danger\":\"FINE\","
-                + "\"wellbeing\":false,\"reasons\":[" + ("FINE".equals(band) ? "" : "\"GORE\"") + "],"
+                + "\"reasons\":[" + ("FINE".equals(band) ? "" : "\"GORE\"") + "],"
                 + "\"redirect\":\"" + redirect + "\",\"stageIndex\":" + stage + "}";
     }
 

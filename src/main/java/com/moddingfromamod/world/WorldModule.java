@@ -73,6 +73,14 @@ public interface WorldModule {
     }
 
     /**
+     * What may be made in THIS world, and what waits ({@link WorldMakes}): this level's own, or null for the registered
+     * one, else everything allowed. {@code WorldMakes.get()} asks the running module first, as the charge does.
+     */
+    default WorldMakes makes() {
+        return null;
+    }
+
+    /**
      * The rules in force until this world's rules file has been read. A world with bases defaults to
      * {@link WorldRules#CLOSED} — never looser than before the file existed.
      */

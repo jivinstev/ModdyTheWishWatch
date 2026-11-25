@@ -5,8 +5,7 @@ import net.minecraft.server.level.ServerPlayer;
 
 /**
  * <b>The core's one way to ask this world's charge whether a wish may start</b> ({@link WishCharge#refuses}), and to
- * say its answer. Every place a wish starts asks through here, so the distress rule, the text sweep and the fallback
- * line ({@link ChargeRefusal}) are the same at each. Server thread.
+ * say its answer. Every place a wish starts asks through here, so the text sweep and the fallback line ({@link ChargeRefusal}) are the same at each. Server thread.
  */
 public final class ChargeGate {
 
