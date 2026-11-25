@@ -1,6 +1,6 @@
 {
  "behaves_like": "grazer",
- "damage": 0,
+ "damage": 10,
  "health": 120,
  "id": "triceratops",
  "name": "Triceratops",

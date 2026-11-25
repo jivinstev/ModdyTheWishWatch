@@ -131,8 +131,10 @@ class MakeFitTest {
         assertTrue(three.fits() && three.changed() && three.spec().count() == 3, three.toString());
         assertEquals(List.of(MakeFacts.COUNT_MADE), three.lowered());
         for (var e : MakeFit.FACTS.values()) {
-            assertEquals(e.clampable(), !List.of(MakeFacts.MOVEMENT_SPEED_ATTRIBUTE, MakeFacts.EXTENT_BLOCKS)
-                    .contains(e.key()), e.key());
+            // #102: what a creature's moves do a second is read, not lowered
+            assertEquals(e.clampable(), !List.of(MakeFacts.MOVEMENT_SPEED_ATTRIBUTE, MakeFacts.EXTENT_BLOCKS,
+                    MakeFacts.MOVE_DAMAGE_HALF_HEARTS_PER_SECOND, MakeFacts.EFFECTIVE_DAMAGE_HALF_HEARTS_PER_SECOND,
+                    MakeFacts.HEAL_HALF_HEARTS_PER_SECOND).contains(e.key()), e.key());
         }
     }
 

@@ -47,7 +47,8 @@ Moddy is made for children. Everything a player reads or types goes through the 
 - `corpus/`: small public data sets the tests read.
 - `tools/`: `store-release.sh` (builds the release jar), `precompile-ready-mades.sh` (rebuilds the precompiled
   Builder and Apprentice powers), `fetch-apprentice-model.sh` (the Apprentice's pinned sentence
-  model), `secret-scan.py` (refuses a committed credential), `leak-scan.py`, and their tests.
+  model), `secret-scan.py` (refuses a committed credential), `leak-scan.py`, `licence-scan.py` (refuses third-party
+  code off the licence allow-list; its rules in `licence-rules.json`), and their tests.
 - `art/`: source art for icons.
 
 ## Build and test
@@ -61,12 +62,12 @@ python3 tools/gate/gate.py run --shard ci --out /tmp/gt   # Gate B as CI runs it
 ```
 
 - **Gate A** is `./gradlew build`: compile, every unit test (`gate-a.gradle` configures the `test` task: one retry of a
-  failed test, recorded, and the ambient API keys removed so a test that needs one fails here rather than in CI).
+  failed test, recorded, and the ambient API keys removed so a test that needs one fails here rather than in CI), and
+  the licence checks (`licenceRegister`: `tools/licence-scan.py --tree`; `licenceCheck`: every library the jar nests).
 - **Gate B** boots a headless dedicated server and runs every `@GameTest` in the chosen shards. `-Pshard` takes a
   comma-separated list (`ci`, `default`, or `all`); `-Pgametests=ClassA,ClassB` runs only those classes
-  (`ClassA.method` one test), `-Pgatenotclasses=…` every class but those. Gate B needs
-  Python 3 with `ply` (`pip install ply`) for the datapack compiler; without it every datapack test fails with a
-  message that blames the catalogue, not the missing package.
+  (`ClassA.method` one test), `-Pgatenotclasses=…` every class but those. The datapack compiler is in the jar (no
+  Python needed).
 - **Gate C** is a real client. Anything a player can see or hear needs it; a clean compile and green headless tests do
   not prove a texture, a sound, a menu or a creative tab. On Linux without a display, `xvfb-run` works with software
   rendering.
@@ -76,7 +77,7 @@ python3 tools/gate/gate.py run --shard ci --out /tmp/gt   # Gate B as CI runs it
 - Where a new GameTest goes is checked by `GateShardsTest` (Gate A): it fails by file name and says which annotation
   to use. A test in no shard would never run while the gate stays green.
 
-**CI** (`.github/workflows/ci.yml`): the leak scan, Gate A and Gate B's `ci` shard on every pull request; a pull request
+**CI** (`.github/workflows/ci.yml`): the leak, secret and licence scans, Gate A and Gate B's `ci` shard on every pull request; a pull request
 merges on those three green. A pull request that only touches `tools/client-validation/` or `.github/port-publish/` (nothing a
 build or test reads) runs the scan alone; Gate A and Gate B show as skipped. Docs are not in that list: tests read them.
 
@@ -191,10 +192,8 @@ or the jar from `build/libs/` in a NeoForge 1.21.8 install):
    API keys** (shown only when a key is set). One press sets the four model choices, checks the program is installed
    and signed in, runs the Magician check (every safety grader, one forced refusal and one small test wish, about 3
    minutes) and turns the Magician on, with progress on the action bar and one result line; a failure says the one
-   thing to do. The setup also checks for a working **Python 3** (`datapack/PythonCheck`: the Windows Store stub and
-   Python 2 are recognised, then a tiny compile proves the bundled compiler runs); Python missing never blocks turning
-   the Magician on, it adds one result line saying what to install, and a power wished without it gets one clear tool
-   error (`PythonCheck.agentMessage`). **Choose models myself** keeps the per-choice pages (each model, how it is
+   thing to do. Powers need nothing installed: the CBScript compiler is in the jar (`NoPythonTest` and
+   `NoPythonGameTest` hold a player's game to starting no Python). **Choose models myself** keeps the per-choice pages (each model, how it is
    paid for, fallbacks); a change there re-checks the programs at once and says the Magician is off until **Turn on
    (about 3 minutes)** passes.
 
@@ -259,15 +258,16 @@ change.
   ran.
 - **Don't compile while a gate is running** (it rewrites `build/resources` under the running server), and **don't edit
   a shell script while it runs** (bash reads it by byte offset).
-- **The CBScript compiler ships bundled** in the jar (`tools/cbscript.zip`); a version-specific id or spelling belongs
-  in the compiler, not in a lesson.
-  Rebuild it with `./tools/refresh-cbscript-bundle.sh --ref <branch|commit>`, which also writes `tools/cbscript.SOURCE`.
+- **The CBScript compiler is built into the jar**: moddy-cbscript's Java port, vendored at `third_party/moddy-cbscript`
+  (do not edit it there: fix it in moddy-cbscript, where its parity corpus holds it to the Python compiler). It runs
+  in-process, so no player needs Python. A version-specific id or spelling belongs in the compiler, not in a lesson.
+  Re-vendor it with `./tools/refresh-cbscript-bundle.sh --ref <branch|commit>`, which also writes `tools/cbscript.SOURCE`.
 - **Builder and Apprentice powers are precompiled** (`datapack/PrecompiledPacks`, `datapack/ReadyMadeSkeleton`): every
-  template is compiled at build time with sentinels where a player's values go, and Java puts the values back, so no
-  player needs Python for them. Changed a template in `effects/` or `items/`, a catalogue, the bundled compiler, or how
+  template is compiled at build time with sentinels where a player's values go, and Java puts the values back, so a
+  Builder power is made with nothing compiled. Changed a template in `effects/` or `items/`, a catalogue, the compiler, or how
   a tool renders a ready-made? Run `./tools/precompile-ready-mades.sh` and commit `src/main/resources/precompiled/`:
   `PrecompiledFingerprintTest` (Gate A) and `ReadyMadePrecompileGameTest` (Gate B, every Builder power made with
-  Python off) fail until you do. A value the compiler would rewrite (a selector argument, an old component spelling)
+  the compiler off) fail until you do. A value the compiler would rewrite (a selector argument, an old component spelling)
   stays literal in the skeleton, so it is a different precompiled pack, never a wrong one (`PrecompiledEquivalenceTest`).
 - **A rule tested only where it is defined is not tested where it runs.** Drive the real entry point (the tool the
   agent calls, the real command), and check that a guard's enabling condition is actually written by shipped code.
@@ -297,3 +297,18 @@ maintainer reviews and merges it. Nobody pushes to `main` directly, and nothing 
   and for the live values of the keys in your environment, and never prints a value; CI runs it too. A test that needs a
   fake token builds it by concatenation so the file is not a hit. If a real key ever reaches a commit, rotate it first.
   Never bypass a refusal with `--no-verify`.
+- **Third-party code and text.** Nothing written by someone else is copied, ported, translated or closely paraphrased
+  into this repository unless its licence is on the allow-list: MIT, BSD-2-Clause, BSD-3-Clause, Apache-2.0, MPL-2.0,
+  ISC, Zlib, the Unlicense, CC0 / public domain; CC BY 4.0 for art and presets only. Anything else stops the work and
+  goes to the owner, with the source and its licence, **before** a commit: a copyleft licence, a share-alike,
+  non-commercial or no-derivatives Creative Commons licence, a font licence, "all rights reserved", no licence at all,
+  or code whose origin you do not know (a Stack Overflow answer is share-alike). Reading copyleft code to understand a
+  problem is fine; writing ours from it is a port. **Pushing a branch to this public repository publishes it**, draft
+  or not. What we keep gets a row in [THIRD_PARTY.md](THIRD_PARTY.md) (source, licence, why) in the same pull request,
+  and its licence text travels with it (`third_party/`, and a bundled component's row in
+  [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)); a licence held for the owner's decision reads `PENDING #<issue>`.
+  `tools/licence-scan.py` checks this at commit and push (`./tools/public-hooks/install.sh`), in CI (the tree and
+  every commit's added lines), and in Gate A (`licenceRegister`, and `licenceCheck` over every library the jar nests).
+  A line that only names a licence carries `licence-scan: allow <reason>`; a file that discusses licences goes in the
+  `exempt` list of `tools/licence-rules.json` with its reason. Widening the allow-list is the owner's decision, and an
+  approval for particular files is path-scoped (`scoped`, or a `permissions` entry's `globs`), never a general licence.

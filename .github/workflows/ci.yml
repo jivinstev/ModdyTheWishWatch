@@ -9,8 +9,12 @@
 #                    and tokens, a child's-data file by its name, and the structural markers of server-side work
 #                    that does not belong in this single-player mod; then tools/secret-scan.py over every file and
 #                    every commit in the history (the credential shapes of tools/secret_patterns.py). It prints nothing it matched.
+#                    Then tools/licence-scan.py: no third-party code or text under a licence off the allow-list, in the
+#                    tree or in the lines any commit adds, and every foreign copyright registered in THIRD_PARTY.md
+#                    (CLAUDE.md, "Third-party code and text").
 #                    Also the hermetic test of tools/refresh-cbscript-bundle.sh (a fixture repo, no network).
-#   gate-a           compile, the unit tests, the mod jar and its checks (./gradlew build).
+#   gate-a           compile, the unit tests, the mod jar and its checks (./gradlew build), the licence checks among
+#                    them (licenceRegister, and licenceCheck over every library the jar nests).
 #   gate-b-ci        a headless game server running the `ci` shard: one GameTest per wish class, MCP, two wishes at
 #                    once. Every pull request and every push to main.
 #   gate-b-tier      the whole default tier (`ci,default`) on one runner, when started by hand. The nightly
@@ -104,6 +108,12 @@ jobs:
           git fetch --quiet --unshallow || true
           python3 tools/secret-scan.py --tree
           python3 tools/secret-scan.py --history
+      - name: The licence scanner's rules can still go red
+        run: python3 tools/test-licence-scan.py
+      - name: Licence scan, the tree, the register and the history
+        run: |
+          python3 tools/licence-scan.py --tree
+          python3 tools/licence-scan.py --range -- HEAD
       - name: The compiler bundle's refresh tool still builds, records and refuses
         run: python3 tools/test-refresh-cbscript-bundle.py
 
@@ -128,9 +138,6 @@ jobs:
             ~/.gradle/caches
             ~/.gradle/wrapper
           key: gradle-${{ runner.os }}-${{ hashFiles('gradle.properties', 'build.gradle', 'versions/*.properties', 'gradle/wrapper/gradle-wrapper.properties') }}
-      - &ply
-        name: The datapack compiler's Python dependency
-        run: python3 -m pip install --break-system-packages ply
       - name: ./gradlew build
         run: ./gradlew build --console=plain
       - name: The gate tools' own rules (tools/gate/test_gate.py, docs/GATE_B.md)
@@ -163,14 +170,27 @@ jobs:
           distribution: temurin
           java-version: '21'
       - *gradle-cache
-      - *ply
+      - &noPython
+        # A player's game never starts Python (the datapack compiler is in the jar; NoPythonTest, NoPythonGameTest).
+        # The game server runs with `python` and `python3` on PATH replaced by stubs that record being started and
+        # fail, and the job fails if any was.
+        name: No Python for the game
+        run: |
+          mkdir -p "$RUNNER_TEMP/no-python"
+          for n in python python3; do
+            printf '#!/bin/sh\necho "$0 $*" >> "%s/python-started"\nexit 127\n' "$RUNNER_TEMP" > "$RUNNER_TEMP/no-python/$n"
+            chmod +x "$RUNNER_TEMP/no-python/$n"
+          done
       - &gameTests
         name: Run the game tests
         run: |
           set -o pipefail
-          ./gradlew runGameTestServer -Pshard="$SHARD" -Prundir=gt-run --console=plain 2>&1 | tee gametest.log
+          PATH="$RUNNER_TEMP/no-python:$PATH" ./gradlew runGameTestServer -Pshard="$SHARD" -Prundir=gt-run --console=plain 2>&1 | tee gametest.log
           line="$(grep -Eo '[0-9]+ required tests (passed|failed)' gametest.log | tail -1)"
           echo "result: ${line:-no result line (the server never ran the tests)}"
+          if [ -s "$RUNNER_TEMP/python-started" ]; then
+            echo "the game started Python:"; cat "$RUNNER_TEMP/python-started"; exit 1
+          fi
           grep -Eq 'required tests passed' <<<"$line" && ! grep -q 'required tests failed' gametest.log
 
   gate-b-tier:
@@ -187,7 +207,7 @@ jobs:
           distribution: temurin
           java-version: '21'
       - *gradle-cache
-      - *ply
+      - *noPython
       - *gameTests
 
   rig-films:
@@ -203,7 +223,6 @@ jobs:
           distribution: temurin
           java-version: '21'
       - *gradle-cache
-      - *ply
       - name: A virtual display and software OpenGL
         run: sudo apt-get update -qq && sudo apt-get install -y -qq xvfb libgl1-mesa-dri mesa-utils
       - name: Every rig film the scoreboard names

@@ -104,7 +104,9 @@ class SpeciesTest {
     void missingFieldsGetPlayableDefaults() {
         Species s = parse("{\"id\":\"minimal\"}");
         assertEquals("Wish Creature", s.name());
-        assertEquals(20, s.health());
+        // #100: no longer a flat 20/3 whatever it is, but its size's: a plain humanoid at scale 1 is small
+        assertEquals(PowerBand.forVolume(PowerBand.bodyVolume(Species.Body.HUMANOID)).health(), s.health());
+        assertEquals(PowerBand.forVolume(PowerBand.bodyVolume(Species.Body.HUMANOID)).damage(), s.damage());
         assertTrue(s.scale() == 1.0 && s.speed() > 0);
     }
 

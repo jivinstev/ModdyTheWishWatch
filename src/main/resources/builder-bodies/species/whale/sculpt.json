@@ -1,7 +1,7 @@
 {
  "behaves_like": "swimmer",
- "damage": 0,
- "health": 300,
+ "damage": 6,
+ "health": 200,
  "id": "whale",
  "name": "Big Blue Whale",
  "note": "Blue whale lookalike (no mod has one): long blue speckled body, pale belly/chin, wide fluke; scale 4 for 'big', friendly gentle giant.",

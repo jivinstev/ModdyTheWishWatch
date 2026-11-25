@@ -1,8 +1,8 @@
 {
  "base": "wild",
  "behaves_like": "grazer",
- "damage": 0,
- "health": 60,
+ "damage": 9,
+ "health": 80,
  "id": "yeti",
  "name": "Fluffy Yeti",
  "note": "Friendly big white yeti: fur-patterned white body, pale blue face with a 3-box smile and relaxed brows so it reads cuddly, not scary. Wild+friendly, polar bear voice.",

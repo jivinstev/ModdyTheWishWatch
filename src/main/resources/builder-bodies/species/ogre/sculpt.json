@@ -1,7 +1,7 @@
 {
  "behaves_like": "bruiser",
- "damage": 0,
- "health": 200,
+ "damage": 12,
+ "health": 150,
  "id": "ogre",
  "name": "Big Green Ogre",
  "note": "Invented ogre (no mod has one): chunky green humanoid, brown fur tunic, big belly, little ears, underbite tusks, cartoon-grumpy face (brows low at inner end) but friendly so it never hurts him. Scale 2.2 for BIG.",

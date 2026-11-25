@@ -16,7 +16,11 @@ SPIN (the drawn rotation, timed by game time; an earlier change's death fall):
   * a limb swinging, a beat drawn still at the end of its swing, then swinging BACK -> PASS (a 3-tick sample
     either side of the swing's extreme; angvel_fwd says the motion reversed)
   * the same beat still, then carrying on THE SAME WAY                             -> FAIL (a stall, angvel_fwd says so)
+  * #138, the shape vanillawalk failed on: part 0 swinging about z, held 3 ticks as the walker stops, then the body
+    turning round about y (angvel_fwd reading the turn against its own first frame)  -> PASS (two motions, not a stall)
+  * a genuine frozen turn: part 0 turning about y, drawn still 3 ticks, then turning on about y -> FAIL (a stall)
 """
+import math
 import csv
 import os
 import subprocess
@@ -30,7 +34,7 @@ COLS = ["nanos", "gametime", "clienttick", "partial", "rig", "atoms", "spread_ma
 FAILS = 0
 
 
-def write(d, spreads, spins=None, clock=None, fwds=None):
+def write(d, spreads, spins=None, clock=None, fwds=None, qs=None):
     os.makedirs(d, exist_ok=True)
     with open(os.path.join(d, "rigdrift-frames.csv"), "w", newline="") as f:
         w = csv.writer(f)
@@ -42,7 +46,8 @@ def write(d, spreads, spins=None, clock=None, fwds=None):
             x = 0.09 * i / 3
             gt = clock(i) if clock else 1000 + tick
             av = spins[i] if spins else 0
-            w.writerow([t, gt, tick, (i % 3) / 3, "abc", 40, s, s / 4, 0, s, 7, 0, 0, x, 64, 0, 10, 8, av, 0, 0, 0, 0, 1]
+            q = qs[i] if qs else (0, 0, 0, 1)
+            w.writerow([t, gt, tick, (i % 3) / 3, "abc", 40, s, s / 4, 0, s, 7, 0, 0, x, 64, 0, 10, 8, av, 0, *q]
                        + ([fwds[i]] if fwds else []))
 
 
@@ -51,12 +56,12 @@ def verdict(d):
     return r.returncode
 
 
-def check(name, spreads, want, spins=None, clock=None, fwds=None):
+def check(name, spreads, want, spins=None, clock=None, fwds=None, qs=None):
     global FAILS
     with tempfile.TemporaryDirectory() as tmp:
         d = os.path.join(tmp, "drift")
         if spreads is not None:
-            write(d, spreads, spins, clock, fwds)
+            write(d, spreads, spins, clock, fwds, qs)
         got = verdict(d)
     ok = (got == 0) == (want == "PASS")
     print(f"  {'ok ' if ok else 'BAD'}  {name}: wanted {want}, rc {got}")
@@ -87,5 +92,45 @@ back_fwd = [-v if i >= 409 and 180 <= i < 720 else v for i, v in enumerate(swing
 check("spin: a beat still at the end of a swing, then swinging back", [0.0] * N, "PASS", spins=swing, fwds=back_fwd)
 check("spin: a beat still, then carrying on the same way", [0.0] * N, "FAIL", spins=swing, fwds=swing)
 check("spin: a beat still, no angvel_fwd column (an older meter)", [0.0] * N, "FAIL", spins=swing)
+
+
+def q_about(axis, deg):
+    h = math.radians(deg) / 2
+    return tuple(c * math.sin(h) for c in axis) + (math.cos(h),)
+
+
+def q_mul(a, b):
+    ax, ay, az, aw = a
+    bx, by, bz, bw = b
+    return (aw * bx + ax * bw + ay * bz - az * by, aw * by - ax * bz + ay * bw + az * bx,
+            aw * bz + ax * by - ay * bx + az * bw, aw * bw - ax * bx - ay * by - az * bz)
+
+
+def turning(rates):
+    """Part 0's orientation per frame (3 a tick) from its turn per frame: (axis, deg per game tick)."""
+    q = (0.0, 0.0, 0.0, 1.0)
+    out = []
+    for axis, rate in rates:
+        q = q_mul(q_about(axis, rate / 3), q)
+        out.append(q)
+    return out
+
+
+Z, Y = (0.0, 0.0, 1.0), (0.0, 1.0, 0.0)
+# #138, vanillawalk's failing shape (main at 41f4f71, run 9): a leg swinging about z at 5.16 deg a tick, held 3 ticks
+# (9 frames) as the walker stops, then the body turning round about y at 45 deg a tick. angvel_fwd reads 0 on the turn's
+# first frame and its full speed after: measured against the turn itself. The turn is short (4 ticks) and the walk goes
+# on slowly after it, as in the run, so the stop reads as abrupt against the local median: red before #138's fix.
+legs = [(Z, 5.16) if 180 <= i < 400 else ((Z, 0.0) if 400 <= i < 409 else ((Y, 45.0) if 409 <= i < 421
+        else ((Z, 4.0) if i < 720 else (Z, 0.0)))) for i in range(N)]
+legs_speed = [r for _, r in legs]
+legs_fwd = [0.0 if i == 409 else v for i, v in enumerate(legs_speed)]
+check("spin #138: a leg's swing ends as the walker stops, then the body turns round", [0.0] * N, "PASS",
+      spins=legs_speed, fwds=legs_fwd, qs=turning(legs))
+# and the stall it must still catch: part 0 turning about y, drawn still 3 ticks, then turning on about y
+froze = [(Y, 6.0) if 180 <= i < 400 or 409 <= i < 720 else (Y, 0.0) for i in range(N)]
+froze_speed = [r for _, r in froze]
+check("spin #138: a turn drawn still 3 ticks, then turning on the same way", [0.0] * N, "FAIL",
+      spins=froze_speed, fwds=froze_speed, qs=turning(froze))
 print("✅ test-rig-drift: all checks passed" if FAILS == 0 else f"❌ test-rig-drift: {FAILS} check(s) failed")
 sys.exit(1 if FAILS else 0)

@@ -16,8 +16,8 @@
   "powers": [
     "friendly"
   ],
-  "damage": 0,
-  "health": 20,
+  "damage": 3,
+  "health": 18,
   "parts": [
     {
       "name": "head",
