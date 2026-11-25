@@ -1555,6 +1555,10 @@ public final class SculptCreatureTool implements McpTool {
                 if (!zeroHit.isEmpty()) {
                     sb.append(' ').append(zeroHit);
                 }
+                String farAbove = com.moddingfromamod.species.PowerLine.farAbove(stored, bodyVolume);
+                if (!farAbove.isEmpty()) {
+                    sb.append(' ').append(farAbove);
+                }
 
                 ServerPlayer player = com.moddingfromamod.agent.ActingChild.of(server);
                 if (spawn && player != null) {
