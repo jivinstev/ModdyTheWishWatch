@@ -14,19 +14,24 @@ import java.util.List;
  *   <li><b>Steady</b>: over the last {@link #STEADY_TICKS} ticks his look moved no more than {@link #STEADY_DEGREES}
  *       in yaw or pitch: a gaze, not a single-tick flick.</li>
  * </ol>
+ *
+ * <p><b>The four numbers are FIRST GUESSES</b> (2026-11-25), named here so they can be tuned in one place: checked in a
+ * scripted real client (Gate C, {@code gatec/SkyAimClientTest}), not yet against a person's hand. Touch aiming (a
+ * Bedrock client) was not measured; it is jumpier, and {@link #STEADY_TICKS}/{@link #STEADY_DEGREES} are the threshold
+ * most likely to need loosening there.
  */
 public final class AimConfidence {
 
-    /** How far in from a face's edge the hit must be, in blocks. */
+    /** How far in from a face's edge the hit must be, in blocks. A first guess. */
     public static final double EDGE = 0.1;
 
-    /** How far off the face's plane the gaze must meet it, in degrees. */
+    /** How far off the face's plane the gaze must meet it, in degrees. A first guess. */
     public static final double MIN_INCIDENCE_DEGREES = 15;
 
-    /** How many ticks of looking make a gaze. */
+    /** How many ticks of looking make a gaze. A first guess (a quarter of a second). */
     public static final int STEADY_TICKS = 5;
 
-    /** How far his look may wander over those ticks, in degrees. */
+    /** How far his look may wander over those ticks, in degrees. A first guess. */
     public static final float STEADY_DEGREES = 3f;
 
     private AimConfidence() {
