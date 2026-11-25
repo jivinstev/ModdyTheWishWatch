@@ -55,8 +55,9 @@ public final class BuildMechanismTool implements McpTool {
                 + "the wiring underground, builds it, then TESTS it by using each control for real. If the test "
                 + "fails it takes everything back down and says why; nothing half-working is left. "
                 + "piston_door: a flush 2-tall door of the wall's own blocks, put into the doorway of the wall at "
-                + "`at` (its existing doorway, 1 or 2 wide, or a new 2-wide one). Switched ON it CLOSES, switched "
-                + "OFF it OPENS. Remove one with remove_mechanism.";
+                + "`at` (its existing doorway, 1 or 2 wide, or a new 2-wide one). By default a switch, button or plate "
+                + "OPENS it (shut the rest of the time); on:\"close\" when he says the switch CLOSES it. Remove one "
+                + "with remove_mechanism.";
     }
 
     @Override
@@ -104,6 +105,15 @@ public final class BuildMechanismTool implements McpTool {
                 + "\"minecraft:iron_block\" for a bank vault, \"minecraft:gold_block\"). Leave it out and the door is the "
                 + "wall's own block, so it disappears into the wall when shut (a secret door). It must be a plain full "
                 + "block a piston can push: not glass, not obsidian, not a chest.");
+        JsonObject on = new JsonObject();
+        on.addProperty("type", "string");
+        JsonArray onv = new JsonArray();
+        onv.add("open");
+        onv.add("close");
+        on.add("enum", onv);
+        on.addProperty("description", "What switching it ON (or pressing, or standing on) does: \"open\" (the default) "
+                + "or \"close\" (\"a door I can shut with a lever\"). The other way round happens when it is off.");
+        s.getAsJsonObject("properties").add("on", on);
         Schemas.prop(s, "width", "integer", "Only for a NEW doorway: 1 or 2 wide (default 2). An existing doorway "
                 + "keeps its own width.");
         Schemas.required(s, "mechanism", "at", "controls");
@@ -141,6 +151,11 @@ public final class BuildMechanismTool implements McpTool {
             asked.add(new String[] {k, a});
         }
         String material = str(args, "material");
+        String onArg = str(args, "on").toLowerCase(Locale.ROOT);
+        if (!onArg.isEmpty() && !onArg.equals("open") && !onArg.equals("close")) {
+            return ToolResult.error("on is \"open\" or \"close\".");
+        }
+        boolean opens = !onArg.equals("close");
         int width = args.has("width") && args.get("width").isJsonPrimitive() ? args.get("width").getAsInt() : 2;
         if (width != 1 && width != 2) {
             return ToolResult.error("width is 1 or 2.");
@@ -149,7 +164,7 @@ public final class BuildMechanismTool implements McpTool {
         // 1-3: resolve, plan and place on the server thread
         Built built;
         try {
-            built = AgentBridge.onServer(() -> buildOnServer(mechanism, at, asked, width, material), 30_000L);
+            built = AgentBridge.onServer(() -> buildOnServer(mechanism, at, asked, width, material, opens), 30_000L);
         } catch (RuntimeException e) {
             return ToolResult.error("Could not build it: " + e.getMessage());
         }
@@ -182,7 +197,8 @@ public final class BuildMechanismTool implements McpTool {
         }
         b.append("Test: ").append(String.join("; ", proof.steps())).append('\n');
         built.plan.notes().forEach(n -> b.append("Note: ").append(n).append('\n'));
-        b.append("It is OPEN now. Tell the child which switch does what. remove_mechanism id '").append(id)
+        b.append(opens ? "It is SHUT now; a switch on (or a press) opens it." : "It is OPEN now; a switch on shuts it.")
+                .append(" Tell the child which switch does what. remove_mechanism id '").append(id)
                 .append("' takes it all back out.");
         return ToolResult.ok(b.toString());
     }
@@ -202,7 +218,8 @@ public final class BuildMechanismTool implements McpTool {
         }
     }
 
-    static Built buildOnServer(String mechanism, String at, List<String[]> asked, int width, String wanted) {
+    static Built buildOnServer(String mechanism, String at, List<String[]> asked, int width, String wanted,
+                               boolean opens) {
         var server = AgentBridge.serverOrNull();
         ServerPlayer player = com.moddingfromamod.agent.ActingChild.of(server);
         if (player == null) {
@@ -245,8 +262,23 @@ public final class BuildMechanismTool implements McpTool {
         } else if (doorBlockProblem(level, wall) != null) {
             material = towerTop;           // a glass wall: the door is stone rather than nothing
         }
-        Module module = PistonDoor.plan(door.frame(), door.width(), material, towerTop, wall);
+        Module module = PistonDoor.plan(door.frame(), door.width(), material, towerTop, wall, opens);
 
+        // A door shut at rest with every switch outside would shut him in: add a button inside beside it.
+        boolean anyInside = false;
+        for (String[] c : asked) {
+            PlaceFinder.Place cp = PlaceFinder.find(server, player, c[1], com.moddingfromamod.builder.BuildSpots.FRONT);
+            if (cp.ok() && ("inside".equals(cp.r().spot())
+                    || ControlSpots.side(door.frame(), LevelView.rs(cp.block())) > 0)) {
+                anyInside = true;
+            }
+        }
+        String addedInside = null;
+        if (opens && !anyInside && place.buildId() != null) {
+            asked = new ArrayList<>(asked);
+            asked.add(new String[] {"button", place.buildId() + ":inside"});
+            addedInside = "a button inside beside the door, so nobody is shut in";
+        }
         // controls: each resolved, then the first spot the planner can wire
         Set<RsPos> foreign = view.foreignRedstone(door.frame().origin().plus(-24, -8, -24),
                 door.frame().origin().plus(24, 8, 24));
@@ -289,6 +321,9 @@ public final class BuildMechanismTool implements McpTool {
                         + ". Nothing was built."));
             }
             plan = ok;
+        }
+        if (addedInside != null) {
+            plan.notes().add("Added " + addedInside + ".");
         }
         Built b = new Built();
         b.level = level;

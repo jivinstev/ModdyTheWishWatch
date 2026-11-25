@@ -36,7 +36,7 @@ public class PistonDoorGameTest {
         }
         for (int x = -16; x <= 17; x++) {
             for (int z = -16; z <= 16; z++) {
-                for (int y = -6; y <= 8; y++) {
+                for (int y = -8; y <= 8; y++) {
                     BlockState s = y <= -1 ? Blocks.DIRT.defaultBlockState() : Blocks.AIR.defaultBlockState();
                     level.setBlock(new BlockPos(o.x() + x, o.y() + y, o.z() + z), s, 2);
                 }
@@ -54,10 +54,15 @@ public class PistonDoorGameTest {
     }
 
     static void run(GameTestHelper helper, int height, List<int[]> controls, String[] kinds) {
+        run(helper, height, controls, kinds, false);
+    }
+
+    static void run(GameTestHelper helper, int height, List<int[]> controls, String[] kinds, boolean opens) {
         ServerLevel level = helper.getLevel();
         RsPos o = site(helper, level, height);
         Frame f = new Frame(o, RsDir.EAST, RsDir.SOUTH);
-        Module door = PistonDoor.plan(f, 2, "minecraft:stone_bricks", "minecraft:stone_bricks");
+        Module door = PistonDoor.plan(f, 2, "minecraft:stone_bricks", "minecraft:stone_bricks",
+                "minecraft:stone_bricks", opens);
         LevelView view = new LevelView(level);
         List<MechanismPlanner.ControlAsk> asks = new java.util.ArrayList<>();
         for (int i = 0; i < controls.size(); i++) {
@@ -87,7 +92,7 @@ public class PistonDoorGameTest {
                 throw helper.assertionException("the door did not work: " + r.why() + " | " + String.join(" / ", r.steps()));
             }
             MechanismWorld.takeBack(level, placed);
-            // taken back: the doorway is open air again and the wall is whole brick
+            // taken back: the doorway is open air again (as the site was made) and the wall is whole brick
             BlockState gap = level.getBlockState(LevelView.bp(o));
             helper.assertTrue(gap.isAir(), Component.literal("after the take-back the doorway holds " + gap));
             BlockState wall = level.getBlockState(LevelView.bp(o.plus(-2, 0, 0)));
@@ -108,5 +113,20 @@ public class PistonDoorGameTest {
     @GameTest(template = "empty_test", batch = "redstone_door", timeoutTicks = 2400)
     public static void aPressurePlateFarAwayNeedsARepeater(GameTestHelper helper) {
         run(helper, 200, List.of(new int[] {0, -14}), new String[] {"pressure_plate"});
+    }
+
+    @GameTest(template = "empty_test", batch = "redstone_door_opens", timeoutTicks = 2400)
+    public static void aPlateInFrontOpensAShutDoor(GameTestHelper helper) {
+        run(helper, 140, List.of(new int[] {0, -6}), new String[] {"pressure_plate"}, true);
+    }
+
+    @GameTest(template = "empty_test", batch = "redstone_door_opens", timeoutTicks = 2400)
+    public static void aButtonEachSideOpensAShutDoor(GameTestHelper helper) {
+        run(helper, 170, List.of(new int[] {-1, -5}, new int[] {3, 5}), new String[] {"button", "button"}, true);
+    }
+
+    @GameTest(template = "empty_test", batch = "redstone_door_opens", timeoutTicks = 2400)
+    public static void twoSwitchesOnTheSameSideBothOpenIt(GameTestHelper helper) {
+        run(helper, 200, List.of(new int[] {-2, -6}, new int[] {4, -6}), new String[] {"lever", "button"}, true);
     }
 }

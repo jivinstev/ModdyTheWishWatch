@@ -16,7 +16,9 @@ import java.util.List;
  *   <li>At channel depth (3 below the floor) a wire bridge runs under the doorway between the two towers. A wire
  *       arrives at the bridge from in front or from behind.</li>
  * </ul>
- * Polarity: channel powered = pistons extended = the door CLOSED; channel off = OPEN.
+ * Polarity, chosen per door: {@code opensOnPower = false} (a switch that CLOSES it: two torches, channel 3 below the
+ * floor; at rest the door is open) or {@code true} (a button, plate or switch that OPENS it: three torches, channel 5
+ * below; at rest the door is shut). An odd number of torches inverts, an even number does not.
  *
  * <p>Local frame ({@link Frame}): the opening's lower-left cell is (0, 0, 0); u runs along the wall; w = 0 is the wall's
  * outer layer.
@@ -24,6 +26,8 @@ import java.util.List;
 public final class PistonDoor {
 
     public static final int CHANNEL_DY = -3;
+    /** The channel's depth for a door that OPENS on power (one more inversion, two more blocks of tower). */
+    public static final int CHANNEL_DY_OPENS = -5;
 
     private PistonDoor() {
     }
@@ -35,14 +39,20 @@ public final class PistonDoor {
      * @param towerTop a full solid conducting block for the top of each tower (the wall's own block where it conducts)
      */
     public static Module plan(Frame f, int width, String material, String towerTop) {
-        return plan(f, width, material, towerTop, towerTop);
+        return plan(f, width, material, towerTop, towerTop, false);
+    }
+
+    public static Module plan(Frame f, int width, String material, String towerTop, String wallBlock) {
+        return plan(f, width, material, towerTop, wallBlock, false);
     }
 
     /**
      * {@code material} is what the door is made of (it fills the doorway when shut); {@code wallBlock} is the wall's
      * own block, which every visible casing is made of so the mechanism reads as wall.
      */
-    public static Module plan(Frame f, int width, String material, String towerTop, String wallBlock) {
+    public static Module plan(Frame f, int width, String material, String towerTop, String wallBlock,
+                              boolean opensOnPower) {
+        int cdy = opensOnPower ? CHANNEL_DY_OPENS : CHANNEL_DY;
         if (width < 1 || width > 2) {
             throw new IllegalArgumentException("a piston door is 1 or 2 wide, not " + width);
         }
@@ -52,31 +62,38 @@ public final class PistonDoor {
         for (int u = 0; u < width; u++) {
             for (int dy = 0; dy < 2; dy++) {
                 cells.add(RsCell.of(f.at(u, dy, 0), "minecraft:air", RsCell.Role.CLEAR));
-                expects.add(new Expect(f.at(u, dy, 0), "minecraft:air", material, "the doorway"));
+                expects.add(opensOnPower ? new Expect(f.at(u, dy, 0), material, "minecraft:air", "the doorway")
+                        : new Expect(f.at(u, dy, 0), "minecraft:air", material, "the doorway"));
             }
         }
-        side(f, cells, expects, -1, f.alongPlus(), material, towerTop, wallBlock);
+        side(f, cells, expects, -1, f.alongPlus(), material, towerTop, wallBlock, cdy, opensOnPower);
         if (width == 2) {
-            side(f, cells, expects, width, f.alongMinus(), material, towerTop, wallBlock);
+            side(f, cells, expects, width, f.alongMinus(), material, towerTop, wallBlock, cdy, opensOnPower);
         }
         // the bridge under the doorway at channel depth, from the left tower to the right tower (or to u=0 when 1 wide)
         int bridgeTo = width == 2 ? width + 1 : 0;
         for (int u = -2; u <= bridgeTo; u++) {
-            cells.add(RsCell.of(f.at(u, CHANNEL_DY - 1, 0), "minecraft:stone", RsCell.Role.CASING));
-            cells.add(RsCell.of(f.at(u, CHANNEL_DY, 0), "minecraft:redstone_wire", RsCell.Role.CHANNEL));
+            cells.add(RsCell.of(f.at(u, cdy - 1, 0), "minecraft:stone", RsCell.Role.CASING));
+            cells.add(RsCell.of(f.at(u, cdy, 0), "minecraft:redstone_wire", RsCell.Role.CHANNEL));
         }
+        // ports: in front of and behind the bridge's INNER cells, so several switches can join. Never beside an end
+        // cell that feeds a tower: a wire joining there turns the end into a corner, and a corner no longer points
+        // into the tower's block, so the tower is never powered (measured: every door fired that way stayed put).
         List<RsPos> ports = new ArrayList<>();
-        int portU = width == 2 ? 0 : 0;
-        ports.add(f.at(portU, CHANNEL_DY, -1));
-        ports.add(f.at(portU, CHANNEL_DY, 1));
-        List<String> notes = List.of(
-                "a flush sticky-piston door " + width + " wide and 2 tall: switched on it closes, switched off it opens");
-        return new Module("piston_door", cells, expects, ports, f.origin().y() + CHANNEL_DY, notes);
+        int lastInner = width == 2 ? bridgeTo - 1 : bridgeTo;
+        for (int u = -1; u <= lastInner; u++) {
+            ports.add(f.at(u, cdy, -1));
+            ports.add(f.at(u, cdy, 1));
+        }
+        List<String> notes = List.of("a flush sticky-piston door " + width + " wide and 2 tall: "
+                + (opensOnPower ? "switched on (or pressed, or stood on) it OPENS, and it is shut the rest of the time"
+                        : "switched on it CLOSES, switched off it opens"));
+        return new Module("piston_door", cells, expects, ports, f.origin().y() + cdy, notes);
     }
 
     /** One side: parked blocks, two pistons and the torch tower. {@code parkU} is the parked column's u. */
     private static void side(Frame f, List<RsCell> cells, List<Expect> expects, int parkU, RsDir toOpening,
-                             String material, String towerTop, String wallBlock) {
+                             String material, String towerTop, String wallBlock, int cdy, boolean opensOnPower) {
         int step = parkU < 0 ? -1 : 1;                 // away from the opening along u
         int pistonU = parkU + step;
         int towerU = pistonU + step;
@@ -85,23 +102,34 @@ public final class PistonDoor {
             cells.add(RsCell.of(f.at(parkU, dy, 0), material, RsCell.Role.PART));
             cells.add(RsCell.of(f.at(pistonU, dy, 0), "minecraft:sticky_piston", RsCell.Role.PART,
                     "facing", facing, "extended", "false"));
-            expects.add(new Expect(f.at(pistonU, dy, 0), "minecraft:sticky_piston[extended=false]",
-                    "minecraft:sticky_piston[extended=true]", "a door piston"));
+            String ret = "minecraft:sticky_piston[extended=false]", ext = "minecraft:sticky_piston[extended=true]";
+            expects.add(opensOnPower ? new Expect(f.at(pistonU, dy, 0), ext, ret, "a door piston")
+                    : new Expect(f.at(pistonU, dy, 0), ret, ext, "a door piston"));
         }
-        // the tower, channel depth up to the top piston's height
-        cells.add(RsCell.of(f.at(towerU, CHANNEL_DY - 1, 0), "minecraft:stone", RsCell.Role.CASING));
-        cells.add(RsCell.of(f.at(towerU, -3, 0), "minecraft:stone", RsCell.Role.PART));
-        cells.add(RsCell.of(f.at(towerU, -2, 0), "minecraft:redstone_torch", RsCell.Role.PART));
-        cells.add(RsCell.of(f.at(towerU, -1, 0), "minecraft:stone", RsCell.Role.PART));
-        // placed in its resting state, OFF: placed lit it would pulse the sticky pistons for the 2 ticks it takes to go
-        // out, and a sticky piston given a short pulse spits its block (measured: the doorway built shut).
-        cells.add(RsCell.of(f.at(towerU, 0, 0), "minecraft:redstone_torch", RsCell.Role.PART, "lit", "false"));
+        // the tower, channel depth up to the top piston's height: a block at the channel, then torch and block
+        // alternately, the last torch at floor level beside the lower piston and the top block beside the upper one.
+        // Each torch is placed in its RESTING state (the channel off): the lowest is lit, then they alternate. Placed
+        // lit when it should be out, a torch pulses the sticky pistons for the 2 ticks it takes to go out, and a
+        // sticky piston given a short pulse spits its block (measured: the doorway built shut).
+        cells.add(RsCell.of(f.at(towerU, cdy - 1, 0), "minecraft:stone", RsCell.Role.CASING));
+        boolean lit = true;
+        for (int dy = cdy; dy <= 0; dy++) {
+            if ((dy - cdy) % 2 == 0) {
+                cells.add(RsCell.of(f.at(towerU, dy, 0), "minecraft:stone", RsCell.Role.PART));
+            } else {
+                cells.add(RsCell.of(f.at(towerU, dy, 0), "minecraft:redstone_torch", RsCell.Role.PART,
+                        "lit", String.valueOf(lit)));
+                lit = !lit;
+            }
+        }
         cells.add(RsCell.of(f.at(towerU, 1, 0), towerTop, RsCell.Role.PART));
         // casing: round the buried torch, and a pillar of the wall's own blocks over the pistons and the tower on
         // both faces, so neither a piston's side nor a torch shows (measured on film: both did, and stone casing
         // stood proud of the grass). The row at floor level -1 is the wall's material too, in case it is exposed.
         for (int w : new int[]{-1, 1}) {
-            cells.add(RsCell.of(f.at(towerU, -2, w), "minecraft:stone", RsCell.Role.CASING));
+            for (int dy = cdy + 1; dy <= -2; dy++) {
+                cells.add(RsCell.of(f.at(towerU, dy, w), "minecraft:stone", RsCell.Role.CASING));
+            }
             cells.add(RsCell.of(f.at(towerU, -1, w), wallBlock, RsCell.Role.CASING));
             for (int u : new int[]{pistonU, towerU}) {
                 for (int dy = 0; dy < 2; dy++) {
@@ -110,7 +138,7 @@ public final class PistonDoor {
             }
         }
         // and the block beyond the tower, so the tower's torches touch nothing but their own blocks
-        for (int dy = -2; dy <= 0; dy++) {
+        for (int dy = cdy + 1; dy <= 0; dy++) {
             cells.add(RsCell.of(f.at(towerU + step, dy, 0), dy >= -1 ? wallBlock : "minecraft:stone", RsCell.Role.CASING));
         }
     }

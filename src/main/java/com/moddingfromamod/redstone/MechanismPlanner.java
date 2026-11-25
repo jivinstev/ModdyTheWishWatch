@@ -137,6 +137,17 @@ public final class MechanismPlanner {
                     : k != WorldView.Kind.AIR && k != WorldView.Kind.NATURAL) {
                 return false;
             }
+            // the control's own wire keeps clear of everything already planned, as the router's does: a switch
+            // stood close to a door once ran its wire down beside the bridge's end, turning that end into a corner
+            // that no longer powered the tower
+            if (x.role() == RsCell.Role.CHANNEL) {
+                for (RsDir d : RsDir.values()) {
+                    RsPos side = x.pos().step(d);
+                    if (taken.contains(side) || taken.contains(side.up(1)) || taken.contains(side.up(-1))) {
+                        return false;
+                    }
+                }
+            }
         }
         return true;
     }

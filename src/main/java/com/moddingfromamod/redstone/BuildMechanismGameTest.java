@@ -66,7 +66,7 @@ public class BuildMechanismGameTest {
                 started.set(true);
                 BuildSpotsGameTest.offThread(() -> AgentContext.with("gt-rs-tool", () -> {
                     ToolResult r = new BuildMechanismTool().call(JsonParser.parseString(
-                            "{\"mechanism\":\"piston_door\",\"at\":\"" + hall + ":front\",\"controls\":[{\"kind\":"
+                            "{\"mechanism\":\"piston_door\",\"on\":\"close\",\"at\":\"" + hall + ":front\",\"controls\":[{\"kind\":"
                                     + "\"lever\",\"at\":\"" + hall + ":front\"}]}").getAsJsonObject());
                     built.set((r.isError() ? "ERROR " : "") + r.text());
                     if (!r.isError()) {

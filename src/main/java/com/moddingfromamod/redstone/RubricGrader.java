@@ -296,9 +296,12 @@ public final class RubricGrader {
                 notes.add("firing the controls ourselves: " + r.why());
             }
             // usable: at rest (every control off) the doorway is open, which the proof's rest state checked
-            f4 = f2 && off.equals("#open");
-            if (f2 && !off.equals("#open")) {
-                notes.add("the doorway is SHUT at rest: nobody can get in until a switch is used");
+            // usable: open at rest, or shut at rest with a way to open it from BOTH sides (or he is shut in or out)
+            boolean outside = controls.stream().anyMatch(p -> !inBox(p, bbox));
+            boolean inside = controls.stream().anyMatch(p -> inBox(p, bbox));
+            f4 = f2 && (off.equals("#open") || outside && inside);
+            if (f2 && !f4) {
+                notes.add("the doorway is SHUT at rest and can only be opened from the " + (inside ? "inside" : "outside"));
             }
         } else {
             v.addProperty("F2_works", false);
