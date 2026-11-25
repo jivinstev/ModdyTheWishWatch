@@ -106,6 +106,14 @@ public final class ContractWorld implements ModdyPlugin {
         }
     }
 
+    private static final java.util.List<com.moddingfromamod.world.NotKept> NOT_KEPT =
+            new java.util.concurrent.CopyOnWriteArrayList<>();
+
+    /** Every make it asked to keep that the core did not, for {@code player}, oldest first. */
+    public static java.util.List<com.moddingfromamod.world.NotKept> notKept(UUID player) {
+        return NOT_KEPT.stream().filter(h -> h.player().equals(player)).toList();
+    }
+
     /** Every hand-over the core told this world of, for {@code player}, oldest first. */
     public static java.util.List<com.moddingfromamod.world.HandedOver> handedOver(UUID player) {
         return HANDED.stream().filter(h -> h.player().equals(player)).toList();
@@ -175,6 +183,11 @@ public final class ContractWorld implements ModdyPlugin {
         @Override
         public void handedOver(com.moddingfromamod.world.HandedOver what) {
             HANDED.add(what);
+        }
+
+        @Override
+        public void notKept(com.moddingfromamod.world.NotKept what) {
+            NOT_KEPT.add(what);
         }
 
         @Override

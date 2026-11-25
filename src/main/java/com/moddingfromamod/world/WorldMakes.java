@@ -70,6 +70,13 @@ public interface WorldMakes {
     default void handedOver(HandedOver what) {
     }
 
+    /**
+     * A make this world asked to keep was not kept (#70): it landed (no replay recipe, or a change to his thing), or a
+     * kept Magician wish taught nothing to hand over. Told once per make, so a world can tell and react.
+     */
+    default void notKept(NotKept what) {
+    }
+
     /** The one this world answers with. */
     static WorldMakes get() {
         WorldModule m = WorldModuleHost.liveModule();

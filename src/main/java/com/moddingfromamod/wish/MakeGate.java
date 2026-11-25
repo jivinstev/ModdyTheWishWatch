@@ -80,6 +80,19 @@ public final class MakeGate {
         }
     }
 
+    /** Tell the world a make it asked to keep was not kept (#70); a world that throws stops nothing. */
+    public static void notKept(com.moddingfromamod.world.NotKept what) {
+        WorldMakes world = WorldMakes.get();
+        if (world == WorldMakes.NONE || !anyWorld()) {
+            return;
+        }
+        try {
+            world.notKept(what);
+        } catch (RuntimeException | LinkageError e) {
+            LOGGER.warn("the world's WorldMakes.notKept threw on {}: {}", what, e.toString());
+        }
+    }
+
     /** Tell the world a kept make was handed over (#70); a world that throws stops nothing. */
     public static void handedOver(com.moddingfromamod.world.HandedOver what) {
         WorldMakes world = WorldMakes.get();

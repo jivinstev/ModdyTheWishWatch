@@ -298,7 +298,7 @@ the limits the world gave.
   | Answer | What happens |
   |---|---|
   | `Landing.LANDS` (the default) | it appears where it was aimed, as always |
-  | `Landing.KEPT` | it is made and kept on his shelf as any make, but **not placed**: a creature is sculpted and not spawned (no preview stands), an item is made and not given. It is put on his hotbar as a wish for its recipe (`builder:<id>`), in the first empty slot, or in his Wish Bag when the hotbar is full (he is never asked to give a slot up; with no room in either he is told, and it stays on his shelf). Fired, it appears where he aims it, like any hotbar wish |
+  | `Landing.KEPT` | it is made and kept as any make, but **not placed**: a creature is sculpted and not spawned (no preview stands), an item is made and not given, a building is saved and not built, an event's design is kept and not staged. It is put on his hotbar as a wish for its recipe, in the first empty slot, or in his Wish Bag when the hotbar is full (he is never asked to give a slot up; with no room in either he is told, and it stays on his shelf). Fired, it appears where he aims it, like any hotbar wish |
   | `Landing.KEPT_AS_ITEM` | an item make hands over the real item, as `LANDS` does; a creature is kept as `KEPT` |
 
   `landing` is asked **exactly once** per make, on the server thread, and its answer is locked into the make as its
@@ -315,10 +315,40 @@ the limits the world gave.
   first, or his hotbar and Wish Bag were full), it stays on his shelf, and the watch's own "Add to hotbar" puts it
   there as for any make he has.
 
-  It covers every Builder and Apprentice **creature, ride and item** (a machine or magic block too). These always land,
-  and `landing` is not asked: a change to something he already has, a real mob, supplies, and (not yet) buildings,
-  pictures, events and every Magician make. A creature made several at once is handed over as one wish, which makes
-  one each time it is fired. With no world answering nothing changes.
+  **Builder and Apprentice**: every new **creature, ride, item** (a machine or magic block too), **building** and
+  **event**, asked before its first placing step with its own facts; its recipe is the kept make's, `builder:<id>`.
+  A creature made several at once is handed over as one wish, which makes one each time it is fired.
+
+  **The Magician** (`agent/KeptWish`, in `McpProtocol`'s one dispatch): asked ONCE, at the wish's first `plan_wish`,
+  with `MakeFacts.cautious(kind)` (nothing is made yet, so the most a thing of that kind could be) and a `WishAsk` of
+  magic `MAGICIAN`, and locked on the run. The wish still does all its work (plan, design, datapack, every safety
+  layer); only the placing is held. The plan's result tells the agent: place nothing, teach the replay command with
+  `add_template`, then `finish_wish`. Every placing call during a kept wish is refused in the dispatch with a tool error
+  that says why: `sculpt_creature`/`define_creature` without `spawn:false`, `build_structure` without `build:false`,
+  `stage_event` without `now:false`, `make_item` with an `at`, `paint_surface`, `give_items` (allowed for
+  `KEPT_AS_ITEM`), and a `run_command` that summons, sets blocks or gives (`summon`, `setblock`, `fill`, `clone`,
+  `place`, `give`, `item`, `loot`, `function`, `wishmob`, `wishsummon`, `wishbuild`, `wishpaint`, `moddyevent`,
+  `wishdatapack`, read through `execute … run`; an item kept as the real item may run its own
+  `wishdatapack <id> give`). Finishing hands over the wish's newest taught recipe, the one "Make another one" and a
+  hotbar fire use. A Magician wish is charged as a wish when it is asked, as always; each fire of its hotbar wish is a
+  recipe wish, charged by `WishCharge` like any.
+
+  **Always land, and the world's answer is not used:** a change to something he already has (a Magician plan whose
+  `about` is not `new`), a real mob, supplies, a rule, a **picture** (not yet kept), and a Magician wish of any kind
+  but `creature`, `building`, `event` or `item` (no replay recipe places it, `wish/ReplayContract`). A Builder change is
+  not asked at all.
+
+  **When the world asked to keep a make and the core did not**, the world is told, once per make, with
+  `notKept(NotKept)`: the player, the kind (`creature`, `item`, `building`, `event`, `picture` or `other`), what it
+  asked, and why (`NO_REPLAY_RECIPE`: it landed; `A_CHANGE`: a change to his thing, changed where it stands;
+  `NOTHING_TAUGHT`: a kept Magician wish finished having taught no recipe, so nothing could be handed over and nothing
+  was placed). Data only, never words. It is also logged as a warning; it is never dropped silently. With no world
+  answering nothing changes and nothing is asked.
+
+  The Magician's `run_command` is read the way `CommandGuard` reads it (`CommandGuard.runChain`: the command and each
+  `execute … run` tail, by root word), never by searching its text. `function` is refused outright during a kept wish:
+  a datapack function may place anything, and nothing can show beforehand that it will not. The "place nothing" text
+  the agent reads is the core's own, with no world's words in it.
 - **Where the core asks:** every Builder and Apprentice make and every Builder change (`BuilderMake.make`, whatever page
   drew its tile); every tile of the Builder's pages and its tune dialog, per draw; each ranked make on the Apprentice's page, as it opens; a recipe, "Make another one" and a
   hotbar fire (`WishService.submit`, by the facts of what the recipe makes, fitted at fire); "Give me one"; each thing on
