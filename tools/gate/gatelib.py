@@ -69,6 +69,18 @@ def write_json(path: str, value, compress: bool = False) -> None:
         write_text(path, text)
 
 
+def find_file(directory: str, name: str) -> Optional[str]:
+    """`name` in `directory` or below it: a downloaded artifact keeps the paths it was uploaded with, rooted wherever
+    upload-artifact found their common ancestor, so a job's job.json may be a level or two down."""
+    best = None
+    for dirpath, _dirs, files in os.walk(directory):
+        if name in files:
+            cand = os.path.join(dirpath, name)
+            if best is None or cand.count(os.sep) < best.count(os.sep):
+                best = cand
+    return best
+
+
 def git(*args: str, cwd: str = ROOT) -> str:
     return subprocess.run(["git", *args], cwd=cwd, check=True, stdout=subprocess.PIPE,
                           stderr=subprocess.PIPE).stdout.decode("utf-8").strip()

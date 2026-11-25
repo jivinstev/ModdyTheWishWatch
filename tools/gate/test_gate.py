@@ -275,6 +275,16 @@ class Merge(unittest.TestCase):
                                  job("job-1", [(IDS[2], "passed")])], reg, "release")
         self.assertEqual((r["verdict"], r["fullTier"]), ("green", True), r["problems"])
 
+    def test_the_merge_finds_each_jobs_result_however_deep_its_artifact_put_it(self):
+        d = tempfile.mkdtemp()
+        try:
+            g.write_json(os.path.join(d, "gate-job-0", "gate-job", "job.json"), job("job-0", [(IDS[0], "passed")]))
+            self.assertEqual(g.find_file(os.path.join(d, "gate-job-0"), "job.json"),
+                             os.path.join(d, "gate-job-0", "gate-job", "job.json"))
+            self.assertIsNone(g.find_file(os.path.join(d, "gate-job-0"), "other.json"))
+        finally:
+            shutil.rmtree(d)
+
     def test_the_report_names_what_failed(self):
         r = nightly.merge(PLAN, self.jobs([(IDS[0], "failed"), (IDS[1], "passed")]), {}, "nightly")
         self.assertIn("`AGameTest.t0`", nightly.report(r))

@@ -176,8 +176,8 @@ def merge_cmd(a) -> int:
     p = g.read_json(a.plan)
     jobs: List[Optional[dict]] = [None] * len(p["jobs"])
     for path in a.jobs:
-        f = os.path.join(path, "job.json") if os.path.isdir(path) else path
-        if not os.path.exists(f):
+        f = g.find_file(path, "job.json") if os.path.isdir(path) else path
+        if not f or not os.path.exists(f):
             continue
         j = g.read_json(f)
         idx = _job_index(j, len(jobs))
