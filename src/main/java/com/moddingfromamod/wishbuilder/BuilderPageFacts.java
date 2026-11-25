@@ -305,8 +305,12 @@ public final class BuilderPageFacts {
      * starts its walk on the worker (and the worker itself). Cheap: two map reads. Call only when a world answers.
      */
     public static Index forWorld(BuilderAllowlist allow) {
+        dropIfReadersChanged();
         String fp = TREE_OF.get(allow);
         Walk w = fp == null ? null : WALKS.get(fp);
+        if (fp != null && !fp.isEmpty() && w == null && TREE_OF.remove(allow, fp)) {
+            fp = null;   // its walk was dropped (the readers changed) after the tree was named: walk it again
+        }
         if (fp == null) {
             start();
             if (TREE_OF.putIfAbsent(allow, "") == null) {
@@ -322,8 +326,24 @@ public final class BuilderPageFacts {
      * then run {@code ready} (which should hop to the server thread and draw the page again).
      */
     public static void need(BuilderAllowlist allow, BuilderFlow snapshot, Runnable ready) {
+        dropIfReadersChanged();
         start();
         NEEDS.offerFirst(new Need(allow, snapshot, ready));
+    }
+
+    private static volatile long walkedUnder = MakeFacts.generation();
+
+    /**
+     * #92: pages worked out under readers that have since been replaced (an item's attack read before the game could
+     * be read) are dropped, and walked again on the next ask. A walk still running fills an index nobody reads.
+     */
+    private static synchronized void dropIfReadersChanged() {
+        long now = MakeFacts.generation();
+        if (now != walkedUnder) {
+            walkedUnder = now;
+            TREE_OF.clear();
+            WALKS.clear();
+        }
     }
 
     private static synchronized void start() {

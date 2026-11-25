@@ -118,15 +118,8 @@ public final class MakeGate {
 
     /** Is anything answering here at all? With nothing, every page is drawn exactly as before. */
     public static boolean anyWorld() {
-        boolean any = WorldMakes.get() != WorldMakes.NONE;
-        if (any && !itemsRead) {
-            itemsRead = true;   // the first time a world answers: an item's attack damage is the game's own
-            MakeFactsLookup.readTheGame();
-        }
-        return any;
+        return WorldMakes.get() != WorldMakes.NONE;
     }
-
-    private static volatile boolean itemsRead;
 
     /** Say a verdict's line, once; nothing when the make is let through. */
     public static void say(ServerPlayer player, MakeVerdict v) {
