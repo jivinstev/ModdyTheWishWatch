@@ -10,10 +10,17 @@ import com.moddingfromamod.wishbuilder.MakeFacts;
 
 /**
  * <b>The Magician's tool arguments, fitted to this world's limits</b> (#69, stage 3 of #14). Each argument a tool takes
- * that maps to a make fact ({@link #MAPPED}) is lowered to the world's limit for that fact when it is over, and the
- * agent is told in a short note the CORE writes from the fact and the limit alone ("health was set to 40: this
- * world's limit"), never from anything a world wrote, so it can tell the player in its own words (which the text sweep
- * reads as it reads everything it says). An argument no fact measures (a custom datapack power) is kept as it is: the
+ * that maps to a make fact ({@link #MAPPED}) and is over this world's limit is fitted, and the agent is told in a short
+ * note the CORE writes from the fact and the limit alone, never from anything a world wrote, so it can tell the player
+ * in its own words (which the text sweep reads as it reads everything it says):
+ * <ul>
+ *   <li>a fact the core fits on the LIVE creature ({@code MakeFit.LIVE}, and a creature's scale, fitted at every spawn)
+ *       is NOT lowered in the arguments: the creature is made with what was asked and held to the limit where it
+ *       stands, so its record keeps its own numbers and a later round that raises the limit lets it out ("health is held
+ *       to 40 where it stands: this world's limit"). Lowering it here would write this world's limit into the
+ *       species for good;</li>
+ *   <li>any other mapped fact is set to the limit in the arguments ("… was set to …: this world's limit").</li>
+ * </ul> An argument no fact measures (a custom datapack power) is kept as it is: the
  * thing is made, and a world that cannot measure it shows it locked on his watch, never refused here. Runs after the
  * safety layers and the world's rules, so a refused call is never fitted into an allowed one. With no limits, nothing
  * changes. Pure.
@@ -38,12 +45,25 @@ public final class ToolArgFit {
         return Map.copyOf(m);
     }
 
-    /** One argument lowered: which, from what, to what (the limit), under which fact. */
-    public record Lowered(String arg, String fact, double from, double to) {
+    /**
+     * One argument fitted: which, from what, to what (the limit), under which fact, and whether it is held where the
+     * creature stands ({@code live}: the argument keeps what was asked) or was set to the limit in the arguments.
+     */
+    public record Lowered(String arg, String fact, double from, double to, boolean live) {
         /** The core's note to the agent: from the argument and the limit alone. */
         public String note() {
-            return arg + " was set to " + number(to) + ": this world's limit";
+            return live ? arg + " is held to " + number(to) + " where it stands: this world's limit"
+                    : arg + " was set to " + number(to) + ": this world's limit";
         }
+    }
+
+    /** Facts the core fits where a creature stands, at every spawn: never lowered in a tool's arguments. */
+    static final java.util.Set<String> HELD_WHERE_IT_STANDS = held();
+
+    private static java.util.Set<String> held() {
+        java.util.Set<String> s = new java.util.HashSet<>(com.moddingfromamod.wishbuilder.MakeFit.LIVE);
+        s.add(MakeFacts.SCALE_TIMES);   // LiveFit.drawnScale holds any creature to a scaleTimes limit at every spawn
+        return java.util.Set.copyOf(s);
     }
 
     /**
@@ -64,8 +84,11 @@ public final class ToolArgFit {
             }
             double asked = args.get(e.getKey()).getAsDouble();
             if (asked > most + 1e-9) {
-                args.addProperty(e.getKey(), most);
-                out.add(new Lowered(e.getKey(), e.getValue(), asked, most));
+                boolean live = HELD_WHERE_IT_STANDS.contains(e.getValue());
+                if (!live) {
+                    args.addProperty(e.getKey(), most);
+                }
+                out.add(new Lowered(e.getKey(), e.getValue(), asked, most, live));
             }
         }
         return out;

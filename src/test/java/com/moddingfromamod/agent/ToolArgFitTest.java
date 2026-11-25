@@ -23,13 +23,15 @@ class ToolArgFitTest {
         List<ToolArgFit.Lowered> lowered = ToolArgFit.fit("sculpt_creature", args,
                 Map.of(MakeFacts.HEALTH_HALF_HEARTS, 40.0, MakeFacts.ATTACK_DAMAGE_HALF_HEARTS, 6.0,
                         MakeFacts.SCALE_TIMES, 3.0));
-        assertEquals(40.0, args.get("health").getAsDouble());
+        // a creature's stats and size are held where it stands (live fit), so its record keeps what was asked
+        assertEquals(500.0, args.get("health").getAsDouble(), "held where it stands, never written into the species");
         assertEquals(4.0, args.get("damage").getAsDouble(), "within its limit: as asked");
-        assertEquals(3.0, args.get("scale").getAsDouble());
+        assertEquals(6.0, args.get("scale").getAsDouble());
         assertEquals("[\"my_custom_power\"]", args.get("powers").toString(), "what no fact measures is kept as it is");
-        assertEquals(List.of("health was set to 40: this world's limit", "scale was set to 3: this world's limit"),
+        assertEquals(List.of("health is held to 40 where it stands: this world's limit",
+                        "scale is held to 3 where it stands: this world's limit"),
                 lowered.stream().map(ToolArgFit.Lowered::note).toList(), "the core's own words, from the key and limit");
-        assertTrue(ToolArgFit.notes(lowered).contains("health was set to 40: this world's limit"));
+        assertTrue(ToolArgFit.notes(lowered).contains("health is held to 40 where it stands: this world's limit"));
     }
 
     @Test

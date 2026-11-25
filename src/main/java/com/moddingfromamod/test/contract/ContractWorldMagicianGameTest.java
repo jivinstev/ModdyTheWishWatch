@@ -25,7 +25,7 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.network.chat.Component;
 
 /**
- * #69: the contract world covers the Magician. A making tool's arguments are fitted to this world's limits in
+ * #69: the contract world covers the Magician. A making tool's arguments are fitted to this world's limits (a creature's stats held where it stands) in
  * {@code McpProtocol}'s {@code tools/call} (the one dispatch every tool call passes), after the safety layers and the
  * world's rules, and the result carries the core's note; what no fact measures is kept; the brief carries the limits as
  * data; with no world answering nothing is touched. Driven with stub tools, the {@code MagicianTouchGameTest} pattern:
@@ -118,14 +118,13 @@ public final class ContractWorldMagicianGameTest {
                 return problem;
             }
             JsonObject args = got.get();
-            if (args == null || args.get("health").getAsDouble() != ContractWorld.TOUGHEST
-                    || args.get("damage").getAsDouble() != 4) {
-                return "the tool was given its arguments fitted (health 40, damage as asked): " + args;
+            if (args == null || args.get("health").getAsDouble() != 500 || args.get("damage").getAsDouble() != 4) {
+                return "a creature's health is held where it stands, not written into its record (asked 500): " + args;
             }
             if (!args.get("powers").toString().contains("a_custom_datapack_power")) {
                 return "what no fact measures is kept as it is: " + args;
             }
-            if (!reply.get().contains("health was set to 40: this world's limit")) {
+            if (!reply.get().contains("health is held to 40 where it stands: this world's limit")) {
                 return "the core tells the agent: " + reply.get();
             }
             // with no world answering, nothing is touched
