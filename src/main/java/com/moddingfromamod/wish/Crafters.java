@@ -87,14 +87,9 @@ public final class Crafters {
 
     /** First thing a Crafter hears in a session. */
     public static String welcome(String title) {
-        return welcome(title, true);
-    }
-
-    /** …without the line about Wish Magicians on a world whose Magician is off (#78): there is none to become. */
-    public static String welcome(String title, boolean magicianOn) {
         return "✨ You're a " + title.replaceFirst("^✦+ ", "") + "! Press your watch, or type a wish: Moddy's "
-                + "Apprentice finds it in Moddy's Parts."
-                + (magicianOn ? " Grown-ups (18+) can become Wish Magicians and invent brand-new wishes." : "");
+                + "Apprentice finds it in Moddy's Parts. "
+                + "Grown-ups (18+) can become Wish Magicians and invent brand-new wishes.";
     }
 
     /** A Crafter asked a question: the agent answers those. */

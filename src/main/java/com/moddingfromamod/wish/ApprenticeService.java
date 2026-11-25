@@ -214,8 +214,7 @@ public final class ApprenticeService {
         com.moddingfromamod.wishbuilder.ApprenticeName.Named named = com.moddingfromamod.wishbuilder.ApprenticeName.parse(words);
         String read = named == null ? words : named.rest();
         String name = named == null ? null : named.name();
-        if (named != null && crafter && MagicianDoor.on(p.getUUID())) {
-            // only where there is a Magician to become (#78): with the Magician off, no Wish Magician can name it either
+        if (named != null && crafter) {
             p.sendSystemMessage(Component.literal(ApprenticeWords.NAME_MAGICIAN).withStyle(ChatFormatting.AQUA));
             nudge(p);
         }
@@ -402,7 +401,7 @@ public final class ApprenticeService {
 
     /** The one line about Wish Magicians, at most once in ten minutes (docs/OPEN_DOOR_PLAN.md §5). */
     private static void nudge(ServerPlayer p) {
-        if (MagicianDoor.on(p.getUUID()) && CrafterService.takeNudge(p)) {   // #78: no Wish Magician to become while it is off
+        if (CrafterService.takeNudge(p)) {
             p.sendSystemMessage(Component.literal(ApprenticeWords.UPSELL).withStyle(ChatFormatting.GRAY)
                     .append(CrafterService.link(CrafterService.signupUrl())));
         }

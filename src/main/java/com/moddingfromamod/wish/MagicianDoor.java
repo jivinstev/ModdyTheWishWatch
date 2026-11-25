@@ -7,7 +7,8 @@ import net.minecraft.server.level.ServerPlayer;
  * <b>May the Magician be offered to this player?</b> The one answer every page, tile, tooltip and chat line asks before
  * it offers a Magician wish as the next step (#78): the Apprentice's no-fit and "✪ Moddy wishes it from scratch"
  * tiles, the re-wish reader's "✪ Ask the Magician", the 📖 page's "Typed wishes" toggle, the watch's "✍ Wish for
- * something new" tooltip, a thing's "Wish about this", the wish box's lines and the "become a Wish Magician" nudges.
+ * something new" tooltip, a thing's "Wish about this" and the wish box's lines. (The sign-up lines a Crafter sees
+ * about becoming a Wish Magician are not an offer of a Magician wish and stay as they are.)
  *
  * <p>The Magician is offered only where a wish sent to him would reach him: Magician mode is on (or its check is
  * running, or a developer forced the pool: {@code Magician.allowsAi}), or a plug-in says this player is always a
