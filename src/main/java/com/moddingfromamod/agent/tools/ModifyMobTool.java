@@ -141,7 +141,12 @@ public final class ModifyMobTool implements McpTool {
         Schemas.prop(s, "name", "string", "Name shown above the mob, e.g. 'Steve's Storm'.");
         Schemas.prop(s, "health", "number",
                 "Max health, 1 to " + (int) MobTweak.MAX_HEALTH + ". Raising it also heals the mob.");
-        Schemas.prop(s, "damage", "number", "Attack damage, 0 to " + (int) MobTweak.MAX_DAMAGE + ".");
+        Schemas.prop(s, "damage", "number", "Attack damage, 0 to " + (int) MobTweak.MAX_DAMAGE + ": what its body "
+                + "would have, like a vanilla mob its size. A friendly creature never attacks whatever this says, so "
+                + "never 0 to make it gentle; 0 lands nothing.");
+        Schemas.prop(s, "armor", "number", "Armour points, 0 to " + (int) MobTweak.MAX_ARMOR
+                + " (a full iron suit is 15).");
+        Schemas.prop(s, "knockback_resistance", "number", "0 to 1: how hard it is to push (1 = never pushed).");
         Schemas.prop(s, "speed", "number",
                 "Move speed, " + MobTweak.MIN_SPEED + " to " + MobTweak.MAX_SPEED + ".");
         Schemas.prop(s, "invulnerable", "boolean", "True = nothing can hurt it.");
@@ -873,6 +878,12 @@ public final class ModifyMobTool implements McpTool {
      *
      * @return what became of the change
      */
+    /** The solid volume of the body a creature draws, or NaN when it draws none (#101's power line). */
+    private static double drawnVolume(com.moddingfromamod.species.Species sp) {
+        var g = com.moddingfromamod.runtime.ModelRepository.geometry(sp.modelKey());
+        return g == null ? Double.NaN : g.volume();
+    }
+
     private static Persisted persistToSpecies(LivingEntity e, MobTweak tweak) {
         com.moddingfromamod.species.Species current = speciesOf(e);
         if (current == null) {
@@ -891,6 +902,7 @@ public final class ModifyMobTool implements McpTool {
         com.moddingfromamod.species.Species next = current.with(
                 scale, tweak.health(), tweak.damage(), tweak.speed(),
                 tweak.name(), glowing)
+                .withDefence(tweak.armor(), tweak.knockbackResistance())
                 // Riding and harmlessness ARE the design (2026-10-11): a rideable T-Rex his button
                 // brought back could not be ridden, because this was the one animal's alone.
                 .withDesignedBehaviour(tweak.pet().rideable(), tweak.pet().friendly())
@@ -1041,6 +1053,17 @@ public final class ModifyMobTool implements McpTool {
                             + " rebuilt that way in a moment. The others of its kind are unchanged.)"
                     : "(Saved to the creature's design, so every one of these — now and in"
                             + " future — is like this.)");
+            // #101: what its numbers now mean, and a guard that cannot hit, caught before he sees it
+            var nowSpecies = speciesOf(e);
+            if (nowSpecies != null && (tweak.health() != null || tweak.damage() != null || tweak.armor() != null
+                    || tweak.knockbackResistance() != null || !tweak.behaviour().isEmpty())) {
+                double vol = drawnVolume(nowSpecies);
+                notes.add(com.moddingfromamod.species.PowerLine.of(nowSpecies, vol));
+                String zeroHit = com.moddingfromamod.species.PowerLine.zeroHitFlag(nowSpecies, vol);
+                if (!zeroHit.isEmpty()) {
+                    notes.add(zeroHit);
+                }
+            }
             return;
         }
         boolean creature = speciesOf(e) != null;
@@ -1084,6 +1107,12 @@ public final class ModifyMobTool implements McpTool {
         if (tweak.damage() != null && !set(e, Attributes.ATTACK_DAMAGE, tweak.damage())) {
             // Perfectly normal: a chicken has no attack-damage attribute at all.
             notes.add("(a " + typeId(e) + " has no attack damage to set.)");
+        }
+        if (tweak.armor() != null && !set(e, Attributes.ARMOR, tweak.armor())) {
+            notes.add("(couldn't change a " + typeId(e) + "'s armour.)");
+        }
+        if (tweak.knockbackResistance() != null && !set(e, Attributes.KNOCKBACK_RESISTANCE, tweak.knockbackResistance())) {
+            notes.add("(couldn't change how hard a " + typeId(e) + " is to push.)");
         }
         if (tweak.speed() != null && !set(e, Attributes.MOVEMENT_SPEED, tweak.speed())) {
             notes.add("(couldn't change a " + typeId(e) + "'s speed.)");

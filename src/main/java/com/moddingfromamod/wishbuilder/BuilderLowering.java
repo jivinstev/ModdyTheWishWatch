@@ -488,6 +488,7 @@ public final class BuilderLowering {
                 a.add(k, shipped.get(k).deepCopy());
             }
         }
+        defence(shipped, a);
         List<String> powers = new ArrayList<>(temperPowers(spec.temper()));
         // what the starter does by being itself (a dragon flies and never burns, a T-Rex pounces). The lowering's
         // list replaces the starter's own file, so before this a Builder pet dragon walked and burned.
@@ -547,6 +548,21 @@ public final class BuilderLowering {
             calls.add(new Call("run_command", more));
         }
         withYou(spec, newId, calls);
+    }
+
+    /**
+     * #101: a ready-made's shipped armour and knockback resistance (a turtle's shell, a rock golem that is never pushed),
+     * sent with its sculpt now that the tool takes them; only where it has some, so every other make is unchanged.
+     */
+    static void defence(JsonObject shipped, JsonObject sculptArgs) {
+        if (shipped == null) {
+            return;
+        }
+        for (String[] k : new String[][] {{"armor", "armor"}, {"knockbackResistance", "knockback_resistance"}}) {
+            if (shipped.has(k[0]) && shipped.get(k[0]).isJsonPrimitive() && shipped.get(k[0]).getAsDouble() > 0) {
+                sculptArgs.add(k[1], shipped.get(k[0]).deepCopy());
+            }
+        }
     }
 
     /** step 6: the tune dialog's "How fast" (1 slow, 2 its own pace, 3 fast) as sculpt_creature's speed. */
@@ -719,6 +735,7 @@ public final class BuilderLowering {
                 a.add(k, sculpt.get(k).deepCopy());
             }
         }
+        defence(LibraryPresets.SHIPPED.species(Catalogue.bare(preset)), a);
         List<String> powers = new ArrayList<>(temperPowers(spec.temper()));
         // (was an earlier issue's flies alone): a body brings what it does by being itself (a plane flies, a rabbit hops, a
         // phoenix glows and never burns, BuilderNatural); every other power is his pick on the powers page. A make saved
