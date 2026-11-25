@@ -1,19 +1,31 @@
 #!/usr/bin/env bash
-# PRE-COMMIT: refuse a commit whose staged changes ADD an API key or token.
+# PRE-COMMIT: refuse a commit whose staged changes ADD an API key or token, or third-party code or text under a licence
+# that is not on the allow-list (CLAUDE.md, "Third-party code and text").
 #
 # Installed by tools/public-hooks/install.sh with pre-push. It runs tools/secret-scan.py --staged: every credential
 # shape in tools/secret_patterns.py, and the live secret values of the environment you commit from (any *_KEY,
 # *_TOKEN, *_SECRET with a long value). A finding names the file, the line and the kind; never the value. pre-push
-# scans every outgoing commit again (tools/leak-scan.py --commits, which holds the same secret rules).
+# scans every outgoing commit again (tools/leak-scan.py --commits, which holds the same secret rules). Then
+# tools/licence-scan.py --staged: licence wording, ids and provenance off the allow-list, and a foreign copyright with
+# no THIRD_PARTY.md row.
 set -uo pipefail
 top="$(git rev-parse --show-toplevel)" || exit 1
 scan="$top/tools/secret-scan.py"
-if [ ! -f "$scan" ]; then
-    echo "pre-commit: $scan is missing, so no secret can be checked; refusing the commit" >&2
-    exit 1
-fi
+for f in secret-scan.py licence-scan.py licence-rules.json; do
+    if [ ! -f "$top/tools/$f" ]; then
+        echo "pre-commit: tools/$f is missing, so nothing can be checked; refusing the commit" >&2
+        exit 1
+    fi
+done
+rc=0
 if ! python3 "$scan" --repo "$top" --staged >&2; then
     echo "pre-commit: REFUSED. Take the credential out (refer to it by its environment variable), and rotate it if" >&2
     echo "pre-commit: it was real. A documented fake goes on a line marked 'secret-scan: allow'." >&2
-    exit 1
+    rc=1
 fi
+if ! python3 "$top/tools/licence-scan.py" --repo "$top" --staged >&2; then
+    echo "pre-commit: REFUSED. Code or text from someone else comes in only under an allow-listed licence; anything" >&2
+    echo "pre-commit: else goes to the owner first (CLAUDE.md). A foreign copyright needs a THIRD_PARTY.md row." >&2
+    rc=1
+fi
+exit "$rc"

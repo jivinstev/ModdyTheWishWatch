@@ -92,7 +92,11 @@ attempt() {
     if [ "$rc" = 0 ] && [ -n "$drift" ] && { [ -d "$drift" ] || [ -z "${GATE_C_CLIENT:-}" ]; }; then
         if ! python3 tools/rig-drift.py "$drift" > "$OUT/$mode.$round.drift" 2>&1; then
             rc=1
-            printf 'FAIL — part drift: %s\n' "$(grep -m1 -E 'FAIL|NO-DATA' "$OUT/$mode.$round.drift" | sed 's/^ *//' | cut -c1-300)" \
+            # the REASON first (#138): a rig's summary line can read all zeros when the rule that failed is the spin
+            # rule, whose reason is the "FAIL:" line under it; the summary follows for its numbers
+            printf 'FAIL — part drift: %s\n' "$( { grep -m1 -E '^ *FAIL: ' "$OUT/$mode.$round.drift" \
+                    || grep -m1 -E 'NO-DATA' "$OUT/$mode.$round.drift"; grep -m1 -E 'rig .*: FAIL' "$OUT/$mode.$round.drift"; } \
+                    | sed 's/^ *//' | tr '\n' ' ' | cut -c1-400)" \
                 > "$OUT/$mode.$round.result"
         fi
     fi

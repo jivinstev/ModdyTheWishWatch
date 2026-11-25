@@ -28,7 +28,9 @@ import com.moddingfromamod.world.WorldMakes;
  *       {@link #BIGGEST_STEP}, no tougher than {@link #TOUGHEST} health, hitting no harder than {@link #HARDEST}, with no more than
  *       {@link #HARDEST_SHELL} armour and {@link #STEADIEST} knockback resistance (raised by a later {@link #round}):
  *       {@code FIT}, stated up front ({@link Answers#limits}, stamp {@link #STAMP}) and in each answer;</li>
- *   <li>a tag, number or kind it has never heard of is simply allowed.</li>
+ *   <li>a tag, number or kind it has never heard of is simply allowed;</li>
+ *   <li>a player whose workshop is open ({@link #keepFor}) has each new make kept and handed over (#70), and every
+ *       hand-over is written down ({@link #handedOver}); everyone else's lands, the default.</li>
  * </ul>
  *
  * <p>Test code: under {@code test/}, never in the jar.
@@ -91,6 +93,32 @@ public final class ContractWorld implements ModdyPlugin {
         return Map.copyOf(later);
     }
 
+    private static final Map<UUID, com.moddingfromamod.world.Landing> KEEPS = new java.util.concurrent.ConcurrentHashMap<>();
+    private static final java.util.List<com.moddingfromamod.world.HandedOver> HANDED =
+            new java.util.concurrent.CopyOnWriteArrayList<>();
+
+    /** Open {@code player}'s workshop (#70): his new makes go where {@code landing} says; null closes it. */
+    public static void keepFor(UUID player, com.moddingfromamod.world.Landing landing) {
+        if (landing == null) {
+            KEEPS.remove(player);
+        } else {
+            KEEPS.put(player, landing);
+        }
+    }
+
+    private static final java.util.List<com.moddingfromamod.world.NotKept> NOT_KEPT =
+            new java.util.concurrent.CopyOnWriteArrayList<>();
+
+    /** Every make it asked to keep that the core did not, for {@code player}, oldest first. */
+    public static java.util.List<com.moddingfromamod.world.NotKept> notKept(UUID player) {
+        return NOT_KEPT.stream().filter(h -> h.player().equals(player)).toList();
+    }
+
+    /** Every hand-over the core told this world of, for {@code player}, oldest first. */
+    public static java.util.List<com.moddingfromamod.world.HandedOver> handedOver(UUID player) {
+        return HANDED.stream().filter(h -> h.player().equals(player)).toList();
+    }
+
     /** Back to the first round for every player (a test's tidy-up). */
     public static void forgetRounds() {
         ROUNDS.clear();
@@ -110,18 +138,20 @@ public final class ContractWorld implements ModdyPlugin {
     }
 
     /**
-     * This world's own rating (the toy formula the docs' example shows): a point for fighting, one for changing blocks,
-     * two for a world rule, one each for a big creature (scale 1.6+), a tough one (health 60+), a strong one (damage 8+),
-     * a crowd (5+ at once), and the Builder's top strength.
+     * This world's own rating (the toy formula the docs' example shows): a point for fighting (never for a vehicle,
+     * which this world leaves out of a fight), one for changing blocks, two for a world rule, one each for a big creature
+     * (scale 1.6+), a tough one (health 60+), a strong one (a bite of 8+, or 8+ a second with its moves: #102 reads what
+     * its breath, slam or charge does, not its bite alone), a crowd (5+ at once), and the Builder's top strength.
      */
     public static int rating(MakeFacts f) {
         int r = 0;
-        r += f.has(MakeFacts.FIGHTS) ? 1 : 0;
+        r += f.has(MakeFacts.FIGHTS) && !f.has(MakeFacts.VEHICLE) ? 1 : 0;
         r += f.has(MakeFacts.CHANGES_BLOCKS) ? 1 : 0;
         r += f.has(MakeFacts.WORLD_RULE) ? 2 : 0;
         r += f.number(MakeFacts.SCALE_TIMES).orElse(1) >= 1.6 ? 1 : 0;
         r += f.number(MakeFacts.HEALTH_HALF_HEARTS).orElse(0) >= 60 ? 1 : 0;
-        r += f.number(MakeFacts.ATTACK_DAMAGE_HALF_HEARTS).orElse(0) >= 8 ? 1 : 0;
+        r += f.number(MakeFacts.ATTACK_DAMAGE_HALF_HEARTS).orElse(0) >= 8
+                || f.number(MakeFacts.EFFECTIVE_DAMAGE_HALF_HEARTS_PER_SECOND).orElse(0) >= 8 ? 1 : 0;
         r += f.number(MakeFacts.COUNT_MADE).orElse(1) >= 5 ? 1 : 0;
         r += f.number(MakeFacts.BUILDER_STRENGTH_STEP).orElse(1) >= 3 ? 1 : 0;
         return r;
@@ -144,6 +174,22 @@ public final class ContractWorld implements ModdyPlugin {
                 case LOCKED -> MakeView.locked(LOCKED_WORDS);
                 case ALLOWED -> MakeView.fit(limitsFor(ask == null ? null : ask.player()));
             };
+        }
+
+        @Override
+        public com.moddingfromamod.world.Landing landing(MakeFacts facts, WishAsk ask) {
+            return ask == null ? com.moddingfromamod.world.Landing.LANDS
+                    : KEEPS.getOrDefault(ask.player(), com.moddingfromamod.world.Landing.LANDS);
+        }
+
+        @Override
+        public void handedOver(com.moddingfromamod.world.HandedOver what) {
+            HANDED.add(what);
+        }
+
+        @Override
+        public void notKept(com.moddingfromamod.world.NotKept what) {
+            NOT_KEPT.add(what);
         }
 
         @Override

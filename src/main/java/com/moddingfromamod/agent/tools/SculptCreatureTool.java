@@ -1378,6 +1378,9 @@ public final class SculptCreatureTool implements McpTool {
         JsonObject speciesJson = inheritSpecies(args);
         speciesJson.addProperty("id", key);
         speciesJson.addProperty("modelKey", key);
+        // its shape, read off its own parts (#132), for the stand-in if its model is ever not to hand
+        speciesJson.addProperty("body",
+                com.moddingfromamod.vanilla.SculptBody.of(parts).name().toLowerCase(java.util.Locale.ROOT));
         speciesJson.remove("parts");
         if (speciesJson.has("knockback_resistance")) {   // the tool's word for the record's field
             speciesJson.add("knockbackResistance", speciesJson.remove("knockback_resistance"));
@@ -1554,6 +1557,10 @@ public final class SculptCreatureTool implements McpTool {
                 String zeroHit = com.moddingfromamod.species.PowerLine.zeroHitFlag(stored, bodyVolume);
                 if (!zeroHit.isEmpty()) {
                     sb.append(' ').append(zeroHit);
+                }
+                String farAbove = com.moddingfromamod.species.PowerLine.farAbove(stored, bodyVolume);
+                if (!farAbove.isEmpty()) {
+                    sb.append(' ').append(farAbove);
                 }
 
                 ServerPlayer player = com.moddingfromamod.agent.ActingChild.of(server);

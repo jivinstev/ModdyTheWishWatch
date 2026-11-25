@@ -24,7 +24,7 @@ import java.util.function.Supplier;
  * {@link MinecraftServer#managedBlock}. The body still BLOCKS — so the tick clock stays frozen and a
  * deadline in ticks still means what it meant serially (the trap TriggerMatrix's comment names) —
  * but while it waits it RUNS the server's queued tasks, which is exactly where the tools' hops are.
- * Compiles (a forked Python each) run four at a time; activations run on the server thread, one at a
+ * Compiles (in-process) run four at a time; activations run on the server thread, one at a
  * time, as they always did.
  *
  * <p>Measured: {@code everyEffectBuildsInEveryShape} was 203 s of Gate B serially (214 s for its
