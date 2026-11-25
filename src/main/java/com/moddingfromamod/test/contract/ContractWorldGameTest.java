@@ -507,6 +507,101 @@ public final class ContractWorldGameTest {
         });
     }
 
+    /** The bodies near {@code p} that {@link com.moddingfromamod.world.Wished} says a wish made, by entity id. */
+    private static Set<java.util.UUID> wishedNear(GameTestHelper helper, ServerPlayer p) {
+        Set<java.util.UUID> out = new java.util.HashSet<>();
+        for (var e : helper.getLevel().getAllEntities()) {
+            if (e.distanceTo(p) < 48 && com.moddingfromamod.world.Wished.isWished(e)) {
+                out.add(e.getUUID());
+            }
+        }
+        return out;
+    }
+
+    @GameTest(template = "empty_test", batch = "contract_world_wished", timeoutTicks = 40000)
+    public static void everyBodyAWishMadeIsReadAsWishedByEveryPath(GameTestHelper helper) {
+        ServerPlayer p = setUp(helper, "gtcontractwished");
+        var level = helper.getLevel();
+        var server = level.getServer();
+        net.minecraft.world.phys.Vec3 at = p.position();
+        // a natural spawn, and a spawn egg's: neither is wished
+        // (a plain server command: no wish, no event, no function, so no spawn scope)
+        try {
+            server.getCommands().getDispatcher().execute("execute as " + p.getScoreboardName()
+                    + " at @s run summon minecraft:pig ~3 ~ ~ {NoAI:1b,Tags:[\"gtcontract_natural\"]}", server.createCommandSourceStack().withSuppressedOutput());
+        } catch (com.mojang.brigadier.exceptions.CommandSyntaxException e) {
+            helper.fail(Component.literal("the natural pig: " + e.getMessage()));
+        }
+        net.minecraft.world.entity.Entity natural = null;
+        for (var e : level.getAllEntities()) {
+            if (e.distanceTo(p) < 16 && e.getTags().contains("gtcontract_natural")) {
+                natural = e;
+            }
+        }
+        helper.assertTrue(natural != null, Component.literal("the natural pig stands"));
+        final net.minecraft.world.entity.Entity naturalPig = natural;
+        helper.assertFalse(com.moddingfromamod.world.Wished.isWished(naturalPig), Component.literal("a natural pig is nobody's wish"));
+        // the Magician: a plain mob its command summons, inside its wish's scope
+        String wish = "gtcontract-wished-" + System.nanoTime();
+        Set<java.util.UUID> before = wishedNear(helper, p);
+        com.moddingfromamod.mob.SpawnScope.during(wish, com.moddingfromamod.item.delivery.DeliveryPlan.Kind.HANDOVER, () ->
+                com.moddingfromamod.wish.WishExecutor.runOne(server, level, at, null, "summon minecraft:pig ~2 ~ ~ {NoAI:1b}"));
+        Set<java.util.UUID> magician = new java.util.HashSet<>(wishedNear(helper, p));
+        magician.removeAll(before);
+        helper.assertTrue(magician.size() == 1, Component.literal("the Magician's summoned pig is wished: " + magician));
+        // a recipe, "Make another one" or a hotbar fire: the stored command, run in its wish's scope
+        BuilderSpec one = cats("friendly", 1, 1);
+        AtomicReference<BuilderMake.Result> made = new AtomicReference<>();
+        AtomicReference<Set<java.util.UUID>> builder = new AtomicReference<>();
+        AtomicReference<Set<java.util.UUID>> replay = new AtomicReference<>();
+        AtomicReference<Set<java.util.UUID>> apprentice = new AtomicReference<>();
+        Set<java.util.UUID> beforeBuilder = wishedNear(helper, p);
+        Set<String> speciesHad = new java.util.HashSet<>();
+        SpeciesRegistry.all().forEach(sp -> speciesHad.add(sp.id()));
+        BuilderMake.make(p, one, BuilderAllowlist.REVIEWED).thenAcceptAsync(made::set);
+        com.moddingfromamod.test.RealTime.succeedWhen(helper, () -> {
+            BuilderMake.Result r = made.get();
+            helper.assertTrue(r != null && r.outcome() == BuilderMake.Outcome.MADE, Component.literal("the Builder cat: " + r));
+            if (builder.get() == null) {
+                Set<java.util.UUID> now = new java.util.HashSet<>(wishedNear(helper, p));
+                now.removeAll(beforeBuilder);
+                helper.assertTrue(now.size() == 1, Component.literal("the Builder's cat is one wished body: " + now));
+                // its species, spawned again as a recipe would
+                String species = SpeciesRegistry.all().stream().map(sp -> sp.id())
+                        .filter(sid -> !speciesHad.contains(sid)).findFirst().orElse("");
+                helper.assertTrue(!species.isEmpty(), Component.literal("the cat is a new species"));
+                Set<java.util.UUID> b2 = wishedNear(helper, p);
+                String sp = species;
+                var ran = com.moddingfromamod.mob.SpawnScope.during(wish + "-again",
+                        com.moddingfromamod.item.delivery.DeliveryPlan.Kind.HANDOVER,
+                        () -> com.moddingfromamod.wish.WishExecutor.runOne(server, level, at, p, "wishmob spawn " + sp + " 1"));
+                helper.assertTrue(ran.success(), Component.literal("the recipe's spawn ran: " + ran.joined()));
+                replay.set(b2);
+                builder.set(now);
+            }
+            if (apprentice.get() == null) {
+                helper.assertTrue(replay.get() != null, Component.literal("the recipe ran"));
+                Set<java.util.UUID> again = new java.util.HashSet<>(wishedNear(helper, p));
+                again.removeAll(replay.get());
+                helper.assertTrue(again.size() == 1, Component.literal("the recipe's cat is one more wished body: " + again));
+                // the Apprentice: a typed wish, its first tile pressed
+                apprentice.set(wishedNear(helper, p));
+                offered(p, "a frog");
+                com.moddingfromamod.wish.ApprenticeService.pressForTest(p, com.moddingfromamod.wishbuilder.ApprenticeWords.OFFER + 0);
+            }
+            Set<java.util.UUID> last = new java.util.HashSet<>(wishedNear(helper, p));
+            last.removeAll(apprentice.get());
+            helper.assertTrue(last.size() == 1, Component.literal("the Apprentice's frog is one more wished body: " + last));
+            // and no display part of any of them is a body; the natural pig is still nobody's
+            for (var e : level.getAllEntities()) {
+                if (e instanceof net.minecraft.world.entity.Display && e.distanceTo(p) < 48) {
+                    helper.assertFalse(com.moddingfromamod.world.Wished.isWished(e), Component.literal("a display part is not a body"));
+                }
+            }
+            helper.assertFalse(com.moddingfromamod.world.Wished.isWished(naturalPig), Component.literal("the natural pig still is not"));
+        });
+    }
+
     private static int count(String in, String what) {
         int n = 0;
         for (int i = in.indexOf(what); i >= 0; i = in.indexOf(what, i + 1)) {

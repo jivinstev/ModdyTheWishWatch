@@ -133,6 +133,24 @@ Treat a tag you do not know as matching nothing, and a kind you do not know as a
 may grow, and a world that hides or locks by tag never has to change when the core adds Builder content.
 `MakeFactsTest` (Gate A) pins both vocabularies and reads every reviewed Builder entry and every ready-made.
 
+## Telling a wished body from any other: `Wished`
+
+`com.moddingfromamod.world.Wished.isWished(entity)` is the one documented way to ask "did a player's wish make this
+body?", whatever made it: a Builder, Apprentice or Magician make, "Make another one", a recipe or a hotbar fire (an
+arena giving wished creatures a role, a world leaving its natural spawns alone). Read it rather than a tag: the markers
+under it may change. Cheap (two tag lookups), on the server or the client. `Wished.byTags(tags)` is the same decision
+on a set of tags. Today it reads two markers:
+
+| Marker | Put on | Meaning |
+|---|---|---|
+| `wishmob` | every sculpted wish creature, and a rig's carrier (the living entity that holds a rig creature's stats), at spawn and again on every load | a creature a wish made |
+| `moddy_wished` | a plain mob that joined the world inside a spawn scope: a wish's command (the Magician's `summon`, a recipe's command), a Builder or Magician event, or **any datapack function**, run by a tick or a schedule | a mob the wishes' spawn budget counts |
+
+A rig's display parts are parts of a body, never one, and are never wished. A mob the world spawns by itself, or a
+child's own spawn egg, carries neither marker. Note the last row: a mob **your world's own datapack function** spawns
+is inside the same scope and is marked too; a world that spawns mobs from its own functions tags them itself and checks
+its own tag first.
+
 ## Documented extension points
 
 ### `WishCharge`
