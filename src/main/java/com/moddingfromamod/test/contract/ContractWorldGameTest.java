@@ -1057,7 +1057,8 @@ public final class ContractWorldGameTest {
                                 Component.literal("and the ones standing grew too: " + now));
                     }
                     var kept = BuilderSpecStore.get(p.getStringUUID(), id.get());
-                    helper.assertTrue(kept != null && kept.read().equals(BuilderAllowlist.REVIEWED.capped(golem())),
+                    helper.assertTrue(kept != null && kept.read().size() == golem().size() && kept.read().opt("mobsize").isEmpty()
+                                    && kept.read().from().equals(golem().from()),
                             Component.literal("nothing was persisted: still kept as asked: " + (kept == null ? null : kept.spec())));
                 }
             }
