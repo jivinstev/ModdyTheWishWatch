@@ -16,6 +16,26 @@ a rule for your world) and it makes it, right there in your game.
   own subscription. It is off until you set it up, and it never starts a program or calls a model while it is off.
   API keys are read only from environment variables.
 
+## Install
+
+One command installs NeoForge, Moddy and a launcher profile. It asks which Minecraft version you want and shows its
+plan before it changes anything; it installs the newest full release.
+
+Mac and Linux:
+
+```bash
+curl -fsSL https://github.com/jivinstev/mc-mod-version-upgrade/releases/download/player-install-v2/install.sh | bash -s -- jivinstev/ModdyTheWishWatch
+```
+
+Windows (PowerShell):
+
+```powershell
+& ([scriptblock]::Create((irm https://github.com/jivinstev/mc-mod-version-upgrade/releases/download/player-install-v2/install.ps1))) jivinstev/ModdyTheWishWatch
+```
+
+Or install it by hand: NeoForge for your Minecraft version, then the jar from [Releases](../../releases) in your
+`mods` folder.
+
 ## Turn on the Magician
 
 1. Install **Claude Code** or **Muse Code** and sign in to your subscription (or set `ANTHROPIC_API_KEY` /
