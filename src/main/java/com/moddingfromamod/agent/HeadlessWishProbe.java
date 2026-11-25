@@ -382,6 +382,56 @@ public final class HeadlessWishProbe {
             LOGGER.info("{} forced {} chunks around {} so machines actually tick", TAG,
                     (2 * FORCED_CHUNKS + 1) * (2 * FORCED_CHUNKS + 1), centre);
 
+            // ── A SETUP BEFORE THE WISH: what the child already has (a mansion for a door wish) ─────
+            // headlesswishsetup=<file>: a JSON list of {"tool":…,"args":{…}} run as him through the real
+            // tools, BEFORE the wish, and the wish waits until every build it started is up. A wish about
+            // "my mansion" is only measurable in a world that has one.
+            String setup = System.getProperty(P + "headlesswishsetup", "");
+            if (!setup.isEmpty() && stage().isEmpty()) {
+                if (setupState == null) {
+                    setupState = "running";
+                    UUID owner = (realChild != null ? realChild : child).getUUID();
+                    Thread st = new Thread(() -> setupState = runSetup(Path.of(setup), owner), "headless-setup");
+                    st.setDaemon(true);
+                    st.start();
+                    return;
+                }
+                if (setupState.equals("running")) {
+                    return;
+                }
+                if (!setupState.equals("OK")) {
+                    finish(server, false, "RIG FAULT: the setup before the wish failed: " + setupState);
+                    return;
+                }
+                for (String id : setupBuilds) {
+                    if (com.moddingfromamod.builder.Builder.isBuilding(id)) {
+                        return;
+                    }
+                }
+                // the rubric's BEFORE: every block round his buildings, as the wish found them
+                String sigDir = System.getProperty(P + "headlesswishsig", "");
+                if (!snapshotTaken && !sigDir.isEmpty()) {
+                    snapshotTaken = true;
+                    java.util.Map<String, int[]> boxes = new java.util.LinkedHashMap<>();
+                    int[] area = null;
+                    for (String id : setupBuilds) {
+                        int[] b = com.moddingfromamod.place.PlaceFinder.buildingBox(id);
+                        if (b == null) {
+                            continue;
+                        }
+                        boxes.put(id, b);
+                        int[] e = {b[0] - 16, b[1] - 8, b[2] - 16, b[3] + 16, b[4] + 4, b[5] + 16};
+                        area = area == null ? e : new int[] {Math.min(area[0], e[0]), Math.min(area[1], e[1]),
+                                Math.min(area[2], e[2]), Math.max(area[3], e[3]), Math.max(area[4], e[4]),
+                                Math.max(area[5], e[5])};
+                    }
+                    if (area != null) {
+                        com.moddingfromamod.redstone.RubricGrader.snapshot(level, area, boxes,
+                                Path.of(sigDir, "before.json"));
+                        LOGGER.info("{} snapshot of {} buildings written for the rubric", TAG, boxes.size());
+                    }
+                }
+            }
             if (!stage().isEmpty()) {
                 // The staged calls are HIS, as a typed wish's are: a random player id here left
                 // `wishmob spawn` with nobody to spawn it at ("A player is required"), so the
@@ -447,6 +497,46 @@ public final class HeadlessWishProbe {
     }
 
     /** The staged calls, on a worker thread bound as an agent is (tools marshal to the server). */
+    private static volatile String setupState;
+    private static boolean snapshotTaken;
+    private static final java.util.List<String> setupBuilds = new java.util.concurrent.CopyOnWriteArrayList<>();
+
+    /** Runs the setup calls as {@code player}; "OK" or what went wrong. Off the server thread. */
+    private static String runSetup(Path file, UUID player) {
+        UUID wish = UUID.randomUUID();
+        String worker = "setup-" + wish;
+        Marshal.global().submit(wish, player, "setup: " + file.getFileName());
+        Marshal.global().assign(worker, wish);
+        AgentContext.bind(worker);
+        try {
+            ToolRegistry tools = WishAgent.buildTools();
+            for (var el : com.google.gson.JsonParser.parseString(Files.readString(file)).getAsJsonArray()) {
+                var call = el.getAsJsonObject();
+                String name = call.get("tool").getAsString();
+                McpTool tool = tools.byName(name);
+                if (tool == null) {
+                    return "no tool " + name;
+                }
+                var args = call.getAsJsonObject("args").deepCopy();
+                if (name.equals("build_structure") && args.has("id")) {
+                    setupBuilds.add(args.get("id").getAsString());
+                }
+                ToolResult r = tool.call(args);
+                LOGGER.info("{} setup {} -> {}{}", TAG, name, r.isError() ? "ERROR " : "",
+                        r.text().length() > 200 ? r.text().substring(0, 200) + "…" : r.text());
+                if (r.isError()) {
+                    return "ERROR in " + name + ": " + r.text();
+                }
+            }
+            return "OK";
+        } catch (Exception e) {
+            return "threw: " + e;
+        } finally {
+            AgentContext.unbind();
+            Marshal.global().finish(wish);
+        }
+    }
+
     private static void runStage(Path file, String sig, UUID player) {
         wishText = "staged: " + file.getFileName();
         Thread t = new Thread(() -> {

@@ -221,7 +221,9 @@ public final class BuildMechanismTool implements McpTool {
             double r = Math.toRadians(player.getYRot());
             in = snap(-Math.sin(r), Math.cos(r));
         }
-        Doorway.Found door = Doorway.find(view, start, in, width);
+        int[] box = place.buildId() == null ? null : PlaceFinder.buildingBox(place.buildId());
+        Doorway.Found door = box != null ? Doorway.inBuilding(view, box, start, width)
+                : Doorway.find(view, start, in, width);
         if (!door.ok()) {
             return Built.fail(ToolResult.error("No door could go there: " + door.why() + "."));
         }
@@ -239,7 +241,12 @@ public final class BuildMechanismTool implements McpTool {
                 return Built.fail(ToolResult.error("Could not find the " + c[0] + "'s place " + c[1] + ": " + cp.why()));
             }
             RsPos spot = LevelView.rs(cp.block());
-            List<RsPos> tries = ControlSpots.nearDoor(door.frame(), door.width(), spot)
+            // a switch at the door's own building goes beside its door: inside for "inside", else outside
+            boolean sameBuilding = cp.buildId() != null && cp.buildId().equals(place.buildId());
+            List<RsPos> tries = sameBuilding
+                    ? ControlSpots.atDoor(door.frame(), door.width(), c[0],
+                            "inside".equals(cp.r().spot()) ? 1 : -1)
+                    : ControlSpots.nearDoor(door.frame(), door.width(), spot)
                     ? ControlSpots.atDoor(door.frame(), door.width(), c[0], ControlSpots.side(door.frame(), spot))
                     : ControlSpots.around(spot.up(-1));
             String last = null;

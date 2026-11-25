@@ -48,6 +48,7 @@ public final class PlanFirst {
             "paint_creature",
             "paint_surface",
             "stage_event",
+            "build_mechanism",
             "modify_mob",
             "modify_player",
             "make_item",
@@ -62,6 +63,7 @@ public final class PlanFirst {
             "remove_datapack",
             "remove_painting",
             "remove_event",
+            "remove_mechanism",
             // maintenance: re-reads what is already there
             "reload_datapacks",
             // the sparkles at the spot, which the prompt says to call EARLY, before the design

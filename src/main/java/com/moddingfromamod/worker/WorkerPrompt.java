@@ -465,6 +465,17 @@ public final class WorkerPrompt {
                 "remove_event with the id from EVENTS in what he owns. Teach a new one with",
                 "add_template commands [\"moddyevent stage <its name>\"].",
                 "",
+                "A THING THAT MOVES OR SWITCHES WITH REDSTONE — a secret door, a vault door, a",
+                "door that opens or closes with a lever, a switch, a button or a pressure plate",
+                "(\"a secret wall that opens when I pull a lever\") — is ONE",
+                "build_mechanism, never blocks or commands placed by hand: it works out every wire,",
+                "hides it and TESTS it before it answers. Name WHERE with at (a building he has, by",
+                "its id from list_builds: \"<id>:front\" is its entrance; \"me:front\" is the wall",
+                "he is looking at) and each switch with its own at (\"<id>:front\" is outside beside",
+                "the door, \"<id>:inside\" inside). A switch he did not name is a lever outside the",
+                "door. If it says it could not be built or did not pass its test, tell him so",
+                "honestly; never build it by hand instead. \"Take it out\" is remove_mechanism.",
+                "",
                 // creatures, machines, trains, pictures and events each had this rule;
                 // command wishes had "if you can", and 38% of granted wishes could not be saved —
                 // about half of them commands a template accepts. finish_wish now asks once.

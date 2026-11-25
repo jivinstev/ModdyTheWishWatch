@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Where a control stands when the child named the door's own place ("a switch in front of my house"): beside the
+ * Where a control stands when the child named the door's own place (a lever "by the castle door"): beside the
  * path, never in it, a few steps out, on the side he named. A pressure plate is the exception: it goes IN the path,
  * where he will step. Each answer is a list of ground blocks to try in order; the planner takes the first that fits.
  *

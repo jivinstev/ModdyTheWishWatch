@@ -138,6 +138,9 @@ public final class BaseReach {
             Map.entry("stage_event", Rule.of(Kind.ANCHORED,
                     "at the locked anchor; its spread (at most EventScale.GIGANTIC.radius, 64) is inside "
                     + "the 96-block margin every anchor keeps, so it stays on his island")),
+            Map.entry("build_mechanism", Rule.of(Kind.DESTINATION,
+                    "in the wall of the place its `at` names (his building, or the wall he faces), with its "
+                            + "switches within a few blocks of it")),
             Map.entry("paint_surface", Rule.of(Kind.ABSOLUTE,
                     "x/y/z when given (checked), else a board at the anchor")),
             // ── around the child ─────────────────────────────────────────────────────────────────
@@ -156,6 +159,7 @@ public final class BaseReach {
             Map.entry("remove_datapack", Rule.of(Kind.ARTIFACT, "takes away his own")),
             Map.entry("remove_painting", Rule.of(Kind.ARTIFACT, "takes away his own")),
             Map.entry("remove_event", Rule.of(Kind.ARTIFACT, "gives back what his own event changed")),
+            Map.entry("remove_mechanism", Rule.of(Kind.ARTIFACT, "puts back what his own mechanism replaced")),
             Map.entry("take_me_to", Rule.of(Kind.DESTINATION,
                     "teleports him to a thing by name: TakeMeToTool refuses a thing off his island")),
             // ── every island at once ─────────────────────────────────────────────────────────────

@@ -1,5 +1,8 @@
 package com.moddingfromamod.redstone;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Where a door goes: from a spot outside a wall and the direction into the building, finds the wall line and the
  * doorway in it. An existing opening 1 or 2 wide and at least 2 tall is used as it is (its own door, if it has one,
@@ -60,6 +63,10 @@ public final class Doorway {
         RsDir along = in.clockwise();
         for (int k = 0; k <= REACH; k++) {
             RsPos c = start.plus(in.dx() * k, 0, in.dz() * k);
+            if (k > 0 && !passable(w, start.plus(in.dx() * (k - 1), 0, in.dz() * (k - 1)))
+                    && !passable(w, start.plus(in.dx() * (k - 1), 1, in.dz() * (k - 1)))) {
+                break;   // the ray went into something solid: never through a wall into the room beyond
+            }
             for (int dy = 0; Math.abs(dy) <= STEP; dy = dy <= 0 ? -dy + 1 : -dy) {
                 RsPos base = c.up(dy);
                 // a wall is met from open air: the cell before it on the ray is walkable at both heights
@@ -126,12 +133,22 @@ public final class Doorway {
             RsPos origin = at(base.up(bestDy), along, bestU);
             return new Found(new Frame(origin, along, in), bestW, true, wallBlock, null);
         }
-        // none: cut a new one where the ray met the wall (wantWidth wide), if the wall is whole there
+        // none: cut a new one where the ray met the wall (wantWidth wide), at the height the room inside is
+        // walkable (the row the ray met may be the floor's own edge), if the wall is whole there
         int width = wantWidth == 1 ? 1 : 2;
+        for (int dy : new int[] {0, 1, -1, 2}) {
+            RsPos row = base.up(dy);
+            RsPos inside = row.plus(in.dx(), 0, in.dz());
+            if (passable(w, inside) && passable(w, inside.up(1)) && wall(w, inside.up(-1))) {
+                base = row;
+                break;
+            }
+        }
         for (int u = 0; u < width; u++) {
             for (int dy = 0; dy < 2; dy++) {
                 if (!wall(w, base.plus(along.dx() * u, dy, along.dz() * u))) {
-                    return Found.no("the wall there is not whole, and there is no doorway near to use");
+                    return Found.no("the wall met at " + base.x() + " " + base.y() + " " + base.z() + " is not whole "
+                            + "there, and there is no doorway within " + SIDEWAYS + " blocks of it to use");
                 }
             }
         }
@@ -143,8 +160,98 @@ public final class Doorway {
         return row.plus(along.dx() * u, 0, along.dz() * u);
     }
 
+    /**
+     * A doorway column: walkable at both heights over a solid floor. A DOOR counts even with wall above it: a
+     * building made with a one-block door shape has only the door's lower half (measured on a wished mansion), and
+     * the piston door clears both cells anyway.
+     */
     static boolean column(WorldView w, RsPos row, RsDir along, int u) {
         RsPos c = at(row, along, u);
-        return passable(w, c) && passable(w, c.up(1)) && wall(w, c.up(-1));
+        boolean door = w.blockId(c).endsWith("_door") || w.blockId(c.up(1)).endsWith("_door");
+        return passable(w, c) && (passable(w, c.up(1)) || door) && wall(w, c.up(-1));
+    }
+
+    /**
+     * The doorway of a BUILDING, from its box {@code {x0,y0,z0,x1,y1,z1}}: an opening on its ground storey (the
+     * bottom four rows of a face), a real door preferred, on the face nearest {@code spot}; with none on any face,
+     * a new one cut in the middle of the nearest face's walkable row. A building's spots can sit at the wrong height
+     * (measured: a mansion's front spot at roof level, and a ray from it walked through the house to the back
+     * wall), so the box decides, never the spot's height.
+     */
+    public static Found inBuilding(WorldView w, int[] box, RsPos spot, int wantWidth) {
+        record Face(RsDir in, RsPos corner, int length) {
+        }
+        int x0 = box[0], y0 = box[1], z0 = box[2], x1 = box[3], z1 = box[5];
+        // each face: the direction into the building, and its first cell along `along` (= in.clockwise())
+        List<Face> faces = new ArrayList<>();
+        faces.add(new Face(RsDir.SOUTH, new RsPos(x1, y0, z0), x1 - x0 + 1));   // north face, along = WEST
+        faces.add(new Face(RsDir.NORTH, new RsPos(x0, y0, z1), x1 - x0 + 1));   // south face, along = EAST
+        faces.add(new Face(RsDir.EAST, new RsPos(x0, y0, z0), z1 - z0 + 1));    // west face, along = SOUTH
+        faces.add(new Face(RsDir.WEST, new RsPos(x1, y0, z1), z1 - z0 + 1));    // east face, along = NORTH
+        double best = Double.MAX_VALUE;
+        Found found = null;
+        for (Face f : faces) {
+            RsDir along = f.in().clockwise();
+            for (int dy = 0; dy <= 3; dy++) {
+                RsPos row = f.corner().up(dy);
+                int u = 0;
+                while (u < f.length()) {
+                    if (!column(w, row, along, u)) {
+                        u++;
+                        continue;
+                    }
+                    int s0 = u;
+                    while (u < f.length() && column(w, row, along, u)) {
+                        u++;
+                    }
+                    int width = u - s0;
+                    if (width > 2 || !wall(w, at(row, along, s0 - 1)) || !wall(w, at(row, along, u))) {
+                        continue;
+                    }
+                    RsPos origin = at(row, along, s0);
+                    boolean door = w.blockId(origin).endsWith("_door");
+                    double mx = origin.x() + along.dx() * (width - 1) / 2.0, mz = origin.z() + along.dz() * (width - 1) / 2.0;
+                    double score = Math.hypot(mx - spot.x(), mz - spot.z()) - (door ? 1000 : 0);
+                    if (score < best) {
+                        best = score;
+                        found = new Found(new Frame(origin, along, f.in()), width, true,
+                                w.blockId(at(row, along, s0 - 1)), null);
+                    }
+                }
+            }
+        }
+        if (found != null) {
+            return found;
+        }
+        // none: cut a new one in the nearest face, at the row the inside is walkable
+        Face near = null;
+        double nd = Double.MAX_VALUE;
+        for (Face f : faces) {
+            RsDir along = f.in().clockwise();
+            double mx = f.corner().x() + along.dx() * (f.length() - 1) / 2.0;
+            double mz = f.corner().z() + along.dz() * (f.length() - 1) / 2.0;
+            double d = Math.hypot(mx - spot.x(), mz - spot.z());
+            if (d < nd) {
+                nd = d;
+                near = f;
+            }
+        }
+        int width = wantWidth == 1 ? 1 : 2;
+        if (near.length() < width + 8) {
+            return Found.no("that building's walls are too short for a piston door: it needs " + (width + 8)
+                    + " blocks of wall");
+        }
+        RsDir along = near.in().clockwise();
+        int u = (near.length() - width) / 2;
+        for (int dy = 0; dy <= 3; dy++) {
+            RsPos row = near.corner().up(dy);
+            RsPos c = at(row, along, u);
+            RsPos inside = c.plus(near.in().dx(), 0, near.in().dz());
+            if (wall(w, c) && wall(w, c.up(1)) && passable(w, inside) && passable(w, inside.up(1))
+                    && wall(w, inside.up(-1))) {
+                return new Found(new Frame(c, along, near.in()), width, false, w.blockId(c), null);
+            }
+        }
+        return Found.no("that building has no doorway and no wall with a walkable floor behind it to cut one in");
     }
 }

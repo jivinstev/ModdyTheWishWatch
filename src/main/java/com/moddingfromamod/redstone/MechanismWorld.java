@@ -105,6 +105,11 @@ public final class MechanismWorld {
                 stand.setInvisible(true);
                 stand.addTag(PROOF_TAG);
                 level.addFreshEntity(stand);
+                // A plate notices an entity only when the entity's own movement checks the blocks it is inside,
+                // and a stand that never moves may never do that (measured: the same test passed, then failed).
+                // Run that check once, as a step down onto the plate; the plate then re-checks by itself.
+                net.minecraft.world.phys.Vec3 feet = stand.position();
+                stand.applyEffectsFromBlocks(feet.add(0, 0.5, 0), feet);
             } else {
                 level.getEntitiesOfClass(ArmorStand.class, new net.minecraft.world.phys.AABB(at).inflate(1),
                         e -> e.getTags().contains(PROOF_TAG)).forEach(e -> e.discard());
@@ -126,6 +131,14 @@ public final class MechanismWorld {
 
     /** True when {@code s} is the block named in {@code want} and has every property {@code want} lists. */
     static boolean matches(BlockState s, String want) {
+        // "#open": a person can pass (air, a plant); "#shut": a block in the way. Used by the grader, which does
+        // not know which block a door is made of, only whether the doorway is open or shut.
+        if (want.equals("#open")) {
+            return !s.blocksMotion();
+        }
+        if (want.equals("#shut")) {
+            return s.blocksMotion() && !s.is(net.minecraft.world.level.block.Blocks.MOVING_PISTON);
+        }
         int br = want.indexOf('[');
         String id = br < 0 ? want : want.substring(0, br);
         if (!BuiltInRegistries.BLOCK.getKey(s.getBlock()).toString().equals(id)) {

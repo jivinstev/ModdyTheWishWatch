@@ -34,7 +34,9 @@ public final class LevelView implements WorldView {
         if (!s.getFluidState().isEmpty()) {
             return Kind.FLUID;
         }
-        if (s.isAir()) {
+        // short grass, ferns, a snow layer: what the game itself lets a placed block replace counts as open space
+        // (measured: a lever had nowhere to go in front of a mansion on a grassy hill)
+        if (s.isAir() || s.canBeReplaced()) {
             return Kind.AIR;
         }
         if (locked(s)) {

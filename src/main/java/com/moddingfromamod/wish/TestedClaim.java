@@ -132,6 +132,8 @@ public final class TestedClaim {
             "build_structure", "sculpt_creature",
             "define_creature", "define_species", "author_datapack", "change_drops", "set_rule",
             "make_item", "paint_surface", "paint_creature", "add_template", "stage_event",
+            // it TESTS what it built (every control used for real) before it answers
+            "build_mechanism",
             // editors — record nothing in made(), which is the whole point of this list
             "modify_mob",
             // oracles — make nothing, and asking one is exactly what a test IS

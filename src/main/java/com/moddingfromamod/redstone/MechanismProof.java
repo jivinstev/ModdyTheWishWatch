@@ -48,7 +48,13 @@ public final class MechanismProof {
 
     /** Off the server thread: starts the proof on the server and waits for its result (up to two minutes). */
     public static Result prove(ServerLevel level, MechanismPlan plan) {
+        return prove(level, plan, CYCLES);
+    }
+
+    /** As {@link #prove(ServerLevel, MechanismPlan)}, with {@code cycles} on-and-off rounds per control. */
+    public static Result prove(ServerLevel level, MechanismPlan plan, int cycles) {
         Run run = new Run(level, plan);
+        run.cycles = cycles;
         AgentBridge.onServer(() -> RUNNING.add(run), 10_000L);
         try {
             return run.done.get(120, TimeUnit.SECONDS);
@@ -80,6 +86,7 @@ public final class MechanismProof {
         final List<String> steps = new ArrayList<>();
         final CompletableFuture<Result> done = new CompletableFuture<>();
         volatile boolean stop;
+        int cycles = CYCLES;
 
         int cycle = 1, control = -1;     // control -1: the first settle at rest
         boolean fired;                   // the state being waited for
@@ -154,7 +161,7 @@ public final class MechanismProof {
             } else {
                 control++;
                 if (control >= plan.controls().size()) {
-                    if (cycle >= CYCLES || plan.controls().isEmpty()) {
+                    if (cycle >= cycles || plan.controls().isEmpty()) {
                         finish(null);
                         return;
                     }
