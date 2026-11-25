@@ -282,7 +282,18 @@ the limits the world gave.
   same gate and fitting its press goes through: one this world hides, or that no fit could bring within its limits, is
   dropped; one it locks is shown locked with its words; one it fits is drawn as it is, made fitted when pressed and told
   once. The order is the matcher's. With no world answering the page is exactly today's.
-- **Not yet** (a later change): the Magician's tool arguments are fitted from limits carried in its brief.
+- **The Magician** (`agent/ToolArgFit`, #69). Its brief carries this world's limits for the wish's player **as data
+  only**: the fact keys from the closed vocabulary and their numbers (`THIS WORLD'S LIMITS (numbers only, by make
+  fact): healthHalfHearts=40, …`), never a word a world wrote. Each making tool's arguments that a fact measures (today
+  `sculpt_creature`'s `health`, `damage`, `scale`, `armor`, `knockbackResistance`) are set to the limit when they are
+  over it, in the one dispatch every tool call passes (`McpProtocol`, after the safety layers and the world's rules, so
+  a refused call is never fitted into an allowed one), and the tool result ends with a note the core writes from the
+  fact and the limit alone ("health was set to 40: this world's limit"), so the agent tells the player in its own words,
+  which the text sweep reads as it reads all of them. What no fact measures (a custom datapack power) is kept as it is:
+  the thing is made, and a world that cannot measure it shows it as it chooses on his watch (locked, in the contract
+  world), never refused at the tool. A lesson the agent reads before it builds a creature or an item tells it to make
+  the strongest version the limits allow ("the strongest sword ever" is the strongest sword allowed); a test pins it.
+  With no world answering, the brief carries nothing and no argument is touched.
 - **Cheap, and free of side effects:** a menu asks once per tile per draw, on the server thread. Default methods only.
 - **Example:** `ContractWorld` (the contract test world below): hostile makes hidden, a make its own toy rating puts at
   4 or more locked, everything else fitted to three at once, size step 3, 40 health and 6 attack damage.

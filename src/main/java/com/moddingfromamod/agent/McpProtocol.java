@@ -773,6 +773,13 @@ public final class McpProtocol {
                                 // you also say who is asking; an MCP session is one parked agent,
                                 // so it is the worker id.
                                 final McpTool called = tool;
+                                // #69: what this world allows, fitted into the arguments a make fact measures, AFTER
+                                // safety and the world's rules (a refused call never gets here); the core's note is
+                                // added to the result below. No world answering: nothing is touched.
+                                final var fittedArgs = runNow != null && com.moddingfromamod.wish.MakeGate.anyWorld()
+                                        ? ToolArgFit.fit(name, args,
+                                                com.moddingfromamod.wish.MakeGate.limits(runNow.playerId()).limits())
+                                        : java.util.List.<ToolArgFit.Lowered>of();
                                 if (asyncPlan) {
                                     // Opened BEFORE the body, so what it shows the child is held.
                                     com.moddingfromamod.marshal.PlanDeferral.global().hold(runNow.wishId());
@@ -791,6 +798,11 @@ public final class McpProtocol {
                                         out = new ToolResult(out.text() + "\n\n" + PLAN_BEING_CHECKED,
                                                 false, out.imageBase64(), out.imageMime());
                                     }
+                                }
+                                if (!fittedArgs.isEmpty() && !out.isError()) {
+                                    LOGGER.info("[world fit] wish {}: {} fitted {}", wishId, name, fittedArgs);
+                                    out = new ToolResult(out.text() + ToolArgFit.notes(fittedArgs), false,
+                                            out.imageBase64(), out.imageMime());
                                 }
                                 if (!heldBack.isEmpty()) {
                                     LOGGER.info("[internals] wish {}: {} held back {}", wishId, name, heldBack);
