@@ -9,7 +9,6 @@ import java.util.function.Predicate;
  *
  * <ul>
  *   <li>Empty (or a charge that answered {@code null}): the wish goes on.</li>
- *   <li>A child in distress is never refused, whatever the charge answered.</li>
  *   <li>{@code ""}: refused, and the charge said its own words (what an older charge's {@code true} maps to). Typed
  *       words and a recipe say nothing more, as they always did; a Builder make says {@link #BANK_EMPTY}, the line it
  *       always said for any refusal.</li>
@@ -37,14 +36,14 @@ public record ChargeRefusal(boolean refused, String line) {
     }
 
     /**
-     * @param ask    what the charge was asked about (its distress flag decides first)
+     * @param ask    what the charge was asked about
      * @param answer the charge's answer ({@code null} reads as "go on")
      * @param where  which kind of start was refused
      * @param sweeps true when a line passes the text sweep
      */
     @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
     public static ChargeRefusal decide(WishAsk ask, Optional<String> answer, Where where, Predicate<String> sweeps) {
-        if (answer == null || answer.isEmpty() || ask.distress()) {
+        if (answer == null || answer.isEmpty()) {
             return ALLOWED;
         }
         String words = answer.get() == null ? "" : answer.get().strip();

@@ -1121,19 +1121,15 @@ public final class ActionLog {
     }
 
     /**
-     * …and whether the child was told anything about a {@code WELLBEING} flag (§12.1, decision 1B).
+     * …and whether the player was told anything (the chat sweep's line to the sender, say).
      *
      * <p>Its own field rather than a reuse of {@code redirectShown}, because the two answer
      * different questions: {@code redirectShown} is "was a substitution announced", which is §2's
-     * transparency promise, and this is "did a child in distress hear a kind word", which is the
-     * one number decision 1B creates. Folded together, neither would be answerable.
+     * transparency promise, and this is "was a line said to the player at all".
      *
      * <p>Written on EVERY record, like {@code redirectShown}, and for the same reason a FINE band
-     * is logged: the question a report asks is <i>of the wellbeing flags, how many said
-     * something</i>, and a rate needs its denominator. It says what WILL be done — this record is
-     * written before the message goes out — so in shadow mode it is honestly {@code false} beside
-     * an {@code action} of {@code SHADOW_WELLBEING}, which is exactly the pair a report needs to
-     * see that the line would have been said and was not.
+     * is logged: a rate needs its denominator. It says what WILL be done — this record is written
+     * before the message goes out — so in shadow mode it is honestly {@code false}.
      */
     public static void safety(String wishId, String layer, SafetyVerdictView verdict,
                               String action, long latencyMs, double costUsd, String model,
@@ -1212,7 +1208,6 @@ public final class ActionLog {
                 com.google.gson.JsonArray reasons = new com.google.gson.JsonArray();
                 verdict.reasonNames().forEach(reasons::add);
                 o.add("reasons", reasons);
-                o.addProperty("wellbeing", verdict.wellbeing());
                 // OMITTED rather than written as "" when there is none, so a consumer can tell
                 // "no redirect was proposed" from "one was proposed and was empty" -- the same
                 // omit-not-null rule the world/session fields follow.
@@ -1282,8 +1277,6 @@ public final class ActionLog {
         /** The closed reason vocabulary, already bounded. */
         java.util.List<String> reasonNames();
 
-        boolean wellbeing();
-
         /** "" when none was proposed. */
         String redirect();
 
@@ -1300,39 +1293,6 @@ public final class ActionLog {
 
         /** &lt; 0 when no single step is responsible. */
         int stageIndex();
-    }
-
-    /**
-     * <b>A note for a grown-up</b>, in its own file, holding nothing else.
-     *
-     * <p>A wish that reads as real distress is never blocked — §1 is explicit that blocking a child
-     * in distress is the worst answer available — so this is the whole mechanism: the wish is
-     * answered kindly and a line lands where somebody who is not seven will see it.
-     *
-     * <p>Its own file rather than a {@code kind} in the action log, because the action log is
-     * mined, copied into corpora and read by tooling, and these lines are the one kind that must
-     * not travel. Machine-local under {@code ~/.moddingfromamod/}, never uploaded.
-     */
-    public static void grownUpNote(String wishId, String text) {
-        try {
-            JsonObject o = new JsonObject();
-            o.addProperty("at", java.time.Instant.now().toString());
-            o.addProperty("kind", "wellbeing");
-            if (wishId != null && !wishId.isBlank()) {
-                o.addProperty("wishId", wishId);
-            }
-            o.addProperty("test", com.moddingfromamod.RunContext.isTestRun());
-            stampLineage(o);
-            o.addProperty("text", clip(text));
-            append(grownUpNotes(), o);
-        } catch (RuntimeException e) {
-            LOGGER.debug("could not write a grown-up note: {}", e.toString());
-        }
-    }
-
-    /** Where the wellbeing notes live. */
-    public static Path grownUpNotes() {
-        return com.moddingfromamod.runtime.RuntimeConfig.home().resolve("grown-up-notes.jsonl");
     }
 
     /**
@@ -1528,7 +1488,7 @@ public final class ActionLog {
         return o.has(key) && !o.get(key).isJsonNull() ? o.get(key).getAsString() : "";
     }
 
-    /** The same, to a named file — {@link #grownUpNotes} is the other destination. */
+    /** The same, to a named file. */
     private static synchronized void append(Path p, JsonObject o) {
         try {
             Files.createDirectories(p.getParent());

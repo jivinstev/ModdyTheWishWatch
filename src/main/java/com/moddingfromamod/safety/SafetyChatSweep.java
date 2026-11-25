@@ -22,20 +22,17 @@ import com.moddingfromamod.world.WorldPeople;
  *       told {@link ChatWords#HELD}. {@link ChatStrikes#STRIKES_TO_MUTE} of those inside ten
  *       minutes start a break from chat ({@link ChatStrikes}); the message that starts it says how
  *       long. Logged {@code BLOCK} (or {@code MUTE} for the one that started a break).</li>
- *   <li><b>{@code WELLBEING}</b> → the message GOES OUT (§1: distress is never blocked — not even
- *       during a break), a grown-up note is written, and the sender alone hears
- *       {@link ChatWords#WELLBEING}. Logged {@code WELLBEING}.</li>
  *   <li>anything else → it goes out, untouched and unlogged (a count of clean lines would be one
  *       record per chat line, and the {@code safety} log is the file the weekly review reads).</li>
  * </ul>
  *
- * <p>{@code shadow} assesses and logs ({@code SHADOW_BLOCK}, {@code SHADOW_WELLBEING}) and changes
+ * <p>{@code shadow} assesses and logs ({@code SHADOW_BLOCK}) and changes
  * nothing anybody sees — no strike, no break, no line. {@code off} (the default) does
  * nothing at all. The mode is the world's ({@link WorldPeople#chatSweep()}).
  *
  * <p><b>The words are never logged.</b> A {@code safety} record from here carries the bands, the
  * reasons, the player's id and the surface — the redaction docs/PRIVACY_REVIEW.md asks of anything
- * that leaves the machine. Only a WELLBEING note (local, never shipped) keeps the sentence.
+ * that leaves the machine.
  */
 public final class SafetyChatSweep {
 
@@ -60,9 +57,7 @@ public final class SafetyChatSweep {
         /** Hold it back; it started a break from chat. */
         MUTE,
         /** Hold it back; the sender's chat is resting (not re-graded, not logged). */
-        MUTED,
-        /** Send it, write a grown-up note, and say the kind line. */
-        WELLBEING
+        MUTED
     }
 
     /**
@@ -72,12 +67,11 @@ public final class SafetyChatSweep {
      * @param deliver   whether the message goes out to anyone else
      * @param tell      the line the sender alone hears, or empty
      * @param logAction the {@code safety} record's {@code action}, or {@code null} for no record
-     * @param note      whether to write a grown-up note
      * @param verdict   the lexicon's verdict, or {@code null}
      */
-    public record Decision(Act act, boolean deliver, String tell, String logAction, boolean note,
+    public record Decision(Act act, boolean deliver, String tell, String logAction,
                            SafetyVerdict verdict) {
-        static final Decision PASS = new Decision(Act.PASS, true, "", null, false, null);
+        static final Decision PASS = new Decision(Act.PASS, true, "", null, null);
     }
 
     /** A chat command's spoken part: which surface, the words, and who it was sent to (or empty). */
@@ -102,29 +96,23 @@ public final class SafetyChatSweep {
         Optional<SafetyVerdict> found = lexicon == null ? Optional.empty() : lexicon.check(text);
         SafetyVerdict v = found.orElse(null);
         boolean clearly = v != null && v.overall() == SafetyVerdict.Band.CLEARLY;
-        boolean wellbeing = v != null && v.wellbeing();
         long until = on ? strikes.mutedUntil(who, nowMs) : 0L;
-        if (wellbeing && !clearly) {
-            // Never held back — not even during a break: the break is about manners, this is a person.
-            return new Decision(Act.WELLBEING, true, on ? ChatWords.sayWellbeing() : "",
-                    on ? "WELLBEING" : "SHADOW_WELLBEING", true, v);
-        }
         if (until > 0L) {
             return new Decision(Act.MUTED, false,
-                    ChatWords.sayBreakContinues(ChatStrikes.minutesLeft(until, nowMs)), null, wellbeing, v);
+                    ChatWords.sayBreakContinues(ChatStrikes.minutesLeft(until, nowMs)), null, v);
         }
         if (!clearly) {
             return Decision.PASS;
         }
         if (!on) {
-            return new Decision(Act.PASS, true, "", "SHADOW_BLOCK", wellbeing, v);
+            return new Decision(Act.PASS, true, "", "SHADOW_BLOCK", v);
         }
         long started = strikes.strike(who, nowMs);
         if (started > 0L) {
             return new Decision(Act.MUTE, false,
-                    ChatWords.sayBreakStarted(ChatStrikes.minutesLeft(started, nowMs)), "MUTE", wellbeing, v);
+                    ChatWords.sayBreakStarted(ChatStrikes.minutesLeft(started, nowMs)), "MUTE", v);
         }
-        return new Decision(Act.BLOCK, false, ChatWords.sayHeld(), "BLOCK", wellbeing, v);
+        return new Decision(Act.BLOCK, false, ChatWords.sayHeld(), "BLOCK", v);
     }
 
     /**

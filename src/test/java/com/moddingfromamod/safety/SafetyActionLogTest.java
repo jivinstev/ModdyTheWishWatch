@@ -64,7 +64,7 @@ class SafetyActionLogTest {
     void aGradeIsWrittenWithEverythingAReportGroupsBy() throws Exception {
         SafetyVerdict v = SafetyVerdict.parse("""
                 {"violence":"LIKELY","sexual":"FINE","hate":"FINE","danger":"MAYBE",
-                 "wellbeing":false,"reasons":["GORE","GORE","TORTURE"],
+                 "reasons":["GORE","GORE","TORTURE"],
                  "redirect":"a zombie that bonks villagers with a rubber chicken",
                  "stageIndex":2}""");
         ActionLog.safety("abcd1234", "plan", v, "DIVERT", 9612, 0.0055,
@@ -84,7 +84,7 @@ class SafetyActionLogTest {
         assertEquals("MAYBE", o.getAsJsonObject("bands").get("danger").getAsString());
         assertEquals(4, o.getAsJsonObject("bands").size(), "all four axes, every time");
         assertEquals(2, o.getAsJsonArray("reasons").size(), "deduped by the record itself");
-        assertFalse(o.get("wellbeing").getAsBoolean());
+        assertFalse(o.has("wellbeing"), "the wellbeing flag was removed and is no longer written");
         assertTrue(o.get("redirect").getAsString().contains("rubber chicken"));
         assertTrue(o.get("redirectShown").getAsBoolean());
         assertEquals("plan_wish", o.get("tool").getAsString());
@@ -120,7 +120,7 @@ class SafetyActionLogTest {
         // the model propose a redirect the floor will not have" is the rate this makes countable.
         SafetyVerdict refused = SafetyVerdict.parse("""
                 {"violence":"LIKELY","sexual":"FINE","hate":"FINE","danger":"FINE",
-                 "wellbeing":false,"reasons":["GORE"],
+                 "reasons":["GORE"],
                  "redirect":"two villagers that have sex in a cottage"}""");
         ActionLog.safety("abcd1234", "input", refused, "BLOCK", 9000, 0.005,
                 "claude-haiku-4-5-20251001", "{}", "", 0, false);
@@ -142,7 +142,7 @@ class SafetyActionLogTest {
         // rejections rather than having to read a boolean on every record.
         SafetyVerdict fine = SafetyVerdict.parse("""
                 {"violence":"LIKELY","sexual":"FINE","hate":"FINE","danger":"FINE",
-                 "wellbeing":false,"reasons":["GORE"],
+                 "reasons":["GORE"],
                  "redirect":"a zombie that bonks villagers with a rubber chicken"}""");
         ActionLog.safety("abcd1234", "input", fine, "REDIRECT", 9000, 0.005,
                 "claude-haiku-4-5-20251001", "{}", "", 0, true);
@@ -233,7 +233,7 @@ class SafetyActionLogTest {
         // for exactly the records that answer it.
         SafetyVerdict refused = SafetyVerdict.parse("""
                 {"violence":"CLEARLY","sexual":"FINE","hate":"FINE","danger":"FINE",
-                 "wellbeing":false,"reasons":["GORE"]}""");
+                 "reasons":["GORE"]}""");
         ActionLog.safety("", "input", refused, "BLOCK", 0, 0.0, "lexicon", "", "", 0, false, false,
                 "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee");
         JsonObject o = lastRecord(ActionLog.path());
@@ -243,45 +243,25 @@ class SafetyActionLogTest {
     }
 
     @Test
-    void whetherTheChildWasToldAboutAWellbeingFlagIsOnEveryRecord() throws Exception {
-        // §12.1 decision 1B. Its own field rather than a reuse of redirectShown, because the two
-        // answer different questions — "was a substitution announced" and "did a child in distress
-        // hear a kind word" — and folded together neither is answerable.
-        SafetyVerdict flagged = SafetyVerdict.parse("""
-                {"violence":"FINE","sexual":"FINE","hate":"FINE","danger":"FINE",
-                 "wellbeing":true,"reasons":["SELF_HARM"]}""");
-        ActionLog.safety("wish0006", "input", flagged, "WELLBEING", 0, 0.0, "lexicon", "",
-                "", 0, false, true);
+    void whetherThePlayerWasToldIsOnEveryRecord() throws Exception {
+        // Its own field rather than a reuse of redirectShown, because the two answer different
+        // questions — "was a substitution announced" and "was a line said to the player at all".
+        SafetyVerdict held = SafetyVerdict.parse("""
+                {"violence":"FINE","sexual":"CLEARLY","hate":"FINE","danger":"FINE",
+                 "reasons":["SEXUAL"]}""");
+        ActionLog.safety("", "chat", held, "BLOCK", 0, 0.0, "lexicon", "",
+                "chat.chat", 0, false, true);
         JsonObject told = lastRecord(ActionLog.path());
         assertTrue(told.get("childTold").getAsBoolean());
-        assertTrue(told.get("wellbeing").getAsBoolean());
         assertFalse(told.get("redirectShown").getAsBoolean(),
                 "the two fields must be independent, or the report cannot count either");
 
-        // AND THE DENOMINATOR. A field written only when true makes "of the wellbeing flags, how
-        // many said something" uncountable — the same reason a FINE band is logged at all.
-        ActionLog.safety("wish0007", "input", flagged, "SHADOW_WELLBEING", 0, 0.0, "lexicon", "");
+        // AND THE DENOMINATOR. A field written only when true would be uncountable — the same
+        // reason a FINE band is logged at all.
+        ActionLog.safety("wish0007", "input", held, "SHADOW_BLOCK", 0, 0.0, "lexicon", "");
         JsonObject quiet = lastRecord(ActionLog.path());
         assertTrue(quiet.has("childTold"), "the field is missing, so nothing can be counted");
         assertFalse(quiet.get("childTold").getAsBoolean(),
-                "shadow flagged it and said nothing, and the record has to say so");
-    }
-
-    @Test
-    void aWellbeingNoteGoesToItsOwnFileAndNowhereElse() throws Exception {
-        long before = Files.exists(ActionLog.path())
-                ? Files.readAllLines(ActionLog.path()).size() : 0;
-        ActionLog.grownUpNote("wish0005", "he said something worth a grown-up reading");
-
-        JsonObject o = lastRecord(ActionLog.grownUpNotes());
-        assertEquals("wellbeing", o.get("kind").getAsString());
-        assertTrue(o.get("text").getAsString().contains("worth a grown-up reading"));
-
-        long after = Files.exists(ActionLog.path())
-                ? Files.readAllLines(ActionLog.path()).size() : 0;
-        assertEquals(before, after,
-                "the action log is mined, copied into corpora and read by tooling. These lines are "
-                        + "the one kind that must not travel, so they get their own file.");
-        assertTrue(ActionLog.grownUpNotes().toString().endsWith("grown-up-notes.jsonl"));
+                "shadow said nothing, and the record has to say so");
     }
 }

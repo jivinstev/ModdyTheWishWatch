@@ -22,7 +22,7 @@ import org.slf4j.LoggerFactory;
  * <b>The core's one way to ask this world what may be made here, and how big</b> ({@link WorldMakes}), and to show,
  * fit and say its answer. Every place a make starts or is offered asks through here (a Builder page's tiles, its tune
  * dialog and its Make, an Apprentice make, a recipe, "Make another one", a hotbar fire, "Give me one", a thing on his
- * watch), so the distress rule, the sweep, the fallback and the fitting ({@link MakeVerdict}, {@link MakeFit}) are the
+ * watch), so the sweep, the fallback and the fitting ({@link MakeVerdict}, {@link MakeFit}) are the
  * same at each. A VIEW: nothing here is written to the shelf or any store. Server thread.
  *
  * <p>Safety runs before it at every start (the lexicon on a wish's words, the agent's own checks, a world's rules
@@ -53,7 +53,7 @@ public final class MakeGate {
             view = MakeView.ALLOWED;
             upFront = Map.of();
         }
-        MakeVerdict v = MakeVerdict.decide(ask.distress(), view, upFront, line -> WishFeedback.sweeps(line, ""));
+        MakeVerdict v = MakeVerdict.decide(view, upFront, line -> WishFeedback.sweeps(line, ""));
         // a make over a limit it carries no knob for cannot be fitted by anyone: locked in the core's words
         if (v.state() == MakeView.State.FIT && !MakeFit.over(facts, v.limits()).isEmpty()
                 && MakeFit.over(facts, v.limits()).stream().anyMatch(k -> !MakeFit.FACTS.get(k).clampable())) {

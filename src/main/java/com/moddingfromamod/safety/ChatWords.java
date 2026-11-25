@@ -28,14 +28,6 @@ public final class ChatWords {
     static final String BREAK_CONTINUES =
             "🪄 Chat is still resting for you — back in %d minute%s. Your wishes still work!";
 
-    /**
-     * Distress in a player's own chat. NEVER held back (CHILD_SAFETY.md §1: a person in distress is
-     * never blocked) — this is said to him alone, beside his message going out. No wish is mentioned
-     * (he did not make one), no category, no question, no promise that anybody was told.
-     */
-    public static final String WELLBEING =
-            "💛 That sounds like a big feeling. Talking to someone you trust really helps.";
-
     /** A report was saved. {@code %s} = the reported name. Nothing happens to that player by itself. */
     static final String REPORT_THANKS =
             "💛 Thank you for telling us about %s. The people who run Moddy read every report — "
@@ -67,17 +59,13 @@ public final class ChatWords {
         return String.format(BREAK_CONTINUES, minutes, minutes == 1 ? "" : "s");
     }
 
-    public static String sayWellbeing() {
-        return WELLBEING;
-    }
-
     public static String sayReportThanks(String name) {
         return String.format(REPORT_THANKS, name == null || name.isBlank() ? "them" : name.strip());
     }
 
     /** Every string, for the test that checks the whole set at once. */
     public static List<String> all() {
-        return List.of(HELD, sayBreakStarted(10), sayBreakStarted(1), sayBreakContinues(7), WELLBEING,
+        return List.of(HELD, sayBreakStarted(10), sayBreakStarted(1), sayBreakContinues(7),
                 sayReportThanks("Some_Player"), REPORT_SLOW_DOWN, REPORT_HOW, REPORT_FAILED, sayChatIsPrivate(), sayNoMessages());
     }
 
