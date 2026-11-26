@@ -65,6 +65,11 @@ starts the Nightly workflow on the release's branch or tag with `kind = release`
 register's tests left out and named in its record), waits for it, and passes only if that run is green for this very
 tree. It refuses, with one line saying why, when the run is red or does not finish in time.
 
+**And the platform smoke of the same tree** ("Platform smoke", above). The gate looks for both in the history; for
+each one missing it dispatches its workflow on the release ref (Nightly with `kind = release`, `platform-smoke.yml`
+with the release commit, the experimental Windows client off), **both at once**, waits for both, and passes only if
+both are green for this tree. `--platform-workflow ''` turns the second need off for a by-hand check of the tier alone.
+
 Port CI runs it before it cuts a pre-release, through the kit's optional release-gate hook (MMVU
 jivinstev/mc-mod-version-upgrade#306): `.github/port-release-gate.json` names the script and its arguments, and the kit
 generates a `release-gate` job (`contents: read`, `actions: write`, never the release job's write access) that runs it
@@ -96,12 +101,17 @@ that changes the workflow or `tools/platform-smoke.py` runs it too.
 | release jar | ubuntu-24.04 | `tools/store-release.sh` builds and checks the jar the ref would release, model included |
 | server | windows-latest (x64) and ubuntu-24.04-arm (arm64), required; macos-latest (arm64), the same tests, optional (`continue-on-error`: scarce runners, a red macOS leg is reported and does not fail the run) | the official NeoForge installer installs a real server; the release jar boots in it twice (`tools/platform-smoke.py server`). Red unless ONNX Runtime's native library for that platform loads and the Apprentice's model reads a clause (`apprentice layer: on`), the native file is where the mod unpacked it, the world saves, stops cleanly and loads again |
 | server, GameTest smoke | the same three | `gate.py run --kind platform` from source on that machine: `NoPythonGameTest` and `DatapackGameTest` (the bundled CBScript compiler), `BuilderMakeGameTest` (a Builder make), `ApprenticeGameTest` (the matcher), `WishStoreFileGameTest` (stores saved to the world and read back) |
-| client | windows-latest | a Gate C film (`vanillastage`) in a real client under Mesa's llvmpipe software OpenGL, its DLLs beside the JDK's `java.exe` |
+| client (experimental) | windows-latest, `continue-on-error`, never required | a Gate C film (`vanillastage`) in a real client under Mesa's llvmpipe software OpenGL, its DLLs beside the JDK's `java.exe` |
 
 The Java each job uses is the ref's (`java_version` in `.port/<mc>/branch.properties`, else 21), and the server is the
-NeoForge version the ref builds against (`neo_version`). It is not part of a release: a release still needs only Port
-CI's gates and the release gate. To make it one, add a `platform-smoke` dispatch with the release ref to the weekly
-round's checklist (the plan issue), the way the release gate starts Nightly; the workflow already takes the ref.
+NeoForge version the ref builds against (`neo_version`).
+
+**It is part of every release.** Outside a pull request the workflow's last job writes a `platform` record of the
+ref's gate tree to `gate-data` (`gate.py record-platform`: every job's conclusion). The release gate (below) needs one
+whose **required legs** are green: the release jar, `server (windows-latest)` and `server (ubuntu-24.04-arm)`
+(`PLATFORM_REQUIRED` in `tools/gate/release.py`). macOS and the Windows client are reported and never decide a
+release. The rule for reuse is the full tier's: a green record of the same gate tree, a Thursday run on `main` or an
+earlier attempt at the same release, passes at once.
 
 ## Promotion
 

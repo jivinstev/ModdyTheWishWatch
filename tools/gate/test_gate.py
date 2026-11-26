@@ -683,5 +683,79 @@ class ReleaseEvidence(unittest.TestCase):
     def test_a_tier_that_does_not_finish_in_time_refuses(self):
         self.assertEqual(self.drive([], [], {"status": "in_progress", "html_url": "u"}), (1, 1))
 
+
+def plat(tree, **legs):
+    base = {"release jar": "success", "server (windows-latest)": "success", "server (ubuntu-24.04-arm)": "success",
+            "server (macos-latest)": "failure", "client (windows-latest, Mesa llvmpipe)": "skipped"}
+    base.update({k.replace("_", " "): v for k, v in legs.items()})
+    return {"kind": "platform", "tree": tree, "commit": "p-" + tree, "legs": base, "runUrl": "pu"}
+
+
+class ReleasePlatform(unittest.TestCase):
+    """The release also needs the platform smoke of its tree: the required legs green, the optional ones anything."""
+
+    def test_only_the_required_legs_decide(self):
+        self.assertIsNone(release.is_platform_evidence(plat("T"), "T"))   # macOS red, client skipped: still green
+        for rec, why in [(plat("U"), "other code"), (full("T"), "not a platform smoke"),
+                         (dict(plat("T"), legs={"release jar": "success", "server (windows-latest)": "success"}),
+                          "server (ubuntu-24.04-arm) did not run")]:
+            self.assertIn(why, release.is_platform_evidence(rec, "T") or "", rec)
+        r = plat("T")
+        r["legs"]["server (windows-latest)"] = "failure"
+        self.assertIn("server (windows-latest) failure", release.is_platform_evidence(r, "T") or "")
+
+    def test_a_run_becomes_a_record_with_every_legs_conclusion(self):
+        run = {"run_started_at": "2026-11-26T10:00:00Z", "html_url": "h", "head_branch": "main"}
+        jobs = [{"name": "release jar", "conclusion": "success"}, {"name": "server (windows-latest)", "conclusion": "success"},
+                {"name": "server (ubuntu-24.04-arm)", "conclusion": "success"},
+                {"name": "server (macos-latest)", "conclusion": "failure"}, {"name": "record", "conclusion": None}]
+        rec = release.platform_record(run, jobs, "abc", "T")
+        self.assertEqual((rec["kind"], rec["tree"], rec["verdict"]), ("platform", "T", "green"))
+        self.assertNotIn("record", rec["legs"])
+        self.assertIsNone(release.is_platform_evidence(rec, "T"))
+        jobs[1]["conclusion"] = "failure"
+        self.assertEqual(release.platform_record(run, jobs, "abc", "T")["verdict"], "red")
+
+    def drive(self, before, after, tier_run, plat_run):
+        calls = {"tier": 0, "platform": 0}
+        recs = [before, after]
+        old_tree = g.gate_tree
+        g.gate_tree = lambda rev="HEAD", root=g.ROOT: "T"
+        clock = [1000.0]
+        try:
+            code = release.gate("o/r", "HEAD", "neoforge-1.21.8", "/nowhere", 60,
+                                dispatch=lambda: calls.__setitem__("tier", calls["tier"] + 1),
+                                latest_run=lambda since: tier_run, refetch=lambda: recs.pop(0) if recs else [],
+                                sleep=lambda s: clock.__setitem__(0, clock[0] + s), now=lambda: clock[0],
+                                platform=(lambda: calls.__setitem__("platform", calls["platform"] + 1),
+                                          lambda since: plat_run))
+        finally:
+            g.gate_tree = old_tree
+        return code, calls["tier"], calls["platform"]
+
+    DONE = {"status": "completed", "conclusion": "success", "html_url": "u"}
+
+    def test_both_covered_releases_without_running_anything(self):
+        self.assertEqual(self.drive([full("T"), plat("T")], [], None, None), (0, 0, 0))
+
+    def test_a_covered_tier_still_runs_the_missing_smoke_and_needs_it_green(self):
+        self.assertEqual(self.drive([full("T")], [full("T"), plat("T")], None, self.DONE), (0, 0, 1))
+        red = plat("T")
+        red["legs"]["server (ubuntu-24.04-arm)"] = "failure"
+        self.assertEqual(self.drive([full("T")], [full("T"), red], None, dict(self.DONE, conclusion="failure")),
+                         (1, 0, 1))
+
+    def test_neither_covered_runs_both_at_once_and_needs_both(self):
+        self.assertEqual(self.drive([], [full("T", kind="release"), plat("T")], self.DONE, self.DONE), (0, 1, 1))
+        self.assertEqual(self.drive([], [plat("T")], self.DONE, self.DONE), (1, 1, 1))          # the tier was red
+        self.assertEqual(self.drive([], [full("T", kind="release")], self.DONE, self.DONE), (1, 1, 1))  # smoke red
+
+    def test_a_smoke_of_other_code_does_not_count(self):
+        self.assertEqual(self.drive([full("T"), plat("U")], [full("T"), plat("U")], None, self.DONE), (1, 0, 1))
+
+    def test_a_smoke_that_does_not_finish_refuses(self):
+        self.assertEqual(self.drive([full("T")], [], None, {"status": "in_progress", "html_url": "u"}), (1, 0, 1))
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=1)

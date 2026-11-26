@@ -236,7 +236,8 @@ with the platform-sensitive path it covers; the tests stay in the shard `GateSha
 tier runs them too. On Windows `--no-python`'s stubs cannot shadow `python.exe`; `NoPythonGameTest` still holds the
 game to starting no Python there. The same workflow boots the release jar on a real NeoForge server on each of those
 platforms, which is where the Apprentice's ONNX Runtime native library is proved (Gate B never loads the model: it
-must not depend on a download).
+must not depend on a download). Its record (kind `platform`, on `gate-data`) is release evidence beside the full tier's: `gate.py
+release-gate` needs a green one of the release's gate tree (docs/RELEASING.md, "The release gate").
 
 ## Targeted Gate B
 

@@ -16,11 +16,16 @@
 #             2. a GameTest smoke from source on the same machine (tools/gate/gate.py run, the classes below): the
 #                bundled CBScript compiler, a Builder make, the Apprentice's matcher, the world's stores saved and
 #                read back. gate.py checks every class given ran, with as many tests as its source declares.
-#   client    windows-latest only: a Gate C film (vanillastage: a real client draws a creature and photographs it)
+#   client    EXPERIMENTAL, never required: windows-latest only, a Gate C film (vanillastage: a real client draws a creature and photographs it)
 #             under Mesa's llvmpipe software OpenGL, the DLLs dropped beside the JDK's java.exe.
 #
-# When: every Thursday on main (after Wednesday's weekly round), and by hand with a ref, so each neoforge-<v> branch
-# can be run once main has been merged up into it. A pull request that changes this workflow or its script runs it.
+#   record    (not on a pull request) every job's conclusion, as a `platform` record of the ref's gate tree on the
+#             gate-data branch. tools/gate/gate.py release-gate reads it: a release needs the release jar and the two
+#             required server legs green for the tree it ships (tools/gate/release.py PLATFORM_REQUIRED), and starts
+#             this workflow on the release ref, alongside the full GameTest tier, when no record covers that tree.
+#
+# When: every Thursday on main (after Wednesday's weekly round), by the release gate on a release ref, and by hand
+# with a ref. A pull request that changes this workflow or its script runs it, and records nothing.
 # Standard runners on a public repository cost no Actions minutes.
 name: Platform smoke
 
@@ -69,6 +74,7 @@ jobs:
       neoforge: ${{ steps.v.outputs.neoforge }}
       java: ${{ steps.v.outputs.java }}
       version: ${{ steps.v.outputs.version }}
+      commit: ${{ steps.v.outputs.commit }}
     steps:
       - uses: actions/checkout@v7
         with:
@@ -82,6 +88,7 @@ jobs:
           java="${java:-21}"
           echo "minecraft=$mc" >> "$GITHUB_OUTPUT"; echo "neoforge=$neo" >> "$GITHUB_OUTPUT"
           echo "java=$java" >> "$GITHUB_OUTPUT"; echo "version=$mod+mc$mc" >> "$GITHUB_OUTPUT"
+          echo "commit=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
           echo "### Platform smoke of \`${{ inputs.ref || github.ref_name }}\` ($(git rev-parse --short HEAD)): Minecraft $mc, NeoForge $neo, Java $java" >> "$GITHUB_STEP_SUMMARY"
       - uses: actions/setup-java@v6
         with:
@@ -208,9 +215,11 @@ jobs:
           retention-days: 14
 
   client:
+    # EXPERIMENTAL: reported, never required (continue-on-error; the release gate does not read it).
     name: client (windows-latest, Mesa llvmpipe)
     needs: jar
     if: ${{ github.event_name != 'workflow_dispatch' || inputs.client }}
+    continue-on-error: true
     runs-on: windows-latest
     timeout-minutes: 90
     defaults:
@@ -278,3 +287,33 @@ jobs:
           path: ${{ runner.temp }}/smoke/client/
           if-no-files-found: ignore
           retention-days: 14
+
+  record:
+    name: record
+    needs: [jar, server, client]
+    if: ${{ always() && github.event_name != 'pull_request' && needs.jar.outputs.commit != '' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: write   # the run record, on the gate-data branch
+      actions: read
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.jar.outputs.commit }}
+          fetch-depth: 0
+      - name: The gate-data branch (run history), or an empty one
+        run: |
+          if git fetch --quiet origin gate-data; then
+            git worktree add --quiet -B gate-data gate-data FETCH_HEAD
+          else
+            git worktree add --quiet --detach gate-data
+            git -C gate-data checkout --quiet --orphan gate-data
+            git -C gate-data rm -rfq .
+          fi
+      - name: Record this run's legs for its gate tree
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python3 tools/gate/gate.py record-platform --commit "${{ needs.jar.outputs.commit }}" --out platform-record.json
+          python3 tools/gate/gate.py record --data gate-data --publish platform-record.json
