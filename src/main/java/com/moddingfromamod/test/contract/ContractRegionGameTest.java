@@ -25,7 +25,7 @@ import com.moddingfromamod.world.Base;
 import com.moddingfromamod.world.BaseReach;
 import com.moddingfromamod.world.Bases;
 import com.moddingfromamod.world.Region;
-import com.moddingfromamod.world.RegionWatch;
+import com.moddingfromamod.wish.LiveFitWatch;
 import com.moddingfromamod.world.Regions;
 import com.moddingfromamod.world.WorldLimits;
 import com.moddingfromamod.world.WorldMakes;
@@ -197,7 +197,7 @@ public final class ContractRegionGameTest {
                     helper.assertTrue(max > MOST_HEALTH + 1e-6 && LiveFit.modifierOn(body,
                                     net.minecraft.world.entity.ai.attributes.Attributes.MAX_HEALTH, LiveFit.MAX_HEALTH_ID) == null,
                             Component.literal("with the arena gone, the wolf is still held: " + max));
-                    helper.assertTrue(RegionWatch.watched() == 0, Component.literal("the watch still holds creatures"));
+                    helper.assertTrue(LiveFitWatch.watched() == 0, Component.literal("the watch still holds creatures"));
                 }
             }
         });

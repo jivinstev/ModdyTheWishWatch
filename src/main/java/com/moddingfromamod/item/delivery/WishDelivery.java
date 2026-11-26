@@ -197,6 +197,7 @@ public final class WishDelivery {
         if (player == null || stack == null || stack.isEmpty()) {
             return new ArrayList<>();
         }
+        com.moddingfromamod.wish.LiveFit.markEgg(stack, player);   // #174: what it hatches is held to the limits
         if (kind == Kind.BEHAVIOUR) {
             return behave(player, stack);
         }

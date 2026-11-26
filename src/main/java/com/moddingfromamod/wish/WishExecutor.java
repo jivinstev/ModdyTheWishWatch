@@ -133,6 +133,9 @@ public final class WishExecutor {
             List<com.moddingfromamod.item.delivery.DeliveryWords.Landed> landed = new ArrayList<>();
             Result r = com.moddingfromamod.item.delivery.WishDelivery.collect(landed,
                     () -> runOneInScope(server, level, pos, asPlayer, command));
+            // EVERY BODY IT BROUGHT IN OR CHANGED IS HELD TO THE WORLD'S LIMITS NOW (#174), as the one who ran it,
+            // before it can act: a summon's NBT, a learned recipe's wishsummon, an attribute or effect on a mob.
+            LiveFitWatch.afterWishCommand(server, asPlayer);
             if (!landed.isEmpty()) {
                 List<String> out = new ArrayList<>(r.output());
                 out.add(com.moddingfromamod.item.delivery.DeliveryWords.forAgent(landed));

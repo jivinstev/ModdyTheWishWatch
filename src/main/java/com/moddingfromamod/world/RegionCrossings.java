@@ -6,7 +6,7 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * <b>Which region each living wish creature was last fitted in</b> (#182): the pure half of {@link RegionWatch}. A
+ * <b>Which region each living wish creature was last fitted in</b> (#182): the pure half of {@code wish/LiveFitWatch}. A
  * creature is fitted by the region it stands in, so the moment it crosses into or out of one it must be fitted again.
  * Pure: no Minecraft. Thread-safe.
  */

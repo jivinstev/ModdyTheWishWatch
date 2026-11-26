@@ -49,6 +49,28 @@ public final class LiveFit {
     /** The modifier a world's knockback resistance limit puts on a creature. */
     public static final ResourceLocation KNOCKBACK_RESISTANCE_ID =
             ResourceLocation.fromNamespaceAndPath(ModdingFromAModMod.MODID, "world_fit/knockback_resistance");
+    /** The modifier a world's movement speed limit puts on a creature (#174 C3). */
+    public static final ResourceLocation MOVEMENT_SPEED_ID =
+            ResourceLocation.fromNamespaceAndPath(ModdingFromAModMod.MODID, "world_fit/movement_speed");
+
+    /**
+     * Whose limits a wished body WITHOUT a species is held to (#174 C1): a vanilla mob a wish summoned or tweaked
+     * ({@code wishsummon}), tagged with its wisher's UUID after this prefix so a later re-fit finds it again.
+     */
+    public static final String FIT_OWNER_PREFIX = "moddy_fit_owner:";
+
+    /**
+     * On a body a wish BROUGHT into the world by a way that leaves no other mark (a spawn egg a wish handed over): it is
+     * held to the world's limits like any wished body (#174). Documented in {@code docs/EXTENDING.md}.
+     */
+    public static final String HELD_TAG = "moddy_held";
+
+    /**
+     * On a body the WORLD made that a wish then changed (a wild wolf {@code modify_mob} or a wish's {@code attribute}
+     * or {@code effect} command made stronger): held to the world's limits too, but never below what its kind is
+     * without any wish (its type's default), so a wish can never make the world's own creature weaker (#174).
+     */
+    public static final String TOUCHED_TAG = "moddy_touched";
 
     /** One stat fitted live: its fact, the attribute that holds it, and the fixed id of its modifier. */
     record Stat(String fact, Holder<Attribute> attribute, ResourceLocation id) {
@@ -59,7 +81,8 @@ public final class LiveFit {
             new Stat(MakeFacts.HEALTH_HALF_HEARTS, Attributes.MAX_HEALTH, MAX_HEALTH_ID),
             new Stat(MakeFacts.ATTACK_DAMAGE_HALF_HEARTS, Attributes.ATTACK_DAMAGE, ATTACK_DAMAGE_ID),
             new Stat(MakeFacts.ARMOR_POINTS, Attributes.ARMOR, ARMOR_ID),
-            new Stat(MakeFacts.KNOCKBACK_RESISTANCE_FRACTION, Attributes.KNOCKBACK_RESISTANCE, KNOCKBACK_RESISTANCE_ID));
+            new Stat(MakeFacts.KNOCKBACK_RESISTANCE_FRACTION, Attributes.KNOCKBACK_RESISTANCE, KNOCKBACK_RESISTANCE_ID),
+            new Stat(MakeFacts.MOVEMENT_SPEED_ATTRIBUTE, Attributes.MOVEMENT_SPEED, MOVEMENT_SPEED_ID));
 
     /**
      * Fit the creature {@code mob}, of species {@code speciesId}, to this world's limits: the numbers it was fitted in
@@ -98,15 +121,18 @@ public final class LiveFit {
         }
         MakeFacts facts = MakeFactsLookup.forThing(mob.level().getServer(), "creature", speciesId);
         // #182: a creature is fitted by the place it stands, so a region answers for the creatures inside it (whoever
-        // owns them, wherever he is); RegionWatch fits it again when it crosses into or out of one
+        // owns them, wherever he is); LiveFitWatch fits it again when it crosses into or out of one
         WishAsk ask = WishAsk.replay(owner, "").withText(species == null ? "" : species.name());
         if (com.moddingfromamod.world.Regions.any()) {
             ask = ask.withWhere(new com.moddingfromamod.world.Bases.Pos(
                     mob.level().dimension().location().toString(), mob.getX(), mob.getY(), mob.getZ()));
-            com.moddingfromamod.world.RegionWatch.track(mob);
         }
+        LiveFitWatch.track(mob);   // indexed: fitted again when it crosses an edge or stands above its limits
         MakeVerdict v = MakeGate.ask(facts, ask);
-        Map<String, Double> limits = v.makes() ? v.limits() : Map.of();
+        // A creature that already stands here was made: a verdict that would lock or refuse it NOW (a step that locks
+        // its kind, a number it cannot be fitted to) must not take its fit away and leave it at full strength (#174
+        // C2). It is held to the world's own limits where it stands instead.
+        Map<String, Double> limits = v.makes() ? v.limits() : limitsAt(mob, owner);
         boolean had = false;
         for (Stat st : STATS) {
             had |= modifierOn(mob, st.attribute(), st.id()) != null;
@@ -130,6 +156,17 @@ public final class LiveFit {
         if (inst == null) {
             return false;   // the carrier does not hold this stat (a horse holds no attack damage)
         }
+        // the fit's own change is not a wish changing the body (LiveFitWatch would only fit it again)
+        LiveFitWatch.fitting(true);
+        try {
+            return fitInstance(inst, id, limit);
+        } finally {
+            LiveFitWatch.fitting(false);
+        }
+    }
+
+    private static boolean fitInstance(net.minecraft.world.entity.ai.attributes.AttributeInstance inst,
+                                       ResourceLocation id, Double limit) {
         inst.removeModifier(id);
         if (limit == null) {
             return false;
@@ -138,8 +175,20 @@ public final class LiveFit {
         if (value <= limit + 1e-9) {
             return false;
         }
-        inst.addPermanentModifier(new AttributeModifier(id, limit - value, AttributeModifier.Operation.ADD_VALUE));
+        double add = limit - value;
+        inst.addPermanentModifier(new AttributeModifier(id, add, AttributeModifier.Operation.ADD_VALUE));
         double after = inst.getValue();   // re-derived, as every fit is
+        if (Math.abs(after - limit) > 1e-6 && Math.abs(add) > 1e-12) {
+            // another modifier multiplies what is added (a wish's add_multiplied_total): the value is linear in the
+            // fit's own amount, so one measured step finds the amount that lands on the limit
+            double times = (after - value) / add;
+            if (times > 1e-9) {
+                inst.removeModifier(id);
+                inst.addPermanentModifier(new AttributeModifier(id, (limit - value) / times,
+                        AttributeModifier.Operation.ADD_VALUE));
+                after = inst.getValue();
+            }
+        }
         if (after > limit + 1e-6) {
             LOGGER.warn("live fit of {} to {} left {} (another modifier multiplies it)", id, limit, after);
         }
@@ -165,6 +214,211 @@ public final class LiveFit {
         return fitted;
     }
 
+    /**
+     * <b>A wished body with no species, fitted to the world's limits</b> (#174 C1): a vanilla mob a wish made strong
+     * with {@code wishsummon} (a hotbar fire of a learned recipe, {@code modify_mob}'s numbers on a real wolf). Those
+     * never reach {@link #apply}, which fits by species, so a Super Wolf at attack 100 stood untouched in an arena
+     * capped at 5. Its limits are its wisher's ({@code owner}, remembered on it as {@link #FIT_OWNER_PREFIX} so a
+     * re-fit finds it); with no wisher known, the tightest any player here is held to, never none. Call after its
+     * numbers are on it. Server thread. @return the facts it was fitted in.
+     */
+    public static List<String> applyWished(LivingEntity mob, UUID owner) {
+        if (mob == null || mob.level().getServer() == null || speciesOf(mob) != null
+                || mob instanceof net.minecraft.world.entity.player.Player
+                || com.moddingfromamod.world.Wished.isWorldWished(mob)) {
+            return List.of();
+        }
+        if (!MakeGate.anyWorld()) {
+            // nobody answers here now (the last region went): a fit put on before comes off, as for a species creature
+            for (Stat st : STATS) {
+                fit(mob, st.attribute(), st.id(), null);
+            }
+            mob.setHealth(Math.min(mob.getHealth(), mob.getMaxHealth()));
+            return List.of();
+        }
+        LiveFitWatch.track(mob);
+        if (owner != null && !owner.equals(fitOwnerOf(mob))) {
+            mob.getTags().removeIf(t -> t.startsWith(FIT_OWNER_PREFIX));
+            mob.addTag(FIT_OWNER_PREFIX + owner);
+        } else {
+            owner = fitOwnerOf(mob);
+        }
+        Map<String, Double> limits = heldTo(mob, limitsAt(mob, owner));
+        List<String> fitted = new ArrayList<>();
+        for (Stat st : STATS) {
+            if (fit(mob, st.attribute(), st.id(), limits.get(st.fact()))) {
+                fitted.add(st.fact());
+            }
+        }
+        mob.setHealth(Math.min(mob.getHealth(), mob.getMaxHealth()));
+        return fitted;
+    }
+
+    /**
+     * <b>Hold this body to the world's limits from now on</b> (#174): the one call for every route by which a wish
+     * makes or changes a body with no species. A body no wish made ({@link #madeByAWish} false: a wild mob a wish then
+     * changed) is marked {@link #TOUCHED_TAG}, so it is held only down to what its kind is without a wish; then it is
+     * fitted ({@link #applyWished}) and, being marked, {@code LiveFitWatch} keeps it held whatever changes it later.
+     * Server thread. @return the facts it was fitted in.
+     */
+    public static List<String> hold(LivingEntity mob, UUID owner) {
+        if (mob == null || mob instanceof net.minecraft.world.entity.player.Player || speciesOf(mob) != null) {
+            return List.of();
+        }
+        if (!madeByAWish(mob)) {
+            mob.addTag(TOUCHED_TAG);
+        }
+        return applyWished(mob, owner);
+    }
+
+    /**
+     * A spawn egg a wish hands over hatches a body held to the world's limits (#174): its {@code entity_data} carries
+     * {@link #HELD_TAG} and the wisher, which the game puts on the mob it spawns, so {@code LiveFitWatch} holds it
+     * wherever and whenever the child uses it. Only while a world answers (a plain game's eggs are left as vanilla
+     * makes them); idempotent. Any other stack is left alone.
+     */
+    public static void markEgg(net.minecraft.world.item.ItemStack stack, net.minecraft.server.level.ServerPlayer wisher) {
+        if (stack == null || wisher == null || !MakeGate.anyWorld()
+                || !(stack.getItem() instanceof net.minecraft.world.item.SpawnEggItem egg)) {
+            return;
+        }
+        var data = stack.getOrDefault(net.minecraft.core.component.DataComponents.ENTITY_DATA,
+                net.minecraft.world.item.component.CustomData.EMPTY);
+        net.minecraft.nbt.CompoundTag tag = data.copyTag();
+        if (tag.getString("id").isEmpty()) {
+            var type = egg.getType(wisher.registryAccess(), stack);
+            tag.putString("id", net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE.getKey(type).toString());
+        }
+        net.minecraft.nbt.ListTag tags = tag.getListOrEmpty("Tags").copy();
+        java.util.Set<String> have = new java.util.HashSet<>();
+        for (int i = 0; i < tags.size(); i++) {
+            tags.getString(i).ifPresent(have::add);
+        }
+        if (have.contains(HELD_TAG)) {
+            return;
+        }
+        tags.add(net.minecraft.nbt.StringTag.valueOf(HELD_TAG));
+        tags.add(net.minecraft.nbt.StringTag.valueOf(FIT_OWNER_PREFIX + wisher.getUUID()));
+        tag.put("Tags", tags);
+        stack.set(net.minecraft.core.component.DataComponents.ENTITY_DATA,
+                net.minecraft.world.item.component.CustomData.of(tag));
+    }
+
+    /** Did a wish bring this body into the world (not merely change one the world made)? */
+    static boolean madeByAWish(LivingEntity mob) {
+        return com.moddingfromamod.world.Wished.isWished(mob) || mob.getTags().contains(HELD_TAG);
+    }
+
+    /**
+     * The limits {@code mob} is held to: the world's, except that a body a wish only CHANGED is never held below its
+     * own kind's default for a stat (a wild warden a wish slowed keeps its own bite). Pure but for the type's table.
+     */
+    static Map<String, Double> heldTo(LivingEntity mob, Map<String, Double> limits) {
+        if (limits.isEmpty() || madeByAWish(mob) || !mob.getTags().contains(TOUCHED_TAG)) {
+            return limits;
+        }
+        @SuppressWarnings("unchecked")
+        var type = (net.minecraft.world.entity.EntityType<? extends LivingEntity>) mob.getType();
+        if (!net.minecraft.world.entity.ai.attributes.DefaultAttributes.hasSupplier(type)) {
+            return limits;
+        }
+        var own = net.minecraft.world.entity.ai.attributes.DefaultAttributes.getSupplier(type);
+        Map<String, Double> floored = new java.util.HashMap<>(limits);
+        for (Stat st : STATS) {
+            Double limit = limits.get(st.fact());
+            if (limit != null && own.hasAttribute(st.attribute())) {
+                floored.put(st.fact(), Math.max(limit, own.getBaseValue(st.attribute())));
+            }
+        }
+        return floored;
+    }
+
+    /** The limits a living wished body is held to right now, or empty when it is not held (for the watch). */
+    static Map<String, Double> heldLimits(LivingEntity mob, Map<UUID, Map<String, Double>> perOwner) {
+        String speciesId = speciesOf(mob);
+        UUID owner = speciesId != null ? ownerOf(speciesId) : fitOwnerOf(mob);
+        // asked by where it stands; remembered per owner only while no region could make two places differ
+        Map<String, Double> limits = com.moddingfromamod.world.Regions.any() ? limitsAt(mob, owner)
+                : perOwner.computeIfAbsent(owner == null ? new UUID(0L, 0L) : owner, k -> limitsAt(mob, owner));
+        return speciesId != null ? limits : heldTo(mob, limits);
+    }
+
+    /** Is any fitted stat of {@code mob} above {@code limits}? */
+    static boolean above(LivingEntity mob, Map<String, Double> limits) {
+        for (Stat st : STATS) {
+            Double limit = limits.get(st.fact());
+            var inst = limit == null ? null : mob.getAttribute(st.attribute());
+            if (inst != null && inst.getValue() > limit + 1e-6) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** The wisher a species-less wished body was fitted for ({@link #FIT_OWNER_PREFIX}), or null. */
+    public static UUID fitOwnerOf(LivingEntity mob) {
+        for (String t : mob.getTags()) {
+            if (t.startsWith(FIT_OWNER_PREFIX)) {
+                try {
+                    return UUID.fromString(t.substring(FIT_OWNER_PREFIX.length()));
+                } catch (IllegalArgumentException notAUuid) {
+                    return null;
+                }
+            }
+        }
+        return null;
+    }
+
+    /** Is this a wished body {@link #applyWished} fits: no species, and a wish's mark or a wisher on it? */
+    static boolean fitsAsWished(LivingEntity mob) {
+        return speciesOf(mob) == null && !(mob instanceof net.minecraft.world.entity.player.Player)
+                && (markedByTags(mob.getTags()) || com.moddingfromamod.world.Wished.isWished(mob));
+    }
+
+    /** Do these tags mark a body the world's limits hold (a wish's mark, a wisher, held or touched)? Pure. */
+    public static boolean markedByTags(java.util.Collection<String> tags) {
+        if (tags == null || tags.isEmpty()) {
+            return false;
+        }
+        if (com.moddingfromamod.world.Wished.byTags(tags) || tags.contains(HELD_TAG) || tags.contains(TOUCHED_TAG)) {
+            return true;
+        }
+        for (String t : tags) {
+            if (t.startsWith(FIT_OWNER_PREFIX)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * <b>The one way a living body's limits are asked</b> (#174, #182): {@code owner}'s, for the place the body
+     * stands (a region there answers for what stands inside it, whoever owns it and wherever he is; with no region
+     * anywhere, the world's limits for him, as before). With no owner known, the tightest any online player would be
+     * held to there (fail closed, never none).
+     */
+    public static Map<String, Double> limitsAt(LivingEntity mob, UUID owner) {
+        var server = mob.level().getServer();
+        if (owner != null) {
+            return limitsAt(mob, owner, server);
+        }
+        Map<String, Double> tightest = null;
+        if (server != null) {
+            for (net.minecraft.server.level.ServerPlayer p : server.getPlayerList().getPlayers()) {
+                Map<String, Double> l = limitsAt(mob, p.getUUID(), server);
+                tightest = tightest == null ? l : com.moddingfromamod.world.WorldLimits.tightest(tightest, l);
+            }
+        }
+        return tightest == null ? limitsAt(mob, new UUID(0L, 0L), server) : tightest;
+    }
+
+    private static Map<String, Double> limitsAt(LivingEntity mob, UUID owner, net.minecraft.server.MinecraftServer server) {
+        if (!com.moddingfromamod.world.Regions.any()) {
+            return MakeGate.limits(owner).limits();
+        }
+        return MakeGate.limits(owner, new com.moddingfromamod.world.Bases.Pos(
+                mob.level().dimension().location().toString(), mob.getX(), mob.getY(), mob.getZ())).limits();
+    }
     /** The modifier on {@code mob} for this stat's fit, or null: for a test that it is there once, and only there. */
     public static AttributeModifier modifierOn(LivingEntity mob, Holder<Attribute> attribute, ResourceLocation id) {
         var inst = mob.getAttribute(attribute);
@@ -208,7 +462,27 @@ public final class LiveFit {
                     continue;
                 }
                 String speciesId = speciesOf(mob);
-                if (speciesId == null || !player.equals(ownerOf(speciesId))) {
+                if (speciesId == null) {
+                    // A wished body with no species (#174 C1): his if he wished it, or nobody's (fitted to the
+                    // tightest limits whenever any player's change).
+                    if (!fitsAsWished(mob)) {
+                        continue;
+                    }
+                    UUID wisher = fitOwnerOf(mob);
+                    if (wisher != null && !player.equals(wisher)) {
+                        continue;
+                    }
+                    int movedV = refitWished(mob);
+                    if (movedV < 0) {
+                        lowered++;
+                    } else if (movedV > 0) {
+                        raised++;
+                    } else {
+                        same++;
+                    }
+                    continue;
+                }
+                if (!player.equals(ownerOf(speciesId))) {
                     continue;
                 }
                 Moved m = refitOne(mob, speciesId);
@@ -237,7 +511,7 @@ public final class LiveFit {
 
     /**
      * Fit one living wish creature again, from its own unfitted numbers, its health kept as hurt as it was
-     * ({@link #refit}'s step for each creature; {@code RegionWatch}'s for one that crossed a region's edge). Server
+     * ({@link #refit}'s step for each creature; {@code LiveFitWatch}'s for one that crossed a region's edge). Server
      * thread. Tells nobody.
      */
     public static Moved refitOne(LivingEntity mob, String speciesId) {
@@ -254,8 +528,22 @@ public final class LiveFit {
         return new Moved(RefitWords.compare(RefitWords.with(before, sizeWas), RefitWords.with(after, sizeNow)), resized);
     }
 
+    /**
+     * Fit one wished body with no species again, where it stands, from its own unfitted numbers, its health kept as
+     * hurt as it was. Tells nobody. @return up (1), down (-1) or not (0).
+     */
+    public static int refitWished(LivingEntity mob) {
+        double[] was = values(mob);
+        double oldMax = mob.getMaxHealth();
+        double oldHealth = mob.getHealth();
+        applyWished(mob, null);
+        mob.setHealth((float) RefitWords.healthAfter(oldHealth, oldMax, mob.getMaxHealth()));
+        return RefitWords.compare(RefitWords.with(was, 1.0), RefitWords.with(values(mob), 1.0));
+    }
+
     /** Tell {@code player} once what a re-fit of his creatures did (nothing when nothing moved), and log it. */
     public static Refit told(net.minecraft.server.MinecraftServer server, UUID player, Refit r) {
+        LiveFitWatch.fittedAt(player, MakeGate.limits(player).stamp());
         String line = r.line();
         net.minecraft.server.level.ServerPlayer p = server.getPlayerList().getPlayer(player);
         if (p != null && !line.isEmpty() && WishFeedback.sweeps(line, "")) {

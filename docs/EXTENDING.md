@@ -166,6 +166,16 @@ child's own spawn egg, and a mob your world's own datapack function (or vanilla'
 neither marker (#80): those functions run with no spawn scope, exactly as without Moddy, so what they spawn is not
 wished and is not counted against the wishes' spawn budget.
 
+A world's limits (`WorldMakes.limits`, below) hold a few more bodies than `isWished` names, by markers of the live fit's
+own (`wish/LiveFit`); they say nothing about the spawn budget, and a world reads them only if it wants to know why a
+body is held:
+
+| Marker | Put on | Meaning |
+|---|---|---|
+| `moddy_held` | a mob hatched from a spawn egg a wish handed over (`item/delivery/WishDelivery` puts it in the egg's `entity_data` while a world answers) | a body a wish brought in, held to the limits |
+| `moddy_touched` | a body the world made whose attributes a wish changed: `modify_mob`, or any change while a spawn scope is open (an `attribute` or `effect` command, a recipe's replay, a wish datapack's function; `mixin/AttributeTouchMixin`) | held to the limits, but never below its own kind's default for a stat, so a wish never makes the world's own creature weaker |
+| `moddy_fit_owner:<uuid>` | any held body without a species, the first time it is held for a player | whose limits hold it; with none, the tightest any player online is held to |
+
 ## Telling a wished item stack from any other: `WishedItem`
 
 `com.moddingfromamod.world.WishedItem.madeBy(stack)` is the item twin of `Wished`: the one documented way to ask "did
@@ -327,6 +337,7 @@ the limits the world gave.
   | `minecraft:attack_damage` | `moddingfromamod:world_fit/attack_damage` |
   | `minecraft:armor` | `moddingfromamod:world_fit/armor` |
   | `minecraft:knockback_resistance` | `moddingfromamod:world_fit/knockback_resistance` |
+  | `minecraft:movement_speed` | `moddingfromamod:world_fit/movement_speed` (a creature already standing; a NEW make over a `movementSpeedAttribute` limit is still locked) |
 
   Armour toughness has no fact and no fit: no wish creature carries any (a species has no such number), so there is
   nothing to hold down.
@@ -336,6 +347,17 @@ the limits the world gave.
   species, the shelf or any wish store, so the same make comes out at its own strength in another world. It covers every
   creature made here: Builder, Apprentice, "Make another one" and the Magician's. The player is told once, as for any
   fitted make.
+
+  It holds **every** wished body, whatever made it strong (#174), by one watch rather than per route
+  (`wish/LiveFitWatch`, which keeps an index of the bodies it holds and never scans every entity): a plain mob a wish brought in (a recipe's `wishsummon` or `summon` with NBT attributes, a
+  datapack's summon, a spawn egg a wish handed over) and a body the world made that a wish then changed (the markers
+  above) are fitted the moment the wish command ends, as the player who ran it, and twice a second every marked body
+  that stands above the limits it is held to (an effect, a held weapon, a later command) is fitted again. A fit also
+  lands under another modifier that multiplies the value. A creature already standing is held even when this world's
+  answer for its make would now lock it or call it too much: being held never takes its fit away. A player whose
+  `limits` stamp changes without `limitsChanged` (a world that answers by where he stands) has his creatures refit
+  within half a second, as if it had been called. Items and effects on the player are not fitted live: only the
+  fitting tools (`ToolArgFit`) and a Builder make fit those.
 - **When this player's limits change, tell the core**: `WorldMakes.limitsChanged(player)` (a round begins, a level is
   earned; server thread). The core never polls `limits(player)`. Every living creature that player's wishes made, a
   wish creature or a rig's carrier, wherever it stands, is fitted again from its own UNFITTED numbers (each fit removed
@@ -459,10 +481,11 @@ how strong may it be (`makes()`), and where may it land (its `Bases`, judged by 
 - **A region is chosen by a place, never by who asks** (`Regions`):
   - **a wish**: the spot it was made at, locked at submit. The region that charged it is the one that refunds it, even
     after he has walked off;
-  - **a living wish creature**: where it stands. `LiveFit` fits it with its place on the question (`WishAsk.where()`),
-    so `makes().limits(owner)` and `makes().view(facts, ask)` are asked of the region the creature is in, whoever owns
-    it and wherever he is. A creature that crosses a region's edge is fitted again within half a second
-    (`RegionWatch`), and its owner is told once: a creature held down inside comes back when it leaves;
+  - **a living wish creature**, or any body the world's limits hold: where it stands. `LiveFit` fits it with its place
+    on the question (`WishAsk.where()`, `LiveFit.limitsAt`), so `makes().limits(owner)` and `makes().view(facts, ask)`
+    are asked of the region the body is in, whoever owns it and wherever he is. A body that crosses a region's edge is
+    fitted again within half a second (`LiveFitWatch`, the one watcher), and its owner is told once: a creature held
+    down inside comes back when it leaves;
   - **any other question about a player** (a menu, a Builder page, a make he is pressing): where he stands now;
   - **reach**: the caster's region; for a caster in none, the region his wish is aimed into. So a wish cast inside a
     fenced region stays in it, and one cast from outside into it is the region's to admit.
