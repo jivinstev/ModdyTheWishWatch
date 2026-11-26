@@ -16,9 +16,10 @@
 #
 # FLAKE POLICY: a film that fails is run ONCE more. Failed twice = FAIL; failed then passed = FLAKY, and
 # FLAKY is not a pass — the exit is non-zero and it says to run the film on the base branch to tell a
-# flake it inherited from one it made. Its exit code is its own (3), so Port CI's release run can tell it
-# from a failure: `.port/<mc>/gate-c.json` names it as `release_flaky_exit`, which makes a FLAKY set a
-# pass with a WARNING FLAKY row in the release notes on a release run only. This PR job stays strict.
+# flake it inherited from one it made. Under Port CI (PORT_GATE_OUT set) the rig also writes its verdict,
+# one word, to $PORT_GATE_OUT/verdict: PASS, FLAKY or FAIL. `.port/<mc>/gate-c.json`'s `flaky_ok` lets
+# Port CI count FLAKY as a pass with a warning row in gates.md and the release notes (#171 tracks the
+# flakes). Core's own pull-request rig-films job reads the exit code only and stays strict.
 #
 # Exit: 0 all passed · 1 a film FAILED · 2 a film could not run (setup, no result, timeout) — the gate is
 # broken, which is not a finding about the rig · 3 every film passed, at least one only on its retry (FLAKY).
@@ -143,4 +144,8 @@ for mode in "${FILMS[@]}"; do
     printf '  %-18s %s\n' "$mode" "$v"
 done
 echo "logs: $OUT"
+if [ -n "${PORT_GATE_OUT:-}" ]; then
+    case "$EXIT" in 0) w=PASS ;; 3) w=FLAKY ;; *) w=FAIL ;; esac
+    echo "$w" > "$PORT_GATE_OUT/verdict"
+fi
 exit "$EXIT"
