@@ -128,6 +128,27 @@ class BuilderStarterGoldenTest {
         return out;
     }
 
+    /**
+     * #103, a deliberate change this fixture predates: a creature's size and How strong move its health and damage,
+     * and a guard always hits for its size band's (BuilderCreatureStrength). The recorded sculpt's numbers take that
+     * rule, worked out from the saved make; the rest of every saved make still re-makes byte for byte. A Normal-sized
+     * make at its own strength that is not a guard is unchanged by it.
+     */
+    static JsonArray withStrengthRule(JsonArray calls, BuilderSpec spec, String preset) {
+        JsonArray out = calls.deepCopy();
+        JsonObject sculpt = LibraryPresets.SHIPPED.read(preset);
+        JsonObject species = LibraryPresets.SHIPPED.species(preset);
+        for (JsonElement c : out) {
+            JsonObject args = c.getAsJsonObject().getAsJsonObject("args");
+            if (args != null && c.getAsJsonObject().get("tool").getAsString().equals("sculpt_creature")) {
+                JsonArray parts = args.has("parts") && args.getAsJsonArray("parts").size() > 0 ? args.getAsJsonArray("parts")
+                        : sculpt == null ? new JsonArray() : sculpt.getAsJsonArray("parts");
+                BuilderLowering.strength(spec, args, parts, BuilderParts.vehicle(preset, species));
+            }
+        }
+        return out;
+    }
+
     @Test
     void everySavedStarterMakeLowersAsItDidBefore() throws Exception {
         JsonObject before = fixture();
@@ -137,7 +158,8 @@ class BuilderStarterGoldenTest {
             BuilderSpec.Kind kind = BuilderSpec.Kind.of(key.substring(0, key.indexOf('/')));
             String preset = key.substring(key.indexOf('/') + 1);
             JsonArray now = BuilderStarterGolden.lowered(BuilderSpec.read(BuilderStarterGolden.saved(kind, preset)));
-            if (!normal(withReviewedStats(withShipped(withNatural(before.getAsJsonArray(key), preset), preset), preset)).equals(normal(now))) {
+            if (!normal(withStrengthRule(withReviewedStats(withShipped(withNatural(before.getAsJsonArray(key), preset), preset), preset),
+                    BuilderSpec.read(BuilderStarterGolden.saved(kind, preset)), preset)).equals(normal(now))) {
                 wrong.add(key + "\n  before: " + before.get(key) + "\n  now:    " + now);
             }
         }

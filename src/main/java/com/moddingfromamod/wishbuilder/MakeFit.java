@@ -251,7 +251,10 @@ public final class MakeFit {
         try {
             now = Integer.parseInt(s.opt("strength").strip());
         } catch (NumberFormatException none) {
-            return out;
+            if (!creatureLike(s)) {
+                return out;
+            }
+            now = BuilderCreatureStrength.OWN;   // #103: a creature's own strength is written as nothing; gentler still exists
         }
         for (int st = now - 1; st >= 1; st--) {
             Map<String, String> o = new LinkedHashMap<>(s.opts());
@@ -268,6 +271,13 @@ public final class MakeFit {
      * not fitted at all (locked), never made wrong.
      */
     static List<BuilderSpec> steps(BuilderSpec s) {
+        if (creatureLike(s)) {
+            // #103: a creature's size and How strong now move its health and damage, but a limit on those is still
+            // fitted on the LIVE creature (LIVE), never by making it smaller or gentler: a world that raises its limits
+            // later must get the creature back at its full strength (LiveFit). Its size and strength are lowered only
+            // by a limit on them (builderSizeStep, scaleTimes, builderStrengthStep).
+            return List.of();
+        }
         List<BuilderSpec> tiers = new ArrayList<>();
         tiers.add(s);
         tiers.addAll(lowerTiers(s));
@@ -310,12 +320,17 @@ public final class MakeFit {
         return out;
     }
 
+    /** A creature or a ride: its strength is #103's How strong, its own (2) when unstated. */
+    private static boolean creatureLike(BuilderSpec s) {
+        return s.kind() == BuilderSpec.Kind.CREATURE || s.kind() == BuilderSpec.Kind.RIDE;
+    }
+
     private static int stepsKept(BuilderSpec s) {
         int strength;
         try {
             strength = Integer.parseInt(s.opt("strength").strip());
         } catch (NumberFormatException none) {
-            strength = 0;
+            strength = creatureLike(s) ? BuilderCreatureStrength.OWN : 0;
         }
         BuilderMobSizes.Level l = s.opt("mobsize").isEmpty() ? null : BuilderMobSizes.of(s.opt("mobsize"));
         int size = l == null ? s.size() : BuilderMobSizes.ALL.indexOf(l);
