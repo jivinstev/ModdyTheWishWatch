@@ -56,6 +56,12 @@ public final class DatapackForge {
         // The skeleton takes the same respelling (a machine's sign text is quoted JSON in its template), so it still
         // stands for the source; CbScriptCompiler checks that it fills back to exactly this source.
         skeleton = dialect(skeleton);
+        // The id names files below (tmp/<id>.zip, wish-datapacks/<id>/): refuse a bad one HERE, before any path is
+        // built from it. Built first, an id with a ':' threw InvalidPathException on Windows, past the IOException
+        // handling, where Linux gave this refusal.
+        if (!CbScriptCompiler.validId(featureId)) {
+            return CompileResult.failure(featureId, CbScriptCompiler.invalidIdMessage(featureId), java.util.List.of());
+        }
         CompileResult result;
         Path tmp = null;
         try {

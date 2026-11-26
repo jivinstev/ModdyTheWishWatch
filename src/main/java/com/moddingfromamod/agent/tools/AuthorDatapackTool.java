@@ -183,6 +183,10 @@ public final class AuthorDatapackTool implements McpTool {
         if (id.isBlank() || source.isBlank()) {
             return ToolResult.error("Need both feature_id and cbscript.");
         }
+        // Before anything builds a path from it (readCurrentSource, the store): a ':' in the id threw on Windows.
+        if (!com.moddingfromamod.datapack.CbScriptCompiler.validId(id)) {
+            return ToolResult.error(com.moddingfromamod.datapack.CbScriptCompiler.invalidIdMessage(id));
+        }
         // ── A MACHINE HE FILLS, HAND-WRITTEN (smoke, 2026-09-28) ─────────────────────────
         // A machine that makes something from what he puts in was answered by hand-writing a
         // datapack (a cauldron that eats dropped eggs) — it worked, but it is saved nowhere, it
