@@ -7,6 +7,8 @@ import com.moddingfromamod.marshal.Spot;
 import com.moddingfromamod.plugin.PluginScope;
 import com.moddingfromamod.plugin.Plugins;
 import com.moddingfromamod.wish.WishCharge;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 
@@ -26,6 +28,19 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class RegionsTest {
 
     private static final String OW = Bases.OVERWORLD;
+
+    private Plugins was;
+
+    /** Each test its own empty registry inside the class's ({@link PluginScope} scopes per class). */
+    @BeforeEach
+    void freshRegistry() {
+        was = Plugins.scopeForTest(new Plugins());
+    }
+
+    @AfterEach
+    void putItBack() {
+        Plugins.scopeForTest(was);
+    }
 
     private static Bases bases(String noun) {
         return new Bases() {

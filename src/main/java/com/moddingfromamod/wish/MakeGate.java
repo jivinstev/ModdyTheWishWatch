@@ -121,6 +121,25 @@ public final class MakeGate {
         }
     }
 
+    /**
+     * The world's limits for this player's thing standing at {@code where} (#182): the region there answers when there
+     * is one ({@code WorldRegions}), else as {@link #limits(java.util.UUID)}. What a living body is fitted by.
+     */
+    public static WorldLimits limits(java.util.UUID player, com.moddingfromamod.world.Bases.Pos where) {
+        WorldMakes world = WorldMakes.get();
+        if (world == WorldMakes.NONE || player == null) {
+            return WorldLimits.NONE;
+        }
+        try {
+            WorldLimits l = com.moddingfromamod.world.RegionalMakes.limitsFor(world,
+                    WishAsk.replay(player, "").withWhere(where));
+            return l == null ? WorldLimits.NONE : l;
+        } catch (RuntimeException | LinkageError e) {
+            LOGGER.warn("the world's WorldMakes threw on limits: {}", e.toString());
+            return WorldLimits.NONE;
+        }
+    }
+
     /** What a Builder spec becomes here: the verdict, and the spec fitted when it is let through within limits. */
     public record Built(MakeVerdict verdict, BuilderSpec spec, List<String> lowered, boolean unfit) {
         Built(MakeVerdict verdict, BuilderSpec spec, List<String> lowered) {
