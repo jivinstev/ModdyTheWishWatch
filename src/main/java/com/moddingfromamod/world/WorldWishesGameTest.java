@@ -180,7 +180,8 @@ public final class WorldWishesGameTest {
                         Component.literal("the child was told about the world's make: " + line));
             }
             var near = child.level().getEntitiesOfClass(net.minecraft.world.entity.LivingEntity.class,
-                    child.getBoundingBox().inflate(48), e -> Wished.isWished(e) && !before.contains(e.getUUID()));
+                    child.getBoundingBox().inflate(48), e -> Wished.isWished(e) && !before.contains(e.getUUID())
+                            && worldsOwn(e));
             helper.assertTrue(near.isEmpty(), Component.literal("a world's design stood a creature beside the child: "
                     + near.stream().map(e -> e.getName().getString()).toList()));
         });
@@ -237,9 +238,11 @@ public final class WorldWishesGameTest {
                             == com.moddingfromamod.wish.reveal.PillarPalette.WORLD,
                     Component.literal("the world's owner id does not read as a world's"));
             // made in the world's own colours, carried inline: the species holds them, no scheme is registered
-            String madeJson = sp.toJson().toString().toUpperCase(java.util.Locale.ROOT);
-            helper.assertTrue(madeJson.contains("#16131A") || madeJson.contains("#B3121B"),
-                    Component.literal("the design is not in the world palette: " + madeJson.substring(0, Math.min(400, madeJson.length()))));
+            // the world's own colours travel with its make: its kept spec carries them, so nothing depends on a core scheme
+            var kept = com.moddingfromamod.wishbuilder.BuilderSpecStore.all(com.moddingfromamod.runtime.RuntimeConfig.playersDir(),
+                    sp.ownerId()).values().stream().map(m -> m.spec() == null ? "" : m.spec().toString()).toList();
+            helper.assertTrue(kept.stream().anyMatch(j -> j.contains(SHADOW)),
+                    Component.literal("the world's kept design does not carry its palette: " + kept));
             helper.assertTrue(Schemes.byId("shadow") == null, Component.literal("a world's colours became a core scheme"));
             BuilderMake.Result r2 = again.get();
             helper.assertTrue(r2 != null && r2.outcome() == BuilderMake.Outcome.MADE && r.madeId().equals(r2.madeId()),
@@ -257,5 +260,12 @@ public final class WorldWishesGameTest {
                             + " model or web call(s) asked during a world's wish (see the 'local only: refused' lines)"));
             c.discard();
         });
+    }
+
+    /** A body a world's make stood: its species (a wish creature's, or a rig carrier's) is owned by a world. */
+    private static boolean worldsOwn(LivingEntity e) {
+        String species = com.moddingfromamod.wish.LiveFit.speciesOf(e);
+        java.util.UUID owner = species == null ? null : com.moddingfromamod.wish.LiveFit.ownerOf(species);
+        return owner != null && WorldOwners.is(owner);
     }
 }
