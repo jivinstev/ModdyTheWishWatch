@@ -9,6 +9,7 @@ import com.moddingfromamod.testing.gt.GameTest;
 import com.moddingfromamod.testing.gt.GameTestHolder;
 import com.moddingfromamod.wishbuilder.BuilderMake;
 import com.moddingfromamod.wishbuilder.BuilderSpec;
+import com.moddingfromamod.wishbuilder.Schemes;
 import com.moddingfromamod.wishbuilder.MakeFacts;
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -21,11 +22,14 @@ import net.minecraft.world.phys.Vec3;
  * <b>#178: a world wishes through the Builder.</b> A husk is a Builder real mob ({@code mob:minecraft:husk}, Big, How
  * strong 3, fast): it rises under a crimson pillar and arrives with the Builder's numbers, held at the ceiling by the
  * live fit, never weaker than a plain husk, and never as a player's wish. A boss's wish is UNCAPPED. A champion is a
- * real Builder design the world made ({@code BuilderMake.forWorld}: a rock golem in the shadow scheme), spawned as a
+ * real Builder design the world made ({@code BuilderMake.forWorld}: a rock golem in the world's own inline palette), spawned as a
  * copy. The queue stands up no more pillars per tick than its caps.
  */
 @GameTestHolder(ModdingFromAModMod.MODID)
 public final class WorldWishesGameTest {
+
+    /** A world's own colours, inline (Schemes.PALETTE_OPT): black and crimson, as a battle world might define them. */
+    static final String SHADOW = "#16131A,#B3121B,#FF3B3B";
 
     private static final String BATCH = "worldwishes";
 
@@ -114,7 +118,7 @@ public final class WorldWishesGameTest {
     /**
      * <b>Perf: is a battle's first champion ready before its first wave?</b> The arena makes its champion designs at a
      * battle's start, one at a time (one Builder make in flight per owner), and the first wave comes after the
-     * countdown ({@code countdownSeconds}, 5 by default). Every canned body a champion can be, in the shadow scheme,
+     * countdown ({@code countdownSeconds}, 5 by default). Every canned body a champion can be, in a world's own inline palette,
      * made back to back with a child connected, each timed; the first TWO in a row (this rung's and the next) must be
      * done inside the countdown. The times are printed ({@code [champion perf]}) to read beside a real battle's log.
      */
@@ -140,9 +144,9 @@ public final class WorldWishesGameTest {
                 return;
             }
             BuilderSpec spec = new BuilderSpec(BuilderSpec.CURRENT, BuilderSpec.Kind.CREATURE,
-                    "preset:bodies/" + bodies.get(i), "shadow", 2,
+                    "preset:bodies/" + bodies.get(i), "", 2,
                     List.of("power:hostile", "power:glowing", "power:fireproof", "power:leaps"), "", 1, "",
-                    "Shadow " + bodies.get(i), Map.of("strength", "3"));
+                    "Shadow " + bodies.get(i), Map.of("strength", "3", Schemes.PALETTE_OPT, SHADOW));
             long t0 = System.nanoTime();
             BuilderMake.forWorld(server, module, "The Arena", spec).whenComplete((r, err) -> server.execute(() -> {
                 ms[i] = (System.nanoTime() - t0) / 1_000_000;
@@ -187,8 +191,8 @@ public final class WorldWishesGameTest {
         String module = "gt_design_" + helper.getLevel().getGameTime();
         var server = helper.getLevel().getServer();
         BuilderSpec golem = new BuilderSpec(BuilderSpec.CURRENT, BuilderSpec.Kind.CREATURE, "preset:bodies/rock_golem",
-                "shadow", 2, List.of("power:hostile", "power:leaps", "power:glowing"), "", 1, "", "Shadow Golem",
-                Map.of("strength", "3"));
+                "", 2, List.of("power:hostile", "power:leaps", "power:glowing"), "", 1, "", "Shadow Golem",
+                Map.of("strength", "3", Schemes.PALETTE_OPT, SHADOW));
         final long localBefore = com.moddingfromamod.marshal.LocalOnly.refusedSoFar();
         // LocalOnly refuses (and counts) any model or web call whether or not the Magician is on, so zero refusals below
         // proves a world's wish needs none of it: with the Magician off it would have nothing to reach for either
@@ -198,10 +202,18 @@ public final class WorldWishesGameTest {
         Vec3 at = helper.absoluteVec(new Vec3(1.5, 1, 1.5));
         // a name a child could not type is not a world's either: refused, nothing made
         BuilderSpec rude = new BuilderSpec(BuilderSpec.CURRENT, BuilderSpec.Kind.CREATURE, "preset:bodies/rock_golem",
-                "shadow", 2, List.of("power:hostile"), "", 1, "", "Hardcore " + "Porn", Map.of());
+                "", 2, List.of("power:hostile"), "", 1, "", "Hardcore " + "Porn", Map.of());
         BuilderMake.Result refused = BuilderMake.forWorld(server, module, "The Arena", rude).join();
         helper.assertTrue(refused.outcome() == BuilderMake.Outcome.REFUSED,
                 Component.literal("a world's make with an unsafe name was not refused: " + refused.outcome()));
+        // a palette that is not three #RRGGBB colours (and three reviewed blocks) makes nothing
+        for (String bad : List.of("#16131A,#B3121B", "red,black,white", "#16131A,#B3121B,#FF3B3B;minecraft:tnt,minecraft:stone,minecraft:dirt")) {
+            BuilderSpec odd = new BuilderSpec(BuilderSpec.CURRENT, BuilderSpec.Kind.CREATURE, "preset:bodies/rock_golem",
+                    "", 2, List.of("power:hostile"), "", 1, "", "Odd Golem", Map.of(Schemes.PALETTE_OPT, bad));
+            BuilderMake.Result r0 = BuilderMake.forWorld(server, module, "The Arena", odd).join();
+            helper.assertTrue(r0.outcome() == BuilderMake.Outcome.REFUSED,
+                    Component.literal("a world's make with the palette '" + bad + "' was not refused: " + r0.outcome()));
+        }
         BuilderMake.forWorld(server, module, "The Arena", golem).thenAcceptAsync(r -> server.execute(() -> {
             made.set(r);
             // the same design asked again is the one already made: a world's makes never fill the registry
@@ -224,6 +236,11 @@ public final class WorldWishesGameTest {
                             && com.moddingfromamod.wish.reveal.WishOrbs.paletteOf(java.util.UUID.fromString(sp.ownerId()))
                             == com.moddingfromamod.wish.reveal.PillarPalette.WORLD,
                     Component.literal("the world's owner id does not read as a world's"));
+            // made in the world's own colours, carried inline: the species holds them, no scheme is registered
+            String madeJson = sp.toJson().toString().toUpperCase(java.util.Locale.ROOT);
+            helper.assertTrue(madeJson.contains("#16131A") || madeJson.contains("#B3121B"),
+                    Component.literal("the design is not in the world palette: " + madeJson.substring(0, Math.min(400, madeJson.length()))));
+            helper.assertTrue(Schemes.byId("shadow") == null, Component.literal("a world's colours became a core scheme"));
             BuilderMake.Result r2 = again.get();
             helper.assertTrue(r2 != null && r2.outcome() == BuilderMake.Outcome.MADE && r.madeId().equals(r2.madeId()),
                     Component.literal("the same design was made again: " + (r2 == null ? "pending" : r2.madeId())));

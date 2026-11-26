@@ -65,6 +65,13 @@ public record BuilderAllowlist(Set<BuilderSpec.Kind> kinds, Set<String> ids, Set
      * in a full-tier world, or one the Apprentice offers, is a stone sword in a basic-tier world; every other spec is as it is.
      */
     public BuilderSpec capped(BuilderSpec spec) {
+        if (this != FOR_WORLDS && spec != null && !spec.opt(Schemes.PALETTE_OPT).isEmpty()) {
+            // a world's inline palette (#178) is a world's own make's only: off any player's spec, whatever made it
+            java.util.Map<String, String> o = new java.util.LinkedHashMap<>(spec.opts());
+            o.remove(Schemes.PALETTE_OPT);
+            spec = new BuilderSpec(spec.version(), spec.kind(), spec.from(), spec.scheme(), spec.size(), spec.powers(),
+                    spec.temper(), spec.count(), spec.at(), spec.name(), o);
+        }
         if (BuilderSupplies.is(spec)) {
             // supplies at most this world's most per make (a saved spec, the Apprentice).
             BuilderSupplies.Supply s = BuilderSupplies.supply(spec.from());

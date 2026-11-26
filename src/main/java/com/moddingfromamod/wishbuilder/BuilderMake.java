@@ -328,6 +328,14 @@ public final class BuilderMake {
                         "the name did not pass the safety sweep", List.of()));
             }
         }
+        // its own colours, inline (Schemes.PALETTE_OPT): one that is not exactly three #RRGGBB colours (and three
+        // reviewed blocks) makes nothing, rather than a make in colours nobody asked for
+        String palette = spec.opt(Schemes.PALETTE_OPT);
+        if (!palette.isEmpty() && Schemes.parsePalette(palette) == null) {
+            LOGGER.warn("a world's make for {} was refused: its palette is not three #RRGGBB colours (and three reviewed blocks)", moduleId);
+            return CompletableFuture.completedFuture(new Result(Outcome.REFUSED, null, "",
+                    "the palette is not three #RRGGBB colours (and three reviewed blocks)", List.of()));
+        }
         Map<String, String> opts = new java.util.LinkedHashMap<>(spec.opts());
         opts.put("spawn", "no");
         BuilderSpec design = new BuilderSpec(spec.version(), spec.kind(), spec.from(), spec.scheme(), spec.size(),

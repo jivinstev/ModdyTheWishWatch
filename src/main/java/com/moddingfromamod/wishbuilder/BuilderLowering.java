@@ -512,7 +512,7 @@ public final class BuilderLowering {
         a.addProperty("note", "Builder make: " + label(spec) + " from the ready-made "
                 + Catalogue.bare(preset) + ".");
         a.addProperty("scale", creatureScale(spec, sculpt));
-        Schemes.Scheme scheme = Schemes.byId(spec.scheme());
+        Schemes.Scheme scheme = Schemes.resolve(spec);
         if (scheme != null) {
             JsonObject recolour = Schemes.recolour(sculpt.getAsJsonArray("parts"), scheme);
             if (recolour.size() > 0) {
@@ -784,7 +784,7 @@ public final class BuilderLowering {
         a.addProperty("id", newId);
         a.addProperty("name", spec.name().isEmpty() ? str(sculpt, "name") : spec.name());
         JsonArray parts = sculpt.getAsJsonArray("parts").deepCopy();
-        Schemes.Scheme scheme = Schemes.byId(spec.scheme());
+        Schemes.Scheme scheme = Schemes.resolve(spec);
         if (scheme != null) {
             JsonObject recolour = Schemes.recolour(parts, scheme);
             for (JsonElement e : parts) {
@@ -1004,7 +1004,7 @@ public final class BuilderLowering {
             // missing base. make_item's real-item hint is for the Magician; without this it refuses the tile.
             a.addProperty("only_looks_like", true);
         }
-        Schemes.Scheme scheme = Schemes.byId(spec.scheme());
+        Schemes.Scheme scheme = Schemes.resolve(spec);
         if (scheme != null) {
             a.addProperty("colour", scheme.main());
             a.addProperty("accent", scheme.accent());
@@ -1087,8 +1087,9 @@ public final class BuilderLowering {
         BuilderBuildings.Type body = parts ? null : BuilderBuildings.type(preset);
         boolean working = body != null && body.working();
         double f = parts || working ? 1.0 : BUILDING_SCALE[spec.size() - 1];   // floors are a simple building's size
-        Schemes.Scheme scheme = working ? null : Schemes.byId(spec.scheme());
-        java.util.Map<String, String> reblock = scheme == null ? java.util.Map.of() : Schemes.reblock(shapes, scheme);
+        Schemes.Scheme scheme = working ? null : Schemes.resolve(spec);
+        java.util.Map<String, String> reblock = scheme == null || scheme.mainBlock() == null ? java.util.Map.of()
+                : Schemes.reblock(shapes, scheme);   // a world's colours-only palette keeps a building's own blocks
         if (f != 1.0) {
             scaleAll(shapes, f);
         }
@@ -1126,7 +1127,7 @@ public final class BuilderLowering {
         JsonObject pic = new JsonObject();
         pic.add("size", stored.get("size"));
         JsonArray rects = stored.getAsJsonArray("rects").deepCopy();
-        Schemes.Scheme scheme = Schemes.byId(spec.scheme());
+        Schemes.Scheme scheme = Schemes.resolve(spec);
         if (scheme != null) {
             java.util.Map<String, String> to = Schemes.recolourRects(rects, scheme);
             for (JsonElement e : rects) {

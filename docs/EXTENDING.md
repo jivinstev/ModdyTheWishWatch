@@ -217,6 +217,13 @@ monsters and champions, a quest world's guardian. `WorldWishes` is an API a worl
     is refused (`Outcome.REFUSED`) and nothing is made.
   - The same design asked again (each battle, each restart) answers with the species already made, so a world's makes
     never fill the creature registry children's makes share.
+  - **Its own colours, inline:** the spec opt `palette` (`Schemes.PALETTE_OPT`) is
+    `"#RRGGBB,#RRGGBB,#RRGGBB"` (main, accent, trim), optionally followed by `";block,block,block"` for a building,
+    each block one the core's own schemes already build in (`Schemes.reviewedBlocks()`). Anything else is refused
+    (`Outcome.REFUSED`) and nothing is made. No scheme is registered: a player's scheme list and Builder tree never
+    change, and `BuilderAllowlist.capped` takes `palette` off any player's spec. The made species keeps the resolved
+    colours, so nothing depends on the world staying installed. A world keeps its own named palettes (a "Shadow") in
+    its own files.
 - **Limits are per wish** (`WorldWishes.Limits`). `Limits.of(ceiling)` takes make facts (`healthHalfHearts`,
   `attackDamageHalfHearts`, `scaleTimes`, …). `Limits.UNCAPPED` (tag `moddy_world_wished_uncapped`) is for a world's
   boss, because boss fights are meant to be hard. Only a world module calls this, so nothing a player wishes is ever

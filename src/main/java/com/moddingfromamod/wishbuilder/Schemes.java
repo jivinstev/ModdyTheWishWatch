@@ -153,10 +153,6 @@ public final class Schemes {
                     "minecraft:pink_concrete", "minecraft:light_blue_concrete", "minecraft:white_concrete", List.of("candy", "pastel", "bubblegum", "pink and blue", "candy colours", "candy colors")),
             new Scheme("royal", "Royal", "#5B2C9F", "#F2C230", "#FFFFFF",
                     "minecraft:purple_concrete", "minecraft:gold_block", "minecraft:quartz_block", List.of("royal", "fancy", "purple and gold", "king colours", "royal colours", "royal colors", "fit for a king", "like a king")),
-            // #178: the villain's colours. The arena's champions wear it, and a child may pick it for his own
-            // creature too ("make him evil"). No block that hurts or moves him: concrete, nether brick, redstone lamp.
-            new Scheme("shadow", "Shadow", "#16131A", "#B3121B", "#FF3B3B",
-                    "minecraft:black_concrete", "minecraft:red_concrete", "minecraft:red_nether_bricks", List.of("shadow", "evil", "dark", "villain", "spooky", "black and red", "shadow colours", "shadow colors", "bad guy", "scary")),
             // ── SKINS: "made of" a material. Every colour goes, in the material's three shades; a
             // building is rebuilt in its blocks. No block that hurts or moves him (no magma, no real lava, no
             // slime floor that bounces him off a tower).
@@ -179,6 +175,85 @@ public final class Schemes {
     /** Words that mark a part as part of the face, whose colour a scheme never changes. */
     static final List<String> FACE = List.of("eye", "pupil", "iris", "mouth", "teeth", "tooth", "tongue",
             "nose", "nostril", "brow", "lash", "fang", "beak", "cheek", "smile", "lip");
+
+    // ── a world's own palette, inline (#178): no scheme is registered, so the player's list and tree never change ──
+
+    /**
+     * The Builder spec opt a world's own make carries its colours in ({@code BuilderMake.forWorld} only; a player's
+     * spec has it taken off by {@link BuilderAllowlist#capped(BuilderSpec)}): {@code "#RRGGBB,#RRGGBB,#RRGGBB"} (main,
+     * accent, trim), optionally {@code ";block,block,block"} for a building, each block one the core's own schemes
+     * already build in. Documented in {@code docs/EXTENDING.md}.
+     */
+    public static final String PALETTE_OPT = "palette";
+
+    private static final java.util.regex.Pattern HEX = java.util.regex.Pattern.compile("#[0-9A-Fa-f]{6}");
+
+    /** Every block the core's own schemes build in: the reviewed set ("nothing that hurts or moves him"). */
+    public static java.util.Set<String> reviewedBlocks() {
+        java.util.Set<String> out = new java.util.LinkedHashSet<>();
+        for (Scheme s : ALL) {
+            out.add(s.mainBlock());
+            out.add(s.accentBlock());
+            out.add(s.trimBlock());
+        }
+        out.remove(null);
+        return out;
+    }
+
+    /**
+     * {@code palette} read, or null when it is not one: exactly three {@code #RRGGBB} colours, and, after a {@code ;},
+     * exactly three blocks from {@link #reviewedBlocks()}. Without blocks, a building made with it keeps its own.
+     */
+    public static Scheme parsePalette(String palette) {
+        if (palette == null || palette.isBlank()) {
+            return null;
+        }
+        String[] halves = palette.strip().split(";", -1);
+        if (halves.length > 2) {
+            return null;
+        }
+        String[] c = halves[0].split(",", -1);
+        if (c.length != 3) {
+            return null;
+        }
+        for (int i = 0; i < 3; i++) {
+            c[i] = c[i].strip();
+            if (!HEX.matcher(c[i]).matches()) {
+                return null;
+            }
+        }
+        String[] b = {null, null, null};
+        if (halves.length == 2) {
+            b = halves[1].split(",", -1);
+            if (b.length != 3) {
+                return null;
+            }
+            java.util.Set<String> ok = reviewedBlocks();
+            for (int i = 0; i < 3; i++) {
+                b[i] = b[i].strip();
+                if (!ok.contains(b[i])) {
+                    return null;
+                }
+            }
+        }
+        return new Scheme("palette", "", c[0].toUpperCase(Locale.ROOT), c[1].toUpperCase(Locale.ROOT),
+                c[2].toUpperCase(Locale.ROOT), b[0], b[1], b[2], List.of());
+    }
+
+    /**
+     * The scheme {@code spec} is made in: its inline {@link #PALETTE_OPT} when it carries one (a world's own make),
+     * else its named scheme ({@link #byId}), else null. The one way the lowering asks.
+     */
+    public static Scheme resolve(BuilderSpec spec) {
+        if (spec == null) {
+            return null;
+        }
+        String palette = spec.opt(PALETTE_OPT);
+        if (!palette.isEmpty()) {
+            return parsePalette(palette);
+        }
+        return byId(spec.scheme());
+    }
 
     public static Scheme byId(String id) {
         if (id == null) {
