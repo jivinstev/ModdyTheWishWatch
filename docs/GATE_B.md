@@ -224,6 +224,19 @@ python3 tools/gate/gate.py run --plan /tmp/cm/plan.json --job 0 --label job-0-r0
 python3 tools/gate/gate.py covmap-merge --plan /tmp/cm/plan.json --out /tmp/cm/map /tmp/cm/j0
 ```
 
+## Gate B on other platforms
+
+Everything above runs on ubuntu x64. `.github/workflows/platform-smoke.yml` (docs/RELEASING.md, "Platform smoke")
+runs a small part of the tier on windows-latest (x64), macos-14 (arm64) and ubuntu-24.04-arm (arm64), weekly on
+`main` and by hand on any ref: `gate.py run --kind platform --classes NoPythonGameTest,DatapackGameTest,
+BuilderMakeGameTest,ApprenticeGameTest,WishStoreFileGameTest`, with the same checks as any job (every class given ran,
+every test it registered ran, a failure retried once by itself). The list is the workflow's `SMOKE_CLASSES`, each class
+with the platform-sensitive path it covers; the tests stay in the shard `GateShardsTest` gives them, so the nightly
+tier runs them too. On Windows `--no-python`'s stubs cannot shadow `python.exe`; `NoPythonGameTest` still holds the
+game to starting no Python there. The same workflow boots the release jar on a real NeoForge server on each of those
+platforms, which is where the Apprentice's ONNX Runtime native library is proved (Gate B never loads the model: it
+must not depend on a download).
+
 ## Targeted Gate B
 
 `gate.py select --base origin/main [--head REV] --map map.json.gz` lists the GameTest classes a change can reach,
