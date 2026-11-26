@@ -7,7 +7,8 @@
 #
 #   jar       the release jar, built from the ref on ubuntu by tools/store-release.sh (the same build and checks a
 #             release runs), with the NeoForge and Java versions the ref names.
-#   server    windows-latest (x64), macos-14 (arm64), ubuntu-24.04-arm (arm64), each on its own JDK:
+#   server    windows-latest (x64) and ubuntu-24.04-arm (arm64), required; macos-14 (arm64), the same tests but
+#             optional (continue-on-error: its runners are scarce). Each on its own JDK:
 #             1. tools/platform-smoke.py server: the official NeoForge installer installs a real server, the release
 #                jar goes in mods/, and the server boots twice. RED unless the Apprentice's model loads through this
 #                platform's ONNX Runtime native library and reads a clause ("apprentice layer: on"), the native file
@@ -118,7 +119,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-latest, macos-14, ubuntu-24.04-arm]
+        # windows-latest and ubuntu-24.04-arm are REQUIRED: a red one fails the run. macos-14 runs every test the
+        # others do, but its runners are scarce, so a red or unscheduled macOS leg is reported and does not fail it.
+        os: [windows-latest, ubuntu-24.04-arm, macos-14]
+        include:
+          - os: macos-14
+            optional: true
+    continue-on-error: ${{ matrix.optional == true }}
     runs-on: ${{ matrix.os }}
     timeout-minutes: 90
     defaults:

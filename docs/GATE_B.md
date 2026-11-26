@@ -227,7 +227,8 @@ python3 tools/gate/gate.py covmap-merge --plan /tmp/cm/plan.json --out /tmp/cm/m
 ## Gate B on other platforms
 
 Everything above runs on ubuntu x64. `.github/workflows/platform-smoke.yml` (docs/RELEASING.md, "Platform smoke")
-runs a small part of the tier on windows-latest (x64), macos-14 (arm64) and ubuntu-24.04-arm (arm64), weekly on
+runs a small part of the tier on windows-latest (x64) and ubuntu-24.04-arm (arm64), required, and macos-14
+(arm64), optional, weekly on
 `main` and by hand on any ref: `gate.py run --kind platform --classes NoPythonGameTest,DatapackGameTest,
 BuilderMakeGameTest,ApprenticeGameTest,WishStoreFileGameTest`, with the same checks as any job (every class given ran,
 every test it registered ran, a failure retried once by itself). The list is the workflow's `SMOKE_CLASSES`, each class

@@ -94,7 +94,7 @@ that changes the workflow or `tools/platform-smoke.py` runs it too.
 | Job | Runs on | What it proves |
 |---|---|---|
 | release jar | ubuntu-24.04 | `tools/store-release.sh` builds and checks the jar the ref would release, model included |
-| server | windows-latest (x64), macos-14 (arm64), ubuntu-24.04-arm (arm64) | the official NeoForge installer installs a real server; the release jar boots in it twice (`tools/platform-smoke.py server`). Red unless ONNX Runtime's native library for that platform loads and the Apprentice's model reads a clause (`apprentice layer: on`), the native file is where the mod unpacked it, the world saves, stops cleanly and loads again |
+| server | windows-latest (x64) and ubuntu-24.04-arm (arm64), required; macos-14 (arm64), the same tests, optional (`continue-on-error`: scarce runners, a red macOS leg is reported and does not fail the run) | the official NeoForge installer installs a real server; the release jar boots in it twice (`tools/platform-smoke.py server`). Red unless ONNX Runtime's native library for that platform loads and the Apprentice's model reads a clause (`apprentice layer: on`), the native file is where the mod unpacked it, the world saves, stops cleanly and loads again |
 | server, GameTest smoke | the same three | `gate.py run --kind platform` from source on that machine: `NoPythonGameTest` and `DatapackGameTest` (the bundled CBScript compiler), `BuilderMakeGameTest` (a Builder make), `ApprenticeGameTest` (the matcher), `WishStoreFileGameTest` (stores saved to the world and read back) |
 | client | windows-latest | a Gate C film (`vanillastage`) in a real client under Mesa's llvmpipe software OpenGL, its DLLs beside the JDK's `java.exe` |
 
