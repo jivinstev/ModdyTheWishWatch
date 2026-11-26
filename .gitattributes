@@ -27,3 +27,10 @@ corpus/gate-a-ledger.jsonl merge=union
 # THE GATE HISTORY STORE (tools/gate_ledger.py): run files are new paths and never conflict; a month file is
 # written by the roll-up, which may run on two branches for one month. Same facts, keyed by runId, deduped on read.
 corpus/gate-history/*.jsonl merge=union
+
+# THE BUNDLED CBSCRIPT COMPILER READS ITS OWN RESOURCES LINE BY LINE, SPLIT ON "\n" (parse/Tables.java reads
+# parser_tables.txt). A Windows checkout with core.autocrlf=true gives those files CRLF, and every compile then fails
+# ("NumberFormatException: For input string: \"27\r\""), so a Windows source build cannot make a datapack. The release
+# jar is built on Linux and never had it. Keep the vendored tree LF on every checkout until moddy-cbscript reads any
+# line ending and is re-vendored (tools/refresh-cbscript-bundle.sh); found by the platform smoke (docs/RELEASING.md).
+third_party/moddy-cbscript/** text=auto eol=lf
