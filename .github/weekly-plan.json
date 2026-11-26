@@ -10,6 +10,48 @@
       "automerge": true,
       "head": "neoforge-1.21.8",
       "ledger_issues": [],
+      "post_merge": [
+        {
+          "owns": [
+            "third_party/moddy-cbscript/",
+            "src/main/resources/tools/cbscript.SOURCE",
+            "src/main/resources/precompiled/"
+          ],
+          "run": [
+            "bash",
+            "-c",
+            "tools/refresh-cbscript-bundle.sh --ref \"$1\" && tools/precompile-ready-mades.sh --store",
+            "refresh-cbscript",
+            "{ref}"
+          ],
+          "source": {
+            "commit_key": "commit",
+            "file": "src/main/resources/tools/cbscript.SOURCE",
+            "ref": "{ref}",
+            "repo_key": "repo"
+          },
+          "values": {
+            "1.21.10": {
+              "ref": "java-port-1.21.10"
+            },
+            "1.21.11": {
+              "ref": "java-port-1.21.11"
+            },
+            "1.21.8": {
+              "ref": "master"
+            },
+            "26.1.2": {
+              "ref": "java-port-26.1.2"
+            },
+            "26.2": {
+              "ref": "java-port-26.2"
+            },
+            "26.3": {
+              "ref": "java-port-26.3"
+            }
+          }
+        }
+      ],
       "release_bump": {
         "file": "gradle.properties",
         "key": "mod_version"
@@ -51,7 +93,7 @@
     }
   ],
   "migrator_repo": "jivinstev/mc-mod-version-upgrade",
-  "migrator_sha": "9d384752c0356ecbda47d537df712ab9310b4ad9",
+  "migrator_sha": "d17ed7fa3226d127b4c89a3a0187c025be0861e6",
   "plan_owner": "jivinstev",
   "round": {
     "cron": "CRON_TZ=America/Los_Angeles 21 8 * * 3",
