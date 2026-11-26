@@ -39,6 +39,22 @@ public final class CbScriptCompiler {
     /** A valid datapack namespace / feature id: lowercase letter then lowercase/digits/underscore. */
     public static final Pattern VALID_ID = Pattern.compile("[a-z][a-z0-9_]{0,47}");
 
+    /**
+     * Is this a datapack id the mod can use? {@link #VALID_ID}, and not a name Windows reserves for a device: the id names
+     * a folder and its files ({@code wish-datapacks/<id>/<id>.zip}), and {@code con} or {@code nul} would be a device on
+     * a Windows player's disk ({@code store/SafeFileName}).
+     */
+    public static boolean validId(String featureId) {
+        return featureId != null && VALID_ID.matcher(featureId).matches()
+                && !com.moddingfromamod.store.SafeFileName.isWindowsReserved(featureId);
+    }
+
+    /** What a refused id is told, the same from every entry point. */
+    public static String invalidIdMessage(String featureId) {
+        return "Invalid feature id '" + featureId + "'. Use lowercase letters, digits and underscores, starting with a "
+                + "letter (e.g. 'ice_bomb'), and not a name Windows keeps for a device (con, nul, aux, prn, com1, lpt1...).";
+    }
+
     /** A compile that runs longer is stopped and refused (the compiler checks; a runaway program cannot hang a game). */
     private static final Duration COMPILE_TIMEOUT = Duration.ofSeconds(30);
 
@@ -70,7 +86,7 @@ public final class CbScriptCompiler {
      * Compile {@code source} into a datapack zip at {@code outZip}.
      *
      * @param workDir a scratch/persist directory the temp source + copied .cblib libraries live in
-     * @param featureId the datapack namespace (also the temp filename); must match {@link #VALID_ID}
+     * @param featureId the datapack namespace (also the temp filename); must pass {@link #validId}
      * @param description the datapack description (for pack.mcmeta)
      * @param source the CBScript body (no {@code dir}/{@code desc} header needed)
      * @param outZip where to write the compiled datapack zip
@@ -89,10 +105,8 @@ public final class CbScriptCompiler {
      */
     public static CompileResult compile(Path workDir, String featureId, String description,
                                         String source, Path outZip, ReadyMadeSkeleton.Skeleton skeleton) {
-        if (!VALID_ID.matcher(featureId == null ? "" : featureId).matches()) {
-            return CompileResult.failure(featureId,
-                    "Invalid feature id '" + featureId + "'. Use lowercase letters, digits and "
-                    + "underscores, starting with a letter (e.g. 'ice_bomb').", List.of());
+        if (!validId(featureId)) {
+            return CompileResult.failure(featureId, invalidIdMessage(featureId), List.of());
         }
         // CHILD SAFETY, L0 over the words this datapack will say at RUNTIME (plan §12 decision 10).
         //

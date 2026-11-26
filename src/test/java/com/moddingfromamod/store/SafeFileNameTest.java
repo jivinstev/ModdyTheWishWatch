@@ -53,8 +53,60 @@ public class SafeFileNameTest {
     @DisplayName("every awkward key becomes a Windows-safe name: separators, wildcards, dots at the ends, devices")
     void awkwardKeysAreSafe() {
         for (String k : List.of("id:x", "a/b", "a\\b", "what?", "star*", "<x>", "\"q\"", "p|q", ".hidden", "trail.",
-                "space ", "con", "nul.json", "com1", "lpt9", "", "%", "é", "a\tb", "日本")) {
+                "space ", "con", "nul.json", "com1", "lpt9", "CON", "aux.x", "a.", "a..", "...", "", "%", "é", "a\tb", "日本")) {
             assertWindowsSafe(SafeFileName.of(k) + ".json");
+        }
+    }
+
+    @Test
+    @DisplayName("a long key is cut to a bounded name that still never meets another key's")
+    void longKeysAreBounded() {
+        String a = "id:" + "a very long typed name ".repeat(20);
+        String b = a + "!";
+        String na = SafeFileName.of(a);
+        assertTrue(na.length() <= SafeFileName.MAX, na.length() + " characters");
+        assertWindowsSafe(na + ".json");
+        assertNotEquals(na, SafeFileName.of(b), "two long keys that share their start");
+        assertTrue(na.contains("~"));
+        String plainLong = "x".repeat(SafeFileName.MAX);
+        assertEquals(plainLong, SafeFileName.of(plainLong), "a key at the limit is not cut");
+        assertNotEquals(plainLong + "x", SafeFileName.of(plainLong + "x"));
+    }
+
+    @Test
+    @DisplayName("device names are found in any case and with any extension; others are not")
+    void reservedNames() {
+        for (String r : List.of("con", "CON", "nul.json", "aux.x.y", "com1", "lpt9.undo-123", "prn")) {
+            assertTrue(SafeFileName.isWindowsReserved(r), r);
+        }
+        for (String ok : List.of("cone", "console", "con_", "com10", "lpt", "a.con", "", "nul_x")) {
+            assertFalse(SafeFileName.isWindowsReserved(ok), ok);
+        }
+    }
+
+    @Test
+    @DisplayName("a label's stem: bounded, safe, never a device name, and a fallback when empty")
+    void labelStems() {
+        assertEquals("con_", SafeFileName.stem("con", 64, "photo"));
+        assertEquals("photo", SafeFileName.stem("", 64, "photo"));
+        assertEquals("a_b_c", SafeFileName.stem("A:b/c", 64, "photo"));
+        assertEquals(10, SafeFileName.stem("x".repeat(300), 10, "photo").length());
+        assertEquals("nu_", SafeFileName.stem("nul", 3, "photo"));
+        for (String l : List.of("con", "my photo!", "id:zap", "日本", "x".repeat(300), "trail.")) {
+            assertWindowsSafe(SafeFileName.stem(l, 64, "photo") + ".png");
+        }
+    }
+
+    @Test
+    @DisplayName("a segment: a valid name never moves (a fork key's ~ included); an invalid one is escaped")
+    void segments() {
+        for (String ok : List.of("spikor~1f2e3d4c", "castle_v2", "a.b", "pet-dragon")) {
+            assertEquals(ok, SafeFileName.segment(ok));
+        }
+        for (String bad : List.of("castle:v2", "tower.", "con", "", "a/b", "x".repeat(200))) {
+            String seg = SafeFileName.segment(bad);
+            assertNotEquals(bad, seg, bad);
+            assertWindowsSafe(seg);
         }
     }
 
