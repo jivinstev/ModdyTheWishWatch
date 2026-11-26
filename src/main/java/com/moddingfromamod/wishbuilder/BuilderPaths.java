@@ -42,13 +42,14 @@ public final class BuilderPaths {
         row("creature/animal/mobsize", false, true, "a real farm animal is a real mob: nothing of it is kept to change");
         row("creature/animal/acts", false, false, "a real mob is not kept to change; how it acts is read when made (#2402), and a typed change of it is #2352's backlog");
         row("creature/ready/abilities", true, true, "");
-        row("creature/ready/count", false, false, "how many to make is a new make, never a change of the ones he has");
+        row("creature/ready/count", false, false, "not on the make dialog since #103 (How strong took its place); said in typed words at make time (the Apprentice); how many to make is a new make, never a change of the ones he has");
         row("creature/ready/from", true, false, "a new make, not a change of his");
         row("creature/ready/mobsize", true, true, "");
         row("creature/ready/parts", true, true, "");
         row("creature/ready/powers", true, true, "");
         row("creature/ready/scheme", true, true, "");
         row("creature/ready/speed", true, true, "");
+        row("creature/ready/strength", true, true, "");
         row("creature/ready/temper", true, true, "");
         row("event/made_up/count", false, false, "how many to make is a new make, never a change of the ones he has");
         row("event/made_up/motion", true, false, "not read by a typed change yet: #2352");
@@ -85,6 +86,7 @@ public final class BuilderPaths {
         row("ride/ready/powers", true, true, "");
         row("ride/ready/scheme", true, true, "");
         row("ride/ready/speed", true, true, "");
+        row("ride/ready/strength", true, true, "");
         row("ride/ready/temper", true, true, "");
         row("rule/rule/does", true, false, "not read by a typed change yet: #2352");
         row("rule/rule/when", true, false, "not read by a typed change yet: #2352");

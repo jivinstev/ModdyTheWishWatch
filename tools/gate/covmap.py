@@ -128,20 +128,22 @@ def unplaced(m: Optional[dict], tier: Iterable[str]) -> List[str]:
     return sorted(c for c in tier if c not in placed)
 
 
-# Timer noise two maps of one commit may show (measured on the whole tier, four times, locally and on GitHub's
-# runners). Per class: at most NOISE_METHODS methods, or under 1 - NOISE_AGREEMENT of the class's methods (a
-# server-tick service whose period falls inside one run's window for the class). Beyond that, the noise is SPREAD, not
-# a property of a class: two full maps put a different handful of classes over the per-class allowance every time (9
-# locally, 6 on GitHub, none in common), so per run up to NOISE_CLASSES of the tier's classes (at least
-# NOISE_CLASSES_MIN) may go over it, by name, while the maps agree on at least NOISE_TOTAL of all class-method entries.
-# The ambient sets may differ by NOISE_AMBIENT of their size. A broken mapping process is far outside all of these:
-# with the batch order random (fixed by GameTestBatchOrderMixin), 264 of 360 classes went over, at 94% agreement.
-# A class that keeps going over is listed in corpus/gate-covmap-unstable.json with what was measured.
+# Timer noise two maps of one commit may show (measured on the whole tier: three full pairs with the batch order fixed
+# and the settle window, locally and on GitHub's runners). Per class: at most NOISE_METHODS methods, or under
+# 1 - NOISE_AGREEMENT of the class's methods (a server-tick service whose period falls inside one run's window for the
+# class). Beyond that the noise is SPREAD, not a property of a class: each pair put a different handful of classes over
+# the per-class allowance (9 of 360 at 99.14% agreement locally; 6 of 365 at 99.25% and 13 of 365 at 99.06% on the
+# runners; no class twice), and some of it is work the server thread runs from its queue, which no wait can see. So per
+# run up to NOISE_CLASSES of the tier's classes (at least NOISE_CLASSES_MIN) may go over it, by name, while the maps
+# agree on at least NOISE_TOTAL of all class-method entries; the ambient sets may differ by NOISE_AMBIENT of their size.
+# A broken mapping process is far outside all of these: with the batch order random (fixed by
+# GameTestBatchOrderMixin), 327 of 360 classes went over, at 90% agreement. A class that keeps going over is listed in
+# corpus/gate-covmap-unstable.json with what was measured.
 NOISE_METHODS = 5
 NOISE_AGREEMENT = 0.95
-NOISE_CLASSES = 0.02
+NOISE_CLASSES = 0.05
 NOISE_CLASSES_MIN = 3
-NOISE_TOTAL = 0.99
+NOISE_TOTAL = 0.985
 NOISE_AMBIENT = 0.005
 
 

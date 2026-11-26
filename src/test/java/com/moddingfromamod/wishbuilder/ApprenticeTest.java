@@ -238,6 +238,23 @@ class ApprenticeTest {
     }
 
     @Test
+    @DisplayName("#103: a Builder creature's dialog asks How strong, not How many; typed words still make several, and say its strength")
+    void typedWordsStillMakeSeveralCreatures() {
+        Apprentice.Answer cats = APPRENTICE.match("five giant cats");
+        Apprentice.Pick pick = cats.offers().get(0);
+        assertEquals("species/cat", pick.first("from"));
+        assertEquals("5", pick.first("count"), "the count is read from his words, with no control on the dialog");
+        BuilderSpec spec = ApprenticeMake.spec(BuilderAllowlist.REVIEWED, LibraryPresets.SHIPPED, TREE, pick);
+        assertEquals(5, spec.count(), "and five are made");
+        MakeFit.Fitted three = MakeFit.fit(spec, java.util.Map.of(MakeFacts.COUNT_MADE, 3.0));
+        assertTrue(three.fits() && three.spec().count() == 3, "a world's countMade fits it as before: " + three);
+        // and his words say how strong
+        Apprentice.Pick strong = APPRENTICE.match("a super strong cat").offers().get(0);
+        assertEquals("3", strong.first("strength"));
+        assertEquals("3", ApprenticeMake.spec(BuilderAllowlist.REVIEWED, LibraryPresets.SHIPPED, TREE, strong).opt("strength"));
+    }
+
+    @Test
     @DisplayName("#2272: a plural reads as its thing")
     void pluralsRead() {
         assertEquals("mob:minecraft:zombie", APPRENTICE.match("two zombies").offers().get(0).first("from"));
