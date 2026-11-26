@@ -131,7 +131,11 @@ public final class LiveFitWatch {
 
     /** A body joined inside a wish's spawn scope and was admitted ({@code mob/WishMobLimit}). */
     public static void admitted(Entity e) {
-        if (e instanceof LivingEntity mob && !(e instanceof Player) && MakeGate.anyWorld()) {
+        if (!(e instanceof LivingEntity mob) || e instanceof Player) {
+            return;
+        }
+        track(mob);   // indexed whether or not a world answers now: a region that appears later still finds it
+        if (MakeGate.anyWorld()) {
             synchronized (PENDING) {
                 PENDING.put(mob, Boolean.TRUE);
             }
