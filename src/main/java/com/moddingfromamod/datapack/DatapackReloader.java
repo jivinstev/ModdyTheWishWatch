@@ -628,13 +628,20 @@ public final class DatapackReloader {
      * another thread, the same on the server thread, waited for.
      */
     static void releaseLoaded(MinecraftServer server, String featureId) {
+        releaseLoaded(server, List.of(featureId));
+    }
+
+    /** {@link #releaseLoaded(MinecraftServer, String)} for several packs in one reload (a boot's install). */
+    static void releaseLoaded(MinecraftServer server, List<String> featureIds) {
         Runnable release = () -> {
             java.util.concurrent.CompletableFuture<Void> current = inFlight;
             if (current != null) {
                 server.managedBlock(current::isDone);
             }
             List<String> keep = new ArrayList<>(server.getPackRepository().getSelectedIds());
-            keep.remove(packId(featureId));
+            for (String featureId : featureIds) {
+                keep.remove(packId(featureId));
+            }
             java.util.concurrent.CompletableFuture<Void> without = server.reloadResources(keep);
             trackReload(without);
             server.managedBlock(without::isDone);
