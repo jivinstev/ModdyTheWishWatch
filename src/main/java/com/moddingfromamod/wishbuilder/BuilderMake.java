@@ -607,6 +607,11 @@ public final class BuilderMake {
                         keep(who, madeId, BuilderLowering.refOf(made, madeId), asked, wishId);
                         if (landing != com.moddingfromamod.world.Landing.LANDS) {
                             handOver(server, who, madeId, spec, landing);
+                        } else if (editOf == null && keepable(spec)) {
+                            // a new thing that landed is also a hotbar wish in his Wish Bag, to make again any time
+                            com.moddingfromamod.wish.WishHotbar.pinToBag(server, who, BuilderAgain.recipeId(madeId),
+                                    BuilderLowering.label(spec),
+                                    com.moddingfromamod.marshal.WatchIcons.forKind(BuilderLowering.kindOf(spec)));
                         }
                     }
                     ASKED.remove(madeId);
