@@ -46,6 +46,20 @@ public final class MechanismWorld {
             BlockPos at = LevelView.bp(c.pos());
             placed.add(new Placed(at, level.getBlockState(at)));
             level.setBlock(at, put, Block.UPDATE_ALL);
+            if (!c.items().isEmpty()
+                    && level.getBlockEntity(at) instanceof net.minecraft.world.Container box) {
+                int slot = 0;
+                for (String part : c.items().split(";")) {
+                    String[] ic = part.split("\\*");
+                    var item = BuiltInRegistries.ITEM.getValue(net.minecraft.resources.ResourceLocation.parse(ic[0]));
+                    int n = ic.length > 1 ? Integer.parseInt(ic[1]) : 1;
+                    while (n > 0 && slot < box.getContainerSize()) {
+                        int k = Math.min(n, item.getDefaultMaxStackSize());
+                        box.setItem(slot++, new net.minecraft.world.item.ItemStack(item, k));
+                        n -= k;
+                    }
+                }
+            }
         }
         return placed;
     }
@@ -53,7 +67,13 @@ public final class MechanismWorld {
     /** Puts back what each position held, last placed first. */
     public static void takeBack(ServerLevel level, List<Placed> placed) {
         removeProofStands(level, placed);
-        // first clear everything we placed, so no piston or torch reacts to a half-restored circuit
+        // first clear everything we placed, so no piston or torch reacts to a half-restored circuit. A container we
+        // filled is emptied first, or removing it would drop its contents on the ground (litter).
+        for (int i = placed.size() - 1; i >= 0; i--) {
+            if (level.getBlockEntity(placed.get(i).pos()) instanceof net.minecraft.world.Container box) {
+                box.clearContent();
+            }
+        }
         for (int i = placed.size() - 1; i >= 0; i--) {
             level.setBlock(placed.get(i).pos(), net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(),
                     Block.UPDATE_CLIENTS);

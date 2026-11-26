@@ -20,7 +20,7 @@ public final class MechanismPlanner {
     }
 
     /** The signal the far end of a module's bridge needs at its port (3 wire beyond it, at least 1 left). */
-    public static final int PORT_NEED = 5;
+    public static final int PORT_NEED = 9;
 
     private MechanismPlanner() {
     }

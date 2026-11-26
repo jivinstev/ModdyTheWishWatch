@@ -28,7 +28,11 @@ public final class ChannelRouter {
     public static final int MAX_LENGTH = 120;
 
     /** What the route found. Empty cells and a reason when it found nothing. */
-    public record Route(List<RsCell> cells, int arrival, int length, String why) {
+    public record Route(List<RsCell> cells, int arrival, int length, String why, Map<RsPos, Integer> strengths) {
+        public Route(List<RsCell> cells, int arrival, int length, String why) {
+            this(cells, arrival, length, why, Map.of());
+        }
+
         public boolean ok() {
             return why == null;
         }
@@ -49,6 +53,15 @@ public final class ChannelRouter {
      */
     public static Route route(WorldView world, int y, RsPos start, int strength, List<RsPos> goals, int need,
                               Set<RsPos> ownCells, Set<RsPos> foreign) {
+        return route(world, y, start, strength, goals, need, ownCells, Set.of(), foreign);
+    }
+
+    /**
+     * As above, with {@code inert}: planned cells the wire may not occupy but may pass beside, because touching them
+     * changes nothing (a repeater's side, a stone support). Only wire and strongly powered blocks need keeping apart.
+     */
+    public static Route route(WorldView world, int y, RsPos start, int strength, List<RsPos> goals, int need,
+                              Set<RsPos> ownCells, Set<RsPos> inert, Set<RsPos> foreign) {
         Set<RsPos> goalSet = new HashSet<>(goals);
         int minX = start.x(), maxX = start.x(), minZ = start.z(), maxZ = start.z();
         for (RsPos g : goals) {
@@ -69,7 +82,7 @@ public final class ChannelRouter {
                     continue;
                 }
                 boolean goal = goalSet.contains(n);
-                if (!goal && !free(world, n, ownCells, foreign)) {
+                if (!goal && !free(world, n, ownCells, inert, foreign)) {
                     continue;
                 }
                 if (touchesOwnPath(n, c, parent)) {
@@ -104,6 +117,7 @@ public final class ChannelRouter {
     /** Wire (and repeaters where the signal runs low) along {@code path}; path[0] is the start, already laid. */
     static Route lay(WorldView world, List<RsPos> path, int strength, int need) {
         List<RsCell> cells = new ArrayList<>();
+        Map<RsPos, Integer> strengths = new HashMap<>();
         int s = strength;
         for (int i = 1; i < path.size(); i++) {
             RsPos p = path.get(i);
@@ -125,6 +139,7 @@ public final class ChannelRouter {
                 cells.add(RsCell.of(p, "minecraft:redstone_wire", RsCell.Role.CHANNEL));
                 s--;
             }
+            strengths.put(p, s);
             if (s < 1) {
                 return new Route(List.of(), 0, path.size(), "the signal would die before reaching the mechanism "
                         + "(no straight stretch for a repeater)");
@@ -134,10 +149,14 @@ public final class ChannelRouter {
             return new Route(List.of(), s, path.size(), "the signal arrives at " + s + " but the mechanism needs "
                     + need + " (no straight stretch for a repeater near the end)");
         }
-        return new Route(cells, s, path.size(), null);
+        return new Route(cells, s, path.size(), null, strengths);
     }
 
     static boolean free(WorldView world, RsPos n, Set<RsPos> own, Set<RsPos> foreign) {
+        return free(world, n, own, Set.of(), foreign);
+    }
+
+    static boolean free(WorldView world, RsPos n, Set<RsPos> own, Set<RsPos> inert, Set<RsPos> foreign) {
         WorldView.Kind k = world.kind(n);
         if (k != WorldView.Kind.AIR && k != WorldView.Kind.NATURAL) {
             return false;
@@ -152,7 +171,8 @@ public final class ChannelRouter {
         }
         for (RsDir d : RsDir.values()) {
             RsPos side = n.step(d);
-            if (world.kind(side) == WorldView.Kind.FLUID || foreign.contains(side) || own.contains(side)) {
+            if (world.kind(side) == WorldView.Kind.FLUID || foreign.contains(side)
+                    || own.contains(side) && !inert.contains(side)) {
                 return false;
             }
             // wire also connects one up and one down at a step: keep those clear of other redstone
