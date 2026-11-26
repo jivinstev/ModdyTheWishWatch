@@ -56,6 +56,8 @@ promote by unticking "pre-release" in the GitHub UI. That publishes too, but it 
 
 A hotfix is a **pair of pull requests: `main` first, then `neoforge-1.21.8`** carrying the same commits.
 `release-line.yml` refuses a commit on `neoforge-1.21.8` that has no equal on `main`, so the `main` one comes first.
+Two kinds of commit are exempt: Port CI's install-manifest refresh, and the weekly round's records, which change
+only `.port/KNOWN-ISSUES.json` and/or the README's Ports block (between the `ports` markers).
 Bump the version on `main` in the same pair (rule step 1), then cut the 1.21.8 release. The fix reaches the other
 versions with the next weekly round; if it can't wait, the owner presses **Run now** on the round task at
 https://claude.ai/code/routines. Never fix the higher version branches by hand.
