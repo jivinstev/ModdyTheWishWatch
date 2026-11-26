@@ -38,6 +38,31 @@ One tool, `build_mechanism`:
 It answers with what it built and what it proved (§4). New mechanisms join the list; the tool never takes free-form
 block lists.
 
+## 2½. How a mechanism is built (as implemented on this branch)
+
+One design serves every output, so a new kind is a few lines, not a new circuit:
+
+- **Devices** (`redstone/DeviceModule`, `Devices`): a lamp, an iron door, a fence gate, a trapdoor, a dispenser, a dropper,
+  a note block or a piston is switched by powering the block it stands on (its *feed*). Under each feed is a torch
+  column: two torches (four blocks down) make the device follow the switch, one torch (two down) inverts it. A repeater,
+  never a wire, enters each column from the side, so devices can stand side by side. All the repeaters' input wires are
+  joined by one buried bus: a chain from a hub spine (three ports where controls arrive) to every device, each leg
+  arriving strong enough for the next.
+- **Piston doors** (`PistonDoor`): opposing sticky pistons with a torch tower behind each side. Two torches make a switch
+  CLOSE the door; three make it OPEN the door (a button or plate door). Every torch is placed in its resting state.
+- **Controls** (`Control`): a lever, button or plate strongly powers the block it is on; wire under that block steps down
+  through buried pockets to the channel. A control can be mounted low on a wall (a secret button, its wire down through
+  the wall's footing), and any button or plate can TOGGLE (a waxed copper bulb read by a comparator).
+- **Placement**: a building's doorway is found from its own box (`Doorway.inBuilding`), a real door first; a wall seen
+  from a spot by a ray that never passes through a wall. Lamps go flush into a floor or the ground; dispensers stand on the
+  ground facing up, a compass way or a place.
+- **Rules the router keeps** (`ChannelRouter`): wire never runs beside another wire it should not join, nor beside a
+  strongly powered block (a bus beside a column's base latched lamps on); it may pass beside a repeater's side or a
+  support. A port never sits beside a wire end that feeds a tower (a corner stops pointing into it).
+
+The tool needs about five blocks of ground under a floor for its wiring; a vanilla superflat world (three layers of dirt
+over bedrock) is too shallow, and the tool says so.
+
 ## 3. Geometry rules the planner enforces
 
 Each rule is a unit test in the pure planner (`redstone/`), stated in Minecraft terms:
@@ -115,6 +140,7 @@ else. The hit rate counts PASS only.
 |---|---|---|
 | R0 | 2×2 flush piston door in an existing wall; levers in front and inside; hidden wire | GameTests for each placement case, plus one real grant of a door wish, filmed |
 | R1 | iron door, gates, lamps (switches and daylight), piston wall (bookshelf door), trap floor, arrow and firework dispensers, note blocks (piano, doorbell), fountain, water lift | a GameTest per mechanism and control, and the evaluation set's R1 wishes measured |
+| stage 1 (now) | R1's modules and controls, button/plate doors that open, toggles, hidden switches, and a logic bridge (a datapack condition switching the redstone); then a seeded random sample of 40 wishes granted and graded | go to R2 if covered wishes pass ≥ ~80% and the sample projects to ≥ 55–60% |
 | R2 | 3×3 door with a sequencer, hidden stairs, piston bridge, minecart station, magma grinder, sugar cane farm, furnace array, alarm (clock, cap), short note songs, TNT trap and cannon | **≥ 60% on the full-sentence set** |
 | R2b | short, misspelt proxies of the same wishes; routing between redstone and the other wish kinds | ≥ 60% on proxies |
 | R3 | combination lock, item sorter, slot machine, chicken cooker, roller coaster, datapack-assisted parts (who may open, scores) | measured |
