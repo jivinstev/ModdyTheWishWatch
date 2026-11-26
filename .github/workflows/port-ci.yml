@@ -113,11 +113,11 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0          # the author's branch is needed: mixins they left unlisted stay exempt
-      - name: Port CI kit v89 (pinned by sha256)
+      - name: Port CI kit v92 (pinned by sha256)
         run: |
           curl -fsSL -o "$RUNNER_TEMP/kit.tar.gz" \
-            "https://github.com/jivinstev/mc-mod-version-upgrade/releases/download/port-ci-kit-v89/port-ci-kit-v89.tar.gz"
-          echo "7cc4feafd4c3ede4c57e4b0e15689fbff9c47bd95593c8bbbd2581c7c7c3940d  $RUNNER_TEMP/kit.tar.gz" | sha256sum -c -
+            "https://github.com/jivinstev/mc-mod-version-upgrade/releases/download/port-ci-kit-v92/port-ci-kit-v92.tar.gz"
+          echo "d31c12e809c95089d527b4b050f8772eba422e8ea21a03b87207a76433c92386  $RUNNER_TEMP/kit.tar.gz" | sha256sum -c -
           mkdir -p .port-tools && tar -xzf "$RUNNER_TEMP/kit.tar.gz" -C .port-tools
       - uses: actions/setup-java@v4
         with:
@@ -203,6 +203,7 @@ jobs:
           path: |
             ${{ runner.temp }}/port-ci/*.log
             ${{ runner.temp }}/port-ci/*.jsonl
+            ${{ runner.temp }}/port-ci/gate-c-out/
             ${{ runner.temp }}/gates.md
             ${{ runner.temp }}/built-tree.txt
           if-no-files-found: ignore
@@ -221,11 +222,52 @@ jobs:
             build/libs/*.jar
             !build/libs/*-sources.jar
 
+  release-gate:
+    # The fork's own check before a release (.github/port-release-gate.json, read when this workflow was
+    # generated: regenerate it after changing that file). Its script is the fork's own code, trusted like its Gradle
+    # build; it runs as an argv with the commit being released (GATE_SHA: on a from_run release this dispatch's commit,
+    # the tree released) and may find or start a workflow run of this repository (actions: write), never holding the
+    # release's contents: write. The release needs it to succeed: a failure, a skip or a cancel here releases nothing.
+    # It runs exactly when the release would, except on a dep_override run, which never releases.
+    needs: gates
+    if: ${{ !cancelled() && github.event_name != 'release' && (startsWith(github.ref, 'refs/tags/') || inputs.release || inputs.from_run) && !inputs.dep_override && (needs.gates.result == 'success' || (inputs.from_run && needs.gates.result == 'skipped')) }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+    permissions:
+      contents: read
+      actions: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - name: Release gate (tools/gate/gate.py)
+        env:
+          GATE_SHA: ${{ github.sha }}
+          GATE_REF: ${{ github.ref_name }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set +e                       # GITHUB_REPOSITORY: the runner's own
+          log="$RUNNER_TEMP/release-gate.log"
+          python3 'tools/gate/gate.py' 'release-gate' '--wait' '150' 2>&1 | tee "$log"
+          rc=${PIPESTATUS[0]}
+          if [ "$rc" -ne 0 ]; then
+            {
+              echo "### Release gate failed: tools/gate/gate.py exited $rc, nothing released"
+              echo
+              echo '```'
+              tail -n 50 "$log"
+              echo '```'
+            } >> "$GITHUB_STEP_SUMMARY"
+            echo "::error::release gate tools/gate/gate.py exited $rc: nothing released"
+            exit "$rc"
+          fi
+          echo "Release gate passed: tools/gate/gate.py at $GATE_SHA" >> "$GITHUB_STEP_SUMMARY"
+
   release:
     # from_run: the gates (and shipped) jobs are skipped and their jars and gate logs come from that earlier run; a
     # skipped job is accepted then only. A run with dep_override is refused below.
-    needs: gates
-    if: ${{ !cancelled() && github.event_name != 'release' && (startsWith(github.ref, 'refs/tags/') || inputs.release || inputs.from_run) && (needs.gates.result == 'success' || (inputs.from_run && needs.gates.result == 'skipped')) }}
+    needs: [gates, release-gate]
+    if: ${{ !cancelled() && github.event_name != 'release' && (startsWith(github.ref, 'refs/tags/') || inputs.release || inputs.from_run) && (needs.gates.result == 'success' || (inputs.from_run && needs.gates.result == 'skipped')) && needs.release-gate.result == 'success' }}
     runs-on: ubuntu-24.04
     permissions:
       contents: write
@@ -434,12 +476,12 @@ jobs:
       # branch only, and only where the branch has a manifest. The commit sits on top of the
       # tag, so publish (needs: promote) still finds the tag in the branch's history. A failure here is reported and
       # never stops publish.
-      - name: Port CI kit v89 (pinned by sha256)
+      - name: Port CI kit v92 (pinned by sha256)
         if: ${{ github.ref_name == 'neoforge-1.21.8' && hashFiles('.github/port-install.json') != '' }}
         run: |
           curl -fsSL -o "$RUNNER_TEMP/kit.tar.gz" \
-            "https://github.com/jivinstev/mc-mod-version-upgrade/releases/download/port-ci-kit-v89/port-ci-kit-v89.tar.gz"
-          echo "7cc4feafd4c3ede4c57e4b0e15689fbff9c47bd95593c8bbbd2581c7c7c3940d  $RUNNER_TEMP/kit.tar.gz" | sha256sum -c -
+            "https://github.com/jivinstev/mc-mod-version-upgrade/releases/download/port-ci-kit-v92/port-ci-kit-v92.tar.gz"
+          echo "d31c12e809c95089d527b4b050f8772eba422e8ea21a03b87207a76433c92386  $RUNNER_TEMP/kit.tar.gz" | sha256sum -c -
           mkdir -p .port-tools && tar -xzf "$RUNNER_TEMP/kit.tar.gz" -C .port-tools
       - name: Refresh the install manifest
         if: ${{ github.ref_name == 'neoforge-1.21.8' && hashFiles('.github/port-install.json') != '' }}
@@ -451,7 +493,7 @@ jobs:
           set -euo pipefail
           if ! printf '%s' "$TAG" | grep -Eq '^[A-Za-z0-9._+-]+$'; then echo "::error::not a release tag: $TAG"; exit 1; fi
           if [ ! -f .port-tools/tools/port-manifest.py ]; then
-            echo "::warning::Port CI kit v89 has no port-manifest.py: regenerate this workflow with a newer kit"; exit 0
+            echo "::warning::Port CI kit v92 has no port-manifest.py: regenerate this workflow with a newer kit"; exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
@@ -480,11 +522,11 @@ jobs:
         with:
           ref: "neoforge-1.21.8"
           fetch-depth: 0          # tags and history, to prove the tag was built from this branch
-      - name: Port CI kit v89 (pinned by sha256)
+      - name: Port CI kit v92 (pinned by sha256)
         run: |
           curl -fsSL -o "$RUNNER_TEMP/kit.tar.gz" \
-            "https://github.com/jivinstev/mc-mod-version-upgrade/releases/download/port-ci-kit-v89/port-ci-kit-v89.tar.gz"
-          echo "7cc4feafd4c3ede4c57e4b0e15689fbff9c47bd95593c8bbbd2581c7c7c3940d  $RUNNER_TEMP/kit.tar.gz" | sha256sum -c -
+            "https://github.com/jivinstev/mc-mod-version-upgrade/releases/download/port-ci-kit-v92/port-ci-kit-v92.tar.gz"
+          echo "d31c12e809c95089d527b4b050f8772eba422e8ea21a03b87207a76433c92386  $RUNNER_TEMP/kit.tar.gz" | sha256sum -c -
           mkdir -p .port-tools && tar -xzf "$RUNNER_TEMP/kit.tar.gz" -C .port-tools
       - name: Publish to Modrinth and CurseForge
         env:
@@ -505,11 +547,11 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: "neoforge-1.21.8"
-      - name: Port CI kit v89 (pinned by sha256)
+      - name: Port CI kit v92 (pinned by sha256)
         run: |
           curl -fsSL -o "$RUNNER_TEMP/kit.tar.gz" \
-            "https://github.com/jivinstev/mc-mod-version-upgrade/releases/download/port-ci-kit-v89/port-ci-kit-v89.tar.gz"
-          echo "7cc4feafd4c3ede4c57e4b0e15689fbff9c47bd95593c8bbbd2581c7c7c3940d  $RUNNER_TEMP/kit.tar.gz" | sha256sum -c -
+            "https://github.com/jivinstev/mc-mod-version-upgrade/releases/download/port-ci-kit-v92/port-ci-kit-v92.tar.gz"
+          echo "d31c12e809c95089d527b4b050f8772eba422e8ea21a03b87207a76433c92386  $RUNNER_TEMP/kit.tar.gz" | sha256sum -c -
           mkdir -p .port-tools && tar -xzf "$RUNNER_TEMP/kit.tar.gz" -C .port-tools
       - name: Create the Modrinth draft project
         env:
@@ -518,7 +560,7 @@ jobs:
 
   player-install:
     # A player's install of the release just made full: the published player-install bootstrap (jivinstev/mc-mod-version-upgrade's
-    # player-install-v3, the command a README gives players; pinned by sha256 like the kit) installs exactly that
+    # player-install-v4, the command a README gives players; pinned by sha256 like the kit) installs exactly that
     # tag -- NeoForge, the jar and every release it pins -- into a fresh Minecraft folder on headless Linux and boots it
     # to the title screen with the mods loaded. Red means players cannot install what was promoted; the promotion stands.
     # A private repository is skipped: nobody can install its releases without a token.
@@ -539,8 +581,8 @@ jobs:
           set -euo pipefail
           if ! printf '%s' "$TAG" | grep -Eq '^[A-Za-z0-9._+-]+$'; then echo "::error::not a release tag: $TAG"; exit 1; fi
           curl -fsSL -o "$RUNNER_TEMP/install.sh" \
-            "https://github.com/jivinstev/mc-mod-version-upgrade/releases/download/player-install-v3/install.sh"
-          echo "da9a778ba2b349f782a22ec2c9e4028d9f3d2e9b921a47e43b0c688d2b9185e0  $RUNNER_TEMP/install.sh" | sha256sum -c -
+            "https://github.com/jivinstev/mc-mod-version-upgrade/releases/download/player-install-v4/install.sh"
+          echo "924d562230ab32a39dd3f20f9d1ff54887085c82a67dc986727ec2a625e6e102  $RUNNER_TEMP/install.sh" | sha256sum -c -
           xvfb-run -a -s "-screen 0 1280x720x24" bash "$RUNNER_TEMP/install.sh" "$GITHUB_REPOSITORY" --release "$TAG" \
             --yes --minecraft-dir "$RUNNER_TEMP/minecraft" --boot-test
-          echo "A player's install of $TAG boots (player-install player-install-v3)" >> "$GITHUB_STEP_SUMMARY"
+          echo "A player's install of $TAG boots (player-install player-install-v4)" >> "$GITHUB_STEP_SUMMARY"
