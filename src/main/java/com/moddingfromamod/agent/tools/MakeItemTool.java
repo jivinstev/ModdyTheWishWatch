@@ -1765,7 +1765,7 @@ public final class MakeItemTool implements McpTool {
         long renderedMs = (System.nanoTime() - t0) / 1_000_000;
 
         if (!CbScriptCompiler.available() && !com.moddingfromamod.datapack.PrecompiledPacks.covers(DatapackForge.dialect(skeleton))) {
-            return failed(unstore, "no CBScript compiler is available (it needs Python 3), and this ready-made "
+            return failed(unstore, "the CBScript compiler is turned off here (a test), and this ready-made "
                     + "item is not one of the precompiled ones, so it cannot be built here.");
         }
         try {
@@ -2664,6 +2664,16 @@ public final class MakeItemTool implements McpTool {
             arg.append("minecraft:max_stack_size=").append(wornScratch ? 1 : WISH_ITEM_STACKS_TO)
                .append(',');
         }
+        // A WISHED FOOD CAN ALWAYS BE EATEN (#173). An on_consume wish rides a real food, and that food's own
+        // minecraft:food cannot be eaten on a full hunger bar, so a heal he wished for did nothing when he was hurt
+        // and not hungry. The same food, its nutrition and saturation, with can_always_eat; a drink has no food and
+        // is always drunk. Written only when nothing else writes the component (it may appear once).
+        if (!properties.contains("minecraft:food")) {
+            String food = alwaysEdibleFood(baseItem, data);
+            if (!food.isEmpty()) {
+                arg.append(food).append(',');
+            }
+        }
         // 1.21.5+: text in a component is SNBT, so the JSON object goes in UNQUOTED (ItemSyntax)
         arg.append("minecraft:custom_name={\"text\":\"").append(jsonSafe(v.name()))
          .append("\",\"color\":\"").append(String.format("#%06X", v.rgb()))
@@ -2726,6 +2736,35 @@ public final class MakeItemTool implements McpTool {
      * @return the entries without their brackets, or empty for an item made from scratch (which
      *         has nothing to lose) or one that carries no modifiers
      */
+    /**
+     * The {@code minecraft:food} an eaten wish carries (#173): its base's own food with {@code can_always_eat:true},
+     * or empty when it is not eaten ({@code data} has no {@link com.moddingfromamod.item.WishItem#CONSUME_FN}), its
+     * base has no food (a drink) or can always be eaten already, or there is no game to ask (a unit test, as
+     * {@link #ownModifiers}).
+     */
+    static String alwaysEdibleFood(String baseItem, String data) {
+        if (baseItem == null || data == null || !data.contains(com.moddingfromamod.item.WishItem.CONSUME_FN)) {
+            return "";
+        }
+        try {
+            net.minecraft.resources.ResourceLocation key = net.minecraft.resources.ResourceLocation.tryParse(
+                    ItemBase.id(baseItem).trim().toLowerCase(java.util.Locale.ROOT));
+            if (key == null || !net.minecraft.core.registries.BuiltInRegistries.ITEM.containsKey(key)) {
+                return "";
+            }
+            var food = net.minecraft.core.registries.BuiltInRegistries.ITEM.getValue(key).components()
+                    .get(net.minecraft.core.component.DataComponents.FOOD);
+            return food == null || food.canAlwaysEat() ? "" : alwaysEdibleFood(food.nutrition(), food.saturation());
+        } catch (Throwable outsideTheGame) {
+            return "";   // no registry (a unit test): the line as before; the game's own path is the GameTest's
+        }
+    }
+
+    /** The component itself, as a give line writes it. Pure. */
+    static String alwaysEdibleFood(int nutrition, float saturation) {
+        return "minecraft:food={nutrition:" + nutrition + ",saturation:" + saturation + "f,can_always_eat:true}";
+    }
+
     static String ownModifiers(String baseItem) {
         if (baseItem == null || ItemBase.isWishItem(baseItem)) {
             return "";

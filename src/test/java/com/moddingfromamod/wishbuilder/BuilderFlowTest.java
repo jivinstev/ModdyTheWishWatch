@@ -275,7 +275,8 @@ class BuilderFlowTest {
         f.press("species/cat");
         toPowers(f);
         pastPowers(f);
-        assertEquals(Map.of("mobsize", "4", "count", "1", "scheme", "candy"), f.values("4 1 candy"));   //: sized by name
+        // #103: size, colours, how fast, how strong (How strong took How many's place; a creature's count is typed)
+        assertEquals(Map.of("mobsize", "4", "scheme", "candy", "speed", "2", "strength", "3"), f.values("4 candy 2 3"));
     }
 
     @Test

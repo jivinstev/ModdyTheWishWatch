@@ -214,7 +214,8 @@ class Cli(unittest.TestCase):
         hooks = "git-hooks" if (HERE / "git-hooks").is_dir() else "public-hooks"
         shutil.copytree(HERE / hooks, repo / "tools" / hooks)
         if hooks == "public-hooks":
-            shutil.copy2(HERE / "leak-scan.py", repo / "tools" / "leak-scan.py")
+            for f in ("leak-scan.py", "licence-scan.py", "licence-rules.json"):   # the hooks run these too
+                shutil.copy2(HERE / f, repo / "tools" / f)
         self.git(self.tmp, "init", "-q", "-b", "main", str(repo))
         self.git(self.tmp, "init", "-q", "--bare", str(bare))
         self.git(repo, "remote", "add", "origin", str(bare))

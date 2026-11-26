@@ -1,7 +1,7 @@
 {
-  "armor": 0.0,
+  "armor": 10.0,
   "body": "humanoid",
-  "damage": 0.0,
+  "damage": 2.0,
   "health": 40.0,
   "id": "turtle",
   "knockbackResistance": 0.0,

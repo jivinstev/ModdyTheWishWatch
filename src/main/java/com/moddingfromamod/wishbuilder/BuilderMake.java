@@ -188,6 +188,22 @@ public final class BuilderMake {
         return com.moddingfromamod.wish.MakeGate.build(spec, allow, askOf(who, textOf(spec), null, true));
     }
 
+    /**
+     * Would {@code player}'s make of {@code spec} start, or does this world (its view of the make, or its charge)
+     * refuse it? Asked BEFORE anything is said about making it, so a make that is hidden, locked or refused is never
+     * announced: {@link #make} then says why, once. A VIEW: nothing is made, charged or said.
+     */
+    public static boolean wouldStart(ServerPlayer player, BuilderSpec spec, BuilderAllowlist allow, String editOf,
+                                     boolean apprentice) {
+        String text = textOf(spec);
+        if (!com.moddingfromamod.wish.MakeGate.build(spec, allow, askOf(player.getUUID(), text, editOf, apprentice)).makes()) {
+            return false;
+        }
+        boolean free = editOf != null && FreeEdit.isFree(player.getUUID(), editOf);
+        return free || !com.moddingfromamod.wish.ChargeGate.ask(askOf(player.getUUID(), text, editOf, apprentice),
+                com.moddingfromamod.wish.ChargeRefusal.Where.MAKE).refused();
+    }
+
     /** A Builder change on a thing the Magician made, asked of the world's charge: the refusal to return, or null. */
     private static CompletableFuture<Result> refusedChange(ServerPlayer player, String text) {
         var refusal = com.moddingfromamod.wish.ChargeGate.ask(
@@ -240,7 +256,10 @@ public final class BuilderMake {
                 return done(Outcome.BANK_EMPTY, null, "", refusal.line());
             }
         }
-        return runCapped(player.level().getServer(), Who.of(player), capped, allow, protocol(),
+        // (C): the shelf and the recipe keep the make as he ASKED for it (within the allowlist), never as this world
+        // fitted it: a fitted value is never kept, so making it again after the limits rise comes out bigger
+        BuilderSpec asked = allow == null ? spec : allow.capped(spec);
+        return runCapped(player.level().getServer(), Who.of(player), capped, asked, allow, protocol(),
                 true, takeCard, editOf, apprentice);
     }
 
@@ -281,8 +300,90 @@ public final class BuilderMake {
                                                 BuilderAllowlist allow, McpProtocol protocol, boolean charge,
                                                 boolean card, String editOf) {
         // an item is made at this world's tier, whoever wrote the spec (a saved make, the Apprentice).
-        return runCapped(server, person, allow == null ? spec : allow.capped(spec), allow, protocol, charge, card, editOf,
+        BuilderSpec allowed = allow == null ? spec : allow.capped(spec);
+        return runCapped(server, person, allowed, allowed, allow, protocol, charge, card, editOf,
                 false);
+    }
+
+    /** The owner a world module's own makes belong to (#178): one fixed id per module, never a player's. */
+    public static UUID worldOwner(String moduleId) {
+        return com.moddingfromamod.world.WorldOwners.of(moduleId);   // a world's: no child is told or shown it
+    }
+
+    /**
+     * <b>A world module makes a Builder design of its own</b> (#178): a world's champions. The real Builder make,
+     * owned by {@link #worldOwner} and named {@code displayName}, under {@link BuilderAllowlist#FOR_WORLDS} (a
+     * monster's powers, never a child's list), with no charge and no wish card, and as a DESIGN only
+     * ({@code spawn: no}): the world spawns copies of the species it makes where and when it wants them
+     * ({@code WorldWishes.species}). The result's {@code madeId} is the made species. Call on the server thread.
+     */
+    public static CompletableFuture<Result> forWorld(MinecraftServer server, String moduleId, String displayName,
+                                                     BuilderSpec spec) {
+        // the words a world gives its make are read by children (its name over the creature, the wish's owner name):
+        // the same sweep a name a child types passes (the lexicon, then make_item's name sweep), or nothing is made
+        for (String words : List.of(spec.name(), displayName == null ? "" : displayName)) {
+            if (!words.isBlank() && !BuilderMenus.nameIsSafe(words)) {
+                LOGGER.warn("a world's make for {} was refused: its name did not pass the safety sweep", moduleId);
+                return CompletableFuture.completedFuture(new Result(Outcome.REFUSED, null, "",
+                        "the name did not pass the safety sweep", List.of()));
+            }
+        }
+        // its own colours, inline (Schemes.PALETTE_OPT): one that is not exactly three #RRGGBB colours (and three
+        // reviewed blocks) makes nothing, rather than a make in colours nobody asked for
+        String palette = spec.opt(Schemes.PALETTE_OPT);
+        if (!palette.isEmpty() && Schemes.parsePalette(palette) == null) {
+            LOGGER.warn("a world's make for {} was refused: its palette is not three #RRGGBB colours (and three reviewed blocks)", moduleId);
+            return CompletableFuture.completedFuture(new Result(Outcome.REFUSED, null, "",
+                    "the palette is not three #RRGGBB colours (and three reviewed blocks)", List.of()));
+        }
+        Map<String, String> opts = new java.util.LinkedHashMap<>(spec.opts());
+        opts.put("spawn", "no");
+        BuilderSpec design = new BuilderSpec(spec.version(), spec.kind(), spec.from(), spec.scheme(), spec.size(),
+                spec.powers(), spec.temper(), spec.count(), spec.at(), spec.name(), opts);
+        // the same design asked again (every wave, every restart) is the one already made: a world's makes never fill
+        // the creature registry that children's makes share
+        String key = worldOwner(moduleId) + "|" + design.toJson();
+        String known = WORLD_MADE.get(key);
+        String again = known != null && com.moddingfromamod.species.SpeciesRegistry.get(known) != null ? known
+                : keptWorldMake(worldOwner(moduleId), design);
+        if (again != null) {
+            WORLD_MADE.put(key, again);
+            return CompletableFuture.completedFuture(new Result(Outcome.MADE, null, again, "already made", List.of()));
+        }
+        Who world = new Who(worldOwner(moduleId), displayName == null || displayName.isBlank() ? moduleId : displayName,
+                server.overworld().dimension().location().toString(), 0, server.overworld().getSeaLevel(), 0);
+        return run(server, world, design, BuilderAllowlist.FOR_WORLDS, protocol(), false, false).thenApply(r -> {
+            if (r != null && (r.outcome() == Outcome.MADE || r.outcome() == Outcome.PARTIAL) && r.madeId() != null
+                    && !r.madeId().isEmpty()) {
+                WORLD_MADE.put(key, r.madeId());
+            }
+            return r;
+        });
+    }
+
+    /** A world's design (its owner and spec) → the species it was made as, this run of the game. */
+    private static final Map<String, String> WORLD_MADE = new java.util.concurrent.ConcurrentHashMap<>();
+
+    /** The species a world already made from this very design (kept on its shelf, still registered), or null. */
+    static String keptWorldMake(UUID owner, BuilderSpec design) {
+        try {
+            java.util.Set<String> same = java.util.Set.of(design.toJson().toString(),
+                    BuilderAllowlist.FOR_WORLDS.capped(design).toJson().toString());
+            for (BuilderSpecStore.Made m : BuilderSpecStore.all(com.moddingfromamod.runtime.RuntimeConfig.playersDir(),
+                    owner.toString()).values()) {
+                if (m.spec() == null || !same.contains(m.spec().toString())) {
+                    continue;
+                }
+                for (String id : List.of(m.id(), m.ref())) {
+                    if (!id.isEmpty() && com.moddingfromamod.species.SpeciesRegistry.get(id) != null) {
+                        return id;
+                    }
+                }
+            }
+        } catch (RuntimeException e) {
+            LOGGER.warn("a world's kept makes could not be read: {}", e.toString());
+        }
+        return null;
     }
 
     /**
@@ -329,7 +430,7 @@ public final class BuilderMake {
                 wishId -> { },
                 ok -> ok ? "✪ Your " + name + " is changed! The rest is just as the Magician made it."
                         : "The Builder couldn't change your " + name + " this time.", "The change to your " + name,
-                (wishId, ok, free) -> { });
+                com.moddingfromamod.world.Landing.LANDS, (wishId, ok, free) -> { });
     }
 
     /**
@@ -378,7 +479,7 @@ public final class BuilderMake {
                 wishId -> { },
                 ok -> ok ? "✪ Your " + name + " is changed! The rest is just as the Magician made it."
                         : "The Builder couldn't change your " + name + " this time.", "The change to your " + name,
-                (wishId, ok, free) -> { });
+                com.moddingfromamod.world.Landing.LANDS, (wishId, ok, free) -> { });
     }
 
     /** {@link #magicianBuilding} with the GameTest's seams (a server, a person, a dispatch, no bank). */
@@ -396,7 +497,7 @@ public final class BuilderMake {
                 wishId -> { },
                 ok -> ok ? "✪ Your " + name + " is changed! The rest is just as the Magician made it."
                         : "The Builder couldn't change your " + name + " this time.", "The change to your " + name,
-                (wishId, ok, free) -> { });
+                com.moddingfromamod.world.Landing.LANDS, (wishId, ok, free) -> { });
     }
 
     static String magicianText(MagicianCreature.Thing thing) {
@@ -439,12 +540,18 @@ public final class BuilderMake {
     public static CompletableFuture<Result> runApprentice(MinecraftServer server, Who person, BuilderSpec spec,
                                                           BuilderAllowlist allow, McpProtocol protocol, boolean charge,
                                                           boolean card) {
-        return runCapped(server, person, allow == null ? spec : allow.capped(spec), allow, protocol, charge, card, null, true);
+        BuilderSpec allowed = allow == null ? spec : allow.capped(spec);
+        return runCapped(server, person, allowed, allowed, allow, protocol, charge, card, null, true);
     }
 
+    /**
+     * {@code spec} is what is made now (this world's fit of it); {@code asked} is what he asked for, which is what the
+     * shelf and the recipe keep. A creature is lowered at its ASKED size, and its size is fitted where it stands, at
+     * every spawn ({@code LiveFit.drawnScale}), so a fire after the limits change comes out at the new fit.
+     */
     private static CompletableFuture<Result> runCapped(MinecraftServer server, Who person, BuilderSpec spec,
-                                                       BuilderAllowlist allow, McpProtocol protocol, boolean charge,
-                                                       boolean card, String editOf, boolean apprentice) {
+                                                       BuilderSpec asked, BuilderAllowlist allow, McpProtocol protocol,
+                                                       boolean charge, boolean card, String editOf, boolean apprentice) {
         UUID who = person.id();
         List<String> problems = allow == null ? List.of() : allow.problems(spec);
         if (!problems.isEmpty()) {
@@ -472,19 +579,82 @@ public final class BuilderMake {
         List<BuilderLowering.Call> calls;
         try {
             calls = BuilderLowering.lower(spec, newId, LibraryPresets.SHIPPED, edit);
+            if (!asked.equals(spec)) {
+                calls = askedSize(calls, BuilderLowering.lower(asked, newId, LibraryPresets.SHIPPED, edit));
+            }
         } catch (IllegalArgumentException e) {
             return done(Outcome.REFUSED, null, "", e.getMessage());
         }
+        // WHERE IT GOES (#70): a world may keep a new make and hand it over as a hotbar wish instead of it appearing.
+        // Asked EXACTLY ONCE, here, before the first placing step, and locked into the make (as its aim is): never asked
+        // again while it is made. A kept creature is sculpted and not spawned; nothing is charged until it is fired.
+        // A change is not asked (it is changed where it stands). A kind with no replay recipe lands even when the world
+        // asked to keep it, and the world is told so (notKept), never only a log line.
+        final com.moddingfromamod.world.Landing worldAsked = editOf != null ? com.moddingfromamod.world.Landing.LANDS
+                : com.moddingfromamod.wish.MakeGate.landing(MakeFacts.of(spec), askOf(who, textOf(spec), null, apprentice));
+        final com.moddingfromamod.world.Landing landing = keepable(spec) ? worldAsked : com.moddingfromamod.world.Landing.LANDS;
+        if (worldAsked != com.moddingfromamod.world.Landing.LANDS && landing == com.moddingfromamod.world.Landing.LANDS) {
+            LOGGER.warn("builder make {} for {}: this world asked {} for a {}; it lands: no replay recipe makes it again",
+                    newId, person.name(), worldAsked, spec.kind().id());
+            com.moddingfromamod.wish.MakeGate.notKept(new com.moddingfromamod.world.NotKept(who,
+                    BuilderLowering.kindOf(spec), worldAsked, com.moddingfromamod.world.NotKept.Why.NO_REPLAY_RECIPE));
+        }
+        if (landing != com.moddingfromamod.world.Landing.LANDS) {
+            LOGGER.info("builder make {} for {}: kept by this world ({})", newId, person.name(), landing);
+            calls = held(calls);
+        }
         final String madeId = newId;
+        final List<BuilderLowering.Call> made = calls;
+        ASKED.put(madeId, asked);   // until it is kept: its creature's size is fitted from what he asked
+
         return execute(server, person, calls, protocol, charge, card, textOf(spec), newId, editOf, apprentice,
-                editOf == null ? "" : BuilderAgain.recipeId(editOf), spec.toJson().toString(), wishId -> remember(who, wishId, spec),
-                ok -> ok ? BuilderWords.ready(spec) : BuilderWords.failed(spec), BuilderWords.subject(spec),
+                editOf == null ? "" : BuilderAgain.recipeId(editOf), asked.toJson().toString(), wishId -> remember(who, wishId, asked),
+                ok -> ok ? BuilderWords.ready(spec) : BuilderWords.failed(spec), BuilderWords.subject(spec), landing,
                 (wishId, ok, free) -> {
                     if (ok) {
-                        keep(who, madeId, BuilderLowering.refOf(calls, madeId), spec, wishId);
+                        keep(who, madeId, BuilderLowering.refOf(made, madeId), asked, wishId);
+                        if (landing != com.moddingfromamod.world.Landing.LANDS) {
+                            handOver(server, who, madeId, spec, landing);
+                        }
                     }
+                    ASKED.remove(madeId);
                     settleFree(who, wishId, free, apprentice, ok, ok ? madeId : editOf, spec);
                 });
+    }
+
+    /** The asked spec of each make still being made, by its id, until its shelf row is written. */
+    private static final Map<String, BuilderSpec> ASKED = new ConcurrentHashMap<>();
+
+    /**
+     * What the make {@code makeId} was asked as while it is still being made (its shelf row not written yet), or null:
+     * a creature it spawns is fitted from this before its make is kept ({@code LiveFit.drawnScale}).
+     */
+    public static BuilderSpec askedWhileMaking(String makeId) {
+        return makeId == null ? null : ASKED.get(makeId);
+    }
+
+    /**
+     * The calls of a make fitted to this world, with each creature sculpted at its ASKED size ({@code asked} the calls
+     * of the make as asked): the size is fitted where the creature stands, at every spawn, never kept in its record.
+     */
+    static List<BuilderLowering.Call> askedSize(List<BuilderLowering.Call> fitted, List<BuilderLowering.Call> asked) {
+        List<BuilderLowering.Call> out = new java.util.ArrayList<>(fitted.size());
+        for (BuilderLowering.Call c : fitted) {
+            BuilderLowering.Call at = null;
+            for (BuilderLowering.Call a : asked) {
+                if (a.tool().equals("sculpt_creature") && c.tool().equals("sculpt_creature")) {
+                    at = a;
+                }
+            }
+            if (at != null && at.args().has("scale") && c.args().has("scale")) {
+                com.google.gson.JsonObject args = c.args().deepCopy();
+                args.add("scale", at.args().get("scale").deepCopy());
+                out.add(new BuilderLowering.Call(c.tool(), args));
+            } else {
+                out.add(c);
+            }
+        }
+        return out;
     }
 
     /** What happens once a make's outcome is known (server thread): what it keeps, and the free change settled. */
@@ -504,7 +674,7 @@ public final class BuilderMake {
                                                      String logged,
                                                      java.util.function.Consumer<UUID> remembered,
                                                      java.util.function.Function<Boolean, String> says, String subject,
-                                                     Settle after) {
+                                                     com.moddingfromamod.world.Landing landing, Settle after) {
         UUID who = person.id();
         final List<BuilderLowering.Call> toRun = card ? calls
                 : calls.stream().filter(c -> !"finish_building".equals(c.tool())).toList();
@@ -527,7 +697,8 @@ public final class BuilderMake {
         if (free) {
             LOGGER.info("builder make {} for {}: the free change of {} (the last Apprentice make)", wish.shortId(), person.name(), editOf);
         }
-        if (charge && !free) {
+        // a kept make (#70) is charged when he fires its hotbar wish (a make-again), never twice
+        if (charge && !free && landing == com.moddingfromamod.world.Landing.LANDS) {
             var ask = com.moddingfromamod.wish.WishAsk.of(who, WishSource.BUILDER, apprentice
                             ? com.moddingfromamod.wish.WishAsk.Magic.APPRENTICE : com.moddingfromamod.wish.WishAsk.Magic.BUILDER)
                     .withText(text).withRecipe(recipe);
@@ -552,6 +723,7 @@ public final class BuilderMake {
             return done(Outcome.FAILED, wish.id(), "", "the marshal would not take the make");
         }
         run.markBuilderMade();
+        run.lockLanding(landing);
         // A MAKE LOOKS AND LANDS LIKE A WISH. The same three things WishService.submit does
         // for a typed wish, in the same order: lock where it manifests to where he is looking NOW (aim, then clamp,
         // kept on the run so plan_wish's kind slide and every placing tool use it — before this a make had no anchor,
@@ -599,7 +771,8 @@ public final class BuilderMake {
                 // never did, so every item it made was announced and never handed over.
                 // Only the LAST make_item is his (a snack machine's food is made first, and the machine pours it);
                 // the whole reply is read, because a machine's names its command past textOf's 400 characters.
-                String give = error || !"make_item".equals(call.tool()) || call != lastItemOf(toRun) ? null
+                String give = error || !"make_item".equals(call.tool()) || call != lastItemOf(toRun)
+                        || landing == com.moddingfromamod.world.Landing.KEPT ? null
                         : handOverCommand(fullTextOf(reply));
                 if (give != null) {
                     JsonObject g = new JsonObject();
@@ -692,6 +865,59 @@ public final class BuilderMake {
                 FreeEdit.failed(who, wishId);
             }
         }
+    }
+
+    /**
+     * Can a world keep this make and hand it over (#70)? A Builder or Apprentice creature, ride, item, building or
+     * event kept on his shelf, so its hotbar wish can make it again (each has a replay command, {@link BuilderAgain}).
+     * A real mob and supplies are not kept, a picture lands (not yet kept), and a rule has nothing to place.
+     */
+    static boolean keepable(BuilderSpec spec) {
+        return switch (spec.kind()) {
+            case CREATURE, RIDE, ITEM, MACHINE, MAGIC_BLOCK, BUILDING, EVENT ->
+                    !Catalogue.prefix(spec.from()).equals("mob") && !BuilderSupplies.is(spec);
+            default -> false;
+        };
+    }
+
+    /**
+     * A kept make's calls (#70): everything is made and saved, nothing placed. A creature is sculpted and not spawned
+     * (and its extra spawns dropped), a building saved and not built, an event's design kept and not staged.
+     */
+    static List<BuilderLowering.Call> held(List<BuilderLowering.Call> calls) {
+        List<BuilderLowering.Call> out = new ArrayList<>(calls.size());
+        for (BuilderLowering.Call c : calls) {
+            if (c.tool().equals("run_command") && c.args().toString().contains("wishmob spawn")) {
+                continue;   // the more-than-one spawns
+            }
+            String hold = switch (c.tool()) {
+                case "sculpt_creature" -> "spawn";
+                case "build_structure" -> "build";
+                case "stage_event" -> "now";
+                default -> null;
+            };
+            if (hold != null) {
+                JsonObject a = c.args().deepCopy();
+                a.addProperty(hold, false);
+                out.add(new BuilderLowering.Call(c.tool(), a));
+            } else {
+                out.add(c);
+            }
+        }
+        return out;
+    }
+
+    /**
+     * Hand a kept make over (#70, server thread): a wish on his hotbar (or in his Wish Bag) that makes it where he aims
+     * it, or, for an item a world asked {@code KEPT_AS_ITEM} of, the real item already in his hand; then the world is
+     * told. He is told where it went.
+     */
+    private static void handOver(MinecraftServer server, UUID who, String madeId, BuilderSpec spec,
+                                 com.moddingfromamod.world.Landing landing) {
+        String kind = BuilderLowering.kindOf(spec);
+        com.moddingfromamod.wish.KeptHandOver.give(server, who, madeId, kind, BuilderAgain.recipeId(madeId),
+                BuilderLowering.label(spec), MakeFacts.of(spec),
+                kind.equals("item") && landing == com.moddingfromamod.world.Landing.KEPT_AS_ITEM);
     }
 
     /**

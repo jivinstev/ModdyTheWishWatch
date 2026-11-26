@@ -1,0 +1,32 @@
+// CI ONLY: Maven Central through Google's public mirror of it (the same artifacts, the same checksums), so a burst of
+// parallel cold jobs is not answered with 429 Too Many Requests by repo.maven.apache.org. The workflows copy this into
+// ~/.gradle/init.d/ (docs/GATE_B.md, "Downloads in CI"); a contributor's own build never sees it.
+//
+//  * every repository that IS Maven Central (mavenCentral(), or its URL written out) is pointed at the mirror;
+//  * for plugins, the mirror is put FIRST, so a plugin's own dependencies come from it too: the Gradle Plugin Portal
+//    redirects those to Maven Central, which is how a buildscript download (gson) was refused before. A plugin the
+//    mirror does not hold (a plugin marker) falls through to the portal as before.
+def MIRROR = 'https://maven-central.storage-download.googleapis.com/maven2/'
+def CENTRAL = ['https://repo.maven.apache.org/maven2', 'https://repo1.maven.org/maven2']
+
+def redirect = { RepositoryHandler repos ->
+    repos.withType(MavenArtifactRepository).configureEach { MavenArtifactRepository r ->
+        if (CENTRAL.any { r.url.toString().startsWith(it) }) {
+            r.url = MIRROR
+        }
+    }
+}
+
+beforeSettings { settings ->
+    def plugins = settings.pluginManagement.repositories
+    def mirror = plugins.maven { name = 'MavenCentralMirror'; url = MIRROR }
+    plugins.remove(mirror)
+    plugins.addFirst(mirror)
+    redirect(plugins)
+    redirect(settings.dependencyResolutionManagement.repositories)
+}
+
+allprojects {
+    redirect(buildscript.repositories)
+    redirect(repositories)
+}

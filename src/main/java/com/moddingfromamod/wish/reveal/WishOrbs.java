@@ -109,6 +109,10 @@ public final class WishOrbs {
         final List<Entity> helix = new ArrayList<>();
         final List<Entity> arcs = new ArrayList<>();
         double angle;
+        /** Whose colour it is drawn in (#178): its wisher's, or the world's. */
+        PillarPalette palette = PillarPalette.CYAN;
+        /** The beam only (#178): a crowd's pillar, about 3 displays where a full one is about 53. */
+        boolean slim;
 
         Orb(UUID wishId, ServerLevel level, double x, double y, double z) {
             this.wishId = wishId;
@@ -171,6 +175,24 @@ public final class WishOrbs {
 
     private static final Map<UUID, Orb> ORBS = new ConcurrentHashMap<>();
 
+    /** Each player's pillar colour (#178): the lowest free slot when they join, given back when they leave. */
+    private static final PillarPalette.Slots SLOTS = new PillarPalette.Slots();
+
+    /** The colour {@code player}'s pillars are drawn in. */
+    public static PillarPalette paletteOf(UUID player) {
+        return SLOTS.paletteOf(player);
+    }
+
+    @SubscribeEvent
+    public static void onLogin(net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedInEvent event) {
+        SLOTS.slotOf(event.getEntity().getUUID());
+    }
+
+    @SubscribeEvent
+    public static void onLogout(net.neoforged.neoforge.event.entity.player.PlayerEvent.PlayerLoggedOutEvent event) {
+        SLOTS.release(event.getEntity().getUUID());
+    }
+
     /** Films only: orbs held up with no run behind them, and the progress each should show. */
     private static final Map<UUID, float[]> PINS = new ConcurrentHashMap<>();
 
@@ -192,6 +214,7 @@ public final class WishOrbs {
         ORBS.clear();
         PINS.clear();
         HELD.clear();
+        SLOTS.clear();
         REVEALED.clear();
         Reveals.clear();
         for (ServerLevel level : event.getServer().getAllLevels()) {
@@ -255,6 +278,7 @@ public final class WishOrbs {
                 }
                 if (o == null) {
                     o = new Orb(run.wishId(), level, x, y, z);
+                    o.palette = SLOTS.paletteOf(run.playerId());
                     ORBS.put(run.wishId(), o);
                 } else if (o.tx != x || o.ty != y || o.tz != z) {
                     // the spot was corrected. The pillar GLIDES there, visibly, rather than
@@ -358,6 +382,22 @@ public final class WishOrbs {
         pinForFilm(level, wishId, x, y, z, steps, fraction);
     }
 
+    /**
+     * As {@link #pinServed(ServerLevel, UUID, double, double, double, int, float)}, drawn in {@code palette} (its
+     * wisher's, or {@link PillarPalette#WORLD}), and {@code slim} for the beam alone (#178). Both are taken when the
+     * pillar is first stood up; a later call only moves its progress on.
+     */
+    public static void pinServed(ServerLevel level, UUID wishId, double x, double y, double z,
+                                 int steps, float fraction, PillarPalette palette, boolean slim) {
+        ORBS.computeIfAbsent(wishId, id -> {
+            Orb o = new Orb(id, level, x, y + OrbShape.ORB_HEIGHT, z);
+            o.palette = palette == null ? PillarPalette.CYAN : palette;
+            o.slim = slim;
+            return o;
+        });
+        PINS.put(wishId, new float[]{steps, fraction});
+    }
+
     /** Drop a pinned pillar with no reveal (the served wish was stopped). */
     public static void drop(UUID wishId) {
         if (wishId == null) {
@@ -428,16 +468,26 @@ public final class WishOrbs {
             // Pillar: the beam's three layers, and the two squares of the star. All stand at the foot.
             // (Tried and dropped, both from the film: a glass sheath tinted the core grey-blue, and
             // a white concrete core is shaded grey on every side.)
-            o.pillar.add(Fx.beam(o.level, o.x, fy, o.z, Fx.FAR * 2, tag, BEAM_CORE));
-            o.pillar.add(Fx.beam(o.level, o.x, fy, o.z, Fx.FAR * 2, tag, BEAM_HALO));
-            o.pillar.add(Fx.beam(o.level, o.x, fy, o.z, Fx.FAR * 2, tag, BEAM_HAZE));
-            o.pillar.add(Fx.band(o.level, o.x, fy, o.z, Fx.FAR, tag, STAR_LIGHT));
-            o.pillar.add(Fx.band(o.level, o.x, fy, o.z, Fx.FAR, tag, STAR_LIGHT));
+            PillarPalette c = o.palette;
+            o.pillar.add(Fx.beam(o.level, o.x, fy, o.z, Fx.FAR * 2, tag, c.core()));
+            o.pillar.add(Fx.beam(o.level, o.x, fy, o.z, Fx.FAR * 2, tag, c.halo()));
+            o.pillar.add(Fx.beam(o.level, o.x, fy, o.z, Fx.FAR * 2, tag, c.haze()));
+            if (o.slim) {
+                Fx.beamPose(o.pillar.get(0), OrbShape.CORE_WIDTH, OrbShape.PILLAR_HEIGHT, 0f);
+                Fx.beamPose(o.pillar.get(1), OrbShape.HALO_WIDTH, OrbShape.PILLAR_HEIGHT, 0.08f);
+                Fx.beamPose(o.pillar.get(2), OrbShape.HAZE_WIDTH, OrbShape.PILLAR_HEIGHT, 0.16f);
+                return;   // a crowd's pillar: the beam alone, posed once (it never changes)
+            }
+            o.pillar.add(Fx.band(o.level, o.x, fy, o.z, Fx.FAR, tag, c.star()));
+            o.pillar.add(Fx.band(o.level, o.x, fy, o.z, Fx.FAR, tag, c.star()));
             for (int i = 0; i < OrbShape.ARCS * 4; i++) {   // two bars per arc (the kink), crossed
-                Entity arc = Fx.band(o.level, o.x, fy, o.z, Fx.FAR, tag, ARC_LIGHT);
+                Entity arc = Fx.band(o.level, o.x, fy, o.z, Fx.FAR, tag, c.arc());
                 Fx.ribbon(arc, new Vector3f(), new Vector3f(), 0f, 0f);    // hidden until it first fires
                 o.arcs.add(arc);
             }
+        }
+        if (o.slim) {
+            return;   // built and posed above, the one time
         }
         int up = OrbShape.visible(OrbShape.PER_STRAND, fraction);
         int want = up * OrbShape.STRANDS;

@@ -55,6 +55,11 @@ public final class MakeFit {
         // no knob moves a creature's armour or knockback resistance: they are fitted on the live creature (LIVE)
         m.put(MakeFacts.ARMOR_POINTS, new Fact(MakeFacts.ARMOR_POINTS, true, NOTHING));
         m.put(MakeFacts.KNOCKBACK_RESISTANCE_FRACTION, new Fact(MakeFacts.KNOCKBACK_RESISTANCE_FRACTION, true, NOTHING));
+        // #102: what a creature's moves do a second is read, not lowered: no knob moves it, so over a limit is locked
+        for (String k : new String[] {MakeFacts.MOVE_DAMAGE_HALF_HEARTS_PER_SECOND,
+                MakeFacts.EFFECTIVE_DAMAGE_HALF_HEARTS_PER_SECOND, MakeFacts.HEAL_HALF_HEARTS_PER_SECOND}) {
+            m.put(k, new Fact(k, false, NOTHING));
+        }
         return Collections.unmodifiableMap(m);
     }
 
@@ -66,6 +71,24 @@ public final class MakeFit {
     public static final java.util.Set<String> LIVE = java.util.Set.of(MakeFacts.HEALTH_HALF_HEARTS,
             MakeFacts.ATTACK_DAMAGE_HALF_HEARTS, MakeFacts.ARMOR_POINTS, MakeFacts.KNOCKBACK_RESISTANCE_FRACTION);
 
+    /**
+     * A creature's or ride's SIZE, fitted where it stands at every spawn ({@code wish.LiveFit.drawnScale}), never kept in
+     * its make: a replay of a kept make over a size limit (a hotbar fire, "Make another one") is made and stands
+     * smaller, never refused, and a later, higher limit gives it its full size. A make itself is still fitted by its size
+     * knob when it is made (MakeFit.fit).
+     */
+    public static final java.util.Set<String> LIVE_SIZE = java.util.Set.of(MakeFacts.SCALE_TIMES, MakeFacts.BUILDER_SIZE_STEP);
+
+    /** Everything a creature or ride may carry over a limit and still be made here: {@link #LIVE} and {@link #LIVE_SIZE}. */
+    static boolean fittedWhereItStands(java.util.Collection<String> over) {
+        for (String k : over) {
+            if (!LIVE.contains(k) && !LIVE_SIZE.contains(k)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     /** Is this a make whose creatures are fitted live ({@link #LIVE})? */
     public static boolean livesFitted(MakeFacts f) {
         return f.kind().equals(BuilderSpec.Kind.CREATURE.id()) || f.kind().equals(BuilderSpec.Kind.RIDE.id());
@@ -73,11 +96,11 @@ public final class MakeFit {
 
     /**
      * Does a made thing keep within {@code limits} here: every number within, or a creature over only in what is fitted
-     * on the live entity at spawn ({@link #LIVE}).
+     * on the live entity at spawn ({@link #LIVE}) and its size, fitted where it stands ({@link #LIVE_SIZE}).
      */
     public static boolean satisfiesHere(MakeFacts facts, Map<String, Double> limits) {
         List<String> over = over(facts, limits);
-        return over.isEmpty() || livesFitted(facts) && LIVE.containsAll(over);
+        return over.isEmpty() || livesFitted(facts) && fittedWhereItStands(over);
     }
 
     /** What fitting did: the spec as made, whether it changed, whether it fits at all, and which numbers were lowered. */
@@ -228,7 +251,10 @@ public final class MakeFit {
         try {
             now = Integer.parseInt(s.opt("strength").strip());
         } catch (NumberFormatException none) {
-            return out;
+            if (!creatureLike(s)) {
+                return out;
+            }
+            now = BuilderCreatureStrength.OWN;   // #103: a creature's own strength is written as nothing; gentler still exists
         }
         for (int st = now - 1; st >= 1; st--) {
             Map<String, String> o = new LinkedHashMap<>(s.opts());
@@ -245,6 +271,13 @@ public final class MakeFit {
      * not fitted at all (locked), never made wrong.
      */
     static List<BuilderSpec> steps(BuilderSpec s) {
+        if (creatureLike(s)) {
+            // #103: a creature's size and How strong now move its health and damage, but a limit on those is still
+            // fitted on the LIVE creature (LIVE), never by making it smaller or gentler: a world that raises its limits
+            // later must get the creature back at its full strength (LiveFit). Its size and strength are lowered only
+            // by a limit on them (builderSizeStep, scaleTimes, builderStrengthStep).
+            return List.of();
+        }
         List<BuilderSpec> tiers = new ArrayList<>();
         tiers.add(s);
         tiers.addAll(lowerTiers(s));
@@ -287,12 +320,17 @@ public final class MakeFit {
         return out;
     }
 
+    /** A creature or a ride: its strength is #103's How strong, its own (2) when unstated. */
+    private static boolean creatureLike(BuilderSpec s) {
+        return s.kind() == BuilderSpec.Kind.CREATURE || s.kind() == BuilderSpec.Kind.RIDE;
+    }
+
     private static int stepsKept(BuilderSpec s) {
         int strength;
         try {
             strength = Integer.parseInt(s.opt("strength").strip());
         } catch (NumberFormatException none) {
-            strength = 0;
+            strength = creatureLike(s) ? BuilderCreatureStrength.OWN : 0;
         }
         BuilderMobSizes.Level l = s.opt("mobsize").isEmpty() ? null : BuilderMobSizes.of(s.opt("mobsize"));
         int size = l == null ? s.size() : BuilderMobSizes.ALL.indexOf(l);
@@ -334,8 +372,29 @@ public final class MakeFit {
      */
     public static List<String> fitCommands(List<String> commands, Map<String, Double> limits, MakeFacts.Artifacts artifacts) {
         List<String> out = new ArrayList<>();
+        Double most = limits.get(MakeFacts.COUNT_MADE);
+        // #174 B7: how many it makes is counted over the WHOLE recipe (a repeat, several summons), never per line, so
+        // the creatures past the most at once are not made: a spawn is lowered to what is left, and a line past it is
+        // dropped
+        double left = most == null ? Double.POSITIVE_INFINITY : Math.floor(most + 1e-9);
         for (String c : commands) {
             MakeFacts.Ref r = MakeFacts.ref(c);
+            if (r != null && most != null && r.kind().equals(BuilderSpec.Kind.CREATURE.id())) {
+                if (left < 1) {
+                    if (most < 1) {
+                        return null;   // a world that allows none: not fitted, refused
+                    }
+                    continue;
+                }
+                if (r.count() > left) {
+                    c = withCount(c, r, (int) left);
+                    if (c == null) {
+                        return null;
+                    }
+                    r = MakeFacts.ref(c);
+                }
+                left -= Math.min(r == null ? 1 : r.count(), left);
+            }
             MakeFacts f = r == null ? null : MakeFacts.ofCommands(List.of(c), artifacts);
             if (f == null || satisfies(f, limits)) {
                 out.add(c);
@@ -343,26 +402,39 @@ public final class MakeFit {
             }
             List<String> over = new ArrayList<>(over(f, limits));
             if (livesFitted(f)) {
-                over.removeAll(LIVE);   // fitted on the live creature at spawn
+                over.removeAll(LIVE);        // fitted on the live creature at spawn (LiveFit, LiveFitWatch)
+                over.removeAll(LIVE_SIZE);   // and its size where it stands (LiveFit.drawnScale)
             }
             if (over.isEmpty()) {
                 out.add(c);
                 continue;
             }
-            Double most = limits.get(MakeFacts.COUNT_MADE);
-            if (!over.equals(List.of(MakeFacts.COUNT_MADE)) || most == null || most < 1
-                    || !c.strip().startsWith("wishmob spawn ")) {
-                return null;
-            }
+            return null;
+        }
+        return out;
+    }
+
+    /** One spawning command made to spawn {@code n}, or null when its count cannot be rewritten. */
+    static String withCount(String c, MakeFacts.Ref r, int n) {
+        String[] w = c.strip().split("\\s+");
+        if (c.strip().startsWith("wishmob spawn ")) {
             // `wishmob spawn <id> [count] [at <build>:<spot>]`: the count is how many in all; the rest is kept
-            String[] w = c.strip().split("\\s+");
-            int n = (int) Math.floor(most + 1e-9);
             StringBuilder b = new StringBuilder("wishmob spawn ").append(r.id()).append(' ').append(n);
             for (int i = w.length >= 4 && w[3].matches("\\d+") ? 4 : 3; i < w.length; i++) {
                 b.append(' ').append(w[i]);
             }
-            out.add(b.toString());
+            return b.toString();
         }
-        return out;
+        if (w.length >= 2 && w[0].equals("wishsummon")) {
+            var spec = MakeFacts.wishsummonSpec(c);
+            if (spec == null) {
+                return null;
+            }
+            spec.addProperty("count", n);
+            String head = c.strip();
+            return head.substring(0, head.indexOf('{')).strip() + " " + spec;
+        }
+        return null;
     }
+
 }

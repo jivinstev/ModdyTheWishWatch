@@ -1,10 +1,10 @@
 {
  "vehicle": false,
- "armor": 0.0,
+ "armor": 6.0,
  "behaves": "climber",
  "body": "humanoid",
- "damage": 0.0,
- "health": 30.0,
+ "damage": 3.0,
+ "health": 20.0,
  "id": "crab",
  "knockbackResistance": 0.0,
  "modelKey": "crab",

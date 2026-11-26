@@ -3,10 +3,10 @@
   "armor": 0.0,
   "body": "humanoid",
   "createdAt": 1793173799498,
-  "damage": 0.0,
-  "health": 120.0,
+  "damage": 8.0,
+  "health": 160.0,
   "id": "long_neck_dinosaur",
-  "knockbackResistance": 0.0,
+  "knockbackResistance": 0.8,
   "modelKey": "long_neck_dinosaur",
   "name": "Long Neck Dinosaur",
   "powers": [

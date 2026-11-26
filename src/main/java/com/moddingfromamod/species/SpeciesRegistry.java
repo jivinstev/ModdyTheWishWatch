@@ -407,6 +407,31 @@ public final class SpeciesRegistry {
                 : read instanceof com.moddingfromamod.store.WishStoreFile.Read.Legacy l
                 ? l.root() : null;
         JsonElement arr = root == null ? null : root.get("species");
+        // A record written by a newer Moddy than this one (its "v" above Species.RECORD_VERSION) is read as best this
+        // build can, and the store is LATCHED: this build never saves its narrower view over the newer records.
+        NEWER.reset();
+        if (arr != null && arr.isJsonArray()) {
+            for (JsonElement el : arr.getAsJsonArray()) {
+                if (el.isJsonObject() && Species.recordVersion(el.getAsJsonObject()) > Species.RECORD_VERSION) {
+                    NEWER.observe(new com.moddingfromamod.store.WishStoreFile.Read.Refused("a creature record was written "
+                            + "by a newer Moddy (record v" + Species.recordVersion(el.getAsJsonObject()) + ", this build "
+                            + "knows v" + Species.RECORD_VERSION + ")"));
+                    LOGGER.error("species: {} Nothing will be saved over it.", NEWER.refusalReason());
+                    break;
+                }
+            }
+        }
+        // #104: a record saved under the old tool wording (below record v3) is repaired as it is read, declared in the
+        // log, and written back at the current record version below, so it runs once per record. Every record the
+        // repair does not change is kept exactly as read (it gains only its version when the store is next saved).
+        List<String> repaired = List.of();
+        int stale = 0;
+        if (arr != null && arr.isJsonArray()) {
+            stale = StatLineRepair.below(arr.getAsJsonArray(), Species.RECORD_VERSION);
+            StatLineRepair.Result r = StatLineRepair.repairAll(arr.getAsJsonArray(), SpeciesRegistry::bodyVolume);
+            arr = r.records();
+            repaired = r.repaired();
+        }
         if (arr != null && arr.isJsonArray()) {
             int bad = 0;
             for (JsonElement el : arr.getAsJsonArray()) {
@@ -428,6 +453,7 @@ public final class SpeciesRegistry {
                 purged++;
             }
         }
+        int restatted = restatLibraryCopies();
         // NOTE: there is deliberately no "global creatures" load here any more. It read
         // ~/.moddingfromamod/species/ so a creature could appear in EVERY world — one half of the
         // split brain (see WorldPaths), and the half that could not even be reached: only the
@@ -445,14 +471,76 @@ public final class SpeciesRegistry {
                 filled++;
             }
         }
-        if (purged > 0 || filled > 0 || SHELF.needsConverge()) {
+        if (stale > 0) {
+            LOGGER.info("species record migration v{} (#104, docs/STORE_MIGRATIONS.md): {} record(s) below it; the "
+                    + "stat-line repair gave {} the damage their size says ({}); all are written back at v{}",
+                    Species.RECORD_VERSION, stale, repaired.size(),
+                    repaired.size() <= 20 ? String.join(", ", repaired) : String.join(", ", repaired.subList(0, 20)) + ", …",
+                    Species.RECORD_VERSION);
+        }
+        if (purged > 0 || filled > 0 || restatted > 0 || stale > 0 || SHELF.needsConverge()) {
             save(server);
             if (purged > 0) {
                 LOGGER.info("dropped {} superseded creature definition(s)", purged);
             }
+            if (restatted > 0) {
+                LOGGER.info("species record migration v{} (#99, docs/STORE_MIGRATIONS.md): {} unowned library "
+                        + "creature copy(ies) took their shipped health, damage, armour and knockback", Species.RECORD_VERSION,
+                        restatted);
+            }
         }
         com.moddingfromamod.runtime.ModelRepository.shelveOwnedModels(ownedModelKeys());
         LOGGER.info("{} wish creature species available", SPECIES.size());
+    }
+
+    /**
+     * <b>A world's copy of a library creature reads its numbers from the shipped record again</b> (#99). The first
+     * spawn of a library creature (a starter's pet dragon) registers a SHARED copy in the world, and every later spawn
+     * reads that copy ({@code WishMobCommands.resolveSpecies}), so a shipped change to its stat line never reached a
+     * world that had spawned one. An edit of a library creature always forks it ({@code ForkPolicy}), so an unowned
+     * copy under a library id is a pure copy: only its health, attack damage, armour and knockback are taken from the
+     * shipped record (nothing about its look, powers or moves), and only where they differ. Returns how many changed.
+     */
+    private static int restatLibraryCopies() {
+        int changed = 0;
+        for (Species s : List.copyOf(SPECIES.values())) {
+            if (!s.ownerId().isEmpty() || com.moddingfromamod.marshal.ArtifactOwner.isFork(s.id())) {
+                continue;   // owned (his own, a fork): never touched (LibraryCopies)
+            }
+            Path shippedFile;
+            try {
+                shippedFile = com.moddingfromamod.library.WishLibrary.artifactFile("species", s.id(), "species.json");
+            } catch (RuntimeException e) {
+                continue;   // no library on this server: nothing to read again
+            }
+            if (shippedFile == null) {
+                continue;
+            }
+            try {
+                JsonObject shipped = com.google.gson.JsonParser.parseString(
+                        java.nio.file.Files.readString(shippedFile, java.nio.charset.StandardCharsets.UTF_8)).getAsJsonObject();
+                Species next = LibraryCopies.takeShipped(s, shipped);
+                if (!next.equals(s)) {
+                    SPECIES.put(s.id(), next);
+                    changed++;
+                }
+            } catch (java.io.IOException | RuntimeException e) {
+                LOGGER.warn("could not read the shipped record of library creature {}: {}", s.id(), e.toString());
+            }
+        }
+        return changed;
+    }
+
+    /** A stored creature's body, measured on the geometry it draws (cubic blocks at scale 1); NaN when it draws none. */
+    private static double bodyVolume(JsonObject record) {
+        String key = record.has("modelKey") && record.get("modelKey").isJsonPrimitive()
+                ? record.get("modelKey").getAsString() : "";
+        try {
+            var g = key.isEmpty() ? null : com.moddingfromamod.runtime.ModelRepository.geometry(key);
+            return g == null ? Double.NaN : g.volume();
+        } catch (RuntimeException e) {
+            return Double.NaN;
+        }
     }
 
     /** Model key to owner, for every owned creature — what {@code ModelRepository} shelves by. */
@@ -466,7 +554,14 @@ public final class SpeciesRegistry {
         return out;
     }
 
+    /** Latched when a record newer than this build knows was read: see {@link #load}. */
+    private static final com.moddingfromamod.store.WishStoreFile.Guard NEWER = new com.moddingfromamod.store.WishStoreFile.Guard();
+
     private static void save(MinecraftServer server) {
+        if (!NEWER.mayWrite()) {
+            LOGGER.error("NOT saving species: {}. The file has been left alone on purpose.", NEWER.refusalReason());
+            return;
+        }
         if (!SHELF.mayWrite()) {
             LOGGER.error("NOT saving species — {} could not be read ({}). The file has been left "
                     + "alone on purpose; a grown-up should look at it.",

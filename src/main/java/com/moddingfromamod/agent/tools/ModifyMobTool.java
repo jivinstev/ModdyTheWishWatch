@@ -141,7 +141,12 @@ public final class ModifyMobTool implements McpTool {
         Schemas.prop(s, "name", "string", "Name shown above the mob, e.g. 'Steve's Storm'.");
         Schemas.prop(s, "health", "number",
                 "Max health, 1 to " + (int) MobTweak.MAX_HEALTH + ". Raising it also heals the mob.");
-        Schemas.prop(s, "damage", "number", "Attack damage, 0 to " + (int) MobTweak.MAX_DAMAGE + ".");
+        Schemas.prop(s, "damage", "number", "Attack damage, 0 to " + (int) MobTweak.MAX_DAMAGE + ": what its body "
+                + "would have, like a vanilla mob its size. A friendly creature never attacks whatever this says, so "
+                + "never 0 to make it gentle; 0 lands nothing.");
+        Schemas.prop(s, "armor", "number", "Armour points, 0 to " + (int) MobTweak.MAX_ARMOR
+                + " (a full iron suit is 15).");
+        Schemas.prop(s, "knockback_resistance", "number", "0 to 1: how hard it is to push (1 = never pushed).");
         Schemas.prop(s, "speed", "number",
                 "Move speed, " + MobTweak.MIN_SPEED + " to " + MobTweak.MAX_SPEED + ".");
         Schemas.prop(s, "invulnerable", "boolean", "True = nothing can hurt it.");
@@ -881,6 +886,12 @@ public final class ModifyMobTool implements McpTool {
      *
      * @return what became of the change
      */
+    /** The solid volume of the body a creature draws, or NaN when it draws none (#101's power line). */
+    private static double drawnVolume(com.moddingfromamod.species.Species sp) {
+        var g = com.moddingfromamod.runtime.ModelRepository.geometry(sp.modelKey());
+        return g == null ? Double.NaN : g.volume();
+    }
+
     private static Persisted persistToSpecies(LivingEntity e, MobTweak tweak) {
         com.moddingfromamod.species.Species current = speciesOf(e);
         if (current == null) {
@@ -899,6 +910,7 @@ public final class ModifyMobTool implements McpTool {
         com.moddingfromamod.species.Species next = current.with(
                 scale, tweak.health(), tweak.damage(), tweak.speed(),
                 tweak.name(), glowing)
+                .withDefence(tweak.armor(), tweak.knockbackResistance())
                 // Riding and harmlessness ARE the design (2026-10-11): a rideable T-Rex his button
                 // brought back could not be ridden, because this was the one animal's alone.
                 .withDesignedBehaviour(tweak.pet().rideable(), tweak.pet().friendly())
@@ -1049,6 +1061,21 @@ public final class ModifyMobTool implements McpTool {
                             + " rebuilt that way in a moment. The others of its kind are unchanged.)"
                     : "(Saved to the creature's design, so every one of these — now and in"
                             + " future — is like this.)");
+            // #101: what its numbers now mean, and a guard that cannot hit, caught before he sees it
+            var nowSpecies = speciesOf(e);
+            if (nowSpecies != null && (tweak.health() != null || tweak.damage() != null || tweak.armor() != null
+                    || tweak.knockbackResistance() != null || !tweak.behaviour().isEmpty())) {
+                double vol = drawnVolume(nowSpecies);
+                notes.add(com.moddingfromamod.species.PowerLine.of(nowSpecies, vol));
+                String zeroHit = com.moddingfromamod.species.PowerLine.zeroHitFlag(nowSpecies, vol);
+                if (!zeroHit.isEmpty()) {
+                    notes.add(zeroHit);
+                }
+                String farAbove = com.moddingfromamod.species.PowerLine.farAbove(nowSpecies, vol);
+                if (!farAbove.isEmpty()) {
+                    notes.add(farAbove);
+                }
+            }
             return;
         }
         boolean creature = speciesOf(e) != null;
@@ -1093,6 +1120,12 @@ public final class ModifyMobTool implements McpTool {
             // Perfectly normal: a chicken has no attack-damage attribute at all.
             notes.add("(a " + typeId(e) + " has no attack damage to set.)");
         }
+        if (tweak.armor() != null && !set(e, Attributes.ARMOR, tweak.armor())) {
+            notes.add("(couldn't change a " + typeId(e) + "'s armour.)");
+        }
+        if (tweak.knockbackResistance() != null && !set(e, Attributes.KNOCKBACK_RESISTANCE, tweak.knockbackResistance())) {
+            notes.add("(couldn't change how hard a " + typeId(e) + " is to push.)");
+        }
         if (tweak.speed() != null && !set(e, Attributes.MOVEMENT_SPEED, tweak.speed())) {
             notes.add("(couldn't change a " + typeId(e) + "'s speed.)");
         }
@@ -1109,6 +1142,54 @@ public final class ModifyMobTool implements McpTool {
         if (tweak.glow() != null) {
             applyGlow(scoreboard, e, tweak);
         }
+        // #174 C1: a REAL mob's numbers were set by hand above, and nothing fits a body with no species to this world's
+        // limits by itself, so a wished wolf stood at attack 100 in a world capped at 5. Hold it to them now (its
+        // wisher's limits, or with nobody acting the tightest any player here is held to), and say so.
+        if (!creature && (tweak.health() != null || tweak.damage() != null || tweak.armor() != null
+                || tweak.knockbackResistance() != null || tweak.speed() != null)) {
+            java.util.UUID wisher = ownerOverride;
+            if (wisher == null && e.getServer() != null) {
+                ServerPlayer acting = com.moddingfromamod.agent.ActingChild.person(e.getServer());
+                wisher = acting == null ? null : acting.getUUID();
+            }
+            List<String> held = com.moddingfromamod.wish.LiveFit.hold(e, wisher);
+            if (!held.isEmpty()) {
+                notes.add("(held to this world's limits: " + String.join(", ", held)
+                        + ". It stands at the limit here, and at its own numbers in a world that allows them.)");
+            }
+        }
+        // #101 (smoke): a REAL mob whose numbers or instinct were shaped is told its power too, read from the live
+        // entity (its attributes and its box), with the same flags a sculpted creature's result carries
+        if (!creature && (tweak.health() != null || tweak.damage() != null || tweak.armor() != null
+                || tweak.knockbackResistance() != null || tweak.scale() != null || !tweak.behaviour().isEmpty())) {
+            notes.addAll(realMobPower(e, tweak));
+        }
+    }
+
+    /** The power line of a real mob as it now stands, and the zero-hit flag and the far-above advisory where they apply. */
+    static List<String> realMobPower(LivingEntity e, MobTweak tweak) {
+        List<String> out = new ArrayList<>();
+        double health = e.getMaxHealth();
+        double damage = e.getAttribute(Attributes.ATTACK_DAMAGE) == null ? 0 : e.getAttributeValue(Attributes.ATTACK_DAMAGE);
+        double armor = e.getAttribute(Attributes.ARMOR) == null ? 0 : e.getAttributeValue(Attributes.ARMOR);
+        double knockback = e.getAttribute(Attributes.KNOCKBACK_RESISTANCE) == null ? 0
+                : e.getAttributeValue(Attributes.KNOCKBACK_RESISTANCE);
+        boolean boss = com.moddingfromamod.mob.RideSeat.BOSSES.contains(typeId(e))
+                || tweak.behaviour().powers().contains(com.moddingfromamod.species.Species.Power.BOSS);
+        var band = com.moddingfromamod.species.PowerBand.forVolume(
+                com.moddingfromamod.species.PowerLine.boxVolume(e.getBbWidth(), e.getBbHeight()));
+        out.add(com.moddingfromamod.species.PowerLine.of(health, damage, armor, knockback, band, boss, false));
+        var base = tweak.behaviour().base();
+        if (damage <= 0 && com.moddingfromamod.vanilla.RigInstinct.forRealMob(base, tweak.behaviour().powers()).fights()) {
+            out.add(com.moddingfromamod.species.PowerLine.zeroHitFlag("base '"
+                    + base.name().toLowerCase(java.util.Locale.ROOT) + "', on a " + typeId(e).replace('_', ' ')
+                    + " with no attack of its own", band));
+        }
+        String far = com.moddingfromamod.species.PowerLine.farAbove(health, damage, armor, band, boss);
+        if (!far.isEmpty()) {
+            out.add(far);
+        }
+        return out;
     }
 
     /**

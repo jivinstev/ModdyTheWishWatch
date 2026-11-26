@@ -374,6 +374,44 @@ class EntityHandlesTest {
     }
 
     @Test
+    void armourAndKnockbackSurviveASaveAndAnOldRecordStillUndoesWhatItCaptured() {
+        EntityHandles before = new EntityHandles();
+        UUID cow = UUID.randomUUID();
+        MobState was = new MobState(1.0, 10.0, null, null, null, null, false, null, 2.0, 0.0);
+        before.targeted(cow, "minecraft:cow", "Daisy", "wish-1", "modify_mob", "armour 10", was);
+        com.google.gson.JsonObject saved = before.toJson();
+        EntityHandles after = new EntityHandles();
+        after.loadJson(saved);
+        assertEquals(was, after.restorePointFor("@cow", "wish-1"), "#115: armour and knockback come back");
+        assertFalse(after.refusedNewer());
+        // the same record as a build before #115 wrote it (v1): what it captured is still there, the rest is unknown
+        com.google.gson.JsonObject old = saved.deepCopy();
+        com.google.gson.JsonObject rec = old.getAsJsonArray("handles").get(0).getAsJsonObject()
+                .getAsJsonArray("history").get(0).getAsJsonObject().getAsJsonObject("before");
+        rec.remove("v");
+        rec.remove("armor");
+        rec.remove("knockback_resistance");
+        EntityHandles older = new EntityHandles();
+        older.loadJson(old);
+        MobState got = older.restorePointFor("@cow", "wish-1");
+        assertEquals(10.0, got.maxHealth());
+        assertNull(got.armor());
+    }
+
+    @Test
+    void aNewerUndoRecordIsRefusedAndTheTableIsNeverWrittenBack() {
+        EntityHandles before = new EntityHandles();
+        before.targeted(UUID.randomUUID(), "minecraft:cow", "Daisy", "wish-1", "modify_mob", "x",
+                new MobState(1.0, null, null, null, null, null, null));
+        com.google.gson.JsonObject saved = before.toJson();
+        saved.getAsJsonArray("handles").get(0).getAsJsonObject().getAsJsonArray("history").get(0).getAsJsonObject()
+                .getAsJsonObject("before").addProperty("v", MobState.RECORD_VERSION + 1);
+        EntityHandles after = new EntityHandles();
+        after.loadJson(saved);
+        assertTrue(after.refusedNewer(), "a newer Moddy's record: this table must never overwrite its file");
+    }
+
+    @Test
     void clearResetsEverythingForANewRun() {
         EntityHandles h = new EntityHandles();
         h.remember(UUID.randomUUID(), "minecraft:zombie", null);
