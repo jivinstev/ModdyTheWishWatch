@@ -251,7 +251,7 @@ jobs:
       - *gradle-cache
       - *centralMirror
       - name: A virtual display and software OpenGL
-        run: sudo apt-get update -qq && sudo apt-get install -y -qq xvfb libgl1-mesa-dri mesa-utils
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq xvfb libgl1-mesa-dri mesa-utils libegl1 libegl-mesa0
       - name: Every rig film the scoreboard names
         run: |
           python3 tools/rig-films.py --check
