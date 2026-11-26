@@ -22,9 +22,9 @@ Taking `main` into `neoforge-1.21.8` always ships a new version:
    `main`.
 3. **Port CI on `neoforge-1.21.8`** gates it and cuts the pre-release `moddingfromamod-X.Y.Z-mc1.21.8` (push the tag,
    or run the workflow with `release = true`). Its gates are Gate A, Gate B and, as Gate C, the rig films
-   (`tools/gate-c-rig.sh`, every film, declared in `.port/1.21.8/gate-c.json`), run in a real client on the full
-   environment; the release's `gates-full.md` records the Gate C row. A version branch above 1.21.8 inherits that file
-   until it has its own. A set where a film failed and then passed its one retry (FLAKY, exit 3) is a pass on a release
+   (`tools/gate-c-rig.sh --targeted`: the core films plus what changed since the last release, declared in
+   `.port/1.21.8/gate-c.json`), run in a real client on the full environment; the release's `gates-full.md` records
+   the Gate C row. Every rung declares the same in its own file ("Gate C on every version"). A set where a film failed and then passed its one retry (FLAKY, exit 3) is a pass on a release
    run only, with a `WARNING FLAKY` Gate C row in the release notes (`release_flaky_exit` in that file); a pull
    request's `rig-films` job and Port CI's push runs still count it as a failure. #171 tracks fixing the flakes.
 
@@ -84,6 +84,56 @@ so a rung with no covering run waits about that long before its pre-release. A r
 pre-released. A test that is flaky on a rung goes on the flake register with its
 issue, like any other.
 
+## Gate C on every version
+
+**Every rung declares its own Gate C: the targeted rig films.** `.port/<mc>/gate-c.json` (1.21.8, 1.21.10, 1.21.11,
+26.1.2, 26.2, 26.3, all on `main` and carried up by the merge) runs `tools/gate-c-rig.sh --targeted`, as Port CI's
+Gate C, in a real client on the full environment. Port CI takes a rung's own file, else the nearest lower version's,
+so a new rung inherits the one below until it gets its own. A targeted run is:
+
+- **the core set, always** (`RIG_FILMS_CORE` in `tools/rig-films.py`: `vanillastage`, a creature drawn and
+  photographed; `vanillawalk`, a walk with every part held to its body; `vanilladeath`, the fall and spin), about 2.5
+  minutes;
+- **plus what changed since the rung's last release** (the newest `moddingfromamod-*-mc<mc>` tag below HEAD): a
+  film whose own client test changed runs, and a change to anything every film measures (the rig, the harness, the
+  sculpt tool, the creature lesson, the scoreboard, the scripts: `RIG_PATH_RULES`) runs **every** film. With no
+  release below HEAD, every film runs.
+
+`python3 tools/rig-films.py --targeted [BASE]` prints the selection and why; `./tools/gate-c-rig.sh --targeted
+[BASE] --list` shows what a run would run. The pull request job (`rig-films` in `ci.yml`) still runs every film when a
+change touches what they measure. A film that fails is run once more and FLAKY is a pass only on a release run
+(`release_flaky_exit`), as before.
+
+**The set is decided per version, in one place.** `tools/rig-films.py` takes the films the scoreboard names, minus
+`RIG_FILMS_NOT_RUN` (never run anywhere) and minus `RIG_FILMS_NOT_ON[<minecraft_version>]`: a version's declared
+subset, each film there with its reason. `--list` on a branch prints that branch's set and names every film it leaves
+out; `--check` refuses an entry that is not a film or gives no reason. A film is left out only when it **cannot run**
+on a version (a harness that has nothing to measure there). A film that runs and fails on a rung is a finding about
+that rung's port, and goes to an issue, never into this table to turn a release green. The table is empty today.
+
+**What the films needed to run on 26.x**, all fixed on `main` so every rung gets them with the merge up (proved on
+`neoforge-26.3` with `main`'s rig scripts, 2026-11-26):
+
+| 26.x broke | Why | The fix (works on every version) |
+|---|---|---|
+| no window: `Couldn't find matching GLX visual` | 26.x opens its window with SDL3, which asks for an sRGB-capable framebuffer; Xvfb's software GLX has none | `tools/client-test.sh` sets `SDL_VIDEO_FORCE_EGL=1` (GLFW never reads it), and warns without Mesa's EGL (`apt-get install -y libegl1 libegl-mesa0`) |
+| every photograph: `the GPU readback did not complete` | a fenced task's fence now waits for the frame's command-encoder submit | `gatec/Screenshots` submits the encoder when it has `submit()` (26.x), and does nothing more on 1.21.x |
+| the walking films' drift meter: `NoSuchFieldException: interpolationData` | `InterpolationHandler` became an interface; a display's ease lives on `LinearInterpolationHandler` | `gatec/RigDriftMeter` finds the fields on the handler's own class hierarchy, by the names each version uses |
+| `vanillaclips` row 5.2: `getAttackAnim advanced` | its "vanilla's number is always 0" is 1.21.x bytecode: 26.x advances every living entity's swing | the row asks the running game whether `updateSwingTime` exists, and only then requires 0 |
+
+What ran where is in the table below; a rung's own release records its Gate C row in its `gates-full.md`.
+
+| Version | Rig films | Where it was proved |
+|---|---|---|
+| 1.21.8 | all 13; the core set 154 s | Port CI, every release (`.port/1.21.8/gate-c.json`); this change locally |
+| 26.3 | all 13: 12 pass, `vanillahair` flaky (failed then passed; 2 of 3 more runs passed, 1 hung); the core set 149 s | locally, `neoforge-26.3` + this change, Xvfb + llvmpipe (2026-11-26) |
+| 1.21.10, 1.21.11, 26.1.2, 26.2 | not yet run | the first release after `main` is merged up runs them |
+
+To run the films on a rung by hand: check out `neoforge-<v>`, install that version's Java (26.x needs 25:
+`.port/<v>/branch.properties`, `java_version`), `apt-get install -y xvfb libgl1-mesa-dri libegl1 libegl-mesa0`, and
+`GRADLE_ARGS=-Pstore_jar=false ./tools/gate-c-rig.sh`. A rung's client runs in `build/mc<v>/run`
+(`.port/branch.gradle`), so its options never reach another version's client.
+
 ## Promotion
 
 Only the owner promotes, with `/promote`, and only builds a person has played. That covers a mid-week 1.21.8 release
@@ -125,7 +175,8 @@ because `release-line.yml` would refuse that commit.
   owner attaches both repositories to it (claude.ai/code/routines → the task → Edit → "Select a repository" under
   Instructions), because a scheduled session can't attach one itself.
 - `.github/workflows/port-ci.yml`: gates, pre-release, promote and publish. Generated by the Port CI kit; don't edit
-  it by hand. `.port/1.21.8/gate-c.json` names its Gate C (the rig films); that file is ours to edit.
+  it by hand. `.port/1.21.8/gate-c.json` names its Gate C (the rig films); that file is ours to edit, and every
+  higher rung inherits it ("Gate C on every version"). `tools/rig-films.py` holds each version's declared subset.
 - `.github/port-release-gate.json`: the command Port CI's release-gate hook runs before a pre-release
   (`tools/gate/gate.py release-gate`); `.github/workflows/nightly.yml` with `kind = release` is the tier it starts.
 - Moddy-Worlds is the second repository in the same plan: one issue, one round, one `/promote`. It follows the same

@@ -1,1 +1,1 @@
-{"schema":1,"script":"tools/gate-c-rig.sh","args":[],"timeout_minutes":60,"release_flaky_exit":3}
+{"schema":1,"script":"tools/gate-c-rig.sh","args":["--targeted"],"timeout_minutes":60,"release_flaky_exit":3}
