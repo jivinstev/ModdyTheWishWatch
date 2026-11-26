@@ -32,7 +32,7 @@ FOUND_LINE = re.compile(r"gt-adapter: ([0-9]+) tests found")
 # Paths no GameTest reads: a change only here leaves Gate B's verdict for a commit standing (docs/GATE_B.md,
 # "Which tree a result belongs to"). A DENY list on purpose: forgetting a path here costs a re-run, while an
 # allow list that forgot one would let a release reuse a run of different code.
-NOT_GATE_B = ("docs/", ".github/", "art/", "src/test/", "tools/client-validation/")
+NOT_GATE_B = ("docs/", ".github/", "art/", "src/test/", "tools/client-validation/", ".port/")
 NOT_GATE_B_TOP = re.compile(r"^[^/]+\.md$")
 
 
