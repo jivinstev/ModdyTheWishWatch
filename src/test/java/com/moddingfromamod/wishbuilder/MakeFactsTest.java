@@ -308,6 +308,55 @@ class MakeFactsTest {
         }
     }
 
+    /** #174 B1, B2, B4, B7: the Super Wolf's own recipe, and every way a command can carry a mob's numbers. */
+    @Test
+    void aLearnedRealMobIsRatedByTheNumbersItsCommandSets() {
+        MakeFacts.Artifacts none = (kind, id) -> null;
+        String wolf = "wishsummon minecraft:wolf {\"speed\":0.6,\"damage\":100,\"health\":200,\"friendly\":true,"
+                + "\"name\":\"Super Wolf\",\"persistent\":true}";
+        MakeFacts f = MakeFacts.ofCommands(List.of(wolf), none);
+        assertEquals("creature", f.kind(), f.toString());
+        assertEquals(100.0, f.number(MakeFacts.ATTACK_DAMAGE_HALF_HEARTS).orElse(-1), f.toString());
+        assertEquals(200.0, f.number(MakeFacts.HEALTH_HALF_HEARTS).orElse(-1), f.toString());
+        assertEquals(0.6, f.number(MakeFacts.MOVEMENT_SPEED_ATTRIBUTE).orElse(-1), f.toString());
+        // the plain game's real mob, with no numbers set, still reads as itself
+        assertEquals(MakeFacts.ofCommands(List.of("summon minecraft:wolf"), none).kind(), "creature");
+        // a summon's NBT
+        MakeFacts nbt = MakeFacts.ofCommands(List.of("summon minecraft:zombie ~ ~ ~ {attributes:[{id:\"minecraft:attack_damage\","
+                + "base:100},{base:300d,id:\"minecraft:max_health\"}]}"), none);
+        assertEquals(100.0, nbt.number(MakeFacts.ATTACK_DAMAGE_HALF_HEARTS).orElse(-1), nbt.toString());
+        assertEquals(300.0, nbt.number(MakeFacts.HEALTH_HALF_HEARTS).orElse(-1), nbt.toString());
+        // what an execute runs
+        MakeFacts ex = MakeFacts.ofCommands(List.of("execute as @s at @s run " + wolf), none);
+        assertEquals(100.0, ex.number(MakeFacts.ATTACK_DAMAGE_HALF_HEARTS).orElse(-1), ex.toString());
+        // three lines that each make one make three
+        MakeFacts three = MakeFacts.ofCommands(List.of(wolf, wolf, wolf), none);
+        assertEquals(3.0, three.number(MakeFacts.COUNT_MADE).orElse(-1), three.toString());
+    }
+
+    @Test
+    void aLearnedRealMobThatFollowsHimIsNotRatedAMonster() {
+        // a wishsummon spec that makes the mob follow him or never attack him acts as the Builder's "Follows you" or
+        // "Friendly": with its numbers now read, a pet wolf must not newly read as the hostile wolf a plain one may be
+        MakeFacts.Artifacts none = (kind, id) -> null;
+        assertFalse(MakeFacts.ofCommands(List.of("wishsummon minecraft:wolf {\"follow\":true,\"damage\":100}"), none)
+                .has(MakeFacts.HOSTILE));
+        assertFalse(MakeFacts.ofCommands(List.of("wishsummon minecraft:wolf {\"friendly\":true}"), none)
+                .has(MakeFacts.HOSTILE));
+        assertTrue(MakeFacts.ofCommands(List.of("wishsummon minecraft:wolf {\"damage\":100}"), none)
+                .has(MakeFacts.HOSTILE), "a real wolf as the game makes it is rated as the game makes it");
+    }
+
+    @Test
+    void theSuperWolfsRecipeIsLetThroughOnlyBecauseItIsFittedLive() {
+        MakeFacts.Artifacts none = (kind, id) -> null;
+        String wolf = "wishsummon minecraft:wolf {\"damage\":100,\"health\":200}";
+        Map<String, Double> step1 = Map.of(MakeFacts.ATTACK_DAMAGE_HALF_HEARTS, 5.0, MakeFacts.HEALTH_HALF_HEARTS, 40.0);
+        MakeFacts f = MakeFacts.ofCommands(List.of(wolf), none);
+        assertFalse(MakeFit.satisfies(f, step1), "it is over the step's numbers: " + f);
+        assertTrue(MakeFit.satisfiesHere(f, step1), "a creature over only in what LiveFit holds where it stands");
+    }
+
     @Test
     void aRecipeIsRatedByWhatItsCommandsMake() {
         JsonObject dragon = JsonParser.parseString("{\"id\":\"d\",\"name\":\"Dragon\",\"powers\":[\"boss\",\"flies\"],"

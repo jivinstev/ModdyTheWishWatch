@@ -56,26 +56,48 @@ def store(data_dir: str, rec: dict) -> str:
     return rel
 
 
+BOT = {"GIT_AUTHOR_NAME": "github-actions[bot]", "GIT_AUTHOR_EMAIL": "41898282+github-actions[bot]@users.noreply.github.com",
+       "GIT_COMMITTER_NAME": "github-actions[bot]",
+       "GIT_COMMITTER_EMAIL": "41898282+github-actions[bot]@users.noreply.github.com"}
+
+
 def publish(data_dir: str, message: str, attempts: int = 5) -> None:
-    """Commit what `store` wrote and push it, rebasing over a concurrent writer's push. Files never collide."""
+    """Commit what `store` wrote and push it, rebasing over a concurrent writer's push. Files never collide.
+
+    Every git call carries the bot's identity: a rebase re-commits, and a runner has no user.name, so a rebase without
+    one fails, and the next push then sent origin's own head and said "recorded" with this record lost (two writers
+    seconds apart: Nightly's merge and the platform smoke's record; test_gate.PublishRace). A failed rebase is aborted
+    and tried again, and a push counts only once origin's branch holds this commit."""
+    env = dict(os.environ, **BOT)
+
     def run(*a: str) -> subprocess.CompletedProcess:
-        return subprocess.run(["git", *a], cwd=data_dir, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        return subprocess.run(["git", *a], cwd=data_dir, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, env=env)
     run("add", "-A")
     if run("diff", "--cached", "--quiet").returncode == 0:
         print("gate-data: nothing new to record")
         return
-    c = run("-c", "user.name=github-actions[bot]", "-c", "user.email=41898282+github-actions[bot]@users.noreply.github.com",
-            "commit", "-q", "-m", message)
+    c = run("commit", "-q", "-m", message)
     if c.returncode != 0:
         raise RuntimeError("gate-data commit failed: " + c.stdout.decode("utf-8", "replace"))
+    why = ""
     for i in range(attempts):
         p = run("push", "origin", "HEAD:refs/heads/" + DATA_BRANCH)
         if p.returncode == 0:
-            print("gate-data: recorded (%s)" % message)
-            return
+            mine = run("rev-parse", "HEAD").stdout.decode().strip()
+            run("fetch", "-q", "origin", DATA_BRANCH)
+            if run("merge-base", "--is-ancestor", mine, "FETCH_HEAD").returncode == 0:
+                print("gate-data: recorded (%s)" % message)
+                return
+            why = "the push did not carry this record"
+        else:
+            why = p.stdout.decode("utf-8", "replace").strip().splitlines()[-1:] or ["push refused"]
+            why = why[0]
         time.sleep(2 * (i + 1))
-        run("pull", "--rebase", "-q", "origin", DATA_BRANCH)
-    raise RuntimeError("gate-data: could not push after %d attempts" % attempts)
+        r = run("pull", "--rebase", "-q", "origin", DATA_BRANCH)
+        if r.returncode != 0:
+            run("rebase", "--abort")
+            why = "rebase failed: " + r.stdout.decode("utf-8", "replace").strip()[-300:]
+    raise RuntimeError("gate-data: could not push after %d attempts (%s)" % (attempts, why))
 
 
 # ---------------------------------------------------------------------------------------------- reading

@@ -31,11 +31,35 @@ public final class Wished {
         if (e == null || e instanceof net.minecraft.world.entity.Display) {
             return false;   // a rig's display part: part of a body, never one
         }
+        if (isWorldWished(e)) {
+            return false;   // a WORLD's creature (#178), even a Builder design's carrier: never a player's wish
+        }
         return e instanceof com.moddingfromamod.entity.WishMobEntity || byTags(e.getTags());
     }
 
     /** The decision on an entity's tags alone: pure. */
     public static boolean byTags(Collection<String> tags) {
         return tags != null && (tags.contains(WishMobTags.ALL) || tags.contains(WishMobLimit.WISHED_TAG));
+    }
+
+    /**
+     * Is {@code e} a body a WORLD wished ({@link WorldWishes}, #178): the arena's own monsters? Never also
+     * {@link #isWished}: a world's creature is not a player's, so it is not spared, fitted or given a role as one.
+     */
+    public static boolean isWorldWished(Entity e) {
+        return e != null && e.getTags().contains(WorldWishes.TAG);
+    }
+
+    /** Which world module wished {@code e}, or empty: the {@code moduleId} it was wished under. */
+    public static java.util.Optional<String> worldOwnerOf(Entity e) {
+        if (e == null) {
+            return java.util.Optional.empty();
+        }
+        for (String t : e.getTags()) {
+            if (t.startsWith(WorldWishes.MODULE_PREFIX)) {
+                return java.util.Optional.of(t.substring(WorldWishes.MODULE_PREFIX.length()));
+            }
+        }
+        return java.util.Optional.empty();
     }
 }

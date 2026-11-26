@@ -53,6 +53,18 @@ class ToolArgFitTest {
     }
 
     @Test
+    void theBriefPromisesFittingOnlyForTheToolsThatFit() {
+        // #174 A10: it said "a tool that is given more sets it to the limit"; the agent believed it, wrote damage 100
+        // into a learned recipe, and told a child the arena capped it
+        String brief = ToolArgFit.brief(Map.of(MakeFacts.ATTACK_DAMAGE_HALF_HEARTS, 5.0));
+        assertTrue(!brief.contains("a tool that is given more"), brief);
+        for (String tool : ToolArgFit.MAPPED.keySet()) {
+            assertTrue(brief.contains(tool), "the brief must name " + tool + ", which fits: " + brief);
+        }
+        assertTrue(brief.contains("NOT fitted") && brief.contains("modify_mob") && brief.contains("learned recipe"), brief);
+    }
+
+    @Test
     void theLessonToPreferTheStrongestAllowedIsPinned() throws Exception {
         // pinned so a later trim of the lessons cannot drop it (#69)
         for (String lesson : List.of("creature.md", "item.md")) {

@@ -622,6 +622,15 @@ public final class ModelRepository {
                 break;
             }
         }
+        // The key names a folder (models/<key>/) and files (<key>.undo-...): a device name Windows keeps (con, nul,
+        // aux, com1...) would not be a folder on a Windows player's disk (store/SafeFileName). Never made new; a key
+        // already saved under one (Linux, macOS) is still read as it is (isValidKey).
+        if (com.moddingfromamod.store.SafeFileName.isWindowsReserved(sb.toString())) {
+            if (sb.length() >= 64) {
+                sb.setLength(63);
+            }
+            sb.append('_');
+        }
         return sb.toString();
     }
 }

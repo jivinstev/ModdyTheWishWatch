@@ -131,9 +131,15 @@ public final class ToolArgFit {
         if (sb.length() == 0) {
             return "";
         }
+        // #174 A10: this used to promise that ANY tool given more sets it to the limit. Only the MAPPED tools do; the
+        // agent believed the promise, wrote damage 100 into a learned recipe, and told a child the arena capped it.
         return "THIS WORLD'S LIMITS (numbers only, by make fact): " + sb
-                + ". Make the strongest version within them: a tool that is given more sets it to the limit and tells "
-                + "you.";
+                + ". Make the strongest version within them. Only these tools set a number above a limit to the limit "
+                + "and tell you: " + String.join(", ", new java.util.TreeSet<>(MAPPED.keySet()))
+                + ". Anything else (a learned recipe, modify_mob, run_command, a datapack) is NOT fitted when it is "
+                + "made: write its numbers within these limits yourself. A creature made or changed any way is held "
+                + "to them where it stands, but an item or an effect made that way is not. Never tell the player a "
+                + "limit was applied unless a tool said so.";
     }
 
     private static String number(double v) {

@@ -1134,6 +1134,22 @@ public final class ModifyMobTool implements McpTool {
         if (tweak.glow() != null) {
             applyGlow(scoreboard, e, tweak);
         }
+        // #174 C1: a REAL mob's numbers were set by hand above, and nothing fits a body with no species to this world's
+        // limits by itself, so a wished wolf stood at attack 100 in a world capped at 5. Hold it to them now (its
+        // wisher's limits, or with nobody acting the tightest any player here is held to), and say so.
+        if (!creature && (tweak.health() != null || tweak.damage() != null || tweak.armor() != null
+                || tweak.knockbackResistance() != null || tweak.speed() != null)) {
+            java.util.UUID wisher = ownerOverride;
+            if (wisher == null && e.getServer() != null) {
+                ServerPlayer acting = com.moddingfromamod.agent.ActingChild.person(e.getServer());
+                wisher = acting == null ? null : acting.getUUID();
+            }
+            List<String> held = com.moddingfromamod.wish.LiveFit.hold(e, wisher);
+            if (!held.isEmpty()) {
+                notes.add("(held to this world's limits: " + String.join(", ", held)
+                        + ". It stands at the limit here, and at its own numbers in a world that allows them.)");
+            }
+        }
         // #101 (smoke): a REAL mob whose numbers or instinct were shaped is told its power too, read from the live
         // entity (its attributes and its box), with the same flags a sculpted creature's result carries
         if (!creature && (tweak.health() != null || tweak.damage() != null || tweak.armor() != null

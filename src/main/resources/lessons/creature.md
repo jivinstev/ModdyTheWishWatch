@@ -539,5 +539,7 @@ would crash, explode or break — it would not; the wand has a size.
 
 **When this world has limits, make the strongest version they allow.** If the brief shows THIS WORLD'S LIMITS and the
 player asks for more than they allow, do not refuse and do not make something weaker than you must: make the strongest
-creature within the limits ("the strongest dragon ever" is made with the most health, damage and size the limits allow), and say so in your own words. A tool given more than a limit sets it to the
-limit and tells you which; pass that on to him once.
+creature within the limits ("the strongest dragon ever" is made with the most health, damage and size the limits allow), and say so in your own words. The tools the brief names set a number above a limit to the
+limit and tell you which; pass that on to him once. Nothing else is fitted when it is made (a learned recipe, modify_mob, run_command, a datapack): write
+its numbers within the limits yourself (the creature is still held to them where it stands, but what you wrote is what its
+recipe keeps), and never tell him a limit was applied unless a tool said so.
