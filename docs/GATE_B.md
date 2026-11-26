@@ -255,3 +255,19 @@ but the compiler bundle, `third_party/`'s licence texts, the gate tools' own `co
 **Measured** (`gate.py backtest`, every pull request merged since the move, 65, against a full map of the tier):
 see the pull request that switched CI to it for the numbers, and re-run it with
 `gate.py backtest --prs <list> --map <map>` to see them for any set of changes.
+
+## Downloads in CI
+
+Many jobs resolving Gradle dependencies cold at once (a PR that changes `build.gradle`, a split run, a mapping run) is
+what Maven Central answers with `429 Too Many Requests`, and that reddened unrelated pull requests. So, in CI only:
+
+- **Maven Central is read through Google's public mirror of it** (`maven-central.storage-download.googleapis.com`,
+  the same artifacts and checksums). Every job copies `.github/gradle/central-mirror.init.gradle` into
+  `~/.gradle/init.d/`: it points every repository that is Maven Central at the mirror, and puts the mirror first for
+  plugins, so a plugin's own dependencies (which the Gradle Plugin Portal redirects to Maven Central) come from it
+  too. A contributor's own build never sees it.
+- **A changed build starts warm**: each Gradle cache step falls back (`restore-keys`) to the newest cache when its exact
+  key misses, instead of starting cold.
+- **A build that failed for want of a download runs once more**, a minute later
+  (`.github/gradle/retry-on-download.sh`; `gate.py run` does the same for a server that never started). Any other
+  failure is returned at once.

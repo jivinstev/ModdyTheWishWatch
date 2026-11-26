@@ -108,6 +108,10 @@ jobs:
             ~/.gradle/caches
             ~/.gradle/wrapper
           key: gradle-${{ runner.os }}-${{ hashFiles('gradle.properties', 'build.gradle', 'versions/*.properties', 'gradle/wrapper/gradle-wrapper.properties') }}
+          restore-keys: gradle-${{ runner.os }}-
+      - &centralMirror
+        name: Maven Central through its public mirror (CI only, .github/gradle/central-mirror.init.gradle)
+        run: mkdir -p ~/.gradle/init.d && cp .github/gradle/central-mirror.init.gradle ~/.gradle/init.d/
       - name: Compile (retried on a busy repository)
         run: |
           for i in 1 2 3; do
@@ -132,6 +136,7 @@ jobs:
           distribution: temurin
           java-version: '21'
       - *gradleCache
+      - *centralMirror
       - name: This job's share of the tier
         env:
           PLAN: ${{ needs.plan.outputs.plan }}
