@@ -1148,8 +1148,8 @@ public final class ModifyMobTool implements McpTool {
         if (!creature && (tweak.health() != null || tweak.damage() != null || tweak.armor() != null
                 || tweak.knockbackResistance() != null || tweak.speed() != null)) {
             java.util.UUID wisher = ownerOverride;
-            if (wisher == null && e.getServer() != null) {
-                ServerPlayer acting = com.moddingfromamod.agent.ActingChild.person(e.getServer());
+            if (wisher == null && e.level().getServer() != null) {
+                ServerPlayer acting = com.moddingfromamod.agent.ActingChild.person(e.level().getServer());
                 wisher = acting == null ? null : acting.getUUID();
             }
             List<String> held = com.moddingfromamod.wish.LiveFit.hold(e, wisher);

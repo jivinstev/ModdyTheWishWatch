@@ -282,13 +282,10 @@ public final class LiveFit {
                 || !(stack.getItem() instanceof net.minecraft.world.item.SpawnEggItem egg)) {
             return;
         }
-        var data = stack.getOrDefault(net.minecraft.core.component.DataComponents.ENTITY_DATA,
-                net.minecraft.world.item.component.CustomData.EMPTY);
-        net.minecraft.nbt.CompoundTag tag = data.copyTag();
-        if (tag.getString("id").isEmpty()) {
-            var type = egg.getType(wisher.registryAccess(), stack);
-            tag.putString("id", net.minecraft.core.registries.BuiltInRegistries.ENTITY_TYPE.getKey(type).toString());
-        }
+        // 1.21.9: entity_data is a TypedEntityData, its entity type held beside the tag rather than as the tag's "id"
+        var data = stack.get(net.minecraft.core.component.DataComponents.ENTITY_DATA);
+        net.minecraft.world.entity.EntityType<?> type = data != null ? data.type() : egg.getType(stack);
+        net.minecraft.nbt.CompoundTag tag = data != null ? data.copyTagWithoutId() : new net.minecraft.nbt.CompoundTag();
         net.minecraft.nbt.ListTag tags = tag.getListOrEmpty("Tags").copy();
         java.util.Set<String> have = new java.util.HashSet<>();
         for (int i = 0; i < tags.size(); i++) {
@@ -301,7 +298,7 @@ public final class LiveFit {
         tags.add(net.minecraft.nbt.StringTag.valueOf(FIT_OWNER_PREFIX + wisher.getUUID()));
         tag.put("Tags", tags);
         stack.set(net.minecraft.core.component.DataComponents.ENTITY_DATA,
-                net.minecraft.world.item.component.CustomData.of(tag));
+                net.minecraft.world.item.component.TypedEntityData.of(type, tag));
     }
 
     /** Did a wish bring this body into the world (not merely change one the world made)? */

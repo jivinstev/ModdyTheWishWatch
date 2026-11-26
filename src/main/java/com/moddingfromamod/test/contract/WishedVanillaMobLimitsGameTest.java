@@ -328,7 +328,7 @@ public final class WishedVanillaMobLimitsGameTest {
                 }
                 check(helper, !egg.isEmpty(), "the egg did not arrive in his inventory");
                 var data = egg.get(net.minecraft.core.component.DataComponents.ENTITY_DATA);
-                check(helper, data != null && data.copyTag().toString().contains(LiveFit.HELD_TAG),
+                check(helper, data != null && data.copyTagWithoutId().toString().contains(LiveFit.HELD_TAG),
                         "the egg a wish handed over does not say what it hatches is held: " + data);
                 // hatched as the game hatches an egg: the egg's entity data put on the mob
                 LivingEntity wolf = EntityType.WOLF.spawn(helper.getLevel(), egg, p, p.blockPosition().east(2),
