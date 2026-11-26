@@ -91,7 +91,9 @@ public final class Devices {
         // an even lattice first (every 4 blocks from the walls), so lamps spread over the room rather than a corner
         floor.sort(java.util.Comparator.comparingInt((RsPos p) -> ((p.x() - box[0] - 2) % 4 == 0
                 && (p.z() - box[2] - 2) % 4 == 0) ? 0 : 1));
-        return spread(floor, count, 3);
+        // 4 apart, not 3: at 3 the bus between two rows has to pass beside a column's strongly powered base, which
+        // the router refuses (measured: 6 and 12 lamps in a house could not be wired)
+        return spread(floor, count, 4);
     }
 
     /** {@code count} ground spots round {@code centre} (flush in the ground: solid with two walkable cells above). */

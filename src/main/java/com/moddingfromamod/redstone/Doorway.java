@@ -201,6 +201,31 @@ public final class Doorway {
         faces.add(new Face(RsDir.NORTH, new RsPos(x0, y0, z1), x1 - x0 + 1));   // south face, along = EAST
         faces.add(new Face(RsDir.EAST, new RsPos(x0, y0, z0), z1 - z0 + 1));    // west face, along = SOUTH
         faces.add(new Face(RsDir.WEST, new RsPos(x1, y0, z1), z1 - z0 + 1));    // east face, along = NORTH
+        // each face's REAL wall: a box can be wider than its walls (a roof overhang, a porch), so step in from the
+        // box's face to the first layer that is mostly wall on its ground storey (measured: a modern house's
+        // overhang put the search one block outside its walls, and neither its door nor a wall to cut was found)
+        List<Face> real = new ArrayList<>();
+        for (Face f : faces) {
+            Face use = f;
+            for (int k = 0; k <= 3; k++) {
+                RsPos c = f.corner().plus(f.in().dx() * k, 0, f.in().dz() * k);
+                RsDir along = f.in().clockwise();
+                int walls = 0;
+                for (int dy = 1; dy <= 2; dy++) {
+                    for (int u = 0; u < f.length(); u++) {
+                        if (wall(w, at(c.up(dy), along, u))) {
+                            walls++;
+                        }
+                    }
+                }
+                if (walls * 100 >= 35 * 2 * f.length()) {      // a third of the two rows: glass walls count for little
+                    use = new Face(f.in(), c, f.length());
+                    break;
+                }
+            }
+            real.add(use);
+        }
+        faces = real;
         double best = Double.MAX_VALUE;
         Found found = null;
         for (Face f : faces) {

@@ -20,7 +20,7 @@ public record Control(String kind, RsPos use, List<RsCell> cells, RsPos port, in
         this(kind, use, cells, port, strength, false);
     }
 
-    public static final List<String> KINDS = List.of("lever", "button", "pressure_plate");
+    public static final List<String> KINDS = List.of("lever", "button", "pressure_plate", "logic");
 
     /**
      * Plans a floor control on the block {@code ground} (the top solid block where the player will stand), dropping
@@ -97,5 +97,20 @@ public record Control(String kind, RsPos use, List<RsCell> cells, RsPos port, in
         cells.add(RsCell.of(out, "minecraft:redstone_wire", RsCell.Role.CHANNEL));
         cells.add(RsCell.of(out.up(-1), "minecraft:stone", RsCell.Role.CASING));
         return new Control(c.kind(), c.use(), cells, out, 14, true);
+    }
+
+    /**
+     * A LOGIC control (the logic bridge, {@link Logic}): a buried cell at channel depth where the mod sets a redstone
+     * block while its condition holds, beside the wire the router starts from. Nothing of it shows: what the child
+     * sees are the condition's own parts (a coin barrel, code buttons, a target), which are not wired at all.
+     */
+    public static Control logic(RsPos cell, RsDir toward) {
+        List<RsCell> cells = new ArrayList<>();
+        cells.add(RsCell.of(cell, "minecraft:air", RsCell.Role.CLEAR));
+        cells.add(RsCell.of(cell.up(-1), "minecraft:stone", RsCell.Role.CASING));
+        RsPos wire = cell.step(toward);
+        cells.add(RsCell.of(wire, "minecraft:redstone_wire", RsCell.Role.CHANNEL));
+        cells.add(RsCell.of(wire.up(-1), "minecraft:stone", RsCell.Role.CASING));
+        return new Control("logic", cell, cells, wire, 14, false);
     }
 }

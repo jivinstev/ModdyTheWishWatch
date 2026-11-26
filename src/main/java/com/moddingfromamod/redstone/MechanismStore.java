@@ -30,7 +30,11 @@ public final class MechanismStore {
 
     /** One built mechanism. {@code journal} is in placement order. */
     public record Entry(String id, String kind, String owner, String dimension, String summary,
-                        List<MechanismWorld.Placed> journal, List<BlockPos> controls) {
+                        List<MechanismWorld.Placed> journal, List<BlockPos> controls, JsonArray logic) {
+        public Entry(String id, String kind, String owner, String dimension, String summary,
+                     List<MechanismWorld.Placed> journal, List<BlockPos> controls) {
+            this(id, kind, owner, dimension, summary, journal, controls, new JsonArray());
+        }
     }
 
     private static final Map<String, Entry> ENTRIES = new LinkedHashMap<>();
@@ -79,7 +83,8 @@ public final class MechanismStore {
                 controls.add(pos(c.getAsJsonArray()));
             }
             Entry e = new Entry(o.get("id").getAsString(), o.get("kind").getAsString(), o.get("owner").getAsString(),
-                    o.get("dimension").getAsString(), o.get("summary").getAsString(), journal, controls);
+                    o.get("dimension").getAsString(), o.get("summary").getAsString(), journal, controls,
+                    o.has("logic") && o.get("logic").isJsonArray() ? o.getAsJsonArray("logic") : new JsonArray());
             ENTRIES.put(e.id(), e);
         }
     }
@@ -156,6 +161,9 @@ public final class MechanismStore {
             JsonArray controls = new JsonArray();
             e.controls().forEach(c -> controls.add(arr(c)));
             o.add("controls", controls);
+            if (e.logic() != null && !e.logic().isEmpty()) {
+                o.add("logic", e.logic());     // additive: a reader without logic ignores it
+            }
             list.add(o);
         }
         JsonObject payload = new JsonObject();

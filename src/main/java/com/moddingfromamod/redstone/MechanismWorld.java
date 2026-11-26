@@ -117,6 +117,12 @@ public final class MechanismWorld {
 
     public static boolean use(ServerLevel level, Control c, boolean on) {
         BlockPos at = LevelView.bp(c.use());
+        if (c.kind().equals("logic")) {
+            // the logic bridge's cell: a redstone block placed (which updates its neighbours) or taken away
+            level.setBlock(at, on ? net.minecraft.world.level.block.Blocks.REDSTONE_BLOCK.defaultBlockState()
+                    : net.minecraft.world.level.block.Blocks.AIR.defaultBlockState(), Block.UPDATE_ALL);
+            return true;
+        }
         BlockState s = level.getBlockState(at);
         if (s.getBlock() instanceof LeverBlock lever) {
             if (s.getValue(LeverBlock.POWERED) != on) {

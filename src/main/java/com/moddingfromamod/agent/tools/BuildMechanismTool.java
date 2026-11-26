@@ -44,7 +44,9 @@ public final class BuildMechanismTool implements McpTool {
             "droppers", "note_blocks");
     static final List<String> INSTRUMENTS = List.of("harp", "bell", "flute", "chime", "guitar", "xylophone", "bass",
             "basedrum", "snare", "hat", "iron_xylophone", "cow_bell", "didgeridoo", "bit", "banjo", "pling");
-    static final List<String> CONTROL_KINDS = List.of("lever", "button", "pressure_plate");
+    static final List<String> CONTROL_KINDS = List.of("lever", "button", "pressure_plate", "logic");
+    /** Always-on clocks ("every") per world before a new one is built switched off (the owner's cap; value measured later). */
+    static final int CLOCK_CAP = 8;
 
     @Override
     public String name() {
@@ -119,6 +121,15 @@ public final class BuildMechanismTool implements McpTool {
         hd.addProperty("description", "A SECRET switch: a button (or lever) set low on the nearest wall beside that "
                 + "place, where nobody would look, instead of one standing on the floor.");
         props.add("hidden", hd);
+        JsonObject when = new JsonObject();
+        when.addProperty("type", "object");
+        when.addProperty("description", "Only for kind \"logic\": WHEN it switches on, for what a lever cannot tell "
+                + "apart. {\"if\": one of player_near (only the players in `who`, or anyone; \"only me\" is his name), "
+                + "mob_near (`who`: mob ids or \"monster\"), paid (`item`, `count`: put in the barrel it places), "
+                + "code (`code`: the order of the code buttons it places, e.g. \"2,0,1\"), every (`seconds` apart, on "
+                + "for `for_seconds`: a clock), night, day, target_hit (a target block it places; on for `for_seconds`); "
+                + "`radius` for the near ones}. A clock past the world's limit is built switched off.");
+        props.add("when", when);
         item.add("properties", props);
         JsonArray req = new JsonArray();
         req.add("kind");
@@ -195,7 +206,17 @@ public final class BuildMechanismTool implements McpTool {
             if (hid && k.equals("pressure_plate")) {
                 return ToolResult.error("a hidden control is a button or a lever on a wall; a pressure plate cannot be one.");
             }
-            asked.add(new String[] {k, a, tog ? "toggle" : "", hid ? "hidden" : ""});
+            String whenJson = "";
+            if (k.equals("logic")) {
+                JsonElement w = e.getAsJsonObject().get("when");
+                if (w == null || !w.isJsonObject() || !w.getAsJsonObject().has("if")
+                        || !com.moddingfromamod.redstone.Logic.KINDS.contains(w.getAsJsonObject().get("if").getAsString())) {
+                    return ToolResult.error("a logic control needs when: {\"if\": one of "
+                            + com.moddingfromamod.redstone.Logic.KINDS + ", …}.");
+                }
+                whenJson = w.toString();
+            }
+            asked.add(new String[] {k, a, tog ? "toggle" : "", hid ? "hidden" : "", whenJson});
         }
         String material = str(args, "material");
         String onArg = str(args, "on").toLowerCase(Locale.ROOT);
@@ -265,7 +286,7 @@ public final class BuildMechanismTool implements McpTool {
             String fresh = MechanismStore.freshId(built.level, mechanism);
             List<BlockPos> controls = built.plan.controls().stream().map(c -> LevelView.bp(c.use())).toList();
             MechanismStore.put(built.level, new MechanismStore.Entry(fresh, mechanism, built.owner,
-                    built.level.dimension().location().toString(), built.summary, built.placed, controls));
+                    built.level.dimension().location().toString(), built.summary, built.placed, controls, built.logic));
             return fresh;
         }, 30_000L);
         StringBuilder b = new StringBuilder();
@@ -292,6 +313,7 @@ public final class BuildMechanismTool implements McpTool {
         String owner = "", summary = "";
         ToolResult error;
         boolean shutAtRest;
+        com.google.gson.JsonArray logic = new com.google.gson.JsonArray();
 
         static Built fail(ToolResult r) {
             Built b = new Built();
@@ -478,7 +500,7 @@ public final class BuildMechanismTool implements McpTool {
             }
             if (!anyInside) {
                 asked = new ArrayList<>(asked);
-                asked.add(new String[] {"button", place.buildId() + ":inside", "", ""});
+                asked.add(new String[] {"button", place.buildId() + ":inside", "", "", ""});
                 addedInside = "a button inside beside the door, so nobody is shut in";
             }
         }
@@ -486,6 +508,7 @@ public final class BuildMechanismTool implements McpTool {
         Set<RsPos> foreign = view.foreignRedstone(centre.plus(-24, -10, -24), centre.plus(24, 10, 24));
         List<MechanismPlanner.ControlAsk> chosen = new ArrayList<>();
         List<String> notHidden = new ArrayList<>();
+        List<LogicParts> logicAsks = new ArrayList<>();
         MechanismPlan plan = null;
         for (String[] c : asked) {
             PlaceFinder.Place cp = PlaceFinder.find(server, player, c[1], com.moddingfromamod.builder.BuildSpots.FRONT);
@@ -500,6 +523,21 @@ public final class BuildMechanismTool implements McpTool {
                     : door != null && ControlSpots.nearDoor(door.frame(), door.width(), spot)
                     ? ControlSpots.atDoor(door.frame(), door.width(), c[0], ControlSpots.side(door.frame(), spot))
                     : ControlSpots.around(spot.up(-1));
+            if (c[0].equals("logic")) {
+                JsonObject when = com.google.gson.JsonParser.parseString(c[4]).getAsJsonObject();
+                LogicParts lp = logicParts(level, view, spot.up(-1), when);
+                List<MechanismPlanner.ControlAsk> withIt = new ArrayList<>(chosen);
+                withIt.add(new MechanismPlanner.ControlAsk("logic", lp.sensorGround, null, false));
+                MechanismPlan p = MechanismPlanner.plan(view, module, withIt, foreign);
+                if (!p.ok()) {
+                    return Built.fail(ToolResult.error("The logic at " + c[1] + " could not be wired: " + p.why()
+                            + ". Nothing was built."));
+                }
+                chosen = withIt;
+                plan = p;
+                logicAsks.add(lp);
+                continue;
+            }
             boolean toggle = c.length > 2 && "toggle".equals(c[2]);
             boolean hidden = c.length > 3 && "hidden".equals(c[3]);
             List<MechanismPlanner.ControlAsk> options = new ArrayList<>();
@@ -565,7 +603,37 @@ public final class BuildMechanismTool implements McpTool {
                     + "wiring could go down out of sight), so it stands on the floor. Tell him, or try a spot by an "
                     + "outside wall.");
         }
+        // the logic rules: each logic control's cell, in order, gets its rule and its parts (placed last, not wired)
+        com.google.gson.JsonArray logic = new com.google.gson.JsonArray();
+        if (!logicAsks.isEmpty()) {
+            List<com.moddingfromamod.redstone.RsCell> cells = new ArrayList<>(plan.cells());
+            int li = 0;
+            int clocks = countClocks(level);
+            for (Control ctl : plan.controls()) {
+                if (!ctl.kind().equals("logic")) {
+                    continue;
+                }
+                LogicParts lp = logicAsks.get(li++);
+                cells.addAll(lp.cells);
+                JsonObject o = lp.json.deepCopy();
+                o.add("cell", arr(ctl.use()));
+                if (o.getAsJsonObject("rule").get("kind").getAsString().equals("every")) {
+                    if (clocks >= CLOCK_CAP) {
+                        o.addProperty("disabled", true);
+                        plan.notes().add("This world already has " + clocks + " always-on clocks, the most it runs (each "
+                                + "one costs the game time every tick), so this one is built SWITCHED OFF. Tell him: "
+                                + "taking out another clocked mechanism (remove_mechanism) frees a slot.");
+                    }
+                    clocks++;
+                }
+                lp.describe.forEach(plan.notes()::add);
+                logic.add(o);
+            }
+            plan = new MechanismPlan(plan.kind(), cells, plan.expects(), plan.controls(), plan.replaced(), plan.notes(),
+                    null);
+        }
         Built b = new Built();
+        b.logic = logic;
         b.level = level;
         b.plan = plan;
         b.owner = player.getGameProfile().getName();
@@ -605,6 +673,119 @@ public final class BuildMechanismTool implements McpTool {
             }
         }
         return out;
+    }
+
+    /** A logic control's rule, its visible parts (not wired) and where its sensor stands. */
+    static final class LogicParts {
+        RsPos sensorGround;
+        final List<com.moddingfromamod.redstone.RsCell> cells = new ArrayList<>();
+        final JsonObject json = new JsonObject();
+        final List<String> describe = new ArrayList<>();
+    }
+
+    static com.google.gson.JsonArray arr(RsPos p) {
+        com.google.gson.JsonArray a = new com.google.gson.JsonArray();
+        a.add(p.x());
+        a.add(p.y());
+        a.add(p.z());
+        return a;
+    }
+
+    static int countClocks(ServerLevel level) {
+        int n = 0;
+        for (MechanismStore.Entry e : MechanismStore.all(level)) {
+            for (JsonElement l : e.logic()) {
+                JsonObject o = l.getAsJsonObject();
+                if (o.getAsJsonObject("rule").get("kind").getAsString().equals("every")
+                        && !(o.has("disabled") && o.get("disabled").getAsBoolean())) {
+                    n++;
+                }
+            }
+        }
+        return n;
+    }
+
+    /** Builds a logic control's rule from `when`, and places its parts near `ground` (the block under the spot). */
+    static LogicParts logicParts(ServerLevel level, LevelView view, RsPos ground, JsonObject when) {
+        LogicParts lp = new LogicParts();
+        lp.sensorGround = ground;
+        String kind = when.get("if").getAsString();
+        JsonObject rule = new JsonObject();
+        rule.addProperty("kind", kind);
+        int onFor = 20 * (when.has("for_seconds") ? Math.max(1, Math.min(60, when.get("for_seconds").getAsInt())) : 5);
+        rule.addProperty("onFor", onFor);
+        rule.addProperty("radius", when.has("radius") ? Math.max(1, Math.min(16, when.get("radius").getAsInt())) : 4);
+        if (when.has("who")) {
+            com.google.gson.JsonArray who = new com.google.gson.JsonArray();
+            JsonElement w = when.get("who");
+            if (w.isJsonArray()) {
+                w.getAsJsonArray().forEach(x -> who.add(x.getAsString()));
+            } else {
+                who.add(w.getAsString());
+            }
+            rule.add("who", who);
+        }
+        List<RsPos> ring = Devices.groundRing(view, ground, 6, 1);
+        switch (kind) {
+            case "paid" -> {
+                String item = when.has("item") ? when.get("item").getAsString() : "minecraft:emerald";
+                rule.addProperty("item", item.contains(":") ? item : "minecraft:" + item);
+                rule.addProperty("count", when.has("count") ? Math.max(1, when.get("count").getAsInt()) : 1);
+                if (!ring.isEmpty()) {
+                    RsPos barrel = ring.get(0).up(1);
+                    lp.cells.add(com.moddingfromamod.redstone.RsCell.of(barrel, "minecraft:barrel",
+                            com.moddingfromamod.redstone.RsCell.Role.CONTROL, "facing", "up", "open", "false"));
+                    lp.json.add("slot", arr(barrel));
+                    lp.describe.add("The coin slot is the barrel at " + where(barrel) + ": put "
+                            + rule.get("count").getAsInt() + " " + rule.get("item").getAsString() + " in it.");
+                }
+            }
+            case "code" -> {
+                List<Integer> code = new ArrayList<>();
+                for (String x : (when.has("code") ? when.get("code").getAsString() : "1,0,2").split(",")) {
+                    code.add(Integer.parseInt(x.trim()));
+                }
+                int n = code.stream().mapToInt(Integer::intValue).max().orElse(2) + 1;
+                com.google.gson.JsonArray codeArr = new com.google.gson.JsonArray();
+                code.forEach(codeArr::add);
+                rule.add("code", codeArr);
+                com.google.gson.JsonArray buttons = new com.google.gson.JsonArray();
+                List<RsPos> row = Devices.groundRing(view, ground, n, 1);
+                for (int i = 0; i < row.size(); i++) {
+                    RsPos b = row.get(i).up(1);
+                    lp.cells.add(com.moddingfromamod.redstone.RsCell.of(b, "minecraft:stone_button",
+                            com.moddingfromamod.redstone.RsCell.Role.CONTROL, "face", "floor", "facing", "north",
+                            "powered", "false"));
+                    buttons.add(arr(b));
+                }
+                lp.json.add("buttons", buttons);
+                StringBuilder d = new StringBuilder("The code buttons are numbered 0.." + (row.size() - 1) + ":");
+                for (int i = 0; i < row.size(); i++) {
+                    d.append(" ").append(i).append(" at ").append(where(row.get(i).up(1))).append(';');
+                }
+                d.append(" the code is ").append(code).append(" (tell him, or let him find it).");
+                lp.describe.add(d.toString());
+            }
+            case "every" -> {
+                int secs = when.has("seconds") ? Math.max(2, Math.min(600, when.get("seconds").getAsInt())) : 30;
+                rule.addProperty("period", secs * 20);
+                rule.addProperty("onFor", Math.min(onFor, secs * 20 - 10));
+            }
+            case "target_hit" -> {
+                if (!ring.isEmpty()) {
+                    RsPos t = ring.get(0).up(1);
+                    lp.cells.add(com.moddingfromamod.redstone.RsCell.of(t, "minecraft:target",
+                            com.moddingfromamod.redstone.RsCell.Role.CONTROL, "power", "0"));
+                    lp.json.add("target", arr(t));
+                    lp.describe.add("The target is at " + where(t) + ": an arrow that hits it switches it on.");
+                }
+            }
+            default -> {
+            }
+        }
+        lp.json.add("rule", rule);
+        lp.json.add("sensor", arr(ground.up(1)));
+        return lp;
     }
 
     static String where(RsPos p) {

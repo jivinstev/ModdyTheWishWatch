@@ -270,6 +270,22 @@ public final class RubricGrader {
             }
         }
 
+        // the logic rules the mechanisms carry: their parts (code buttons) are not wired controls, so they are not
+        // fired as switches; each rule is tested by its own real stimulus below
+        List<JsonObject> rules = new ArrayList<>();
+        Set<BlockPos> logicParts = new HashSet<>();
+        AgentBridge.onServer(() -> {
+            for (MechanismStore.Entry e : MechanismStore.all(level)) {
+                for (JsonElement l : e.logic()) {
+                    JsonObject o = l.getAsJsonObject();
+                    rules.add(o);
+                    if (o.has("buttons")) {
+                        o.getAsJsonArray("buttons").forEach(b -> logicParts.add(MechanismLogic.pos(b)));
+                    }
+                }
+            }
+            return null;
+        }, 10_000L);
         // what was added: outputs by kind, and controls
         Map<String, List<BlockPos>> outputs = new HashMap<>();
         List<BlockPos> controls = new ArrayList<>();
@@ -278,7 +294,8 @@ public final class RubricGrader {
         for (var e : diff.entrySet()) {
             String now = e.getValue()[1];
             String id = idOf(now);
-            if (id.equals("minecraft:lever") || id.endsWith("_button") || id.endsWith("_pressure_plate")) {
+            if ((id.equals("minecraft:lever") || id.endsWith("_button") || id.endsWith("_pressure_plate"))
+                    && !logicParts.contains(e.getKey())) {
                 controls.add(e.getKey());
                 controlKinds.add(id.equals("minecraft:lever") ? "lever" : id.endsWith("_button") ? "button"
                         : "pressure_plate");
@@ -302,7 +319,7 @@ public final class RubricGrader {
         v.addProperty("added_controls", controls.size());
 
         // F1 built: every output kind the case names, and a control
-        boolean f1 = !controls.isEmpty();
+        boolean f1 = !controls.isEmpty() || !rules.isEmpty();
         JsonArray wanted = spec.has("outputs") ? spec.getAsJsonArray("outputs") : new JsonArray();
         for (JsonElement oe : wanted) {
             String k = oe.getAsJsonObject().get("kind").getAsString();
@@ -311,8 +328,8 @@ public final class RubricGrader {
                 notes.add("no " + k + " was added");
             }
         }
-        if (controls.isEmpty()) {
-            notes.add("no switch, button or plate was added");
+        if (controls.isEmpty() && rules.isEmpty()) {
+            notes.add("no switch, button, plate or logic condition was added");
         }
         v.addProperty("F1_built", f1);
 
@@ -447,8 +464,23 @@ public final class RubricGrader {
             }
             MechanismPlan plan = new MechanismPlan("graded", List.of(), expects, cs, List.of(), List.of(), null);
             int cycles = spec.has("cycles") ? spec.get("cycles").getAsInt() : 3;
-            MechanismProof.Result r = MechanismProof.prove(level, plan, cycles);
+            MechanismProof.Result r = cs.isEmpty() ? new MechanismProof.Result(null, List.of())
+                    : MechanismProof.prove(level, plan, cycles);
             f2 = r.ok() && !expects.isEmpty();
+            // each logic rule by its real stimulus: the outputs must switch on, then come back
+            for (JsonObject rule : rules) {
+                String why = stimulate(server, level, rule, expects);
+                JsonObject one = new JsonObject();
+                one.addProperty("rule", rule.getAsJsonObject("rule").get("kind").getAsString());
+                one.addProperty("result", why == null ? "works" : why);
+                logicResults.add(one);
+                if (why != null && !why.startsWith("untested")) {
+                    f2 = false;
+                    notes.add("the logic (" + one.get("rule").getAsString() + "): " + why);
+                } else if (why != null) {
+                    notes.add(why);
+                }
+            }
             if (!r.ok()) {
                 notes.add("firing the controls ourselves: " + r.why());
             }
@@ -530,6 +562,131 @@ public final class RubricGrader {
 
     static List<String> alts(String kind) {
         return List.of(kind.split("\\|"));
+    }
+
+    /**
+     * Gives a logic rule its real stimulus and checks the outputs switch on (within the fire limit) and come back.
+     * Null when it works; "untested: …" when this boot cannot give it (a player walking up).
+     */
+    static String stimulate(MinecraftServer server, ServerLevel level, JsonObject o, List<Expect> expects) {
+        JsonObject rule = o.getAsJsonObject("rule");
+        String kind = rule.get("kind").getAsString();
+        if (o.has("disabled") && o.get("disabled").getAsBoolean()) {
+            return "untested: built switched off (over the world's clock limit)";
+        }
+        java.util.function.Supplier<String> fired = () -> AgentBridge.onServer(
+                () -> MechanismWorld.check(level, expects, true), 10_000L);
+        java.util.function.Supplier<String> rest = () -> AgentBridge.onServer(
+                () -> MechanismWorld.check(level, expects, false), 10_000L);
+        int onFor = rule.has("onFor") ? rule.get("onFor").getAsInt() : 100;
+        switch (kind) {
+            case "player_near" -> {
+                return "untested: a player walking up cannot be staged in the grading boot (the condition is unit-tested)";
+            }
+            case "paid" -> {
+                BlockPos slot = MechanismLogic.pos(o.get("slot"));
+                String item = rule.get("item").getAsString();
+                int count = rule.has("count") ? rule.get("count").getAsInt() : 1;
+                AgentBridge.onServer(() -> {
+                    if (level.getBlockEntity(slot) instanceof net.minecraft.world.Container c) {
+                        c.setItem(0, new net.minecraft.world.item.ItemStack(BuiltInRegistries.ITEM.getValue(
+                                net.minecraft.resources.ResourceLocation.parse(item)), count));
+                    }
+                    return null;
+                }, 10_000L);
+            }
+            case "code" -> {
+                JsonArray buttons = o.getAsJsonArray("buttons");
+                for (JsonElement c : rule.getAsJsonArray("code")) {
+                    BlockPos b = MechanismLogic.pos(buttons.get(c.getAsInt()));
+                    AgentBridge.onServer(() -> {
+                        var st = level.getBlockState(b);
+                        if (st.getBlock() instanceof net.minecraft.world.level.block.ButtonBlock bb) {
+                            bb.press(st, level, b, null);
+                        }
+                        return null;
+                    }, 10_000L);
+                    waitTicks(server, 30);           // a stone button comes up after 20 ticks
+                }
+            }
+            case "target_hit" -> {
+                BlockPos t = MechanismLogic.pos(o.get("target"));
+                AgentBridge.onServer(() -> {
+                    var arrow = net.minecraft.world.entity.EntityType.ARROW.create(level,
+                            net.minecraft.world.entity.EntitySpawnReason.COMMAND);
+                    arrow.setPos(t.getX() + 0.5, t.getY() + 3.5, t.getZ() + 0.5);
+                    arrow.setDeltaMovement(0, -1.5, 0);
+                    level.addFreshEntity(arrow);
+                    return null;
+                }, 10_000L);
+            }
+            case "mob_near" -> {
+                BlockPos sensor = MechanismLogic.pos(o.get("sensor"));
+                AgentBridge.onServer(() -> {
+                    var z = net.minecraft.world.entity.EntityType.ZOMBIE.create(level,
+                            net.minecraft.world.entity.EntitySpawnReason.COMMAND);
+                    z.setPos(sensor.getX() + 0.5, sensor.getY(), sensor.getZ() + 0.5);
+                    z.setNoAi(true);
+                    z.addTag("moddy_grader_mob");
+                    level.addFreshEntity(z);
+                    return null;
+                }, 10_000L);
+            }
+            case "night" -> AgentBridge.onServer(() -> {
+                level.setDayTime(18000);
+                return null;
+            }, 10_000L);
+            case "day" -> AgentBridge.onServer(() -> {
+                level.setDayTime(18000);              // its REST is night: start there, then make it day
+                return null;
+            }, 10_000L);
+            default -> {
+            }
+        }
+        if (kind.equals("day")) {
+            waitTicks(server, 20);
+            AgentBridge.onServer(() -> {
+                level.setDayTime(1000);
+                return null;
+            }, 10_000L);
+        }
+        int limit = kind.equals("every") ? rule.get("period").getAsInt() + 40 : 80;
+        boolean on = false;
+        for (int t = 0; t < limit && !on; t += 2) {
+            waitTicks(server, 2);
+            on = fired.get() == null;
+        }
+        if (!on) {
+            return "its stimulus did not switch it on: " + fired.get();
+        }
+        // and back
+        switch (kind) {
+            case "mob_near" -> AgentBridge.onServer(() -> {
+                level.getEntities().getAll().forEach(e -> {
+                    if (e.getTags().contains("moddy_grader_mob")) {
+                        e.discard();
+                    }
+                });
+                return null;
+            }, 10_000L);
+            case "night" -> AgentBridge.onServer(() -> {
+                level.setDayTime(1000);
+                return null;
+            }, 10_000L);
+            case "day" -> AgentBridge.onServer(() -> {
+                level.setDayTime(18000);
+                return null;
+            }, 10_000L);
+            default -> {
+            }
+        }
+        int back = kind.equals("every") ? rule.get("period").getAsInt() + 40 : onFor + 80;
+        boolean off = false;
+        for (int t = 0; t < back && !off; t += 2) {
+            waitTicks(server, 2);
+            off = rest.get() == null;
+        }
+        return off ? null : "it switched on and did not come back: " + rest.get();
     }
 
     static boolean k3(JsonObject spec, String kind) {

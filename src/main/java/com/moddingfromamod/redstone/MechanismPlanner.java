@@ -39,6 +39,50 @@ public final class MechanismPlanner {
         }
         List<Control> controls = new ArrayList<>();
         for (ControlAsk ask : asks) {
+            if (ask.kind().equals("logic")) {
+                // a buried cell at channel depth under the asked spot (or as near as the wiring allows)
+                RsPos base = new RsPos(ask.ground().x(), module.channelY(), ask.ground().z());
+                Control best = null;
+                ChannelRouter.Route bestRoute = null;
+                String lastWhy = "no room for the logic cell";
+                for (int r = 0; r <= 4 && best == null; r++) {
+                    for (int dx = -r; dx <= r; dx++) {
+                        for (int dz = -r; dz <= r; dz++) {
+                            if (Math.max(Math.abs(dx), Math.abs(dz)) != r) {
+                                continue;
+                            }
+                            for (RsDir d : towardFirst(base.plus(dx, 0, dz), module.ports())) {
+                                Control c = Control.logic(base.plus(dx, 0, dz), d);
+                                if (!controlFits(world, c, cells.keySet())) {
+                                    continue;
+                                }
+                                Set<RsPos> own = new HashSet<>(cells.keySet());
+                                c.cells().forEach(x -> own.add(x.pos()));
+                                own.remove(c.port());
+                                ChannelRouter.Route rt = ChannelRouter.route(world, module.channelY(), c.port(),
+                                        c.strength(), module.ports(), PORT_NEED, own, foreign);
+                                if (rt.ok() && (bestRoute == null || rt.length() < bestRoute.length())) {
+                                    best = c;
+                                    bestRoute = rt;
+                                } else if (!rt.ok()) {
+                                    lastWhy = rt.why();
+                                }
+                            }
+                        }
+                    }
+                }
+                if (best == null) {
+                    return MechanismPlan.refused(module.kind(), "the logic: " + lastWhy);
+                }
+                for (RsCell c : best.cells()) {
+                    cells.put(c.pos(), c);
+                }
+                for (RsCell c : bestRoute.cells()) {
+                    cells.putIfAbsent(c.pos(), c);
+                }
+                controls.add(best);
+                continue;
+            }
             if (!world.conductor(ask.ground())) {
                 return MechanismPlan.refused(module.kind(), "the " + ask.kind() + " needs solid ground under it at "
                         + ask.ground() + " (it is " + world.blockId(ask.ground()) + ")");
