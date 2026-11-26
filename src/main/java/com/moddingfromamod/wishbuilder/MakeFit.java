@@ -372,8 +372,29 @@ public final class MakeFit {
      */
     public static List<String> fitCommands(List<String> commands, Map<String, Double> limits, MakeFacts.Artifacts artifacts) {
         List<String> out = new ArrayList<>();
+        Double most = limits.get(MakeFacts.COUNT_MADE);
+        // #174 B7: how many it makes is counted over the WHOLE recipe (a repeat, several summons), never per line, so
+        // the creatures past the most at once are not made: a spawn is lowered to what is left, and a line past it is
+        // dropped
+        double left = most == null ? Double.POSITIVE_INFINITY : Math.floor(most + 1e-9);
         for (String c : commands) {
             MakeFacts.Ref r = MakeFacts.ref(c);
+            if (r != null && most != null && r.kind().equals(BuilderSpec.Kind.CREATURE.id())) {
+                if (left < 1) {
+                    if (most < 1) {
+                        return null;   // a world that allows none: not fitted, refused
+                    }
+                    continue;
+                }
+                if (r.count() > left) {
+                    c = withCount(c, r, (int) left);
+                    if (c == null) {
+                        return null;
+                    }
+                    r = MakeFacts.ref(c);
+                }
+                left -= Math.min(r == null ? 1 : r.count(), left);
+            }
             MakeFacts f = r == null ? null : MakeFacts.ofCommands(List.of(c), artifacts);
             if (f == null || satisfies(f, limits)) {
                 out.add(c);
@@ -381,27 +402,39 @@ public final class MakeFit {
             }
             List<String> over = new ArrayList<>(over(f, limits));
             if (livesFitted(f)) {
-                over.removeAll(LIVE);        // fitted on the live creature at spawn
+                over.removeAll(LIVE);        // fitted on the live creature at spawn (LiveFit, LiveFitWatch)
                 over.removeAll(LIVE_SIZE);   // and its size where it stands (LiveFit.drawnScale)
             }
             if (over.isEmpty()) {
                 out.add(c);
                 continue;
             }
-            Double most = limits.get(MakeFacts.COUNT_MADE);
-            if (!over.equals(List.of(MakeFacts.COUNT_MADE)) || most == null || most < 1
-                    || !c.strip().startsWith("wishmob spawn ")) {
-                return null;
-            }
+            return null;
+        }
+        return out;
+    }
+
+    /** One spawning command made to spawn {@code n}, or null when its count cannot be rewritten. */
+    static String withCount(String c, MakeFacts.Ref r, int n) {
+        String[] w = c.strip().split("\\s+");
+        if (c.strip().startsWith("wishmob spawn ")) {
             // `wishmob spawn <id> [count] [at <build>:<spot>]`: the count is how many in all; the rest is kept
-            String[] w = c.strip().split("\\s+");
-            int n = (int) Math.floor(most + 1e-9);
             StringBuilder b = new StringBuilder("wishmob spawn ").append(r.id()).append(' ').append(n);
             for (int i = w.length >= 4 && w[3].matches("\\d+") ? 4 : 3; i < w.length; i++) {
                 b.append(' ').append(w[i]);
             }
-            out.add(b.toString());
+            return b.toString();
         }
-        return out;
+        if (w.length >= 2 && w[0].equals("wishsummon")) {
+            var spec = MakeFacts.wishsummonSpec(c);
+            if (spec == null) {
+                return null;
+            }
+            spec.addProperty("count", n);
+            String head = c.strip();
+            return head.substring(0, head.indexOf('{')).strip() + " " + spec;
+        }
+        return null;
     }
+
 }

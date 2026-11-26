@@ -945,7 +945,14 @@ public record MakeFacts(String kind, Map<String, Double> numbers, Set<String> ta
     }
 
     /** One thing a replay command makes: its kind ({@link #KINDS}), the id it is stored under (or a mob), how many. */
-    public record Ref(String kind, String id, int count) {
+    public record Ref(String kind, String id, int count, Map<String, Double> stats, String acts) {
+        public Ref(String kind, String id, int count) {
+            this(kind, id, count, Map.of(), "");
+        }
+
+        public Ref(String kind, String id, int count, Map<String, Double> stats) {
+            this(kind, id, count, stats, "");
+        }
     }
 
     /**
@@ -962,17 +969,138 @@ public record MakeFacts(String kind, Map<String, Double> numbers, Set<String> ta
         if (w.length == 0 || w[0].isEmpty()) {
             return null;
         }
+        if (w[0].equals("execute")) {
+            // #174 B4: what an execute runs is what it makes ("execute as @s at @s run summon …")
+            int at = (" " + command.strip() + " ").indexOf(" run ");
+            return at < 0 ? null : ref(command.strip().substring(at + 4).strip());
+        }
         return switch (w[0]) {
+            // #174 B1: a hotbar fire of a learned real mob carries its numbers in a JSON spec
+            case "wishsummon" -> w.length >= 2 ? new Ref(BuilderSpec.Kind.CREATURE.id(), "mob:" + w[1],
+                    wishsummonCount(command), wishsummonStats(command), wishsummonActs(command)) : null;
+            // #174 B2: a summon's NBT can set any attribute
+            case "summon" -> w.length >= 2 ? new Ref(BuilderSpec.Kind.CREATURE.id(), "mob:" + w[1], 1,
+                    summonStats(command)) : null;
             case "wishmob" -> w.length >= 3 && w[1].equals("spawn")
                     ? new Ref(BuilderSpec.Kind.CREATURE.id(), w[2], w.length >= 4 ? Math.max(1, num(w[3], 1)) : 1) : null;
             case "wishdatapack" -> w.length >= 2 ? new Ref(BuilderSpec.Kind.ITEM.id(), w[1], 1) : null;
             case "wishbuild" -> w.length >= 2 ? new Ref(BuilderSpec.Kind.BUILDING.id(), w[1], 1) : null;
             case "wishpaint" -> w.length >= 2 ? new Ref(BuilderSpec.Kind.PICTURE.id(), w[1], 1) : null;
             case "moddyevent" -> w.length >= 3 && w[1].equals("stage") ? new Ref(BuilderSpec.Kind.EVENT.id(), w[2], 1) : null;
-            case "summon" -> w.length >= 2 ? new Ref(BuilderSpec.Kind.CREATURE.id(), "mob:" + w[1], 1) : null;
             case "give" -> w.length >= 3 ? new Ref(BuilderSpec.Kind.SUPPLIES.id(), w[2], 1) : null;
             default -> null;
         };
+    }
+
+    /** The JSON spec of {@code wishsummon <mob> {spec}}, or null. */
+    static JsonObject wishsummonSpec(String command) {
+        int brace = command.indexOf('{');
+        if (brace < 0) {
+            return null;
+        }
+        try {
+            JsonElement e = com.google.gson.JsonParser.parseString(command.substring(brace));
+            return e.isJsonObject() ? e.getAsJsonObject() : null;
+        } catch (RuntimeException notJson) {
+            return null;
+        }
+    }
+
+    /**
+     * How a wishsummon's mob acts, as the Builder's {@link BuilderActs} names it: a spec that makes it follow him is a
+     * pet, one that makes it never attack him is friendly, and so is neither rated the monster a plain real mob may be.
+     */
+    static String wishsummonActs(String command) {
+        JsonObject o = wishsummonSpec(command);
+        if (o == null) {
+            return "";
+        }
+        if (isTrue(o, "follow")) {
+            return "pet";
+        }
+        return isTrue(o, "friendly") ? "friendly" : "";
+    }
+
+    private static boolean isTrue(JsonObject o, String field) {
+        try {
+            return o.has(field) && o.get(field).isJsonPrimitive() && o.get(field).getAsBoolean();
+        } catch (RuntimeException e) {
+            return false;
+        }
+    }
+
+    private static int wishsummonCount(String command) {
+        JsonObject o = wishsummonSpec(command);
+        try {
+            return o != null && o.has("count") ? Math.max(1, o.get("count").getAsInt()) : 1;
+        } catch (RuntimeException e) {
+            return 1;
+        }
+    }
+
+    /** The numbers a wishsummon spec sets, in this vocabulary (health and damage are already half hearts). */
+    static Map<String, Double> wishsummonStats(String command) {
+        JsonObject o = wishsummonSpec(command);
+        Map<String, Double> out = new LinkedHashMap<>();
+        if (o == null) {
+            return out;
+        }
+        putNum(out, HEALTH_HALF_HEARTS, o, "health");
+        putNum(out, ATTACK_DAMAGE_HALF_HEARTS, o, "damage");
+        putNum(out, MOVEMENT_SPEED_ATTRIBUTE, o, "speed");
+        putNum(out, SCALE_TIMES, o, "scale");
+        putNum(out, ARMOR_POINTS, o, "armor");
+        putNum(out, KNOCKBACK_RESISTANCE_FRACTION, o, "knockback_resistance");
+        putNum(out, KNOCKBACK_RESISTANCE_FRACTION, o, "knockbackResistance");
+        return out;
+    }
+
+    private static void putNum(Map<String, Double> out, String key, JsonObject o, String field) {
+        try {
+            if (o.has(field) && o.get(field).isJsonPrimitive()) {
+                out.put(key, o.get(field).getAsDouble());
+            }
+        } catch (RuntimeException notANumber) {
+            // a value the summon would not take either
+        }
+    }
+
+    private static final java.util.regex.Pattern ATTRIBUTE_ID_FIRST = java.util.regex.Pattern.compile(
+            "id\\s*:\\s*\"?(?:minecraft:)?(?:generic\\.)?([a-z_]+)\"?\\s*,\\s*base\\s*:\\s*(-?[0-9.]+)");
+    private static final java.util.regex.Pattern ATTRIBUTE_BASE_FIRST = java.util.regex.Pattern.compile(
+            "base\\s*:\\s*(-?[0-9.]+)[a-z]?\\s*,\\s*id\\s*:\\s*\"?(?:minecraft:)?(?:generic\\.)?([a-z_]+)\"?");
+
+    /** The attributes a summon's NBT sets ({@code attributes:[{id:"minecraft:attack_damage",base:100}]}). */
+    static Map<String, Double> summonStats(String command) {
+        Map<String, Double> out = new LinkedHashMap<>();
+        var m = ATTRIBUTE_ID_FIRST.matcher(command);
+        while (m.find()) {
+            putAttribute(out, m.group(1), m.group(2));
+        }
+        m = ATTRIBUTE_BASE_FIRST.matcher(command);
+        while (m.find()) {
+            putAttribute(out, m.group(2), m.group(1));
+        }
+        return out;
+    }
+
+    private static void putAttribute(Map<String, Double> out, String attribute, String value) {
+        String key = switch (attribute) {
+            case "max_health" -> HEALTH_HALF_HEARTS;
+            case "attack_damage" -> ATTACK_DAMAGE_HALF_HEARTS;
+            case "movement_speed" -> MOVEMENT_SPEED_ATTRIBUTE;
+            case "scale" -> SCALE_TIMES;
+            case "armor" -> ARMOR_POINTS;
+            case "knockback_resistance" -> KNOCKBACK_RESISTANCE_FRACTION;
+            default -> null;
+        };
+        if (key != null) {
+            try {
+                out.merge(key, Double.parseDouble(value), Math::max);
+            } catch (NumberFormatException e) {
+                // not a number: nothing read
+            }
+        }
     }
 
     /**
@@ -995,14 +1123,37 @@ public record MakeFacts(String kind, Map<String, Double> numbers, Set<String> ta
             return cautious(OTHER);
         }
         MakeFacts all = combine(each);
+        // #174 B7: a recipe that spawns three times makes three, not the most any one line makes
+        double made = 0;
+        boolean counted = false;
+        for (MakeFacts f : each) {
+            Double c = f.numbers().get(COUNT_MADE);
+            if (c != null) {
+                made += c;
+                counted = true;
+            }
+        }
+        if (counted && each.size() > 1) {
+            Map<String, Double> n = new LinkedHashMap<>(all.numbers());
+            n.put(COUNT_MADE, made);
+            all = new MakeFacts(all.kind(), n, all.tags(), all.known());
+        }
         return unknown ? new MakeFacts(all.kind(), all.numbers(), all.tags(), false) : all;
     }
 
     private static MakeFacts ofRef(Ref r, Artifacts artifacts) {
         if (r.id().startsWith("mob:")) {
             BuilderSpec mob = new BuilderSpec(BuilderSpec.CURRENT, BuilderSpec.Kind.CREATURE,
-                    "mob:" + r.id().substring(4), "", 2, List.of(), "", r.count(), "", "", Map.of());
-            return of(mob);
+                    "mob:" + r.id().substring(4), "", 2, List.of(), "", r.count(), "", "",
+                    r.acts().isEmpty() ? Map.of() : Map.of(BuilderActs.SLOT, r.acts()));
+            MakeFacts f = of(mob);
+            if (r.stats().isEmpty()) {
+                return f;
+            }
+            // #174 B1/B2: the numbers its command sets are what it is, not the plain mob's
+            Map<String, Double> n = new LinkedHashMap<>(f.numbers());
+            n.putAll(r.stats());
+            return new MakeFacts(f.kind(), n, f.tags(), f.known());
         }
         if (r.kind().equals(BuilderSpec.Kind.SUPPLIES.id())) {
             Acc a = new Acc(r.kind());

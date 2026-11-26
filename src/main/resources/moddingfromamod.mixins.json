@@ -32,7 +32,8 @@
     "EntityLookupIndexMixin",
     "SelectorParserTagsMixin",
     "SelectorIndexMixin",
-    "LevelEntityGetterAdapterAccessor"
+    "LevelEntityGetterAdapterAccessor",
+    "AttributeTouchMixin"
   ],
   "injectors": {
     "defaultRequire": 1
