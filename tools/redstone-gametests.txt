@@ -2,3 +2,4 @@
 PistonDoorGameTest
 BuildMechanismGameTest
 DeviceGameTest
+RedstoneRegressionGameTest

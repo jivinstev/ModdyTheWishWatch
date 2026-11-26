@@ -74,12 +74,18 @@ public final class Devices {
      * from the walls, on floor cells (a solid floor with two walkable cells above). Box is {x0,y0,z0,x1,y1,z1}.
      */
     public static List<RsPos> floorGrid(WorldView w, int[] box, int count) {
+        return floorGrid(w, box, count, java.util.Set.of());
+    }
+
+    /** As above, leaving out any spot whose column (10 blocks down, a block either side) touches {@code avoid}. */
+    public static List<RsPos> floorGrid(WorldView w, int[] box, int count, java.util.Set<RsPos> avoid) {
         List<RsPos> floor = new ArrayList<>();
         for (int y = box[1]; y <= box[1] + 1; y++) {
             for (int x = box[0] + 2; x <= box[3] - 2; x++) {
                 for (int z = box[2] + 2; z <= box[5] - 2; z++) {
                     RsPos p = new RsPos(x, y, z);
-                    if (Doorway.wall(w, p) && Doorway.passable(w, p.up(1)) && Doorway.passable(w, p.up(2))) {
+                    if (Doorway.wall(w, p) && Doorway.passable(w, p.up(1)) && Doorway.passable(w, p.up(2))
+                            && clear(p, avoid)) {
                         floor.add(p);
                     }
                 }
@@ -116,6 +122,22 @@ public final class Devices {
             }
         }
         return spread(ground, count, 3);
+    }
+
+    static boolean clear(RsPos p, java.util.Set<RsPos> avoid) {
+        if (avoid.isEmpty()) {
+            return true;
+        }
+        for (int dy = 0; dy >= -10; dy--) {
+            for (int dx = -2; dx <= 2; dx++) {
+                for (int dz = -2; dz <= 2; dz++) {
+                    if (avoid.contains(p.plus(dx, dy, dz))) {
+                        return false;
+                    }
+                }
+            }
+        }
+        return true;
     }
 
     /** Picks up to {@code count} of {@code cells}, each at least {@code gap} from the others (by Chebyshev distance). */

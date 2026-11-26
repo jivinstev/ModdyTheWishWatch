@@ -258,6 +258,15 @@ public final class BuildMechanismTool implements McpTool {
             return ToolResult.error("width is 1 or 2.");
         }
 
+        // a building still going up would lay its blocks over the mechanism: wait for it first (up to 30 s)
+        for (int i = 0; i < 150 && AgentBridge.onServer(com.moddingfromamod.builder.Builder::anyBuilding, 5_000L); i++) {
+            try {
+                Thread.sleep(200);
+            } catch (InterruptedException ie) {
+                Thread.currentThread().interrupt();
+                break;
+            }
+        }
         // 1-3: resolve, plan and place on the server thread
         Built built;
         try {
@@ -408,7 +417,7 @@ public final class BuildMechanismTool implements McpTool {
                 for (int u = 0; u < door.width(); u++) {
                     devs.add(Devices.ironDoor(door.frame().at(u, 0, 0), door.frame().in(), u == 1));
                 }
-                DeviceModule.Result r = DeviceModule.plan(view, "iron door", devs, spec.opens(), Set.of(),
+                DeviceModule.Result r = DeviceModule.plan(view, "iron door", devs, spec.opens(), keep(level, view, devs),
                         new ArrayList<>(List.of("an iron door: " + (spec.opens() ? "switched on (or pressed) it OPENS"
                                 : "switched on it CLOSES"))));
                 if (!r.ok()) {
@@ -426,7 +435,7 @@ public final class BuildMechanismTool implements McpTool {
                 String what;
                 switch (spec.mechanism()) {
                     case "lamps" -> {
-                        List<RsPos> at2 = box != null ? Devices.floorGrid(view, box, n)
+                        List<RsPos> at2 = box != null ? Devices.floorGrid(view, box, n, MechanismStore.keepClear(level))
                                 : Devices.groundRing(view, ground, n, 2);
                         at2.forEach(p -> devs.add(Devices.lamp(p)));
                         what = devs.size() + " lamp(s) set into the " + (box != null ? "floor" : "ground");
@@ -474,7 +483,8 @@ public final class BuildMechanismTool implements McpTool {
                     return Built.fail(ToolResult.error("There was no room for any " + spec.mechanism() + " at "
                             + spec.at() + " (they need flat solid ground with room above)."));
                 }
-                DeviceModule.Result r = DeviceModule.plan(view, spec.mechanism(), devs, !spec.inverted(), Set.of(),
+                DeviceModule.Result r = DeviceModule.plan(view, spec.mechanism(), devs, !spec.inverted(),
+                        keep(level, view, devs),
                         new ArrayList<>(List.of(spec.inverted() ? "on at rest; a switch turns them OFF"
                                 : "a switch turns them ON")));
                 if (!r.ok()) {
@@ -505,7 +515,9 @@ public final class BuildMechanismTool implements McpTool {
             }
         }
         // controls: each resolved, then the first spot the planner can wire
-        Set<RsPos> foreign = view.foreignRedstone(centre.plus(-24, -10, -24), centre.plus(24, 10, 24));
+        Set<RsPos> foreign = new java.util.HashSet<>(view.foreignRedstone(centre.plus(-24, -10, -24),
+                centre.plus(24, 10, 24)));
+        foreign.addAll(MechanismStore.keepClear(level));
         List<MechanismPlanner.ControlAsk> chosen = new ArrayList<>();
         List<String> notHidden = new ArrayList<>();
         List<LogicParts> logicAsks = new ArrayList<>();
@@ -569,6 +581,32 @@ public final class BuildMechanismTool implements McpTool {
                     break;
                 }
                 last = p.why();
+            }
+            if (ok == null && !hidden) {
+                // every usual spot blocked (another mechanism's wiring is there, say): further out, up to 6 blocks
+                outer:
+                for (int r = 2; r <= 6; r++) {
+                    for (int dx = -r; dx <= r; dx++) {
+                        for (int dz = -r; dz <= r; dz++) {
+                            if (Math.max(Math.abs(dx), Math.abs(dz)) != r) {
+                                continue;
+                            }
+                            RsPos g = groundNear(view, spot.up(-1).plus(dx, 0, dz));
+                            if (g == null) {
+                                continue;
+                            }
+                            List<MechanismPlanner.ControlAsk> withIt = new ArrayList<>(chosen);
+                            withIt.add(new MechanismPlanner.ControlAsk(c[0], g, null, toggle));
+                            MechanismPlan p = MechanismPlanner.plan(view, module, withIt, foreign);
+                            if (p.ok()) {
+                                ok = p;
+                                chosen = withIt;
+                                break outer;
+                            }
+                            last = p.why();
+                        }
+                    }
+                }
             }
             if (ok == null && hidden) {
                 // no wall there lets its wire go down out of sight: an ordinary switch, and say so
@@ -786,6 +824,14 @@ public final class BuildMechanismTool implements McpTool {
         lp.json.add("rule", rule);
         lp.json.add("sensor", arr(ground.up(1)));
         return lp;
+    }
+
+    /** Redstone already round {@code devs}, and every other mechanism's blocks with a block's clearance. */
+    static Set<RsPos> keep(ServerLevel level, LevelView view, List<DeviceModule.Device> devs) {
+        RsPos c = devs.isEmpty() ? new RsPos(0, 0, 0) : devs.get(0).feed();
+        Set<RsPos> k = new java.util.HashSet<>(view.foreignRedstone(c.plus(-24, -12, -24), c.plus(24, 10, 24)));
+        k.addAll(MechanismStore.keepClear(level));
+        return k;
     }
 
     static String where(RsPos p) {

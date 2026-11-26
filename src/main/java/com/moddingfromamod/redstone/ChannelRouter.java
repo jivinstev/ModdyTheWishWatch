@@ -126,7 +126,8 @@ public final class ChannelRouter {
             int remaining = path.size() - 1 - i;              // wire cells after this one
             boolean straight = !last && RsDir.between(prev, p) == RsDir.between(p, path.get(i + 1));
             // a repeater only where the signal would otherwise arrive too weak, and only once it is running low
-            boolean repeat = straight && i >= 2 && s - 1 - remaining < need && s - 1 <= need + 6;
+            // ...and never two in a row: a repeater is due only once the signal has run down below the far end's need
+            boolean repeat = straight && i >= 2 && s - 1 - remaining < need && s - 1 <= need + 6 && s < 15 - 2;
             RsPos support = p.up(-1);
             if (world.kind(support) == WorldView.Kind.AIR) {
                 cells.add(RsCell.of(support, "minecraft:stone", RsCell.Role.CASING));

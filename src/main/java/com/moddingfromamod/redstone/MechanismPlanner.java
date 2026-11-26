@@ -53,7 +53,7 @@ public final class MechanismPlanner {
                             }
                             for (RsDir d : towardFirst(base.plus(dx, 0, dz), module.ports())) {
                                 Control c = Control.logic(base.plus(dx, 0, dz), d);
-                                if (!controlFits(world, c, cells.keySet())) {
+                                if (!controlFits(world, c, cells.keySet(), foreign)) {
                                     continue;
                                 }
                                 Set<RsPos> own = new HashSet<>(cells.keySet());
@@ -105,7 +105,7 @@ public final class MechanismPlanner {
                     return MechanismPlan.refused(module.kind(), "the " + ask.kind() + " at " + ask.ground().up(1)
                             + " stands too low for its wire to reach the mechanism; put it on ground level with it");
                 }
-                if (!controlFits(world, c, cells.keySet())) {
+                if (!controlFits(world, c, cells.keySet(), foreign)) {
                     lastWhy = "the " + ask.kind() + "'s wire has no room to go down beside it";
                     continue;
                 }
@@ -178,6 +178,10 @@ public final class MechanismPlanner {
 
     /** The control's cells must land on air or natural ground (its own clear pockets included), never on ours. */
     static boolean controlFits(WorldView world, Control c, Set<RsPos> taken) {
+        return controlFits(world, c, taken, Set.of());
+    }
+
+    static boolean controlFits(WorldView world, Control c, Set<RsPos> taken, Set<RsPos> foreign) {
         for (RsCell x : c.cells()) {
             if (taken.contains(x.pos())) {
                 return false;
@@ -196,7 +200,8 @@ public final class MechanismPlanner {
             if (x.role() == RsCell.Role.CHANNEL) {
                 for (RsDir d : RsDir.values()) {
                     RsPos side = x.pos().step(d);
-                    if (taken.contains(side) || taken.contains(side.up(1)) || taken.contains(side.up(-1))) {
+                    if (taken.contains(side) || taken.contains(side.up(1)) || taken.contains(side.up(-1))
+                            || foreign.contains(side) || foreign.contains(side.up(1)) || foreign.contains(side.up(-1))) {
                         return false;
                     }
                 }

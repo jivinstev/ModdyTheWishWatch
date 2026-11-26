@@ -38,6 +38,8 @@ public final class MechanismStore {
     }
 
     private static final Map<String, Entry> ENTRIES = new LinkedHashMap<>();
+    /** Every position a stored mechanism placed: the Builder leaves these alone. */
+    private static final java.util.Set<Long> PROTECTED = new java.util.HashSet<>();
     private static final WishStoreFile.Guard GUARD = new WishStoreFile.Guard();
     private static Path loadedFrom;
 
@@ -56,6 +58,7 @@ public final class MechanismStore {
         }
         loadedFrom = f;
         ENTRIES.clear();
+        PROTECTED.clear();
         GUARD.reset();
         var read = GUARD.observe(WishStoreFile.readFile(f, STORE, SCHEMA));
         if (read instanceof WishStoreFile.Read.Refused r) {
@@ -87,6 +90,46 @@ public final class MechanismStore {
                     o.has("logic") && o.get("logic").isJsonArray() ? o.getAsJsonArray("logic") : new JsonArray());
             ENTRIES.put(e.id(), e);
         }
+        reprotect();
+    }
+
+    static void reprotect() {
+        PROTECTED.clear();
+        for (Entry e : ENTRIES.values()) {
+            e.journal().forEach(p -> PROTECTED.add(p.pos().asLong()));
+        }
+    }
+
+    /** True when {@code pos} belongs to a mechanism in this world. Server thread. */
+    public static synchronized boolean protects(ServerLevel level, BlockPos pos) {
+        try {
+            ensureLoaded(level);
+        } catch (RuntimeException e) {
+            return false;
+        }
+        return PROTECTED.contains(pos.asLong());
+    }
+
+    /**
+     * Every position another mechanism in this world placed, and the blocks touching each: a new mechanism keeps out of
+     * all of them. Not only wire and torches matter: a stone under another mechanism's wire is powered by that wire, and
+     * a repeater backed onto it fires (measured: a house's lamps lit by its door's wiring).
+     */
+    public static synchronized java.util.Set<RsPos> keepClear(ServerLevel level) {
+        ensureLoaded(level);
+        java.util.Set<RsPos> out = new java.util.HashSet<>();
+        for (Entry e : ENTRIES.values()) {
+            for (MechanismWorld.Placed p : e.journal()) {
+                RsPos r = LevelView.rs(p.pos());
+                out.add(r);
+                out.add(r.up(1));
+                out.add(r.up(-1));
+                for (RsDir d : RsDir.values()) {
+                    out.add(r.step(d));
+                }
+            }
+        }
+        return out;
     }
 
     static BlockPos pos(JsonArray a) {
@@ -115,12 +158,14 @@ public final class MechanismStore {
     public static synchronized boolean put(ServerLevel level, Entry e) {
         ensureLoaded(level);
         ENTRIES.put(e.id(), e);
+        reprotect();
         return save();
     }
 
     public static synchronized boolean remove(ServerLevel level, String id) {
         ensureLoaded(level);
         ENTRIES.remove(id);
+        reprotect();
         return save();
     }
 

@@ -433,6 +433,12 @@ public final class Builder {
                 // update, so a support-requiring block the design names — a torch, ladder, door half,
                 // banner — placed before the block it leans on isn't popped by a survival check.
                 BlockState put = job.palette.get((int) entry[1]);
+                // a redstone mechanism's block is left alone: a rebuild of the building it was built into would
+                // otherwise lay the wall back over its pistons and wiring (measured: two tested doors lost that way)
+                if (com.moddingfromamod.redstone.MechanismStore.protects(job.level, pos)) {
+                    budget--;
+                    continue;
+                }
                 // what it is built ON, so taking it down gives it back (air needs no record).
                 if (job.wrote.add(entry[0])) {
                     BuildGroundJournal.record(job.level, job.buildId, entry[0], job.level.getBlockState(pos), put);
@@ -475,6 +481,11 @@ public final class Builder {
     }
 
     /** Is this building still going up? Safe from any thread. */
+    /** True while any building is still going up (a mechanism waits for it: a rebuild would overwrite its blocks). */
+    public static boolean anyBuilding() {
+        return !BUILDING.isEmpty();
+    }
+
     public static boolean isBuilding(String buildId) {
         return buildId != null && BUILDING.containsKey(buildId.trim().toLowerCase(java.util.Locale.ROOT));
     }
@@ -579,6 +590,10 @@ public final class Builder {
         java.util.Set<Long> seen = new java.util.HashSet<>();
         java.util.function.Consumer<BlockPos> down = at -> {
             if (!seen.add(at.asLong())) {
+                return;
+            }
+            // a redstone mechanism's block stays where it is, through a take-down as through a rebuild
+            if (com.moddingfromamod.redstone.MechanismStore.protects(level, at)) {
                 return;
             }
             BuildGroundJournal.Answer a = BuildGroundJournal.takeBack(level, plan.id(), at.asLong(), level.getBlockState(at));

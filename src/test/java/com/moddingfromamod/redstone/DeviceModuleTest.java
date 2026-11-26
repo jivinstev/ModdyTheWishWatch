@@ -94,4 +94,52 @@ class DeviceModuleTest {
         plans(List.of(Devices.ironDoor(o, RsDir.SOUTH, false), Devices.ironDoor(o.plus(1, 0, 0), RsDir.SOUTH, true)),
                 "pressure_plate", new int[] {0, -3}, new int[] {1, 3});
     }
+
+    @Test
+    void sixLampsInTwoRowsOfThree() {
+        RsPos o = new RsPos(0, -61, 0);
+        List<DeviceModule.Device> d = new ArrayList<>();
+        for (int z = 0; z <= 4; z += 4) {
+            for (int x = 0; x <= 8; x += 4) {
+                d.add(Devices.lamp(o.plus(x, 0, z)));
+            }
+        }
+        plans(d, "lever", new int[] {4, 10});
+    }
+
+    @Test
+    void lampsInTheFloorOfAHouseWithAnOverhang() {
+        int y0 = -60;
+        WorldView w = new WorldView() {
+            @Override
+            public Kind kind(RsPos p) {
+                if (p.y() < y0) {
+                    return Kind.NATURAL;
+                }
+                boolean inWalls = p.x() >= 1 && p.x() <= 11 && p.z() >= 1 && p.z() <= 11;
+                if (inWalls && p.y() == y0) {
+                    return Kind.SOLID;            // the floor
+                }
+                boolean wallRing = inWalls && (p.x() == 1 || p.x() == 11 || p.z() == 1 || p.z() == 11);
+                if (wallRing && p.y() <= y0 + 5) {
+                    return Kind.SOLID;
+                }
+                if (p.y() == y0 + 6 && p.x() >= 0 && p.x() <= 12 && p.z() >= 0 && p.z() <= 12) {
+                    return Kind.SOLID;            // the roof, overhanging
+                }
+                return Kind.AIR;
+            }
+
+            @Override
+            public String blockId(RsPos p) {
+                return kind(p).name();
+            }
+        };
+        int[] box = {0, y0, 0, 12, y0 + 6, 12};
+        List<RsPos> spots = Devices.floorGrid(w, box, 6);
+        List<DeviceModule.Device> devs = new ArrayList<>();
+        spots.forEach(p -> devs.add(Devices.lamp(p)));
+        DeviceModule.Result m = DeviceModule.plan(w, "lamps", devs, true, Set.of(), new ArrayList<>());
+        assertTrue(m.ok(), "lamps at " + spots + ": " + m.why());
+    }
 }

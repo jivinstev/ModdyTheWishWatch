@@ -59,21 +59,45 @@ public final class DeviceModule {
                         + "on one level (make one for each level)");
             }
         }
-        int depth = follows ? 4 : 2;
-        int busY = feedY - depth;
-        List<String> whys = new ArrayList<>();
-        for (RsDir d : RsDir.values()) {
-            Result r = tryDir(w, kind, devices, follows, foreign, notes, busY, d);
+        // the usual depth first; four deeper (two more torches, the same sense) when that level is crowded, by
+        // another mechanism's wiring, say (measured: lamps in a house whose door was wired first at their level)
+        List<String> all = new ArrayList<>();
+        for (int depth : follows ? new int[] {4, 8} : new int[] {2, 6}) {
+            Result r = planAt(w, kind, devices, follows, foreign, notes, feedY, depth);
             if (r.ok()) {
                 return r;
             }
-            whys.add(d.id() + ": " + r.why());
+            all.add("at " + depth + " down: " + r.why());
+        }
+        return new Result(null, String.join(" | ", all));
+    }
+
+    static Result planAt(WorldView w, String kind, List<Device> devices, boolean follows, Set<RsPos> foreign,
+                         List<String> notes, int feedY, int depth) {
+        int busY = feedY - depth;
+        // every direction for the columns' repeaters, and every device in turn as the hub (the first device's spine
+        // can run into the next one's column: measured with lamps 4 apart in a house's floor)
+        List<String> whys = new ArrayList<>();
+        for (RsDir d : RsDir.values()) {
+            String why = null;
+            for (int h = 0; h < devices.size(); h++) {
+                List<Device> order = new ArrayList<>(devices.subList(h, devices.size()));
+                order.addAll(devices.subList(0, h));
+                Result r = tryDir(w, kind, order, follows, foreign, notes, busY, d, depth);
+                if (r.ok()) {
+                    return r;
+                }
+                if (why == null) {
+                    why = r.why();
+                }
+            }
+            whys.add(d.id() + ": " + why);
         }
         return new Result(null, String.join("; ", whys));
     }
 
     static Result tryDir(WorldView w, String kind, List<Device> devices, boolean follows, Set<RsPos> foreign,
-                         List<String> notes, int busY, RsDir d) {
+                         List<String> notes, int busY, RsDir d, int depth) {
         List<RsCell> cells = new ArrayList<>();
         List<Expect> expects = new ArrayList<>();
         List<RsPos> wires = new ArrayList<>();      // each device's bus wire (the repeater's input)
@@ -83,15 +107,19 @@ public final class DeviceModule {
             RsPos f = dev.feed();
             // the feed itself: kept if it already conducts, else made solid
             cells.add(RsCell.of(f, "minecraft:stone", RsCell.Role.CASING));
-            // the column under it, torches in their RESTING state (the signal off)
-            if (follows) {
-                cells.add(RsCell.of(f.up(-1), "minecraft:redstone_torch", RsCell.Role.PART, "lit", "false"));
-                cells.add(RsCell.of(f.up(-2), "minecraft:stone", RsCell.Role.PART));
-                cells.add(RsCell.of(f.up(-3), "minecraft:redstone_torch", RsCell.Role.PART, "lit", "true"));
-            } else {
-                cells.add(RsCell.of(f.up(-1), "minecraft:redstone_torch", RsCell.Role.PART, "lit", "true"));
+            // the column under it, torch and block alternately, torches in their RESTING state (the signal off):
+            // the deepest torch is lit (its block unpowered), then they alternate upward
+            boolean lit = true;
+            for (int j = depth - 1; j >= 1; j--) {
+                if (j % 2 == 1) {
+                    cells.add(RsCell.of(f.up(-j), "minecraft:redstone_torch", RsCell.Role.PART, "lit",
+                            String.valueOf(lit)));
+                    lit = !lit;
+                } else {
+                    cells.add(RsCell.of(f.up(-j), "minecraft:stone", RsCell.Role.PART));
+                }
             }
-            RsPos base = f.up(follows ? -4 : -2);
+            RsPos base = f.up(-depth);
             cells.add(RsCell.of(base, "minecraft:stone", RsCell.Role.PART));
             RsPos rep = base.step(d), wire = rep.step(d);
             // a repeater's facing names its INPUT side (measured)
@@ -109,7 +137,22 @@ public final class DeviceModule {
                 inert.add(c.pos());
             }
         }
-        // every planned cell must be placeable
+        // every planned cell must be placeable, and nothing of ours may touch redstone already there (a stub or a
+        // spine beside another mechanism's wire splices into it: measured, a house's lamps lit by its door's wiring)
+        for (RsCell c : cells) {
+            if (c.role() == RsCell.Role.CASING) {
+                continue;
+            }
+            for (RsDir dd : RsDir.values()) {
+                RsPos side = c.pos().step(dd);
+                if (foreign.contains(side) || foreign.contains(side.up(1)) || foreign.contains(side.up(-1))) {
+                    return new Result(null, "other redstone is in the way at " + side);
+                }
+            }
+            if (foreign.contains(c.pos().up(1)) || foreign.contains(c.pos().up(-1))) {
+                return new Result(null, "other redstone is in the way at " + c.pos());
+            }
+        }
         Set<RsPos> taken = new HashSet<>();
         for (RsCell c : cells) {
             if (!taken.add(c.pos()) && c.role() != RsCell.Role.CASING) {
@@ -153,6 +196,12 @@ public final class DeviceModule {
         // branches from the hub was measured to box itself in (the first branch took the only corridor out).
         RsPos at = s1;
         int strength = arrive - 3;
+        // every bus wire laid so far and the signal it carries: a leg that cannot be laid from where the chain ended
+        // branches from the nearest of these still strong enough (measured: a chain entering each device from the side
+        // it then had to leave boxed itself in, in the corridor between two rows of floor lamps)
+        java.util.Map<RsPos, Integer> laid = new java.util.HashMap<>();
+        laid.put(s1, strength);
+        laid.put(s2, arrive - 2);
         List<RsPos> left = new ArrayList<>(wires.subList(1, wires.size()));
         java.util.Set<RsPos> cluster = new HashSet<>(List.of(hub));
         while (!left.isEmpty()) {
@@ -191,6 +240,23 @@ public final class DeviceModule {
             int need = left.isEmpty() ? NEED : CARRY;
             ChannelRouter.Route r = ChannelRouter.route(w, busY, at, strength, goals, need, own, inert, foreign);
             if (!r.ok()) {
+                RsPos tgt = target;
+                List<RsPos> from = new ArrayList<>(laid.keySet());
+                from.removeIf(q -> laid.get(q) < 4);
+                from.sort(java.util.Comparator.comparingInt(q -> q.manhattan(tgt)));
+                for (RsPos f : from.subList(0, Math.min(12, from.size()))) {
+                    Set<RsPos> own2 = new HashSet<>(own);
+                    own2.add(at);
+                    own2.remove(f);
+                    ChannelRouter.Route r2 = ChannelRouter.route(w, busY, f, laid.get(f), goals, need, own2, inert,
+                            foreign);
+                    if (r2.ok()) {
+                        r = r2;
+                        break;
+                    }
+                }
+            }
+            if (!r.ok()) {
                 return new Result(null, "the wiring between the " + kind + " could not be laid (from " + at + " to "
                         + target + "): " + r.why());
             }
@@ -206,6 +272,7 @@ public final class DeviceModule {
             cluster.add(target);
             at = end;
             strength = r.arrival();
+            laid.putAll(r.strengths());
         }
         // the control's port: beyond the hub's wire, on the far side from its repeater
 

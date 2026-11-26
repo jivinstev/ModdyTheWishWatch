@@ -85,8 +85,22 @@ public final class LevelView implements WorldView {
         for (int x = Math.min(a.x(), b.x()); x <= Math.max(a.x(), b.x()); x++) {
             for (int y = Math.min(a.y(), b.y()); y <= Math.max(a.y(), b.y()); y++) {
                 for (int z = Math.min(a.z(), b.z()); z <= Math.max(a.z(), b.z()); z++) {
-                    if (redstone(level.getBlockState(new BlockPos(x, y, z)))) {
-                        out.add(new RsPos(x, y, z));
+                    BlockState st = level.getBlockState(new BlockPos(x, y, z));
+                    if (redstone(st)) {
+                        RsPos p = new RsPos(x, y, z);
+                        out.add(p);
+                        // a power SOURCE also powers the plain blocks round it (a torch the block above it, a
+                        // repeater the block ahead, a lever the block it is on), and a wire beside such a block picks
+                        // that power up: keep clear of all of them (measured: a house's lamps lit by its door's
+                        // torch-powered stone, which as plain stone was in no one's way)
+                        if (!st.is(Blocks.REDSTONE_WIRE) && !st.is(Blocks.PISTON) && !st.is(Blocks.STICKY_PISTON)
+                                && !st.is(Blocks.PISTON_HEAD) && !st.is(Blocks.REDSTONE_LAMP)) {
+                            out.add(p.up(1));
+                            out.add(p.up(-1));
+                            for (RsDir d : RsDir.values()) {
+                                out.add(p.step(d));
+                            }
+                        }
                     }
                 }
             }

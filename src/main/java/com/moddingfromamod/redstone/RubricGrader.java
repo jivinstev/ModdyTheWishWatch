@@ -220,6 +220,8 @@ public final class RubricGrader {
         }
         JsonObject v = new JsonObject();
         List<String> notes = new ArrayList<>();
+        JsonArray logicResults = new JsonArray();
+        v.add("logic", logicResults);
         AgentBridge.onServer(() -> {
             for (int cx = box[0] >> 4; cx <= box[3] >> 4; cx++) {
                 for (int cz = box[2] >> 4; cz <= box[5] >> 4; cz++) {
