@@ -141,6 +141,14 @@ def main(argv=None) -> int:
     rg.add_argument("--data", default=os.path.join(os.environ.get("RUNNER_TEMP", "/tmp"), "gate-data"))
     rg.add_argument("--workflow", default="nightly.yml")
     rg.add_argument("--wait", type=float, default=150.0, help="minutes to wait for the tier")
+    rg.add_argument("--platform-workflow", default="platform-smoke.yml",
+                    help="also require this tree's platform smoke, run alongside the tier ('' to not)")
+
+    rp = sub.add_parser("record-platform", help="a platform smoke run's legs as a gate-data record (platform-smoke.yml)")
+    rp.add_argument("--repo", default=os.environ.get("GITHUB_REPOSITORY", ""))
+    rp.add_argument("--run-id", default=os.environ.get("GITHUB_RUN_ID", ""))
+    rp.add_argument("--commit", required=True)
+    rp.add_argument("--out", required=True)
 
     t = sub.add_parser("tree", help="the gate-relevant tree of a commit")
     t.add_argument("rev", nargs="?", default="HEAD")
@@ -199,6 +207,9 @@ def main(argv=None) -> int:
     if a.cmd == "evidence":
         import release
         return release.evidence_cmd(a)
+    if a.cmd == "record-platform":
+        import release
+        return release.record_platform_cmd(a)
     if a.cmd == "release-gate":
         import release
         return release.release_gate_cmd(a)
