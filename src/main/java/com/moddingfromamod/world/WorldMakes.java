@@ -81,6 +81,8 @@ public interface WorldMakes {
     static WorldMakes get() {
         WorldModule m = WorldModuleHost.liveModule();
         WorldMakes own = m == null ? null : m.makes();
-        return own != null ? own : Plugins.shared().first(WorldMakes.class).orElse(NONE);
+        WorldMakes world = own != null ? own : Plugins.shared().first(WorldMakes.class).orElse(NONE);
+        // #182: a region the player stands in answers first (WorldRegions); none registered, nothing changes
+        return Regions.any() ? new RegionalMakes(world) : world;
     }
 }

@@ -216,7 +216,9 @@ afford it, charging and refunding, and the words a menu, the guide book and `/mo
 - **`WishAsk`** (`com.moddingfromamod.wish.WishAsk`) is the value a hook that takes one is asked about, the same shape
   at every such hook: `player()` (UUID), `source()` (`WishSource`), `recipe()` (the id `/moddy again` takes, also the
   `builder:<id>` of the kept make a Builder edit changes, or the key `/moddy give` takes for "Give me one"; `""` when
-  none), `magic()` and `text()` (the wish's words: typed words, a recipe's words, a Builder make's `Builder: …`).
+  none), `magic()`, `text()` (the wish's words: typed words, a recipe's words, a Builder make's `Builder: …`) and
+  `where()` (a `Bases.Pos`: the place the question is about when it is not where the player stands, today a living
+  creature fitted where it stands; `null` otherwise).
   (`distress()` and `withDistress(…)` remain only for older world jars: always `false`, and a no-op.) The magic is told truthfully at each start: `BUILDER` for a Builder make (and a Builder change on a
   thing the Magician made); `APPRENTICE` for typed words the Apprentice's page or the re-wish reader will answer, and
   for a make an Apprentice tile pressed; `REPLAY` for a thing made again with no model (a recipe button, a cached
@@ -406,6 +408,53 @@ the limits the world gave.
 - **Cheap, and free of side effects:** a menu asks once per tile per draw, on the server thread. Default methods only.
 - **Example:** `ContractWorld` (the contract test world below): hostile makes hidden, a make its own toy rating puts at
   4 or more locked, everything else fitted to three at once, size step 3, 40 health and 6 attack damage.
+
+### `WorldRegions`
+*`com.moddingfromamod.world.WorldRegions`, read with `all`.* **A part of a world with rules of its own** (#182): a
+battle arena built inside a survival or island world, a minigame zone, a protected square. A world runs one
+`WorldModule`, and the core asks it three things about every wish: may it be made and what does it cost (`charge()`),
+how strong may it be (`makes()`), and where may it land (its `Bases`, judged by the reach rules). A region
+(`WorldRegion`) answers the same three for the part of the world it covers, and changes nothing outside it.
+
+- **A region is chosen by a place, never by who asks** (`Regions`):
+  - **a wish**: the spot it was made at, locked at submit. The region that charged it is the one that refunds it, even
+    after he has walked off;
+  - **a living wish creature**: where it stands. `LiveFit` fits it with its place on the question (`WishAsk.where()`),
+    so `makes().limits(owner)` and `makes().view(facts, ask)` are asked of the region the creature is in, whoever owns
+    it and wherever he is. A creature that crosses a region's edge is fitted again within half a second
+    (`RegionWatch`), and its owner is told once: a creature held down inside comes back when it leaves;
+  - **any other question about a player** (a menu, a Builder page, a make he is pressing): where he stands now;
+  - **reach**: the caster's region; for a caster in none, the region his wish is aimed into. So a wish cast inside a
+    fenced region stays in it, and one cast from outside into it is the region's to admit.
+- **Who wins:**
+  - Inside a region, each of its non-null answers. Each of `charge()`, `makes()`, `bases()` and `rules()` may return
+    `null`, meaning "ask the world": a region overrides only what it cares about.
+  - Outside every region, the world's module (or the registered default), exactly as before.
+  - Where regions overlap, the first registered plug-in whose `at` answers wins; within one plug-in, the region its
+    `at` returns.
+- **Limits** are answered as `WorldMakes` answers them: a view, never written into a make. When what a region's
+  `makes()` answers for a player changes (a wave begins), call `WorldMakes.limitsChanged(player)`.
+- **Reach:** a region's `bases()` is judged by its `rules()`, else the world's rules, else `WorldRules.CLOSED`
+  (wishes stay on their base, nothing world-wide). Return `null` from `bases().baseOf(player)` for a player the region
+  does not admit. The reach rule measures bases in the overworld, so a fenced region in another dimension refuses
+  every placed wish.
+- **`at(dimension, x, y, z)`** is asked often (per wish, per menu draw, per reach check, and for each wish creature
+  twice a second while a region exists): keep it a cheap lookup, free of side effects. Return `null` where you have no
+  region.
+- **`any()`** (default `true`): return `false` while you have no region in the running world. Then the core asks
+  nobody, wraps nothing and answers exactly as it did before regions existed. When the first region appears or the
+  last one goes, every wish creature is fitted once again.
+- **`all()`** and **`WorldRegion.area()`** (optional): list your regions and say which columns each covers, so a world
+  that lays things out keeps clear of them. `Regions.overlaps(dimension, area)` is the question it asks.
+- **Default:** no regions; the module answers everywhere.
+- **Contract test:** `test/contract/ContractRegionGameTest` (a region inside a plain world: its charge, its limits on
+  a creature that walks in and out, its fence, an outsider aiming in).
+- **Example:**
+
+```java
+plugins.add(WorldRegions.class, (dimension, x, y, z) -> myZone.contains(dimension, x, z) ? myZone : null);
+// myZone implements WorldRegion: id(), and any of charge(), makes(), bases(), rules()
+```
 
 ### `WorldModuleType`
 *`com.moddingfromamod.world.WorldModuleType`, read with `all`.* **A kind of world**: code that runs for one world and

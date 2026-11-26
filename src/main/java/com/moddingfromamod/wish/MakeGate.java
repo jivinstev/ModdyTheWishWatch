@@ -45,7 +45,7 @@ public final class MakeGate {
         Map<String, Double> upFront;
         try {
             view = world.view(facts, ask);
-            WorldLimits l = world.limits(ask.player());
+            WorldLimits l = com.moddingfromamod.world.RegionalMakes.limitsFor(world, ask);   // #182: by its place
             upFront = l == null ? Map.of() : l.limits();
         } catch (RuntimeException | LinkageError e) {
             // a world that cannot answer stops nothing: the game as it is with no world answering

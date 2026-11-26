@@ -76,7 +76,16 @@ public final class LiveFit {
      * a wish creature does not.
      */
     public static List<String> apply(LivingEntity mob, String speciesId, boolean tell) {
-        if (mob == null || speciesId == null || !MakeGate.anyWorld()) {
+        if (mob == null || speciesId == null) {
+            return List.of();
+        }
+        if (!MakeGate.anyWorld()) {
+            // nobody answers here (now): its own numbers. A fit an answer put on before (the last region going away,
+            // #182) comes off, so a held-down creature comes back; with none on, this changes nothing
+            for (Stat st : STATS) {
+                fit(mob, st.attribute(), st.id(), null);
+            }
+            mob.setHealth(Math.min(mob.getHealth(), mob.getMaxHealth()));
             return List.of();
         }
         var species = com.moddingfromamod.species.SpeciesRegistry.get(speciesId);
@@ -88,7 +97,15 @@ public final class LiveFit {
             owner = new UUID(0L, 0L);
         }
         MakeFacts facts = MakeFactsLookup.forThing(mob.level().getServer(), "creature", speciesId);
-        MakeVerdict v = MakeGate.ask(facts, WishAsk.replay(owner, "").withText(species == null ? "" : species.name()));
+        // #182: a creature is fitted by the place it stands, so a region answers for the creatures inside it (whoever
+        // owns them, wherever he is); RegionWatch fits it again when it crosses into or out of one
+        WishAsk ask = WishAsk.replay(owner, "").withText(species == null ? "" : species.name());
+        if (com.moddingfromamod.world.Regions.any()) {
+            ask = ask.withWhere(new com.moddingfromamod.world.Bases.Pos(
+                    mob.level().dimension().location().toString(), mob.getX(), mob.getY(), mob.getZ()));
+            com.moddingfromamod.world.RegionWatch.track(mob);
+        }
+        MakeVerdict v = MakeGate.ask(facts, ask);
         Map<String, Double> limits = v.makes() ? v.limits() : Map.of();
         boolean had = false;
         for (Stat st : STATS) {
@@ -175,22 +192,11 @@ public final class LiveFit {
                 if (speciesId == null || !player.equals(ownerOf(speciesId))) {
                     continue;
                 }
-                double sizeWas = drawnNow(mob);
-                double[] before = values(mob);
-                double oldMax = mob.getMaxHealth();
-                double oldHealth = mob.getHealth();
-                apply(mob, speciesId, false);
-                double newMax = mob.getMaxHealth();
-                mob.setHealth((float) RefitWords.healthAfter(oldHealth, oldMax, newMax));
-                double[] after = values(mob);
-                double sizeNow = drawnScale(com.moddingfromamod.species.SpeciesRegistry.get(speciesId));
-                if (Math.abs(sizeNow - sizeWas) > 1e-6) {
-                    resized++;
-                }
-                int moved = RefitWords.compare(RefitWords.with(before, sizeWas), RefitWords.with(after, sizeNow));
-                if (moved < 0) {
+                Moved m = refitOne(mob, speciesId);
+                resized += m.resized() ? 1 : 0;
+                if (m.moved() < 0) {
                     lowered++;
-                } else if (moved > 0) {
+                } else if (m.moved() > 0) {
                     raised++;
                 } else {
                     same++;
@@ -203,14 +209,41 @@ public final class LiveFit {
             // print), and only those whose size changed are reshaped; a wish creature sets its scale again.
             com.moddingfromamod.species.SpeciesRegistry.touch();
         }
-        Refit r = new Refit(raised, lowered, same);
+        return told(server, player, new Refit(raised, lowered, same));
+    }
+
+    /** How one creature's fit moved: up (1), down (-1) or not (0), and whether its drawn size changed. */
+    public record Moved(int moved, boolean resized) {
+    }
+
+    /**
+     * Fit one living wish creature again, from its own unfitted numbers, its health kept as hurt as it was
+     * ({@link #refit}'s step for each creature; {@code RegionWatch}'s for one that crossed a region's edge). Server
+     * thread. Tells nobody.
+     */
+    public static Moved refitOne(LivingEntity mob, String speciesId) {
+        double sizeWas = drawnNow(mob);
+        double[] before = values(mob);
+        double oldMax = mob.getMaxHealth();
+        double oldHealth = mob.getHealth();
+        apply(mob, speciesId, false);
+        double newMax = mob.getMaxHealth();
+        mob.setHealth((float) RefitWords.healthAfter(oldHealth, oldMax, newMax));
+        double[] after = values(mob);
+        double sizeNow = drawnScale(com.moddingfromamod.species.SpeciesRegistry.get(speciesId));
+        boolean resized = Math.abs(sizeNow - sizeWas) > 1e-6;
+        return new Moved(RefitWords.compare(RefitWords.with(before, sizeWas), RefitWords.with(after, sizeNow)), resized);
+    }
+
+    /** Tell {@code player} once what a re-fit of his creatures did (nothing when nothing moved), and log it. */
+    public static Refit told(net.minecraft.server.MinecraftServer server, UUID player, Refit r) {
         String line = r.line();
         net.minecraft.server.level.ServerPlayer p = server.getPlayerList().getPlayer(player);
         if (p != null && !line.isEmpty() && WishFeedback.sweeps(line, "")) {
             p.sendSystemMessage(net.minecraft.network.chat.Component.literal(line));
         }
         LOGGER.info("world limits changed for {}: {} creature(s) raised, {} lowered, {} as they were; told: {}", player,
-                raised, lowered, same, p == null ? "not online" : line.isEmpty() ? "nothing moved" : line);
+                r.raised(), r.lowered(), r.same(), p == null ? "not online" : line.isEmpty() ? "nothing moved" : line);
         return r;
     }
 
@@ -242,7 +275,8 @@ public final class LiveFit {
         return built == null ? null : built.id();
     }
 
-    private static UUID ownerOf(String speciesId) {
+    /** The owner of the species {@code speciesId}, or null. */
+    public static UUID ownerOf(String speciesId) {
         var species = com.moddingfromamod.species.SpeciesRegistry.get(speciesId);
         try {
             return species == null || species.ownerId() == null || species.ownerId().isBlank()

@@ -208,9 +208,14 @@ public final class WishExecutor {
         // McpProtocol's tools/call (BaseReach.refusal); a button, a template or a rule replays here
         // with no agent, and a child's buttons follow him from world to world. So with no
         // worker bound, the same rule is asked here, measured from where the command runs.
-        com.moddingfromamod.world.Bases bases = com.moddingfromamod.world.WorldModuleHost.liveBases();
+        // #182: a caster (or, with nobody near, the spot) in a region is judged by its bases and reach rules
+        com.moddingfromamod.world.Regions.Reach where = com.moddingfromamod.world.Regions.reachAt(
+                asPlayer == null ? null : asPlayer.getUUID(), level.dimension().location().toString(), pos.x, pos.y,
+                pos.z, com.moddingfromamod.world.WorldModuleHost.liveBases(),
+                com.moddingfromamod.world.WorldRulesService.loadedOrNull());
+        com.moddingfromamod.world.Bases bases = where.bases();
         if (bases != null && com.moddingfromamod.agent.AgentContext.workerId().isEmpty()) {
-            com.moddingfromamod.world.WorldRules rules = com.moddingfromamod.world.WorldRulesService.loadedOrNull();
+            com.moddingfromamod.world.WorldRules rules = where.rules();
             String dim = level.dimension().location().toString();
             // A standing rule can fire with nobody near (asPlayer null): it is then the rule of whoever's
             // base it fires on, and on a world that fences wishes to bases, nobody's base is refused.
