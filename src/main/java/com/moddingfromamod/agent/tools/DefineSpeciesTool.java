@@ -61,7 +61,9 @@ public final class DefineSpeciesTool implements McpTool {
         Schemas.prop(s, "scale", "number", "Size, 0.2 (tiny) to 8.0 (enormous). 1.0 is player-sized.");
         Schemas.prop(s, "health", "number", "Hit points, 1 to 500.");
         Schemas.prop(s, "speed", "number", "Move speed, 0.05 (slow) to 0.6 (very fast). 0.25 normal.");
-        Schemas.prop(s, "damage", "number", "Attack damage, 0 to 40.");
+        Schemas.prop(s, "damage", "number", "Attack damage, 0 to 40: the damage its body would have, like a "
+                + "vanilla mob its size. A friendly creature never attacks whatever this says, so never 0 to make it "
+                + "gentle; 0 lands nothing.");
         Schemas.prop(s, "armor", "number", "Armour, 0 to 30.");
         Schemas.prop(s, "knockbackResistance", "number", "0 to 1. High = hard to push around.");
         Schemas.prop(s, "powers", "array",
@@ -149,7 +151,19 @@ public final class DefineSpeciesTool implements McpTool {
                 StringBuilder sb = new StringBuilder("Creature '" + stored.id() + "' ("
                         + stored.name() + ") is ready: " + stored.body().name().toLowerCase()
                         + " shape, " + stored.texture() + " look, scale " + stored.scale()
-                        + ", " + (int) stored.health() + " health.");
+                        + ".");
+                // #101: what its numbers mean, and a guard that cannot hit, caught before the reveal
+                var drawn = com.moddingfromamod.runtime.ModelRepository.geometry(stored.modelKey());
+                double vol = drawn == null ? Double.NaN : drawn.volume();
+                sb.append(' ').append(com.moddingfromamod.species.PowerLine.of(stored, vol));
+                String zeroHit = com.moddingfromamod.species.PowerLine.zeroHitFlag(stored, vol);
+                if (!zeroHit.isEmpty()) {
+                    sb.append(' ').append(zeroHit);
+                }
+                String farAbove = com.moddingfromamod.species.PowerLine.farAbove(stored, vol);
+                if (!farAbove.isEmpty()) {
+                    sb.append(' ').append(farAbove);
+                }
 
                 ServerPlayer player = com.moddingfromamod.agent.ActingChild.of(server);
                 if (spawn && player != null) {

@@ -5,10 +5,10 @@
   ],
   "armor": 0.0,
   "body": "humanoid",
-  "damage": 0.0,
+  "damage": 12.0,
   "health": 200.0,
   "id": "trex",
-  "knockbackResistance": 0.0,
+  "knockbackResistance": 0.8,
   "modelKey": "trex",
   "name": "Giant T-Rex",
   "powers": [

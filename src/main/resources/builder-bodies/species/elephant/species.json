@@ -3,10 +3,10 @@
   "armor": 0.0,
   "body": "humanoid",
   "createdAt": 1793165609485,
-  "damage": 0.0,
-  "health": 40.0,
+  "damage": 8.0,
+  "health": 80.0,
   "id": "elephant",
-  "knockbackResistance": 0.0,
+  "knockbackResistance": 0.6,
   "modelKey": "elephant",
   "name": "Elephant",
   "powers": [

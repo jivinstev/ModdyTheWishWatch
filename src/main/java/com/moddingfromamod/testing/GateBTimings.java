@@ -59,6 +59,26 @@ public final class GateBTimings implements TestReporter {
     private final List<Row> rows = new CopyOnWriteArrayList<>();
     private final long startedMillis = System.currentTimeMillis();
 
+    /**
+     * When each test's body started, by test id. On 1.21.8 {@link GameTestInfo#getRunTime()} reads 0 for every test
+     * (measured: a whole tier of 0.000 s), so a test's seconds are measured from its body's start
+     * ({@code testing.gt.GameTestAdapter} calls {@link #started}) to its reported end: the wall time it held its batch.
+     */
+    private static final java.util.Map<String, Long> STARTED = new java.util.concurrent.ConcurrentHashMap<>();
+
+    /** A test's body is starting (the adapter's registered function runs it). */
+    public static void started(String testId) {
+        STARTED.putIfAbsent(testId, System.currentTimeMillis());
+    }
+
+    /** Milliseconds a test ran: the framework's own number when it has one, else from its body's start. */
+    static long runMillis(long frameworkMs, Long startedAt, long now) {
+        if (frameworkMs > 0) {
+            return frameworkMs;
+        }
+        return startedAt == null ? 0 : Math.max(0, now - startedAt);
+    }
+
     private GateBTimings(TestReporter delegate) {
         this.delegate = delegate;
     }
@@ -203,8 +223,10 @@ public final class GateBTimings implements TestReporter {
         // SKIPPED: nothing skips any more. It was the Create gate's record of a test that took
         // the no-Create path (removed Create and its gate); the column stays so a history
         // row keeps its shape, and is always false.
-        return new Row(info.id().toString(), info.getRunTime(), passed, info.isRequired(),
-                info.getTimeoutTicks(), err, batch, System.currentTimeMillis(), false);
+        long now = System.currentTimeMillis();
+        String id = info.id().toString();
+        return new Row(id, runMillis(info.getRunTime(), STARTED.get(id), now), passed, info.isRequired(),
+                info.getTimeoutTicks(), err, batch, now, false);
     }
 
     /**
@@ -218,8 +240,8 @@ public final class GateBTimings implements TestReporter {
      *
      * <p>Deliberately writes a per-run file rather than appending to one log: two Gate B runs can
      * be in flight at once ({@code -Prundir}), and concurrent appends to a single file interleave.
-     * {@code tools/gate-history.py --fold} is what merges them, and it is a separate, explicit step
-     * — see docs/GATE_HISTORY.md for why folding must never be a side effect of running the gate.
+     * {@code tools/gate/gate.py run} reads the one its own server wrote, and the workflows store it, one file a run,
+     * on the {@code gate-data} branch (docs/GATE_B.md, "Run history").
      *
      * <p>{@code commit}/{@code dirty} are written as JSON null when the build did not supply them,
      * never guessed. A history row that quietly attributes a result to the wrong commit is worse
@@ -257,8 +279,8 @@ public final class GateBTimings implements TestReporter {
             // have to guess which. `recordsSkips` says "this run could have told you".
             o.addProperty("recordsSkips", true);
             o.addProperty("skipped", 0);   // nothing can skip since Create went
-            // WHICH Minecraft and WHICH shards ran. The release check (tools/release-evidence.py)
-            // asks for both halves of --all, and a commit alone cannot say which half a row is.
+            // WHICH Minecraft and WHICH shards ran: the release evidence (tools/gate/gate.py evidence) asks for
+            // the whole ci,default tier, and a commit alone cannot say which shards a record ran.
             o.addProperty("mc", net.minecraft.SharedConstants.getCurrentVersion().name());
             o.addProperty("namespaces", System.getProperty("neoforge.enabledGameTestNamespaces", ""));
             // a CLASS-FILTERED run boots the same namespaces as the full tier and is not one.
@@ -267,6 +289,12 @@ public final class GateBTimings implements TestReporter {
             if (!classes.isEmpty()) {
                 o.addProperty("classes", classes);
             }
+            String notClasses = System.getProperty(GameTestClassFilter.NOT_CLASSES, "").trim();
+            if (!notClasses.isEmpty()) {
+                o.addProperty("notClasses", notClasses);
+            }
+            // how many tests this server REGISTERED, so a reader can tell "ran all it had" from "stopped early"
+            o.addProperty("registered", com.moddingfromamod.testing.gt.GameTestAdapter.registeredCount());
             String excluded = System.getProperty(GameTestClassFilter.EXCLUDE, "").trim();
             if (!excluded.isEmpty()) {
                 o.addProperty("excluded", excluded);
@@ -302,8 +330,7 @@ public final class GateBTimings implements TestReporter {
 
             Path dest = dir.resolve(runId + ".json");
             Files.writeString(dest, o.toString());
-            LOGGER.info("Gate B run record written to {} — fold it with "
-                    + "`python3 tools/gate-history.py --fold`", dest);
+            LOGGER.info("Gate B run record written to {} (tools/gate/gate.py run reads it; docs/GATE_B.md)", dest);
         } catch (IOException | RuntimeException e) {
             // Same rule as the TSV: never fail a run over the instrument.
             LOGGER.warn("could not write the Gate B run record: {}", e.toString());

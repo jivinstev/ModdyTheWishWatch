@@ -41,7 +41,7 @@ integrated server). Needed in single-player: yes for every row, which is why eac
 | `ItemDisplayItemInvoker` | `moddingfromamod.mixins.json` | `Display.ItemDisplay#getItemStack`, `#setItemStack` | `@Invoker` | the display rig sets an item display's item by its field |
 | `FunctionNoiseMixin` | `moddingfromamod.mixins.json` | `ServerFunctionManager#tick`, `#execute` | `@Inject` HEAD/RETURN | which datapack function is running, for the noise meter (`datapack/NoiseMeter`) |
 | `ExecutionContextHardStopMixin` | `moddingfromamod.mixins.json` | `ExecutionContext#incrementCost` | `@Inject` TAIL | a wish datapack's function that will not end is stopped inside its tick |
-| `FunctionSpawnScopeMixin` | `moddingfromamod.mixins.json` | `ServerFunctionManager#tick`, `#execute` | `@Inject` HEAD/RETURN | a datapack function's summons and gives run inside a wish scope (`mob/SpawnScope`) |
+| `FunctionSpawnScopeMixin` | `moddingfromamod.mixins.json` | `ServerFunctionManager#execute` | `@Inject` HEAD/RETURN | a WISH datapack's function (its namespace a wish wrote, `datapack/WishPacks`, #80) runs its summons and gives inside a wish scope (`mob/SpawnScope`); a world's, vanilla's or another mod's function runs with none |
 | `GiveCommandMixin` | `moddingfromamod.mixins.json` | `GiveCommand#giveItem` → `Inventory#add` | `@WrapOperation` | a wish's `/give` goes through the one delivery path (`item/delivery/WishDelivery`) while a wish scope is open; otherwise the original call, untouched |
 | `ItemCombinerMenuAccessor` | `moddingfromamod.mixins.json` | `ItemCombinerMenu#player` | `@Accessor` | the anvil check reads whose menu it is |
 | `ParticleNoiseMixin` | `moddingfromamod.mixins.json` | `ParticleCommand#sendParticles` | `@Inject` HEAD, cancellable | a throttled wish datapack's particle bursts are dropped |
@@ -75,6 +75,7 @@ the sound ledger is switched on only by a test or the behaviour harness (a dev `
 
 | mixin | config | target | injection | purpose |
 |---|---|---|---|---|
+| `GameTestBatchOrderMixin` | `moddingfromamod.gametest.mixins.json` | `GameTestBatchFactory#divideIntoBatches` | `@ModifyReturnValue` | on a coverage-mapping run only (`testing/gt/CoverageMap`), batches run in the order of their environment names, so a class's batches and its settle window run together and in the same place every run; any other run keeps the game's own order |
 | `GameTestCrashGuardMixin` | `moddingfromamod.gametest.mixins.json` | `GameTestInfo#tick` | `@WrapMethod` | one test's exception fails that test, not the whole run (1.21.8's `fail` takes only a `GameTestException`); names the test the stall watchdog sees |
 | `GameTestWallClockMixin` | `moddingfromamod.gametest.mixins.json` | `GameTestInfo#startTest`, `#tickInternal` | `@Inject` HEAD; `@ModifyExpressionValue` on the `timeoutTicks` read | a test's `timeoutTicks` is also that much wall-clock time at 20 ticks a second |
 | `SoundSentMixin` | `moddingfromamod.gametest.mixins.json` | `ServerCommonPacketListenerImpl#send` | `@Inject` HEAD | every sound packet to a player, for the sound ledger (`seam/SoundLedger`); a no-op unless a test switched the ledger on. Moved here from the public config: nothing in a player's game turns the ledger on |

@@ -90,10 +90,16 @@ public final class WishMobLimitGameTest {
                     + (p.getZ() + (i / 3) % 3) + " {NoAI:1b}");
         }
         var source = server.createCommandSourceStack().withSuppressedOutput().withPermission(4);
+        // a WISH datapack's function (#80: only a namespace a wish wrote is scoped), as a wish's pack would be
+        com.moddingfromamod.datapack.WishPacks.forceForTest("gt_wishpack_1265", true);
         CommandFunction<net.minecraft.commands.CommandSourceStack> fn = CommandFunction.fromLines(
-                ResourceLocation.fromNamespaceAndPath(ModdingFromAModMod.MODID, "gametest_1265"),
+                ResourceLocation.fromNamespaceAndPath("gt_wishpack_1265", "gametest_1265"),
                 server.getCommands().getDispatcher(), source, lines);
-        server.getFunctions().execute(fn, source);
+        try {
+            server.getFunctions().execute(fn, source);
+        } finally {
+            com.moddingfromamod.datapack.WishPacks.forceForTest("gt_wishpack_1265", false);
+        }
         int made = creepers(helper) - before;
         int room = SpawnBudget.worldLive(SpawnBudget.Kind.EXPLOSIVE) - liveBefore;
         helper.assertTrue(made == room, Component.literal("a datapack made " + made + " creepers; the world had room for "

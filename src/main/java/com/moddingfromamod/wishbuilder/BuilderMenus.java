@@ -342,7 +342,10 @@ public final class BuilderMenus {
             seam.accept(spec);
             return true;
         }
-        p.sendSystemMessage(Component.literal(BuilderWords.making(spec, false)));
+        if (BuilderMake.wouldStart(p, spec, settings.allow(), null, true)) {
+            // (C) said only once this world has let it start: a locked or refused make is never announced
+            p.sendSystemMessage(Component.literal(BuilderWords.making(spec, false)));
+        }
         BuilderMake.make(p, spec, settings.allow(), null, true).thenAccept(r -> p.getServer().execute(() -> {
             ServerPlayer now = p.getServer().getPlayerList().getPlayer(who);
             if (now == null) {

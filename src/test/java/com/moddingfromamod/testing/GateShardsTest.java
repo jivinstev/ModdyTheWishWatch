@@ -67,6 +67,7 @@ class GateShardsTest {
             "PaintUndoGameTest",           // painting: a painting is made and undone
             "TemplateServabilityGameTest", // template: a cached wish is servable
             "DatapackGameTest",            // datapack: CBScript compiles and loads
+            "NoPythonGameTest",            // a real datapack wish starts no Python (the compiler is in the jar)
             "WishGameTest",                // the wish object itself, end to end
             "WishFlowGameTest",            // the lifecycle a wish moves through
             "AgentSessionGameTest",        // the agent pool starts, counts and stops

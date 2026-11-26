@@ -114,7 +114,8 @@ public final class BuilderMenusGameTest {
         BuilderFlow flow = BuilderMenus.flowOf(child);
         helper.assertTrue(flow != null && flow.step() == BuilderFlow.Step.TUNE,
                 Component.literal("Next opens the tune dialog: " + (flow == null ? "no flow" : flow.step())));
-        // What the dialog's Make sends, as the client runs it: size count scheme (Moddy names it). A trailing word, as
+        // What the dialog's Make sends, as the client runs it: size, colours, how fast, how strong (#103: How strong took
+        // How many's place on a creature's dialog; Moddy names it). A trailing word, as
         // a dialog from before names were Moddy's sent, is not read.
         // the newest wish id, not the size: the book keeps 500, so at the cap a new wish leaves the size alone
         var newest0 = WishBook.get(helper.getLevel().getServer()).recent(1);
@@ -122,7 +123,7 @@ public final class BuilderMenusGameTest {
         int ran;
         try {
             ran = helper.getLevel().getServer().getCommands().getDispatcher().execute(
-                    "moddy builder make " + flow.token + " 3 1 ocean Glowy", child.createCommandSourceStack());
+                    "moddy builder make " + flow.token + " 3 ocean 2 2 Glowy", child.createCommandSourceStack());
         } catch (com.mojang.brigadier.exceptions.CommandSyntaxException e) {
             helper.fail(Component.literal("the Make command did not parse: " + e.getMessage()));
             return;
@@ -132,7 +133,7 @@ public final class BuilderMenusGameTest {
         int refused = 0;
         try {
             refused = helper.getLevel().getServer().getCommands().getDispatcher().execute(
-                    "moddy builder make " + flow.token + " 3 1 ocean Glowy", child.createCommandSourceStack());
+                    "moddy builder make " + flow.token + " 3 ocean 2 2 Glowy", child.createCommandSourceStack());
         } catch (Exception e) {
             refused = 0;
         }

@@ -55,6 +55,11 @@ public final class MakeFit {
         // no knob moves a creature's armour or knockback resistance: they are fitted on the live creature (LIVE)
         m.put(MakeFacts.ARMOR_POINTS, new Fact(MakeFacts.ARMOR_POINTS, true, NOTHING));
         m.put(MakeFacts.KNOCKBACK_RESISTANCE_FRACTION, new Fact(MakeFacts.KNOCKBACK_RESISTANCE_FRACTION, true, NOTHING));
+        // #102: what a creature's moves do a second is read, not lowered: no knob moves it, so over a limit is locked
+        for (String k : new String[] {MakeFacts.MOVE_DAMAGE_HALF_HEARTS_PER_SECOND,
+                MakeFacts.EFFECTIVE_DAMAGE_HALF_HEARTS_PER_SECOND, MakeFacts.HEAL_HALF_HEARTS_PER_SECOND}) {
+            m.put(k, new Fact(k, false, NOTHING));
+        }
         return Collections.unmodifiableMap(m);
     }
 
@@ -66,6 +71,24 @@ public final class MakeFit {
     public static final java.util.Set<String> LIVE = java.util.Set.of(MakeFacts.HEALTH_HALF_HEARTS,
             MakeFacts.ATTACK_DAMAGE_HALF_HEARTS, MakeFacts.ARMOR_POINTS, MakeFacts.KNOCKBACK_RESISTANCE_FRACTION);
 
+    /**
+     * A creature's or ride's SIZE, fitted where it stands at every spawn ({@code wish.LiveFit.drawnScale}), never kept in
+     * its make: a replay of a kept make over a size limit (a hotbar fire, "Make another one") is made and stands
+     * smaller, never refused, and a later, higher limit gives it its full size. A make itself is still fitted by its size
+     * knob when it is made (MakeFit.fit).
+     */
+    public static final java.util.Set<String> LIVE_SIZE = java.util.Set.of(MakeFacts.SCALE_TIMES, MakeFacts.BUILDER_SIZE_STEP);
+
+    /** Everything a creature or ride may carry over a limit and still be made here: {@link #LIVE} and {@link #LIVE_SIZE}. */
+    static boolean fittedWhereItStands(java.util.Collection<String> over) {
+        for (String k : over) {
+            if (!LIVE.contains(k) && !LIVE_SIZE.contains(k)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     /** Is this a make whose creatures are fitted live ({@link #LIVE})? */
     public static boolean livesFitted(MakeFacts f) {
         return f.kind().equals(BuilderSpec.Kind.CREATURE.id()) || f.kind().equals(BuilderSpec.Kind.RIDE.id());
@@ -73,11 +96,11 @@ public final class MakeFit {
 
     /**
      * Does a made thing keep within {@code limits} here: every number within, or a creature over only in what is fitted
-     * on the live entity at spawn ({@link #LIVE}).
+     * on the live entity at spawn ({@link #LIVE}) and its size, fitted where it stands ({@link #LIVE_SIZE}).
      */
     public static boolean satisfiesHere(MakeFacts facts, Map<String, Double> limits) {
         List<String> over = over(facts, limits);
-        return over.isEmpty() || livesFitted(facts) && LIVE.containsAll(over);
+        return over.isEmpty() || livesFitted(facts) && fittedWhereItStands(over);
     }
 
     /** What fitting did: the spec as made, whether it changed, whether it fits at all, and which numbers were lowered. */
@@ -228,7 +251,10 @@ public final class MakeFit {
         try {
             now = Integer.parseInt(s.opt("strength").strip());
         } catch (NumberFormatException none) {
-            return out;
+            if (!creatureLike(s)) {
+                return out;
+            }
+            now = BuilderCreatureStrength.OWN;   // #103: a creature's own strength is written as nothing; gentler still exists
         }
         for (int st = now - 1; st >= 1; st--) {
             Map<String, String> o = new LinkedHashMap<>(s.opts());
@@ -245,6 +271,13 @@ public final class MakeFit {
      * not fitted at all (locked), never made wrong.
      */
     static List<BuilderSpec> steps(BuilderSpec s) {
+        if (creatureLike(s)) {
+            // #103: a creature's size and How strong now move its health and damage, but a limit on those is still
+            // fitted on the LIVE creature (LIVE), never by making it smaller or gentler: a world that raises its limits
+            // later must get the creature back at its full strength (LiveFit). Its size and strength are lowered only
+            // by a limit on them (builderSizeStep, scaleTimes, builderStrengthStep).
+            return List.of();
+        }
         List<BuilderSpec> tiers = new ArrayList<>();
         tiers.add(s);
         tiers.addAll(lowerTiers(s));
@@ -287,12 +320,17 @@ public final class MakeFit {
         return out;
     }
 
+    /** A creature or a ride: its strength is #103's How strong, its own (2) when unstated. */
+    private static boolean creatureLike(BuilderSpec s) {
+        return s.kind() == BuilderSpec.Kind.CREATURE || s.kind() == BuilderSpec.Kind.RIDE;
+    }
+
     private static int stepsKept(BuilderSpec s) {
         int strength;
         try {
             strength = Integer.parseInt(s.opt("strength").strip());
         } catch (NumberFormatException none) {
-            strength = 0;
+            strength = creatureLike(s) ? BuilderCreatureStrength.OWN : 0;
         }
         BuilderMobSizes.Level l = s.opt("mobsize").isEmpty() ? null : BuilderMobSizes.of(s.opt("mobsize"));
         int size = l == null ? s.size() : BuilderMobSizes.ALL.indexOf(l);
@@ -343,7 +381,8 @@ public final class MakeFit {
             }
             List<String> over = new ArrayList<>(over(f, limits));
             if (livesFitted(f)) {
-                over.removeAll(LIVE);   // fitted on the live creature at spawn
+                over.removeAll(LIVE);        // fitted on the live creature at spawn
+                over.removeAll(LIVE_SIZE);   // and its size where it stands (LiveFit.drawnScale)
             }
             if (over.isEmpty()) {
                 out.add(c);

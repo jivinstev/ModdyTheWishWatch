@@ -1,4 +1,6 @@
 {
+  "damage": 3,
+  "health": 30,
   "id": "horse",
   "status": "Fixing the ears",
   "note": "Ears mirrored at x -3..-1 / 1..3.",

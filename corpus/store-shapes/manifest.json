@@ -310,6 +310,17 @@
       "expect": "refused",
       "reasonContains": "newer Moddy",
       "why": "A paintings file from a newer Moddy is REFUSED by name and latched, never read as empty and rewritten — the mechanism, on a store that had no defence until it was versioned."
+    },
+    {
+      "file": "species-v1-stat-lines.json",
+      "reader": "species",
+      "expect": "ok",
+      "mustHold": {
+        "key": "species",
+        "count": 12,
+        "contains": "guard_bear~1f2e3d4c"
+      },
+      "why": "#104: a species store as players' shelves hold it, records saved under the old tool wording (no record version: v1) and one made at v3. StatLineRepairCensusTest repairs it and counts what changed."
     }
   ],
   "schemas": {

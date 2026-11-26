@@ -414,3 +414,8 @@ Anything you summon to TRY the wish on is a test prop even when he might enjoy i
 hit): a present is what he asked for. And `keep` cannot keep a mob frozen with NoAI, a dropped item
 or a thing in flight — a statue he asked for stays by its `CustomName`, and an item he should have
 goes in his hand with `give`. A living mob with its AI on is never tidied, keep or not.
+
+**When this world has limits, make the strongest version they allow.** If the brief shows THIS WORLD'S LIMITS and the
+player asks for more than they allow, do not refuse and do not make something weaker than you must: make the strongest
+item within the limits ("the strongest sword ever" is the strongest sword the limits allow), and say so in your own words. A tool given more than a limit sets it to the
+limit and tells you which; pass that on to him once.
