@@ -117,6 +117,9 @@ public final class MechanismWorld {
 
     public static boolean use(ServerLevel level, Control c, boolean on) {
         BlockPos at = LevelView.bp(c.use());
+        if (c.kind().equals("logic") && MechanismDrive.setScript(level, at, on)) {
+            return true;          // a driven mechanism's logic input: the engine switches its feeds from it
+        }
         if (c.kind().equals("logic")) {
             // the logic bridge's cell: a redstone block placed (which updates its neighbours) or taken away
             level.setBlock(at, on ? net.minecraft.world.level.block.Blocks.REDSTONE_BLOCK.defaultBlockState()

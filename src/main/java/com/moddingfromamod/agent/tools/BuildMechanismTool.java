@@ -339,6 +339,16 @@ public final class BuildMechanismTool implements McpTool {
         return ToolResult.ok(b.toString());
     }
 
+    static DevicePlanner devicePlanner(boolean driven) {
+        return driven ? DeviceModule::planDriven : DeviceModule::plan;
+    }
+
+    /** Wired (a bus) or driven (a feed per device): the same arguments either way. */
+    interface DevicePlanner {
+        DeviceModule.Result plan(com.moddingfromamod.redstone.WorldView w, String kind, List<DeviceModule.Device> devices,
+                                 boolean follows, Set<RsPos> foreign, List<String> notes);
+    }
+
     /** Takes a mechanism back down after a failure, its markers and datapack included. */
     static void undoDriven(Built built) {
         AgentBridge.onServer(() -> {
@@ -462,7 +472,8 @@ public final class BuildMechanismTool implements McpTool {
                 for (int u = 0; u < door.width(); u++) {
                     devs.add(Devices.ironDoor(door.frame().at(u, 0, 0), door.frame().in(), u == 1));
                 }
-                DeviceModule.Result r = DeviceModule.plan(view, "iron door", devs, spec.opens(), keep(level, view, devs),
+                DeviceModule.Result r = devicePlanner(spec.linked())
+                        .plan(view, "iron door", devs, spec.opens(), keep(level, view, devs),
                         new ArrayList<>(List.of("an iron door: " + (spec.opens() ? "switched on (or pressed) it OPENS"
                                 : "switched on it CLOSES"))));
                 if (!r.ok()) {
@@ -480,7 +491,8 @@ public final class BuildMechanismTool implements McpTool {
                 String what;
                 switch (spec.mechanism()) {
                     case "lamps" -> {
-                        List<RsPos> at2 = box != null ? Devices.floorGrid(view, box, n, MechanismStore.keepClear(level))
+                        List<RsPos> at2 = box != null ? Devices.floorGrid(view, box, n, MechanismStore.keepClear(level),
+                                spec.linked() ? 3 : 4)
                                 : Devices.groundRing(view, ground, n, 2);
                         at2.forEach(p -> devs.add(Devices.lamp(p)));
                         what = devs.size() + " lamp(s) set into the " + (box != null ? "floor" : "ground");
@@ -546,7 +558,8 @@ public final class BuildMechanismTool implements McpTool {
                     return Built.fail(ToolResult.error("There was no room for any " + spec.mechanism() + " at "
                             + spec.at() + " (they need flat solid ground with room above)."));
                 }
-                DeviceModule.Result r = DeviceModule.plan(view, spec.mechanism(), devs, !spec.inverted(),
+                DeviceModule.Result r = devicePlanner(spec.linked())
+                        .plan(view, spec.mechanism(), devs, !spec.inverted(),
                         keep(level, view, devs),
                         new ArrayList<>(List.of(spec.inverted() ? "on at rest; a switch turns them OFF"
                                 : "a switch turns them ON")));
@@ -751,7 +764,7 @@ public final class BuildMechanismTool implements McpTool {
                 logic.add(o);
             }
             plan = new MechanismPlan(plan.kind(), cells, plan.expects(), plan.controls(), plan.replaced(), plan.notes(),
-                    null, plan.feed());
+                    null, plan.feeds());
         }
         Built b = new Built();
         b.logic = logic;

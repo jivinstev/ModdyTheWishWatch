@@ -124,13 +124,9 @@ public class DeviceGameTest {
 
     @GameTest(template = "empty_test", batch = "redstone_devices3", timeoutTicks = 2400)
     public static void lampsLitUntilTheSwitchTurnsThemOff(GameTestHelper helper) {
-        // inverted: lit at rest, out when switched; the proof's expectations swap
-        run(helper, 140, o -> {
-            DeviceModule.Device d = Devices.lamp(o.plus(0, -1, 0));
-            Expect e = d.expects().get(0);
-            return List.of(new DeviceModule.Device(d.cells(), List.of(new Expect(e.pos(), e.fired(), e.rest(),
-                    e.what())), d.feed(), d.what()));
-        }, false, List.of(new int[] {-5, -5}), "lever");
+        // inverted: lit at rest, out when switched. The MODULE swaps the expectations (DeviceModule.sensed); this test
+        // once swapped them itself, which is how the same bug went unseen through the real tool
+        run(helper, 140, o -> List.of(Devices.lamp(o.plus(0, -1, 0))), false, List.of(new int[] {-5, -5}), "lever");
     }
 
     /** A secret button low on a stone wall lights a lamp: the wall control's wire goes down through the footing. */

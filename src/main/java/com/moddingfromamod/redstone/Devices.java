@@ -79,6 +79,11 @@ public final class Devices {
 
     /** As above, leaving out any spot whose column (10 blocks down, a block either side) touches {@code avoid}. */
     public static List<RsPos> floorGrid(WorldView w, int[] box, int count, java.util.Set<RsPos> avoid) {
+        return floorGrid(w, box, count, avoid, 4);
+    }
+
+    /** As above, {@code gap} apart: 3 is enough for lamps driven by the engine, which have no bus to pass between. */
+    public static List<RsPos> floorGrid(WorldView w, int[] box, int count, java.util.Set<RsPos> avoid, int gap) {
         List<RsPos> floor = new ArrayList<>();
         for (int y = box[1]; y <= box[1] + 1; y++) {
             for (int x = box[0] + 2; x <= box[3] - 2; x++) {
@@ -95,11 +100,11 @@ public final class Devices {
             }
         }
         // an even lattice first (every 4 blocks from the walls), so lamps spread over the room rather than a corner
-        floor.sort(java.util.Comparator.comparingInt((RsPos p) -> ((p.x() - box[0] - 2) % 4 == 0
-                && (p.z() - box[2] - 2) % 4 == 0) ? 0 : 1));
+        floor.sort(java.util.Comparator.comparingInt((RsPos p) -> ((p.x() - box[0] - 2) % gap == 0
+                && (p.z() - box[2] - 2) % gap == 0) ? 0 : 1));
         // 4 apart, not 3: at 3 the bus between two rows has to pass beside a column's strongly powered base, which
         // the router refuses (measured: 6 and 12 lamps in a house could not be wired)
-        return spread(floor, count, 4);
+        return spread(floor, count, gap);
     }
 
     /** {@code count} ground spots round {@code centre} (flush in the ground: solid with two walkable cells above). */

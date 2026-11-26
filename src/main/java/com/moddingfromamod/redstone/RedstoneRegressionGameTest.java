@@ -307,4 +307,55 @@ public class RedstoneRegressionGameTest {
             return held ? "" : "after its proof no dispenser holds the water bucket: " + r.text();
         });
     }
+
+    /**
+     * The routing fix (plan §13 step 1): devices driven one feed each, nothing routed between them. Twelve lamps in
+     * one house beside its iron door (v3: 1 of 12 fitted), inverted lamps (v3: failed their own proof), and a timer
+     * driving several note blocks (a multi-device mechanism from a logic rule).
+     */
+    @GameTest(template = "empty_test", batch = "redstone_regress_driven", timeoutTicks = 6000)
+    public static void devicesDrivenOneFeedEach(GameTestHelper helper) {
+        String id = "gt_rs_driven";
+        site(helper, 120, HOUSE.replace("ID", id));
+        drive(helper, id, "gt-rs-driven", () -> {
+            String err = "";
+            ToolResult d = mech("{\"mechanism\":\"iron_door\",\"at\":\"" + id + ":front\",\"controls\":[{\"kind\":"
+                    + "\"button\",\"at\":\"" + id + ":front\"}]}");
+            if (d.isError()) {
+                err += "door: " + d.text() + " || ";
+            }
+            ToolResult l = mech("{\"mechanism\":\"lamps\",\"count\":12,\"at\":\"" + id + ":inside\",\"controls\":"
+                    + "[{\"kind\":\"lever\",\"at\":\"" + id + ":inside\"}]}");
+            java.util.regex.Matcher m = java.util.regex.Pattern.compile("(\\d+) lamp\\(s\\)").matcher(l.text());
+            if (l.isError() || !m.find() || Integer.parseInt(m.group(1)) < 6) {
+                err += "12 lamps: " + l.text() + " || ";
+            }
+            if (!l.isError()) {
+                new com.moddingfromamod.agent.tools.RemoveMechanismTool().call(JsonParser.parseString(
+                        "{\"id\":\"" + BuildMechanismGameTest.builtId(l.text()) + "\"}").getAsJsonObject());
+            }
+            ToolResult inv = mech("{\"mechanism\":\"lamps\",\"count\":4,\"inverted\":true,\"at\":\"" + id
+                    + ":inside\",\"controls\":[{\"kind\":\"lever\",\"at\":\"" + id + ":inside\"}]}");
+            if (inv.isError()) {
+                err += "inverted lamps: " + inv.text() + " || ";
+            } else {
+                new com.moddingfromamod.agent.tools.RemoveMechanismTool().call(JsonParser.parseString(
+                        "{\"id\":\"" + BuildMechanismGameTest.builtId(inv.text()) + "\"}").getAsJsonObject());
+            }
+            ToolResult bell = mech("{\"mechanism\":\"note_blocks\",\"at\":\"" + id + ":inside\",\"instrument\":\"bell\","
+                    + "\"notes\":[\"12\",\"16\",\"19\"],\"controls\":[{\"kind\":\"logic\",\"at\":\"" + id
+                    + ":inside\",\"when\":{\"if\":\"every\",\"seconds\":30,\"for_seconds\":2}}]}");
+            if (bell.isError()) {
+                err += "timed bells: " + bell.text() + " || ";
+            } else {
+                new com.moddingfromamod.agent.tools.RemoveMechanismTool().call(JsonParser.parseString(
+                        "{\"id\":\"" + BuildMechanismGameTest.builtId(bell.text()) + "\"}").getAsJsonObject());
+            }
+            if (!d.isError()) {
+                new com.moddingfromamod.agent.tools.RemoveMechanismTool().call(JsonParser.parseString(
+                        "{\"id\":\"" + BuildMechanismGameTest.builtId(d.text()) + "\"}").getAsJsonObject());
+            }
+            return err;
+        });
+    }
 }

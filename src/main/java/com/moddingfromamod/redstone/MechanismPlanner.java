@@ -133,7 +133,7 @@ public final class MechanismPlanner {
             }
             controls.add(best);
         }
-        return finish(world, module, cells, controls, null);
+        return finish(world, module, cells, controls, List.of());
     }
 
     /**
@@ -153,43 +153,42 @@ public final class MechanismPlanner {
         for (RsCell c : module.cells()) {
             cells.put(c.pos(), c);
         }
-        List<RsPos> free = new ArrayList<>();
-        for (RsPos p : module.ports()) {
-            WorldView.Kind k = world.kind(p);
-            if (cells.containsKey(p) || foreign.contains(p) || !(k == WorldView.Kind.AIR || k == WorldView.Kind.NATURAL)) {
-                continue;
-            }
-            boolean clear = true;
-            for (RsPos n : List.of(p.up(1), p.up(-1), p.step(RsDir.NORTH), p.step(RsDir.SOUTH), p.step(RsDir.EAST),
-                    p.step(RsDir.WEST))) {
-                if (foreign.contains(n)) {
-                    clear = false;
+        List<RsPos> feeds = new ArrayList<>();
+        if (module.driven()) {
+            feeds.addAll(module.ports());        // every device's own feed, checked by its module
+        } else {
+            for (RsPos p : module.ports()) {
+                WorldView.Kind k = world.kind(p);
+                if (cells.containsKey(p) || foreign.contains(p)
+                        || !(k == WorldView.Kind.AIR || k == WorldView.Kind.NATURAL)) {
+                    continue;
+                }
+                boolean clear = true;
+                for (RsPos n : List.of(p.up(1), p.up(-1), p.step(RsDir.NORTH), p.step(RsDir.SOUTH),
+                        p.step(RsDir.EAST), p.step(RsDir.WEST))) {
+                    if (foreign.contains(n)) {
+                        clear = false;
+                    }
+                }
+                if (clear) {
+                    feeds.add(p);
+                    break;
                 }
             }
-            if (clear) {
-                free.add(p);
+            if (feeds.isEmpty()) {
+                return MechanismPlan.refused(module.kind(), "the mechanism has no free place under it for its "
+                        + "switches' power to arrive (other redstone or water beside it)");
             }
         }
-        boolean physical = asks.stream().anyMatch(a -> !a.kind().equals("logic"));
-        long logics = asks.stream().filter(a -> a.kind().equals("logic")).count();
-        if (free.size() < (physical ? 1 : 0) + logics) {
-            return MechanismPlan.refused(module.kind(), "the mechanism has no free place under it for its switches' "
-                    + "power to arrive (other redstone or water beside it)");
-        }
-        int next = 0;
-        RsPos feed = null;
-        if (physical) {
-            feed = free.get(next++);
-            cells.put(feed, RsCell.of(feed, "minecraft:air", RsCell.Role.CLEAR));
+        for (RsPos f : feeds) {
+            cells.put(f, RsCell.of(f, "minecraft:air", RsCell.Role.CLEAR));
         }
         List<Control> controls = new ArrayList<>();
         for (ControlAsk ask : asks) {
             if (ask.kind().equals("logic")) {
-                RsPos p = free.get(next++);
-                Control c = new Control("logic", p, List.of(RsCell.of(p, "minecraft:air", RsCell.Role.CLEAR)), p, 15,
-                        false);
-                cells.put(p, c.cells().get(0));
-                controls.add(c);
+                // a logic rule is one of the engine's inputs too: a marker it switches (RedstoneScript.SCRIPT), so a
+                // timer or a code drives every feed exactly as a lever does; nothing is placed for it
+                controls.add(new Control("logic", ask.ground().up(1), List.of(), null, 0, false));
                 continue;
             }
             if (!world.conductor(ask.ground())) {
@@ -208,11 +207,11 @@ public final class MechanismPlanner {
             cells.put(c.use(), c.cells().get(0));
             controls.add(c);
         }
-        return finish(world, module, cells, controls, feed);
+        return finish(world, module, cells, controls, feeds);
     }
 
     static MechanismPlan finish(WorldView world, Module module, Map<RsPos, RsCell> cells, List<Control> controls,
-                                RsPos feed) {
+                                List<RsPos> feeds) {
         List<String> replaced = new ArrayList<>();
         for (RsCell c : cells.values()) {
             WorldView.Kind k = world.kind(c.pos());
@@ -235,7 +234,7 @@ public final class MechanismPlanner {
         ordered.removeIf(c -> c.role() == RsCell.Role.CASING && keepsWhatIsThere(world, c));
         ordered.sort(Comparator.comparingInt(MechanismPlanner::stage).thenComparingInt(c -> c.pos().y()));
         List<String> notes = new ArrayList<>(module.notes());
-        return new MechanismPlan(module.kind(), ordered, module.expects(), controls, replaced, notes, null, feed);
+        return new MechanismPlan(module.kind(), ordered, module.expects(), controls, replaced, notes, null, feeds);
     }
 
     /** Placement order: pockets, supports and casing, plain parts, then components, then controls. */

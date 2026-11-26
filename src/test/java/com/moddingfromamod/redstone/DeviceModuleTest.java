@@ -142,4 +142,41 @@ class DeviceModuleTest {
         DeviceModule.Result m = DeviceModule.plan(w, "lamps", devs, true, Set.of(), new ArrayList<>());
         assertTrue(m.ok(), "lamps at " + spots + ": " + m.why());
     }
+
+    @Test
+    void drivenDevicesLayNoWireAndHaveAFeedEach() {
+        WorldView w = new WorldView() {
+            @Override
+            public Kind kind(RsPos p) {
+                return p.y() <= -51 ? Kind.NATURAL : Kind.AIR;
+            }
+
+            @Override
+            public String blockId(RsPos p) {
+                return kind(p).name();
+            }
+        };
+        List<DeviceModule.Device> lamps = new ArrayList<>();
+        for (int i = 0; i < 9; i++) {
+            lamps.add(Devices.lamp(new RsPos((i % 3) * 3, -51, (i / 3) * 3)));   // a 3x3 grid, 3 apart
+        }
+        DeviceModule.Result r = DeviceModule.planDriven(w, "lamp", lamps, true, Set.of(), new ArrayList<>());
+        assertTrue(r.ok(), r.why());
+        assertTrue(r.module().driven());
+        assertTrue(r.module().ports().size() == 9, "one feed per lamp: " + r.module().ports());
+        assertTrue(r.module().cells().stream().noneMatch(c -> c.block().contains("redstone_wire")), "no wire at all");
+        MechanismPlan p = MechanismPlanner.planLinked(w, r.module(),
+                List.of(new MechanismPlanner.ControlAsk("lever", new RsPos(10, -51, 10)),
+                        new MechanismPlanner.ControlAsk("logic", new RsPos(-6, -51, -6))), Set.of());
+        assertTrue(p.ok(), p.why());
+        assertTrue(p.feeds().size() == 9);
+        assertTrue(p.controls().get(1).cells().isEmpty(), "a logic input places nothing: the engine reads it");
+    }
+
+    @Test
+    void anInvertedDeviceIsOnAtRest() {
+        List<Expect> ex = DeviceModule.sensed(Devices.lamp(new RsPos(0, 0, 0)).expects(), false);
+        assertTrue(ex.get(0).rest().contains("lit=true") || ex.get(0).fired().contains("lit=false"),
+                "inverted lamps rest lit: " + ex);
+    }
 }

@@ -35,6 +35,8 @@ public final class RedstoneScript {
     public static final String IN = "rs.in";
     public static final String OUT = "rs.out";
     public static final String TOGGLE = "rs.toggle";
+    /** An input the engine does not read from a block: a logic rule (or a datapack of the agent's own) sets its rs_on. */
+    public static final String SCRIPT = "rs.script";
     /** Scores: the mechanism's number, and a switch's state (now, last tick, toggled state, effective on). */
     public static final String ID = "rs_id", NOW = "rs_now", WAS = "rs_was", STATE = "rs_state", ON = "rs_on";
     public static final List<String> OBJECTIVES = List.of(ID, NOW, WAS, STATE, ON);
@@ -74,8 +76,8 @@ public final class RedstoneScript {
      * CHANGES a feed, so nothing updates while nothing changes.
      */
     public static String engine() {
-        String in = "@e[type=minecraft:marker,tag=" + IN + "]";
-        String plain = "@e[type=minecraft:marker,tag=" + IN + ",tag=!" + TOGGLE + ",tag=!rs.script]";
+        String in = "@e[type=minecraft:marker,tag=" + IN + ",tag=!" + SCRIPT + "]";
+        String plain = "@e[type=minecraft:marker,tag=" + IN + ",tag=!" + TOGGLE + ",tag=!" + SCRIPT + "]";
         String tog = "@e[type=minecraft:marker,tag=" + IN + ",tag=" + TOGGLE + "]";
         StringBuilder b = new StringBuilder();
         b.append("# Moddy's redstone engine: every mechanism's switches power its own redstone (RedstoneScript).\n");

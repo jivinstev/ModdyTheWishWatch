@@ -137,6 +137,9 @@ public final class MechanismLogic {
         if (m.take > 0 && slot != null) {
             take(slot, rule.item(), m.take);
         }
+        if (MechanismDrive.setScript(level, cell, on)) {
+            return;            // a driven mechanism: its logic is one of the engine's inputs
+        }
         BlockState now = level.getBlockState(cell);
         if (on && !now.is(Blocks.REDSTONE_BLOCK)) {
             level.setBlock(cell, Blocks.REDSTONE_BLOCK.defaultBlockState(), Block.UPDATE_ALL);

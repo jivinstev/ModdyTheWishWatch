@@ -103,7 +103,7 @@ public final class DeviceModule {
         List<RsPos> wires = new ArrayList<>();      // each device's bus wire (the repeater's input)
         for (Device dev : devices) {
             cells.addAll(dev.cells());
-            expects.addAll(dev.expects());
+            expects.addAll(sensed(dev.expects(), follows));
             RsPos f = dev.feed();
             // the feed itself: kept if it already conducts, else made solid
             cells.add(RsCell.of(f, "minecraft:stone", RsCell.Role.CASING));
@@ -277,6 +277,153 @@ public final class DeviceModule {
         // the control's port: beyond the hub's wire, on the far side from its repeater
 
         return new Result(new Module(kind, cells, expects, ports, busY, notes), null);
+    }
+
+    /**
+     * A device's expectations are written for a device that FOLLOWS the switch (off at rest); one that inverts it is on
+     * at rest and off when switched (measured: inverted lamps failed their own proof every time, lit at rest as they
+     * should be, against an expectation of off).
+     */
+    static List<Expect> sensed(List<Expect> ex, boolean follows) {
+        if (follows) {
+            return ex;
+        }
+        List<Expect> out = new ArrayList<>();
+        for (Expect x : ex) {
+            out.add(new Expect(x.pos(), x.fired(), x.rest(), x.what()));
+        }
+        return out;
+    }
+
+    /**
+     * The same devices DRIVEN by the redstone engine ({@link RedstoneScript}): each keeps its own real redstone (the
+     * torch column under its feed block and the repeater facing into the column's base), and the cell behind that
+     * repeater, where a bus wire would have joined, is the device's own FEED. Nothing joins one device to another,
+     * so nothing is routed: a device either has room for its column, repeater and feed or it does not, and a device
+     * with no room in one direction tries the others.
+     */
+    public static Result planDriven(WorldView w, String kind, List<Device> devices, boolean follows, Set<RsPos> foreign,
+                                    List<String> notes) {
+        if (devices.isEmpty()) {
+            return new Result(null, "no place for any " + kind + " was found");
+        }
+        List<String> all = new ArrayList<>();
+        for (int depth : follows ? new int[] {4, 8} : new int[] {2, 6}) {
+            Result r = drivenAt(w, kind, devices, follows, foreign, notes, depth);
+            if (r.ok()) {
+                return r;
+            }
+            all.add("at " + depth + " down: " + r.why());
+        }
+        return new Result(null, String.join(" | ", all));
+    }
+
+    static Result drivenAt(WorldView w, String kind, List<Device> devices, boolean follows, Set<RsPos> foreign,
+                           List<String> notes, int depth) {
+        List<RsCell> cells = new ArrayList<>();
+        List<Expect> expects = new ArrayList<>();
+        List<RsPos> feeds = new ArrayList<>();
+        Set<RsPos> taken = new HashSet<>();
+        for (Device dev : devices) {
+            for (RsCell c : dev.cells()) {
+                taken.add(c.pos());
+            }
+        }
+        for (Device dev : devices) {
+            List<RsCell> column = new ArrayList<>();
+            RsPos f = dev.feed();
+            column.add(RsCell.of(f, "minecraft:stone", RsCell.Role.CASING));
+            boolean lit = true;
+            for (int j = depth - 1; j >= 1; j--) {
+                if (j % 2 == 1) {
+                    column.add(RsCell.of(f.up(-j), "minecraft:redstone_torch", RsCell.Role.PART, "lit",
+                            String.valueOf(lit)));
+                    lit = !lit;
+                } else {
+                    column.add(RsCell.of(f.up(-j), "minecraft:stone", RsCell.Role.PART));
+                }
+            }
+            RsPos base = f.up(-depth);
+            column.add(RsCell.of(base, "minecraft:stone", RsCell.Role.PART));
+            String why = null;
+            List<RsCell> chosen = null;
+            RsPos feed = null;
+            for (RsDir d : RsDir.values()) {
+                RsPos rep = base.step(d), in = rep.step(d);
+                List<RsCell> mine = new ArrayList<>(column);
+                mine.add(RsCell.of(rep, "minecraft:repeater", RsCell.Role.CHANNEL, "facing", d.id(), "delay", "1"));
+                mine.add(RsCell.of(rep.up(-1), "minecraft:stone", RsCell.Role.CASING));
+                why = fits(w, mine, in, taken, foreign);
+                if (why == null) {
+                    chosen = mine;
+                    feed = in;
+                    break;
+                }
+            }
+            if (chosen == null) {
+                return new Result(null, "no room under one of the " + kind + " for its own redstone: " + why);
+            }
+            for (RsCell c : chosen) {
+                taken.add(c.pos());
+            }
+            // the feed and the cells round it stay clear of everything else of ours: a redstone block there powers
+            // what touches it, so only its own repeater may (another device's column or repeater beside it would be
+            // switched with it)
+            taken.add(feed);
+            for (RsDir dd : RsDir.values()) {
+                taken.add(feed.step(dd));
+            }
+            taken.add(feed.up(1));
+            taken.add(feed.up(-1));
+            cells.addAll(dev.cells());
+            cells.addAll(chosen);
+            expects.addAll(sensed(dev.expects(), follows));
+            feeds.add(feed);
+        }
+        return new Result(new Module(kind, cells, expects, feeds, feeds.get(0).y(), notes, true), null);
+    }
+
+    /** Null when the column, its repeater and its feed {@code feed} can go here; else why not. */
+    static String fits(WorldView w, List<RsCell> mine, RsPos feed, Set<RsPos> taken, Set<RsPos> foreign) {
+        List<RsPos> check = new ArrayList<>();
+        mine.forEach(c -> check.add(c.pos()));
+        check.add(feed);
+        for (RsCell c : mine) {
+            if (c.role() == RsCell.Role.CASING) {
+                continue;
+            }
+            if (taken.contains(c.pos())) {
+                return "two of them are too close together (" + c.pos() + ")";
+            }
+        }
+        if (taken.contains(feed)) {
+            return "no room for its feed at " + feed;
+        }
+        for (RsPos p : check) {
+            WorldView.Kind k = w.kind(p);
+            if (k == WorldView.Kind.LOCKED && !w.conductor(p)) {
+                return "it would have to replace " + w.blockId(p) + " at " + p;
+            }
+            if (k == WorldView.Kind.FLUID) {
+                return "water or lava at " + p + " is in the way";
+            }
+        }
+        if (!(w.kind(feed) == WorldView.Kind.AIR || w.kind(feed) == WorldView.Kind.NATURAL)) {
+            return "its feed at " + feed + " is " + w.blockId(feed);
+        }
+        // nothing of ours (casing apart), and no feed, beside other redstone already there
+        List<RsPos> live = new ArrayList<>();
+        mine.stream().filter(c -> c.role() != RsCell.Role.CASING).forEach(c -> live.add(c.pos()));
+        live.add(feed);
+        for (RsPos p : live) {
+            for (RsPos n : List.of(p.up(1), p.up(-1), p.step(RsDir.NORTH), p.step(RsDir.SOUTH), p.step(RsDir.EAST),
+                    p.step(RsDir.WEST))) {
+                if (foreign.contains(n)) {
+                    return "other redstone is in the way at " + n;
+                }
+            }
+        }
+        return null;
     }
 
     static Set<RsPos> without(Set<RsPos> set, RsPos p) {

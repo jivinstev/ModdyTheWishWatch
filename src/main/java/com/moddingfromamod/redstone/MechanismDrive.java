@@ -99,7 +99,7 @@ public final class MechanismDrive {
         return info != null && info.value() > 0;
     }
 
-    /** Puts the markers, numbered for the engine (server thread). */
+    /** Puts the markers, numbered for the engine (server thread): every switch and logic rule, every feed. */
     public static void mark(ServerLevel level, String id, MechanismPlan plan) {
         Scoreboard sb = level.getServer().getScoreboard();
         RedstoneScript.OBJECTIVES.forEach(o -> objective(sb, o));
@@ -108,20 +108,36 @@ public final class MechanismDrive {
         int number = next.get();
         int n = 0;
         for (Control c : plan.controls()) {
-            if (c.kind().equals("logic")) {
-                continue;
-            }
             List<String> tags = new ArrayList<>(List.of(RedstoneScript.ALL, RedstoneScript.IN, RedstoneScript.mechTag(id),
                     RedstoneScript.inTag(id, n++)));
-            if (c.toggle()) {
+            if (c.kind().equals("logic")) {
+                tags.add(RedstoneScript.SCRIPT);
+            } else if (c.toggle()) {
                 tags.add(RedstoneScript.TOGGLE);
             }
             marker(level, c.use(), number, tags);
         }
-        if (plan.feed() != null) {
-            marker(level, plan.feed(), number, List.of(RedstoneScript.ALL, RedstoneScript.OUT,
-                    RedstoneScript.mechTag(id), RedstoneScript.outTag(id)));
+        for (RsPos f : plan.feeds()) {
+            marker(level, f, number, List.of(RedstoneScript.ALL, RedstoneScript.OUT, RedstoneScript.mechTag(id),
+                    RedstoneScript.outTag(id)));
         }
+    }
+
+    /**
+     * Switches the logic input at {@code at} (a script marker) on or off. False when there is none there (a wired
+     * mechanism, whose logic cell takes a redstone block instead). Server thread.
+     */
+    public static boolean setScript(ServerLevel level, net.minecraft.core.BlockPos at, boolean on) {
+        List<Marker> ms = level.getEntitiesOfClass(Marker.class, new net.minecraft.world.phys.AABB(at),
+                m -> m.getTags().contains(RedstoneScript.SCRIPT));
+        if (ms.isEmpty()) {
+            return false;
+        }
+        Scoreboard sb = level.getServer().getScoreboard();
+        for (Marker m : ms) {
+            sb.getOrCreatePlayerScore(m, objective(sb, RedstoneScript.ON)).set(on ? 1 : 0);
+        }
+        return true;
     }
 
     static void marker(ServerLevel level, RsPos at, int number, List<String> tags) {
@@ -153,9 +169,11 @@ public final class MechanismDrive {
 
     /** What the engine sees of a driven mechanism, for a failure report (server thread). */
     public static String describe(ServerLevel level, String id, MechanismPlan plan) {
-        StringBuilder b = new StringBuilder(" || drive: feed ");
-        b.append(plan.feed()).append('=').append(level.getBlockState(LevelView.bp(plan.feed())).getBlock()
-                .getDescriptionId().replace("block.minecraft.", ""));
+        StringBuilder b = new StringBuilder(" || drive: feeds");
+        for (RsPos f : plan.feeds()) {
+            b.append(' ').append(f).append('=').append(level.getBlockState(LevelView.bp(f)).getBlock()
+                    .getDescriptionId().replace("block.minecraft.", ""));
+        }
         Scoreboard sb = level.getServer().getScoreboard();
         for (var e : level.getAllEntities()) {
             if (e instanceof Marker m && m.getTags().contains(RedstoneScript.mechTag(id))) {

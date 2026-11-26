@@ -8,5 +8,13 @@ import java.util.List;
  * position at channel depth where a wire may arrive; the module's own wire continues from there.
  */
 public record Module(String kind, List<RsCell> cells, List<Expect> expects, List<RsPos> ports, int channelY,
-                     List<String> notes) {
+                     List<String> notes, boolean driven) {
+
+    public Module(String kind, List<RsCell> cells, List<Expect> expects, List<RsPos> ports, int channelY,
+                  List<String> notes) {
+        this(kind, cells, expects, ports, channelY, notes, false);
+    }
+
+    // driven: every port is a FEED of its own (one per device), each powered by the redstone engine; nothing joins
+    // them (DeviceModule.planDriven)
 }
