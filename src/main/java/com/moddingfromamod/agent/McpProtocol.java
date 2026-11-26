@@ -649,8 +649,13 @@ public final class McpProtocol {
                     // The world-rules grader decided the WISH at pickup; this judges what the
                     // agent actually DOES, so every refusal here is a wish the grader let through —
                     // counted as a grader miss (WorldRulesLog.backstop), per rule.
-                    com.moddingfromamod.world.WorldRules inForce = rules.get();
-                    com.moddingfromamod.world.Bases bases = islands.get();
+                    // #182: a caster standing in a region, or aiming into one from none, is judged by that
+                    // region's bases and reach rules (WorldRegions)
+                    com.moddingfromamod.world.Regions.Reach where = com.moddingfromamod.world.Regions.reachFor(
+                            runNow == null ? null : runNow.playerId(), runNow == null ? null : runNow.anchor(),
+                            islands.get(), rules.get());
+                    com.moddingfromamod.world.WorldRules inForce = where.rules();
+                    com.moddingfromamod.world.Bases bases = where.bases();
                     com.moddingfromamod.world.BaseReach.Refusal reach = runNow == null ? null
                             : com.moddingfromamod.world.BaseReach.judge(name, args, runNow.playerId(),
                                     runNow.anchor(), bases, inForce);

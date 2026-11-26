@@ -305,6 +305,87 @@ public final class BuilderMake {
                 false);
     }
 
+    /** The owner a world module's own makes belong to (#178): one fixed id per module, never a player's. */
+    public static UUID worldOwner(String moduleId) {
+        return com.moddingfromamod.world.WorldOwners.of(moduleId);   // a world's: no child is told or shown it
+    }
+
+    /**
+     * <b>A world module makes a Builder design of its own</b> (#178): a world's champions. The real Builder make,
+     * owned by {@link #worldOwner} and named {@code displayName}, under {@link BuilderAllowlist#FOR_WORLDS} (a
+     * monster's powers, never a child's list), with no charge and no wish card, and as a DESIGN only
+     * ({@code spawn: no}): the world spawns copies of the species it makes where and when it wants them
+     * ({@code WorldWishes.species}). The result's {@code madeId} is the made species. Call on the server thread.
+     */
+    public static CompletableFuture<Result> forWorld(MinecraftServer server, String moduleId, String displayName,
+                                                     BuilderSpec spec) {
+        // the words a world gives its make are read by children (its name over the creature, the wish's owner name):
+        // the same sweep a name a child types passes (the lexicon, then make_item's name sweep), or nothing is made
+        for (String words : List.of(spec.name(), displayName == null ? "" : displayName)) {
+            if (!words.isBlank() && !BuilderMenus.nameIsSafe(words)) {
+                LOGGER.warn("a world's make for {} was refused: its name did not pass the safety sweep", moduleId);
+                return CompletableFuture.completedFuture(new Result(Outcome.REFUSED, null, "",
+                        "the name did not pass the safety sweep", List.of()));
+            }
+        }
+        // its own colours, inline (Schemes.PALETTE_OPT): one that is not exactly three #RRGGBB colours (and three
+        // reviewed blocks) makes nothing, rather than a make in colours nobody asked for
+        String palette = spec.opt(Schemes.PALETTE_OPT);
+        if (!palette.isEmpty() && Schemes.parsePalette(palette) == null) {
+            LOGGER.warn("a world's make for {} was refused: its palette is not three #RRGGBB colours (and three reviewed blocks)", moduleId);
+            return CompletableFuture.completedFuture(new Result(Outcome.REFUSED, null, "",
+                    "the palette is not three #RRGGBB colours (and three reviewed blocks)", List.of()));
+        }
+        Map<String, String> opts = new java.util.LinkedHashMap<>(spec.opts());
+        opts.put("spawn", "no");
+        BuilderSpec design = new BuilderSpec(spec.version(), spec.kind(), spec.from(), spec.scheme(), spec.size(),
+                spec.powers(), spec.temper(), spec.count(), spec.at(), spec.name(), opts);
+        // the same design asked again (every wave, every restart) is the one already made: a world's makes never fill
+        // the creature registry that children's makes share
+        String key = worldOwner(moduleId) + "|" + design.toJson();
+        String known = WORLD_MADE.get(key);
+        String again = known != null && com.moddingfromamod.species.SpeciesRegistry.get(known) != null ? known
+                : keptWorldMake(worldOwner(moduleId), design);
+        if (again != null) {
+            WORLD_MADE.put(key, again);
+            return CompletableFuture.completedFuture(new Result(Outcome.MADE, null, again, "already made", List.of()));
+        }
+        Who world = new Who(worldOwner(moduleId), displayName == null || displayName.isBlank() ? moduleId : displayName,
+                server.overworld().dimension().location().toString(), 0, server.overworld().getSeaLevel(), 0);
+        return run(server, world, design, BuilderAllowlist.FOR_WORLDS, protocol(), false, false).thenApply(r -> {
+            if (r != null && (r.outcome() == Outcome.MADE || r.outcome() == Outcome.PARTIAL) && r.madeId() != null
+                    && !r.madeId().isEmpty()) {
+                WORLD_MADE.put(key, r.madeId());
+            }
+            return r;
+        });
+    }
+
+    /** A world's design (its owner and spec) → the species it was made as, this run of the game. */
+    private static final Map<String, String> WORLD_MADE = new java.util.concurrent.ConcurrentHashMap<>();
+
+    /** The species a world already made from this very design (kept on its shelf, still registered), or null. */
+    static String keptWorldMake(UUID owner, BuilderSpec design) {
+        try {
+            java.util.Set<String> same = java.util.Set.of(design.toJson().toString(),
+                    BuilderAllowlist.FOR_WORLDS.capped(design).toJson().toString());
+            for (BuilderSpecStore.Made m : BuilderSpecStore.all(com.moddingfromamod.runtime.RuntimeConfig.playersDir(),
+                    owner.toString()).values()) {
+                if (m.spec() == null || !same.contains(m.spec().toString())) {
+                    continue;
+                }
+                for (String id : List.of(m.id(), m.ref())) {
+                    if (!id.isEmpty() && com.moddingfromamod.species.SpeciesRegistry.get(id) != null) {
+                        return id;
+                    }
+                }
+            }
+        } catch (RuntimeException e) {
+            LOGGER.warn("a world's kept makes could not be read: {}", e.toString());
+        }
+        return null;
+    }
+
     /**
      * CHANGE his kept Builder make {@code id} by operators (the editor, {@link BuilderEdit}): the Builder's own
      * edit mode presses the changes, and the result runs as an ordinary Builder edit ({@link #make} with
