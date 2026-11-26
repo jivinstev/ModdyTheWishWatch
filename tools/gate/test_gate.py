@@ -144,6 +144,25 @@ class OneAttempt(unittest.TestCase):
         a = {"log": g.parse_log("2 required tests failed"), "record": rec(IDS, failed=[IDS[0]]), "timedOut": False}
         self.assertEqual(len(run.check_attempt(a, [], ["AGameTest", "BGameTest"])), 1)
 
+    @unittest.skipIf(os.name == "nt", "the stubs are POSIX shell scripts")
+    def test_the_no_python_stubs_fail_and_say_they_were_started(self):
+        import subprocess
+        d = tempfile.mkdtemp()
+        try:
+            stubs = run.no_python_stubs(d)
+            env = dict(os.environ, PATH=stubs + os.pathsep + os.environ.get("PATH", ""))
+            out = subprocess.run(["python3", "-c", "print(1)"], env=env, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            self.assertEqual(out.returncode, 127)
+            self.assertEqual(len(run.python_started(d)), 1)
+            self.assertIn("python3 -c print(1)", run.python_started(d)[0])
+        finally:
+            shutil.rmtree(d)
+
+    def test_a_failed_build_says_what_gradle_said(self):
+        log = "x\n* What went wrong:\nCould not resolve all artifacts\n> 429\n\n* Try:\n> --stacktrace\n"
+        self.assertEqual(run.gradle_error(log), "* What went wrong:\nCould not resolve all artifacts\n> 429")
+        self.assertIn("error: cannot find symbol", run.gradle_error("A.java:3: error: cannot find symbol\n"))
+
     def test_only_a_run_that_never_started_for_want_of_a_download_is_run_again(self):
         self.assertTrue(run.never_started("> Could not resolve all artifacts\nReceived status code 429 from server"))
         self.assertFalse(run.never_started("gt-adapter: 3 tests found\nCould not GET x"), "a server that ran is not")
@@ -191,7 +210,7 @@ class Retry(unittest.TestCase):
         g.gate_tree = lambda rev="HEAD", root=g.ROOT: "tree"
         run._commit = lambda: "abc"
         try:
-            a = types.SimpleNamespace(shard="ci,default", classes=None, classes_file=None, not_classes=None,
+            a = types.SimpleNamespace(shard="ci,default", classes=None, classes_file=None, not_classes=None, no_python=False,
                                       not_classes_file=None, exclude=None, flake_register=None, out=out, retry=True,
                                       timeout=1, kind="nightly", label="job-0", gradle_arg=None, plan=None, job=0)
             code = run.run_job(a)
@@ -334,6 +353,12 @@ class History(unittest.TestCase):
             self.assertTrue(os.path.exists(os.path.join(d, "README.md")))
         finally:
             shutil.rmtree(d)
+
+    def test_a_pull_requests_run_is_recorded_as_one_and_is_never_full_tier_evidence(self):
+        j = job("pr-7", [(IDS[0], "flaky")])
+        rec = history.pr_record(j, {"id": 99, "html_url": "u", "pull_requests": [{"number": 7}]})
+        self.assertEqual((rec["kind"], rec["label"], rec["fullTier"], rec["runUrl"]), ("pr", "pr7", False, "u"))
+        self.assertIn("AGameTest.t0", history.flaky([dict(rec, tree="t1")]), "its flakes count")
 
     def test_the_report_names_flakes_not_in_the_register(self):
         runs = [stored("t2", "failed", "2"), stored("t2", "passed", "3")]

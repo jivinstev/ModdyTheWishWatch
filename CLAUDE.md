@@ -77,8 +77,13 @@ python3 tools/gate/gate.py run --shard ci --out /tmp/gt   # Gate B as CI runs it
 - Where a new GameTest goes is checked by `GateShardsTest` (Gate A): it fails by file name and says which annotation
   to use. A test in no shard would never run while the gate stays green.
 
-**CI** (`.github/workflows/ci.yml`): the leak, secret and licence scans, Gate A and Gate B's `ci` shard on every pull request; a pull request
-merges on those three green. A pull request that only touches `tools/client-validation/` or `.github/port-publish/` (nothing a
+**CI** (`.github/workflows/ci.yml`): the leak, secret and licence scans, Gate A and **targeted Gate B** on every pull
+request; a pull request merges on those three green. Targeted Gate B runs the `ci` shard plus every GameTest the change
+can reach (`tools/gate/gate.py select`: the tests naming a changed class, every class the coverage map saw run a changed
+method, every class the map has not placed), or the whole tier for a change the map cannot see (build files, mixins,
+resources, the GameTest harness, start-up code); its summary lists each class and why
+([`docs/GATE_B.md`](docs/GATE_B.md)). The game runs with `python` and `python3` replaced by stubs that fail
+(`gate.py run --no-python`), and a run that started one is red. A pull request that only touches `tools/client-validation/` or `.github/port-publish/` (nothing a
 build or test reads) runs the scan alone; Gate A and Gate B show as skipped. Docs are not in that list: tests read them.
 
 **Nightly** (`.github/workflows/nightly.yml`, [`docs/GATE_B.md`](docs/GATE_B.md)): the whole `ci,default` tier on
@@ -86,7 +91,8 @@ build or test reads) runs the scan alone; Gate A and Gate B show as skipped. Doc
 green night. Each job checks its server ran every test it registered and retries a failed test once, by itself
 (`flaky` if it then passes); the verdict checks every class of the tier ran with as many tests as its source declares.
 A red night opens or updates the one issue labelled `nightly-red`; a green night closes it. Each run is recorded, one
-file, on the data-only `gate-data` branch; `python3 tools/gate/gate.py report --data <checkout>` prints the flaky tests
+file, on the data-only `gate-data` branch, and so is every pull request's targeted run (collected nightly from its
+`gate-run-record` artifact); `python3 tools/gate/gate.py report --data <checkout>` prints the flaky tests
 (passed and failed at one tree), the slowest classes and the trend. Known-flaky tests are listed, each with its issue, in
 `corpus/gate-flakes.json`.
 

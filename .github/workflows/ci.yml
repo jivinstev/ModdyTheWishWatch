@@ -15,8 +15,12 @@
 #                    Also the hermetic test of tools/refresh-cbscript-bundle.sh (a fixture repo, no network).
 #   gate-a           compile, the unit tests, the mod jar and its checks (./gradlew build), the licence checks among
 #                    them (licenceRegister, and licenceCheck over every library the jar nests).
-#   gate-b-ci        a headless game server running the `ci` shard: one GameTest per wish class, MCP, two wishes at
-#                    once. Every pull request and every push to main.
+#   gate-b-ci        TARGETED Gate B (docs/GATE_B.md): the `ci` shard, plus every GameTest the change can reach by
+#                    tools/gate/gate.py select (the coverage map on the gate-map branch, the tests naming a changed
+#                    class, the unplaced), or the whole tier when the change is one the map cannot see. It prints each
+#                    class it chose and why. Counted, a failure retried once by itself, the game run with Python
+#                    stubbed out (--no-python: a player's game never starts Python); its result is kept as the
+#                    gate-run-record artifact, which the nightly records.
 #   gate-b-tier      the whole default tier (`ci,default`) on one runner, when started by hand. The nightly
 #                    (nightly.yml, docs/GATE_B.md) runs the same tier on main every night, split across runners.
 #   rig-films        Gate C's rig films (tools/gate-c-rig.sh: a real client under Xvfb filming each creature take, a
@@ -156,42 +160,55 @@ jobs:
           retention-days: 7
 
   gate-b-ci:
-    name: Gate B (the ci shard)
+    name: Gate B (targeted)
     needs: changes
     if: needs.changes.outputs.code == 'true'
     runs-on: ubuntu-latest
-    timeout-minutes: 45
-    env:
-      SHARD: ci
+    timeout-minutes: 90
     steps:
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
       - uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: '21'
       - *gradle-cache
-      - &noPython
-        # A player's game never starts Python (the datapack compiler is in the jar; NoPythonTest, NoPythonGameTest).
-        # The game server runs with `python` and `python3` on PATH replaced by stubs that record being started and
-        # fail, and the job fails if any was.
-        name: No Python for the game
+      - name: Choose the GameTests this change can reach (tools/gate/gate.py select, docs/GATE_B.md)
+        env:
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          BASE_REF: ${{ github.event.pull_request.base.ref }}
         run: |
-          mkdir -p "$RUNNER_TEMP/no-python"
-          for n in python python3; do
-            printf '#!/bin/sh\necho "$0 $*" >> "%s/python-started"\nexit 127\n' "$RUNNER_TEMP" > "$RUNNER_TEMP/no-python/$n"
-            chmod +x "$RUNNER_TEMP/no-python/$n"
-          done
-      - &gameTests
-        name: Run the game tests
-        run: |
-          set -o pipefail
-          PATH="$RUNNER_TEMP/no-python:$PATH" ./gradlew runGameTestServer -Pshard="$SHARD" -Prundir=gt-run --console=plain 2>&1 | tee gametest.log
-          line="$(grep -Eo '[0-9]+ required tests (passed|failed)' gametest.log | tail -1)"
-          echo "result: ${line:-no result line (the server never ran the tests)}"
-          if [ -s "$RUNNER_TEMP/python-started" ]; then
-            echo "the game started Python:"; cat "$RUNNER_TEMP/python-started"; exit 1
+          if [ "${{ github.event_name }}" != "pull_request" ]; then
+            echo "Not a pull request: the ci shard, as before."
+            : > classes.txt; echo "ci" > shard.txt
+            exit 0
           fi
-          grep -Eq 'required tests passed' <<<"$line" && ! grep -q 'required tests failed' gametest.log
+          # the PR's own head against main as it is now: main's commits merged into the branch are not its changes
+          git fetch --quiet origin "$BASE_REF"
+          if git fetch --quiet --depth=1 origin gate-map; then
+            git show FETCH_HEAD:map.json.gz > covmap.json.gz || rm -f covmap.json.gz
+          fi
+          python3 tools/gate/gate.py select --base "origin/$BASE_REF" --head "$HEAD_SHA" --map covmap.json.gz \
+            --out selection.json --classes-out classes.txt | tee -a "$GITHUB_STEP_SUMMARY"
+          echo "ci,default" > shard.txt
+      - name: Run them (counted; a failure is retried once, by itself)
+        env:
+          PR: ${{ github.event.pull_request.number }}
+        run: |
+          # the game runs with python and python3 replaced by stubs that fail: a player's game never starts Python
+          python3 tools/gate/gate.py run --shard "$(cat shard.txt)" --classes-file classes.txt --no-python \
+            --kind pr --label "pr-${PR:-none}" --timeout 80 --out gate-job
+      - name: Keep the result (the nightly records it, docs/GATE_B.md "Run history")
+        if: always()
+        uses: actions/upload-artifact@v5
+        with:
+          name: gate-run-record
+          path: |
+            gate-job/job.json
+            selection.json
+          retention-days: 14
+          if-no-files-found: ignore
 
   gate-b-tier:
     name: Gate B (the default tier)
@@ -207,8 +224,8 @@ jobs:
           distribution: temurin
           java-version: '21'
       - *gradle-cache
-      - *noPython
-      - *gameTests
+      - name: Run the game tests (counted; a failure is retried once, by itself; no Python for the game)
+        run: python3 tools/gate/gate.py run --shard "$SHARD" --no-python --kind dispatch --label tier --timeout 80 --out gate-job
 
   rig-films:
     name: Gate C (the rig films)
