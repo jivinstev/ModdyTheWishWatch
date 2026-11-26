@@ -179,6 +179,11 @@ public final class Doorway {
      * wall), so the box decides, never the spot's height.
      */
     public static Found inBuilding(WorldView w, int[] box, RsPos spot, int wantWidth) {
+        return inBuilding(w, box, spot, wantWidth, false);
+    }
+
+    /** As above; {@code newOpening} skips the existing doorways and cuts a new one (a secret passage). */
+    public static Found inBuilding(WorldView w, int[] box, RsPos spot, int wantWidth, boolean newOpening) {
         record Face(RsDir in, RsPos corner, int length) {
         }
         int x0 = box[0], y0 = box[1], z0 = box[2], x1 = box[3], z1 = box[5];
@@ -220,10 +225,10 @@ public final class Doorway {
                 }
             }
         }
-        if (found != null) {
+        if (found != null && !newOpening) {
             return found;
         }
-        // none: cut a new one in the nearest face, at the row the inside is walkable
+        // none (or a new one asked for): cut a new one in the nearest face, at the row the inside is walkable
         Face near = null;
         double nd = Double.MAX_VALUE;
         for (Face f : faces) {
@@ -243,7 +248,28 @@ public final class Doorway {
         }
         RsDir along = near.in().clockwise();
         int u = (near.length() - width) / 2;
-        for (int dy = 0; dy <= 3; dy++) {
+        // nearest the spot along the face, keeping room for the towers (4 blocks each side)
+        int su = (spot.x() - near.corner().x()) * along.dx() + (spot.z() - near.corner().z()) * along.dz();
+        if (su >= 4 && su <= near.length() - width - 4) {
+            u = su;
+        }
+        for (int du : new int[] {0, 3, -3, 5, -5}) {
+            int uu = u + du;
+            if (uu < 4 || uu > near.length() - width - 4) {
+                continue;
+            }
+            for (int dy = 0; dy <= 3; dy++) {
+                RsPos row = near.corner().up(dy);
+                RsPos c = at(row, along, uu);
+                RsPos c2 = at(row, along, uu + width - 1);
+                RsPos inside = c.plus(near.in().dx(), 0, near.in().dz());
+                if (wall(w, c) && wall(w, c.up(1)) && wall(w, c2) && wall(w, c2.up(1)) && passable(w, inside)
+                        && passable(w, inside.up(1)) && wall(w, inside.up(-1))) {
+                    return new Found(new Frame(c, along, near.in()), width, false, w.blockId(c), null);
+                }
+            }
+        }
+        for (int dy = 0; dy <= -1; dy++) {
             RsPos row = near.corner().up(dy);
             RsPos c = at(row, along, u);
             RsPos inside = c.plus(near.in().dx(), 0, near.in().dz());

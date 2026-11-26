@@ -109,6 +109,16 @@ public final class BuildMechanismTool implements McpTool {
         cat.addProperty("description", "Where it goes, in the same <thing>:<spot> words: \"<house>:front\" puts it "
                 + "outside beside the door, \"<house>:inside\" inside beside it, \"me:here\" where he stands.");
         props.add("at", cat);
+        JsonObject tg = new JsonObject();
+        tg.addProperty("type", "boolean");
+        tg.addProperty("description", "A button or plate that TOGGLES: press once to switch it on and it stays on, "
+                + "press again to switch it off (\"opens when I press it and closes when I press it again\").");
+        props.add("toggle", tg);
+        JsonObject hd = new JsonObject();
+        hd.addProperty("type", "boolean");
+        hd.addProperty("description", "A SECRET switch: a button (or lever) set low on the nearest wall beside that "
+                + "place, where nobody would look, instead of one standing on the floor.");
+        props.add("hidden", hd);
         item.add("properties", props);
         JsonArray req = new JsonArray();
         req.add("kind");
@@ -139,6 +149,9 @@ public final class BuildMechanismTool implements McpTool {
                 + "middle F#. Write them as numbers.", 24);
         Schemas.prop(s, "instrument", "string", "For note_blocks: harp (default), bell, flute, chime, guitar, "
                 + "xylophone, bass, basedrum, snare, hat, iron_xylophone, cow_bell, didgeridoo, bit, banjo, pling.");
+        Schemas.prop(s, "new_opening", "boolean", "Doors: cut a NEW doorway in the building's wall nearest `at` (a "
+                + "secret passage, a hidden room) instead of using its entrance. Use a compass spot (\"<id>:west\") for "
+                + "the wall you mean.");
         Schemas.prop(s, "inverted", "boolean", "Lamps and other devices: ON until a switch turns them OFF.");
         Schemas.prop(s, "width", "integer", "Only for a NEW doorway: 1 or 2 wide (default 2). An existing doorway "
                 + "keeps its own width.");
@@ -174,7 +187,15 @@ public final class BuildMechanismTool implements McpTool {
             if (At.parse(a) == null) {
                 return ToolResult.error("a control's at must read \"<thing>:<spot>\", not '" + a + "'.");
             }
-            asked.add(new String[] {k, a});
+            boolean tog = e.getAsJsonObject().has("toggle") && e.getAsJsonObject().get("toggle").getAsBoolean();
+            boolean hid = e.getAsJsonObject().has("hidden") && e.getAsJsonObject().get("hidden").getAsBoolean();
+            if (tog && k.equals("lever")) {
+                tog = false;                  // a lever already stays where it is put
+            }
+            if (hid && k.equals("pressure_plate")) {
+                return ToolResult.error("a hidden control is a button or a lever on a wall; a pressure plate cannot be one.");
+            }
+            asked.add(new String[] {k, a, tog ? "toggle" : "", hid ? "hidden" : ""});
         }
         String material = str(args, "material");
         String onArg = str(args, "on").toLowerCase(Locale.ROOT);
@@ -207,8 +228,10 @@ public final class BuildMechanismTool implements McpTool {
         }
         boolean inverted = args.has("inverted") && args.get("inverted").isJsonPrimitive()
                 && args.get("inverted").getAsBoolean();
+        boolean newOpening = args.has("new_opening") && args.get("new_opening").isJsonPrimitive()
+                && args.get("new_opening").getAsBoolean();
         Spec spec = new Spec(mechanism, at, asked, 0, material, opens, count, items, str(args, "aim"), notes,
-                instrument, inverted);
+                instrument, inverted, newOpening);
         int width = args.has("width") && args.get("width").isJsonPrimitive() ? args.get("width").getAsInt() : 2;
         if (width != 1 && width != 2) {
             return ToolResult.error("width is 1 or 2.");
@@ -218,7 +241,8 @@ public final class BuildMechanismTool implements McpTool {
         Built built;
         try {
             Spec sp = new Spec(spec.mechanism(), spec.at(), spec.asked(), width, spec.material(), spec.opens(),
-                    spec.count(), spec.items(), spec.aim(), spec.notes(), spec.instrument(), spec.inverted());
+                    spec.count(), spec.items(), spec.aim(), spec.notes(), spec.instrument(), spec.inverted(),
+                    spec.newOpening());
             built = AgentBridge.onServer(() -> buildOnServer(sp), 30_000L);
         } catch (RuntimeException e) {
             return ToolResult.error("Could not build it: " + e.getMessage());
@@ -278,7 +302,12 @@ public final class BuildMechanismTool implements McpTool {
 
     /** Everything the agent asked for, parsed. */
     record Spec(String mechanism, String at, List<String[]> asked, int width, String material, boolean opens,
-                int count, String items, String aim, List<Integer> notes, String instrument, boolean inverted) {
+                int count, String items, String aim, List<Integer> notes, String instrument, boolean inverted,
+                boolean newOpening) {
+        Spec(String mechanism, String at, List<String[]> asked, int width, String material, boolean opens, int count,
+             String items, String aim, List<Integer> notes, String instrument, boolean inverted) {
+            this(mechanism, at, asked, width, material, opens, count, items, aim, notes, instrument, inverted, false);
+        }
     }
 
     static Built buildOnServer(String mechanism, String at, List<String[]> asked, int width, String wanted,
@@ -315,7 +344,7 @@ public final class BuildMechanismTool implements McpTool {
         boolean isDoor = spec.mechanism().equals("piston_door") || spec.mechanism().equals("iron_door");
         Doorway.Found door = null;
         if (isDoor) {
-            door = box != null ? Doorway.inBuilding(view, box, start, spec.width())
+            door = box != null ? Doorway.inBuilding(view, box, start, spec.width(), spec.newOpening())
                     : Doorway.find(view, start, in, spec.width());
             if (!door.ok()) {
                 return Built.fail(ToolResult.error("No door could go there: " + door.why() + "."));
@@ -448,13 +477,14 @@ public final class BuildMechanismTool implements McpTool {
             }
             if (!anyInside) {
                 asked = new ArrayList<>(asked);
-                asked.add(new String[] {"button", place.buildId() + ":inside"});
+                asked.add(new String[] {"button", place.buildId() + ":inside", "", ""});
                 addedInside = "a button inside beside the door, so nobody is shut in";
             }
         }
         // controls: each resolved, then the first spot the planner can wire
         Set<RsPos> foreign = view.foreignRedstone(centre.plus(-24, -10, -24), centre.plus(24, 10, 24));
         List<MechanismPlanner.ControlAsk> chosen = new ArrayList<>();
+        List<String> notHidden = new ArrayList<>();
         MechanismPlan plan = null;
         for (String[] c : asked) {
             PlaceFinder.Place cp = PlaceFinder.find(server, player, c[1], com.moddingfromamod.builder.BuildSpots.FRONT);
@@ -469,16 +499,30 @@ public final class BuildMechanismTool implements McpTool {
                     : door != null && ControlSpots.nearDoor(door.frame(), door.width(), spot)
                     ? ControlSpots.atDoor(door.frame(), door.width(), c[0], ControlSpots.side(door.frame(), spot))
                     : ControlSpots.around(spot.up(-1));
-            String last = null;
-            MechanismPlan ok = null;
-            for (RsPos guess : tries) {
-                RsPos g = groundNear(view, guess);
-                if (g == null) {
-                    last = "there is no ground to stand it on near " + guess;
-                    continue;
+            boolean toggle = c.length > 2 && "toggle".equals(c[2]);
+            boolean hidden = c.length > 3 && "hidden".equals(c[3]);
+            List<MechanismPlanner.ControlAsk> options = new ArrayList<>();
+            if (hidden) {
+                for (RsPos guess : tries) {
+                    RsPos g = groundNear(view, guess);
+                    if (g != null) {
+                        options.addAll(wallSpots(view, g.up(1), c[0], toggle));
+                    }
                 }
+            } else {
+                for (RsPos guess : tries) {
+                    RsPos g = groundNear(view, guess);
+                    if (g != null) {
+                        options.add(new MechanismPlanner.ControlAsk(c[0], g, null, toggle));
+                    }
+                }
+            }
+            String last = options.isEmpty() ? (hidden ? "there is no wall near " + c[1] + " to hide it on"
+                    : "there is no ground to stand it on near " + c[1]) : null;
+            MechanismPlan ok = null;
+            for (MechanismPlanner.ControlAsk ask : options) {
                 List<MechanismPlanner.ControlAsk> withIt = new ArrayList<>(chosen);
-                withIt.add(new MechanismPlanner.ControlAsk(c[0], g));
+                withIt.add(ask);
                 MechanismPlan p = MechanismPlanner.plan(view, module, withIt, foreign);
                 if (p.ok()) {
                     ok = p;
@@ -486,6 +530,25 @@ public final class BuildMechanismTool implements McpTool {
                     break;
                 }
                 last = p.why();
+            }
+            if (ok == null && hidden) {
+                // no wall there lets its wire go down out of sight: an ordinary switch, and say so
+                for (RsPos guess : tries) {
+                    RsPos g = groundNear(view, guess);
+                    if (g == null) {
+                        continue;
+                    }
+                    List<MechanismPlanner.ControlAsk> withIt = new ArrayList<>(chosen);
+                    withIt.add(new MechanismPlanner.ControlAsk(c[0], g, null, toggle));
+                    MechanismPlan p = MechanismPlanner.plan(view, module, withIt, foreign);
+                    if (p.ok()) {
+                        ok = p;
+                        chosen = withIt;
+                        notHidden.add(c[0] + " at " + c[1]);
+                        break;
+                    }
+                    last = p.why();
+                }
             }
             if (ok == null) {
                 return Built.fail(ToolResult.error("The " + c[0] + " at " + c[1] + " could not be wired: " + last
@@ -496,6 +559,11 @@ public final class BuildMechanismTool implements McpTool {
         if (addedInside != null) {
             plan.notes().add("Added " + addedInside + ".");
         }
+        if (!notHidden.isEmpty()) {
+            plan.notes().add("Could not hide the " + String.join(", ", notHidden) + " in a wall there (no wall whose "
+                    + "wiring could go down out of sight), so it stands on the floor. Tell him, or try a spot by an "
+                    + "outside wall.");
+        }
         Built b = new Built();
         b.level = level;
         b.plan = plan;
@@ -504,6 +572,38 @@ public final class BuildMechanismTool implements McpTool {
         b.shutAtRest = shutAtRest;
         b.placed = MechanismWorld.place(level, plan);
         return b;
+    }
+
+    /**
+     * Wall faces for a hidden control near {@code feet} (the level a player stands at): a solid block at that level
+     * with open, walkable air in front of it, within 3 blocks; nearest first.
+     */
+    static List<MechanismPlanner.ControlAsk> wallSpots(LevelView view, RsPos feet, String kind, boolean toggle) {
+        List<MechanismPlanner.ControlAsk> out = new ArrayList<>();
+        for (int r = 1; r <= 3; r++) {
+            for (int dx = -r; dx <= r; dx++) {
+                for (int dz = -r; dz <= r; dz++) {
+                    if (Math.max(Math.abs(dx), Math.abs(dz)) != r) {
+                        continue;
+                    }
+                    RsPos a = feet.plus(dx, 0, dz);
+                    var k = view.kind(a);
+                    if (!(k == com.moddingfromamod.redstone.WorldView.Kind.SOLID
+                            || k == com.moddingfromamod.redstone.WorldView.Kind.NATURAL) || !view.conductor(a)) {
+                        continue;
+                    }
+                    for (RsDir f : RsDir.values()) {
+                        RsPos front = a.step(f);
+                        if (view.kind(front) == com.moddingfromamod.redstone.WorldView.Kind.AIR
+                                && view.kind(front.up(1)) == com.moddingfromamod.redstone.WorldView.Kind.AIR
+                                && view.conductor(front.up(-1))) {
+                            out.add(new MechanismPlanner.ControlAsk(kind, a, f, toggle));
+                        }
+                    }
+                }
+            }
+        }
+        return out;
     }
 
     static String where(RsPos p) {

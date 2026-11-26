@@ -192,7 +192,11 @@ public class BuildMechanismGameTest {
                 "{\"mechanism\":\"dispensers\",\"count\":2,\"items\":\"minecraft:firework_rocket*16\",\"aim\":\"up\","
                         + "\"at\":\"H:front\",\"controls\":[{\"kind\":\"button\",\"at\":\"H:front\"}]}",
                 "{\"mechanism\":\"note_blocks\",\"notes\":[\"18\",\"14\"],\"instrument\":\"bell\",\"at\":\"H:front\","
-                        + "\"controls\":[{\"kind\":\"button\",\"at\":\"H:front\"}]}"};
+                        + "\"controls\":[{\"kind\":\"button\",\"at\":\"H:front\"}]}",
+                "{\"mechanism\":\"piston_door\",\"new_opening\":true,\"at\":\"H:west\",\"controls\":[{\"kind\":"
+                        + "\"button\",\"at\":\"H:inside\",\"hidden\":true}]}",
+                "{\"mechanism\":\"iron_door\",\"at\":\"H:front\",\"controls\":[{\"kind\":\"button\",\"at\":"
+                        + "\"H:front\",\"toggle\":true}]}"};
         AtomicReference<String> done = new AtomicReference<>();
         AtomicReference<Boolean> started = new AtomicReference<>(false);
         helper.succeedWhen(() -> {

@@ -132,4 +132,39 @@ public class DeviceGameTest {
                     e.what())), d.feed(), d.what()));
         }, false, List.of(new int[] {-5, -5}), "lever");
     }
+
+    /** A secret button low on a stone wall lights a lamp: the wall control's wire goes down through the footing. */
+    @GameTest(template = "empty_test", batch = "redstone_devices3", timeoutTicks = 2400)
+    public static void aButtonLowOnAWall(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        RsPos o = site(helper, level, 170);
+        for (int x = -6; x <= 6; x++) {
+            for (int y = 0; y <= 3; y++) {
+                level.setBlock(new BlockPos(o.x() + x, o.y() + y, o.z() - 5), Blocks.STONE_BRICKS.defaultBlockState(), 2);
+            }
+        }
+        LevelView view = new LevelView(level);
+        DeviceModule.Result m = DeviceModule.plan(view, "lamp", List.of(Devices.lamp(o.plus(0, -1, 0))), true,
+                Set.of(), new ArrayList<>());
+        if (!m.ok()) {
+            throw helper.assertionException(m.why());
+        }
+        MechanismPlan plan = MechanismPlanner.plan(view, m.module(), List.of(new MechanismPlanner.ControlAsk("button",
+                o.plus(2, 0, -5), RsDir.SOUTH, false)), Set.of());
+        if (!plan.ok()) {
+            throw helper.assertionException("the planner refused: " + plan.why());
+        }
+        List<MechanismWorld.Placed> placed = MechanismWorld.place(level, plan);
+        AtomicReference<MechanismProof.Result> result = new AtomicReference<>();
+        Thread t = new Thread(() -> result.set(MechanismProof.prove(level, plan)), "wall-proof");
+        t.setDaemon(true);
+        t.start();
+        helper.succeedWhen(() -> {
+            helper.assertTrue(result.get() != null, Component.literal("waiting for the proof"));
+            if (!result.get().ok()) {
+                throw helper.assertionException("it did not work: " + result.get().why());
+            }
+            MechanismWorld.takeBack(level, placed);
+        });
+    }
 }

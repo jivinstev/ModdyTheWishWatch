@@ -67,7 +67,11 @@ public class PistonDoorGameTest {
         List<MechanismPlanner.ControlAsk> asks = new java.util.ArrayList<>();
         for (int i = 0; i < controls.size(); i++) {
             int[] c = controls.get(i);
-            asks.add(new MechanismPlanner.ControlAsk(kinds[i], new RsPos(o.x() + c[0], o.y() - 1, o.z() + c[1])));
+            String k = kinds[i];
+            boolean toggle = k.endsWith("+toggle");
+            k = k.replace("+toggle", "");
+            asks.add(new MechanismPlanner.ControlAsk(k, new RsPos(o.x() + c[0], o.y() - 1, o.z() + c[1]), null,
+                    toggle));
         }
         MechanismPlan plan = MechanismPlanner.plan(view, door, asks,
                 view.foreignRedstone(o.plus(-16, -6, -16), o.plus(17, 8, 16)));
@@ -128,5 +132,15 @@ public class PistonDoorGameTest {
     @GameTest(template = "empty_test", batch = "redstone_door_opens", timeoutTicks = 2400)
     public static void twoSwitchesOnTheSameSideBothOpenIt(GameTestHelper helper) {
         run(helper, 200, List.of(new int[] {-2, -6}, new int[] {4, -6}), new String[] {"lever", "button"}, true);
+    }
+
+    @GameTest(template = "empty_test", batch = "redstone_door_toggle", timeoutTicks = 2400)
+    public static void oneButtonOpensItAndThePressAfterShutsIt(GameTestHelper helper) {
+        run(helper, 140, List.of(new int[] {0, -6}), new String[] {"button+toggle"}, true);
+    }
+
+    @GameTest(template = "empty_test", batch = "redstone_door_toggle", timeoutTicks = 2400)
+    public static void aPlateThatToggles(GameTestHelper helper) {
+        run(helper, 170, List.of(new int[] {3, -6}), new String[] {"pressure_plate+toggle"}, true);
     }
 }

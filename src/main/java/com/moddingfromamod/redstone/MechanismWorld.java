@@ -100,6 +100,21 @@ public final class MechanismWorld {
     }
 
     /** Uses a control the way a player would: on or off. Returns false when the control is not there. */
+    /** True while a button or plate control is still down. */
+    public static boolean pressed(ServerLevel level, Control c) {
+        BlockState s = level.getBlockState(LevelView.bp(c.use()));
+        if (s.getBlock() instanceof ButtonBlock) {
+            return s.getValue(ButtonBlock.POWERED);
+        }
+        if (s.hasProperty(net.minecraft.world.level.block.state.properties.BlockStateProperties.POWERED)) {
+            return s.getValue(net.minecraft.world.level.block.state.properties.BlockStateProperties.POWERED);
+        }
+        if (s.hasProperty(net.minecraft.world.level.block.state.properties.BlockStateProperties.POWER)) {
+            return s.getValue(net.minecraft.world.level.block.state.properties.BlockStateProperties.POWER) > 0;
+        }
+        return false;
+    }
+
     public static boolean use(ServerLevel level, Control c, boolean on) {
         BlockPos at = LevelView.bp(c.use());
         BlockState s = level.getBlockState(at);

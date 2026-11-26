@@ -110,7 +110,12 @@ public final class MechanismProof {
         void tick() {
             if (control >= 0 && !used) {
                 Control c = plan.controls().get(control);
-                if (!MechanismWorld.use(level, c, fired)) {
+                // a TOGGLE is pressed again to switch it back; wait for the button to come up first
+                if (c.toggle() && MechanismWorld.pressed(level, c)) {
+                    MechanismWorld.use(level, c, false);   // step off a plate; a button comes up by itself
+                    return;
+                }
+                if (!MechanismWorld.use(level, c, c.toggle() || fired)) {
                     finish(where() + " is not there to use");
                     return;
                 }

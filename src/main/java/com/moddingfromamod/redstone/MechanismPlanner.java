@@ -16,7 +16,11 @@ import java.util.Set;
 public final class MechanismPlanner {
 
     /** A control asked for: its kind and the ground block it stands on. */
-    public record ControlAsk(String kind, RsPos ground) {
+    public record ControlAsk(String kind, RsPos ground, RsDir face, boolean toggle) {
+        public ControlAsk(String kind, RsPos ground) {
+            this(kind, ground, null, false);
+        }
+
     }
 
     /** The signal the far end of a module's bridge needs at its port (3 wire beyond it, at least 1 left). */
@@ -39,15 +43,20 @@ public final class MechanismPlanner {
                 return MechanismPlan.refused(module.kind(), "the " + ask.kind() + " needs solid ground under it at "
                         + ask.ground() + " (it is " + world.blockId(ask.ground()) + ")");
             }
-            if (world.kind(ask.ground().up(1)) != WorldView.Kind.AIR) {
+            RsPos usePos = ask.face() == null ? ask.ground().up(1) : ask.ground().step(ask.face());
+            if (world.kind(usePos) != WorldView.Kind.AIR) {
                 return MechanismPlan.refused(module.kind(), "the place for the " + ask.kind() + " at "
-                        + ask.ground().up(1) + " is taken by " + world.blockId(ask.ground().up(1)));
+                        + usePos + " is taken by " + world.blockId(usePos));
             }
             Control best = null;
             ChannelRouter.Route bestRoute = null;
             String lastWhy = "no route";
             for (RsDir d : towardFirst(ask.ground(), module.ports())) {
-                Control c = Control.floor(ask.kind(), ask.ground(), d, module.channelY(), null);
+                Control c = ask.face() == null ? Control.floor(ask.kind(), ask.ground(), d, module.channelY(), null)
+                        : Control.wall(ask.kind(), ask.ground(), ask.face(), d, module.channelY());
+                if (c != null && ask.toggle()) {
+                    c = Control.toggled(c, d);
+                }
                 if (c == null) {
                     return MechanismPlan.refused(module.kind(), "the " + ask.kind() + " at " + ask.ground().up(1)
                             + " stands too low for its wire to reach the mechanism; put it on ground level with it");
