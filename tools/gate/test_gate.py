@@ -713,11 +713,20 @@ class PublishRace(unittest.TestCase):
             pa, pb = history.store(a, ra), history.store(b, rb)
             old_sleep = history.time.sleep
             history.time.sleep = lambda s: None
+            # as on a runner: no user.name anywhere, so a rebase without the bot's identity fails (it did on CI)
+            saved = {k: os.environ.get(k) for k in ("GIT_CONFIG_GLOBAL", "GIT_CONFIG_NOSYSTEM")}
+            os.environ["GIT_CONFIG_GLOBAL"] = os.devnull
+            os.environ["GIT_CONFIG_NOSYSTEM"] = "1"
             try:
                 history.publish(a, "record a")
                 history.publish(b, "record b")   # its first push is refused: a got there first
             finally:
                 history.time.sleep = old_sleep
+                for k, v in saved.items():
+                    if v is None:
+                        os.environ.pop(k, None)
+                    else:
+                        os.environ[k] = v
             check = os.path.join(root, "check")
             git(root, "clone", "-q", "-b", history.DATA_BRANCH, origin, check)
             self.assertTrue(os.path.exists(os.path.join(check, pa)), pa)
