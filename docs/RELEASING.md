@@ -125,8 +125,8 @@ What ran where is in the table below; a rung's own release records its Gate C ro
 
 | Version | Rig films | Where it was proved |
 |---|---|---|
-| 1.21.8 | all 13 | Port CI, every release (`.port/1.21.8/gate-c.json`) |
-| 26.3 | RESULT_26_3 | locally, `neoforge-26.3` + this change, Xvfb + llvmpipe (2026-11-26) |
+| 1.21.8 | all 13; the core set 154 s | Port CI, every release (`.port/1.21.8/gate-c.json`); this change locally |
+| 26.3 | all 13: 12 pass, `vanillahair` flaky (failed then passed; 2 of 3 more runs passed, 1 hung); the core set 149 s | locally, `neoforge-26.3` + this change, Xvfb + llvmpipe (2026-11-26) |
 | 1.21.10, 1.21.11, 26.1.2, 26.2 | not yet run | the first release after `main` is merged up runs them |
 
 To run the films on a rung by hand: check out `neoforge-<v>`, install that version's Java (26.x needs 25:
