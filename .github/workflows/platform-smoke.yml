@@ -202,6 +202,13 @@ jobs:
           for p in job.get("problems", []):
               print("::error title=problem::" + p[:900])
           PY
+          # the GameTest servers' own errors (artifacts are not always at hand): each distinct ERROR or exception line
+          # with the line under it, from every attempt's log
+          for f in "$RUNNER_TEMP"/smoke/gametest/*.log; do
+            [ -f "$f" ] || continue
+            echo "== $(basename "$f")"
+            grep -E -A2 '/ERROR\]|Exception|Caused by:' "$f" | grep -vE '^\s+at ' | awk '!seen[$0]++' | head -n 80
+          done
       - uses: actions/upload-artifact@v5
         if: ${{ always() }}
         with:
