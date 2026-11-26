@@ -140,7 +140,8 @@ higher `neoforge-<mc>` branch holds only its port's own changes plus `main` merg
 needs before the next release point is made on `main` and **cherry-picked down** in the same change, never committed to
 the release line alone. `.github/workflows/release-line.yml` refuses a push or pull request that brings
 `neoforge-1.21.8` a commit with no equivalent on `main` (each commit not reachable from `main` is matched by patch-id against `main`, so a merge of `main` or a
-cherry-pick passes); the one exception is Port CI's own install-manifest refresh.
+cherry-pick passes). Two kinds of commit are exempt: Port CI's own install-manifest refresh, and the weekly round's records
+(a commit that changes only `.port/KNOWN-ISSUES.json` and/or the README's Ports block).
 
 ## Building on it: extension points
 
