@@ -1,0 +1,64 @@
+{
+  "allow": [
+    "push-version-branches",
+    "pre-release",
+    "merge-fork-prs"
+  ],
+  "budget": 3,
+  "forks": [
+    {
+      "automerge": true,
+      "head": "neoforge-1.21.8",
+      "ledger_issues": [],
+      "release_bump": {
+        "file": "gradle.properties",
+        "key": "mod_version"
+      },
+      "repo": "jivinstev/ModdyTheWishWatch",
+      "role": "library",
+      "upstream": "https://github.com/jivinstev/ModdyTheWishWatch.git",
+      "upstream_branch": "main",
+      "upstream_source": "own repository (owned)"
+    },
+    {
+      "after_repin": [
+        [
+          "python3",
+          "tools/core-pins.py",
+          "--write"
+        ]
+      ],
+      "automerge": true,
+      "depends_on": [
+        "jivinstev/ModdyTheWishWatch"
+      ],
+      "head": "neoforge-1.21.8",
+      "ledger_issues": [],
+      "release_bump": [
+        {
+          "file": "arena/gradle.properties",
+          "key": "mod_version"
+        },
+        {
+          "file": "isle/gradle.properties",
+          "key": "mod_version"
+        }
+      ],
+      "repo": "jivinstev/Moddy-Worlds",
+      "role": "dependent",
+      "upstream": "https://github.com/jivinstev/Moddy-Worlds",
+      "upstream_branch": "main"
+    }
+  ],
+  "migrator_repo": "jivinstev/mc-mod-version-upgrade",
+  "migrator_sha": "9d384752c0356ecbda47d537df712ab9310b4ad9",
+  "plan_owner": "jivinstev",
+  "round": {
+    "cron": "CRON_TZ=America/Los_Angeles 21 8 * * 3",
+    "name": "keep-current weekly round: jivinstev/ModdyTheWishWatch, jivinstev/Moddy-Worlds",
+    "time": "08:21",
+    "tz": "America/Los_Angeles",
+    "weekday": "Wednesday"
+  },
+  "schema": 1
+}
