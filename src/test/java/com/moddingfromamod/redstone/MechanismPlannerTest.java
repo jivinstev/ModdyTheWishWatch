@@ -167,4 +167,36 @@ class MechanismPlannerTest {
         assertEquals(new RsPos(10, 64, 8), f.at(2, 0, 0));
         assertEquals(new RsPos(11, 65, 10), f.at(0, 1, 1));
     }
+
+    @Test
+    void aDrivenDoorLaysNoWireAndPutsItsFeedAtAPort() {
+        FakeWorld w = new FakeWorld().wall(-8, 10);
+        Module door = PistonDoor.plan(frame(), 2, "minecraft:stone_bricks", "minecraft:stone_bricks",
+                "minecraft:stone_bricks", false);
+        // a lever 12 blocks out in front: far beyond any easy route, and nothing is dug for it
+        MechanismPlan p = MechanismPlanner.planLinked(w, door,
+                List.of(new MechanismPlanner.ControlAsk("lever", new RsPos(0, -61, -12))), Set.of());
+        assertTrue(p.ok(), p.why());
+        assertTrue(p.linked());
+        assertTrue(door.ports().contains(p.feed()));
+        Set<RsPos> doorCells = door.cells().stream().map(RsCell::pos).collect(Collectors.toSet());
+        for (RsCell c : p.cells()) {
+            if (!doorCells.contains(c.pos())) {
+                assertTrue(c.pos().equals(p.feed()) || c.role() == RsCell.Role.CONTROL,
+                        "only the feed and the switch are added, not " + c);
+            }
+        }
+        assertEquals(1, p.controls().size());
+        assertEquals(null, p.controls().get(0).port());
+    }
+
+    @Test
+    void aDrivenMechanismIsRefusedOnlyWhenEveryPortIsBlocked() {
+        FakeWorld w = new FakeWorld().wall(-8, 10);
+        Module door = PistonDoor.plan(frame(), 2, "minecraft:stone_bricks", "minecraft:stone_bricks",
+                "minecraft:stone_bricks", false);
+        MechanismPlan p = MechanismPlanner.planLinked(w, door,
+                List.of(new MechanismPlanner.ControlAsk("lever", new RsPos(0, -61, -3))), Set.copyOf(door.ports()));
+        assertFalse(p.ok());
+    }
 }

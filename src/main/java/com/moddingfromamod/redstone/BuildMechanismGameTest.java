@@ -59,6 +59,7 @@ public class BuildMechanismGameTest {
         BlockPos doorLow = anchor.offset(5, 1, 10);
         AtomicReference<String> built = new AtomicReference<>(), removed = new AtomicReference<>();
         AtomicReference<String> doorwayWhileBuilt = new AtomicReference<>();
+        AtomicReference<Integer> markersWhileBuilt = new AtomicReference<>(), markersAfter = new AtomicReference<>();
         AtomicReference<Boolean> started = new AtomicReference<>(false);
         helper.succeedWhen(() -> {
             helper.assertFalse(Builder.isBuilding(hall), Component.literal("waiting for the hall"));
@@ -72,9 +73,14 @@ public class BuildMechanismGameTest {
                     if (!r.isError()) {
                         doorwayWhileBuilt.set(com.moddingfromamod.agent.AgentBridge.onServer(
                                 () -> level.getBlockState(doorLow).toString(), 10_000L));
+                        String mid = builtId(r.text());
+                        markersWhileBuilt.set(com.moddingfromamod.agent.AgentBridge.onServer(
+                                () -> markers(level, mid), 10_000L));
                         ToolResult x = new RemoveMechanismTool().call(JsonParser.parseString("{\"id\":\"" + builtId(r.text()) + "\"}")
                                 .getAsJsonObject());
                         removed.set((x.isError() ? "ERROR " : "") + x.text());
+                        markersAfter.set(com.moddingfromamod.agent.AgentBridge.onServer(
+                                () -> markers(level, mid), 10_000L));
                     }
                     return null;
                 }));
@@ -88,6 +94,12 @@ public class BuildMechanismGameTest {
             helper.assertTrue(doorwayWhileBuilt.get().contains("air"),
                     Component.literal("while built, the doorway (open at rest) holds " + doorwayWhileBuilt.get()));
             helper.assertFalse(removed.get().startsWith("ERROR"), Component.literal(removed.get()));
+            // driven by its datapack: one marker at the lever, one at the feed; and none, and no pack on, after removal
+            helper.assertTrue(built.get().contains("Driven by the redstone engine"), Component.literal(built.get()));
+            helper.assertTrue(markersWhileBuilt.get() == 2,
+                    Component.literal("markers while built: " + markersWhileBuilt.get() + ", wanted 2"));
+            helper.assertTrue(markersAfter.get() != null && markersAfter.get() == 0,
+                    Component.literal("markers after removal: " + markersAfter.get()));
             // taken back: the hall's own oak door is in its doorway again
             helper.assertTrue(level.getBlockState(doorLow).is(Blocks.OAK_DOOR),
                     Component.literal("after remove_mechanism the doorway holds " + level.getBlockState(doorLow)));
@@ -245,4 +257,15 @@ public class BuildMechanismGameTest {
             + "\"block\":\"minecraft:glass_pane\"},"
             + "{\"kind\":\"box\",\"name\":\"window_up\",\"dx\":3,\"dy\":6,\"dz\":0,\"width\":9,\"height\":1,\"depth\":1,"
             + "\"block\":\"minecraft:glass_pane\"}]}";
+
+    /** How many markers mechanism {@code id} has in the level. */
+    static int markers(ServerLevel level, String id) {
+        int n = 0;
+        for (var e : level.getAllEntities()) {
+            if (e instanceof net.minecraft.world.entity.Marker && e.getTags().contains(RedstoneScript.mechTag(id))) {
+                n++;
+            }
+        }
+        return n;
+    }
 }

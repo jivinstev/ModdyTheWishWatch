@@ -158,6 +158,7 @@ public final class MechanismStore {
     public static synchronized boolean put(ServerLevel level, Entry e) {
         ensureLoaded(level);
         ENTRIES.put(e.id(), e);
+        RESERVED.remove(e.id());
         reprotect();
         return save();
     }
@@ -169,15 +170,43 @@ public final class MechanismStore {
         return save();
     }
 
+    /** Ids handed out by {@link #reserve} for mechanisms still being built and tested. */
+    private static final java.util.Set<String> RESERVED = new java.util.HashSet<>();
+
+    /**
+     * A fresh id, held until {@link #put} stores it or {@link #release} gives it back. A driven mechanism's id names
+     * its markers before its proof runs, and two mechanisms built at once both took "piston_door" when the id was
+     * only chosen after the proof: removing one took the other's markers too (measured, GameTests in one batch).
+     */
+    public static synchronized String reserve(ServerLevel level, String kind) {
+        String id = freshId(level, kind, RESERVED::contains);
+        RESERVED.add(id);
+        return id;
+    }
+
+    public static synchronized void release(String id) {
+        RESERVED.remove(id);
+    }
+
     /** A fresh id for a new mechanism of {@code kind}: piston_door, piston_door_2, … */
     public static synchronized String freshId(ServerLevel level, String kind) {
+        return freshId(level, kind, RESERVED::contains);
+    }
+
+    /**
+     * The same, also skipping every id {@code used} says is taken. A driven mechanism's id names its datapack and its
+     * markers, so it skips every id whose datapack was ever made: a removed mechanism's pack is switched off by a
+     * reload that lands a few ticks later, and a new pack of the same name would be switched off with it (measured).
+     */
+    public static synchronized String freshId(ServerLevel level, String kind, java.util.function.Predicate<String> used) {
         ensureLoaded(level);
-        if (!ENTRIES.containsKey(kind)) {
+        if (!ENTRIES.containsKey(kind) && !used.test(kind)) {
             return kind;
         }
         for (int n = 2; ; n++) {
-            if (!ENTRIES.containsKey(kind + "_" + n)) {
-                return kind + "_" + n;
+            String c = kind + "_" + n;
+            if (!ENTRIES.containsKey(c) && !used.test(c)) {
+                return c;
             }
         }
     }

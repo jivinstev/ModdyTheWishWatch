@@ -53,6 +53,8 @@ public final class RemoveMechanismTool implements McpTool {
             ServerLevel in = server.getLevel(net.minecraft.resources.ResourceKey.create(
                     net.minecraft.core.registries.Registries.DIMENSION, ResourceLocation.parse(e.dimension())));
             MechanismWorld.takeBack(in == null ? level : in, e.journal());
+            // a mechanism driven by its datapack: its named markers and its datapack go too
+            com.moddingfromamod.redstone.MechanismDrive.unmark(in == null ? level : in, id);
             MechanismStore.remove(level, id);
             return ToolResult.ok("Took '" + id + "' back out: " + e.journal().size() + " blocks put back as they were.");
         }, 30_000L);

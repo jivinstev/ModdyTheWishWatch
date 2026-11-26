@@ -133,6 +133,86 @@ public final class MechanismPlanner {
             }
             controls.add(best);
         }
+        return finish(world, module, cells, controls, null);
+    }
+
+    /**
+     * The same module DRIVEN BY ITS DATAPACK ({@link RedstoneScript}): no wire is laid from any switch. The module's
+     * own redstone (its pistons, torch towers, lamps, repeaters) is built exactly as for a wired mechanism; what a wire
+     * would have brought to one of its ports, a redstone block put there by the datapack brings instead (the FEED,
+     * air at rest). Each switch is only itself (a lever, button or plate where it was asked), which the datapack
+     * reads. A logic control's cell is a port of its own, so the logic bridge needs no wire either. Nothing here can
+     * fail for want of a route; a mechanism is refused only when its module has no free port or a switch has no
+     * place to stand.
+     */
+    public static MechanismPlan planLinked(WorldView world, Module module, List<ControlAsk> asks, Set<RsPos> foreign) {
+        if (asks.isEmpty()) {
+            return MechanismPlan.refused(module.kind(), "a mechanism needs at least one control");
+        }
+        Map<RsPos, RsCell> cells = new LinkedHashMap<>();
+        for (RsCell c : module.cells()) {
+            cells.put(c.pos(), c);
+        }
+        List<RsPos> free = new ArrayList<>();
+        for (RsPos p : module.ports()) {
+            WorldView.Kind k = world.kind(p);
+            if (cells.containsKey(p) || foreign.contains(p) || !(k == WorldView.Kind.AIR || k == WorldView.Kind.NATURAL)) {
+                continue;
+            }
+            boolean clear = true;
+            for (RsPos n : List.of(p.up(1), p.up(-1), p.step(RsDir.NORTH), p.step(RsDir.SOUTH), p.step(RsDir.EAST),
+                    p.step(RsDir.WEST))) {
+                if (foreign.contains(n)) {
+                    clear = false;
+                }
+            }
+            if (clear) {
+                free.add(p);
+            }
+        }
+        boolean physical = asks.stream().anyMatch(a -> !a.kind().equals("logic"));
+        long logics = asks.stream().filter(a -> a.kind().equals("logic")).count();
+        if (free.size() < (physical ? 1 : 0) + logics) {
+            return MechanismPlan.refused(module.kind(), "the mechanism has no free place under it for its switches' "
+                    + "power to arrive (other redstone or water beside it)");
+        }
+        int next = 0;
+        RsPos feed = null;
+        if (physical) {
+            feed = free.get(next++);
+            cells.put(feed, RsCell.of(feed, "minecraft:air", RsCell.Role.CLEAR));
+        }
+        List<Control> controls = new ArrayList<>();
+        for (ControlAsk ask : asks) {
+            if (ask.kind().equals("logic")) {
+                RsPos p = free.get(next++);
+                Control c = new Control("logic", p, List.of(RsCell.of(p, "minecraft:air", RsCell.Role.CLEAR)), p, 15,
+                        false);
+                cells.put(p, c.cells().get(0));
+                controls.add(c);
+                continue;
+            }
+            if (!world.conductor(ask.ground())) {
+                return MechanismPlan.refused(module.kind(), "the " + ask.kind() + " needs solid ground under it at "
+                        + ask.ground() + " (it is " + world.blockId(ask.ground()) + ")");
+            }
+            Control c = Control.standalone(ask.kind(), ask.ground(), ask.face(),
+                    towardFirst(ask.ground(), module.ports()).get(0), ask.toggle(), null);
+            if (c == null) {
+                return MechanismPlan.refused(module.kind(), "a " + ask.kind() + " cannot go on a wall");
+            }
+            if (world.kind(c.use()) != WorldView.Kind.AIR || cells.containsKey(c.use())) {
+                return MechanismPlan.refused(module.kind(), "the place for the " + ask.kind() + " at " + c.use()
+                        + " is taken by " + world.blockId(c.use()));
+            }
+            cells.put(c.use(), c.cells().get(0));
+            controls.add(c);
+        }
+        return finish(world, module, cells, controls, feed);
+    }
+
+    static MechanismPlan finish(WorldView world, Module module, Map<RsPos, RsCell> cells, List<Control> controls,
+                                RsPos feed) {
         List<String> replaced = new ArrayList<>();
         for (RsCell c : cells.values()) {
             WorldView.Kind k = world.kind(c.pos());
@@ -155,7 +235,7 @@ public final class MechanismPlanner {
         ordered.removeIf(c -> c.role() == RsCell.Role.CASING && keepsWhatIsThere(world, c));
         ordered.sort(Comparator.comparingInt(MechanismPlanner::stage).thenComparingInt(c -> c.pos().y()));
         List<String> notes = new ArrayList<>(module.notes());
-        return new MechanismPlan(module.kind(), ordered, module.expects(), controls, replaced, notes, null);
+        return new MechanismPlan(module.kind(), ordered, module.expects(), controls, replaced, notes, null, feed);
     }
 
     /** Placement order: pockets, supports and casing, plain parts, then components, then controls. */

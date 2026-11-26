@@ -249,6 +249,28 @@ public final class RubricGrader {
             }
             return d;
         }, 30_000L);
+        // A mechanism can sit outside the snapshot's box (a wish that built a big new building puts its door past the
+        // box round where he stood: measured, a door at z 43 with the box ending short of it, graded "no door"). Its
+        // journal says what each of its positions held before, so those positions join the diff wherever they are.
+        AgentBridge.onServer(() -> {
+            for (MechanismStore.Entry e : MechanismStore.all(level)) {
+                for (MechanismWorld.Placed pl : e.journal()) {
+                    BlockPos q = pl.pos();
+                    if (q.getX() >= box[0] && q.getX() <= box[3] && q.getY() >= box[1] && q.getY() <= box[4]
+                            && q.getZ() >= box[2] && q.getZ() <= box[5]) {
+                        continue;
+                    }
+                    level.setChunkForced(q.getX() >> 4, q.getZ() >> 4, true);
+                    String was = BlockStateParser.serialize(pl.before());
+                    String now = BlockStateParser.serialize(level.getBlockState(q));
+                    if (!was.equals(now)) {
+                        diff.put(q, new String[] {was, now});
+                    }
+                }
+            }
+            return null;
+        }, 30_000L);
+        waitTicks(server, 20);              // and their markers load with those chunks
         v.addProperty("changed", diff.size());
         Set<BlockPos> footprint = new HashSet<>();
         AgentBridge.onServer(() -> {
@@ -414,6 +436,19 @@ public final class RubricGrader {
             }
         }
 
+        // a driven mechanism's toggle has no copper bulb: its switch's marker carries the toggle tag (RedstoneScript)
+        List<Boolean> markedToggle = AgentBridge.onServer(() -> {
+            List<Boolean> out = new ArrayList<>();
+            for (BlockPos c : controls) {
+                out.add(!level.getEntitiesOfClass(net.minecraft.world.entity.Marker.class, new net.minecraft.world.phys.AABB(c),
+                        m -> m.getTags().contains(RedstoneScript.TOGGLE)).isEmpty());
+            }
+            return out;
+        }, 10_000L);
+        if (markedToggle.contains(true)) {
+            toggles = true;
+        }
+
         // F2 works: fire every added control ourselves; every added output of a wanted kind must switch with it
         boolean f2 = false, f4 = true;
         String onIs = spec.has("onIs") ? spec.get("onIs").getAsString() : "on";
@@ -462,7 +497,8 @@ public final class RubricGrader {
             }
             List<Control> cs = new ArrayList<>();
             for (int i = 0; i < controls.size(); i++) {
-                cs.add(new Control(controlKinds.get(i), LevelView.rs(controls.get(i)), List.of(), null, 0, toggles));
+                boolean tg = markedToggle.contains(true) ? markedToggle.get(i) : toggles;
+                cs.add(new Control(controlKinds.get(i), LevelView.rs(controls.get(i)), List.of(), null, 0, tg));
             }
             MechanismPlan plan = new MechanismPlan("graded", List.of(), expects, cs, List.of(), List.of(), null);
             int cycles = spec.has("cycles") ? spec.get("cycles").getAsInt() : 3;

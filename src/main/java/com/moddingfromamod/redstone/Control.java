@@ -100,6 +100,38 @@ public record Control(String kind, RsPos use, List<RsCell> cells, RsPos port, in
     }
 
     /**
+     * A control with NO wire of its own (a mechanism driven by its datapack, {@link RedstoneScript}): only the lever,
+     * button or plate, on the floor ({@code face} null: on top of {@code ground}) or on the face of the block
+     * {@code ground} that looks {@code face}. The datapack reads its state; nothing is dug under it. A toggle is done by
+     * the datapack too, so it needs no copper bulb.
+     */
+    public static Control standalone(String kind, RsPos ground, RsDir face, RsDir facing, boolean toggle,
+                                     String plateBlock) {
+        if (!KINDS.contains(kind) || kind.equals("logic")) {
+            throw new IllegalArgumentException("not a standalone control: " + kind);
+        }
+        RsPos use = face == null ? ground.up(1) : ground.step(face);
+        RsCell cell;
+        if (face != null) {
+            if (kind.equals("pressure_plate")) {
+                return null;
+            }
+            cell = RsCell.of(use, kind.equals("lever") ? "minecraft:lever" : "minecraft:stone_button",
+                    RsCell.Role.CONTROL, "face", "wall", "facing", face.id(), "powered", "false");
+        } else {
+            cell = switch (kind) {
+                case "lever" -> RsCell.of(use, "minecraft:lever", RsCell.Role.CONTROL,
+                        "face", "floor", "facing", facing.id(), "powered", "false");
+                case "button" -> RsCell.of(use, "minecraft:stone_button", RsCell.Role.CONTROL,
+                        "face", "floor", "facing", facing.id(), "powered", "false");
+                default -> RsCell.of(use, plateBlock == null ? "minecraft:stone_pressure_plate" : plateBlock,
+                        RsCell.Role.CONTROL, "powered", "false");
+            };
+        }
+        return new Control(kind, use, List.of(cell), null, 0, toggle);
+    }
+
+    /**
      * A LOGIC control (the logic bridge, {@link Logic}): a buried cell at channel depth where the mod sets a redstone
      * block while its condition holds, beside the wire the router starts from. Nothing of it shows: what the child
      * sees are the condition's own parts (a coin barrel, code buttons, a target), which are not wired at all.

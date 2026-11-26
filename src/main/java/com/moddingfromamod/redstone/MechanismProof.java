@@ -91,6 +91,7 @@ public final class MechanismProof {
         int cycle = 1, control = -1;     // control -1: the first settle at rest
         boolean fired;                   // the state being waited for
         boolean used;                    // has this phase's control been used yet
+        int upFor = 99;                  // ticks a toggle's button or plate has been up
         int waited, held, limit = SETTLE + FIRE_LIMIT, reachedAt = -1, firedIn;
 
         Run(ServerLevel level, MechanismPlan plan) {
@@ -113,6 +114,13 @@ public final class MechanismProof {
                 // a TOGGLE is pressed again to switch it back; wait for the button to come up first
                 if (c.toggle() && MechanismWorld.pressed(level, c)) {
                     MechanismWorld.use(level, c, false);   // step off a plate; a button comes up by itself
+                    upFor = 0;
+                    return;
+                }
+                // and stays up a moment, as it does for a person: a press in the very tick it came up is never seen
+                // as a fresh press by the redstone engine, which reads switches once a tick (measured)
+                if (c.toggle() && upFor < 4) {
+                    upFor++;
                     return;
                 }
                 if (!MechanismWorld.use(level, c, c.toggle() || fired)) {

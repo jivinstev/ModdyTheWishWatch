@@ -58,8 +58,10 @@ public final class BuildMechanismTool implements McpTool {
         return "Build a WORKING redstone mechanism into the world, wired to the switches the child asked for. "
                 + "Use it for anything that MOVES, LIGHTS, SHOOTS or PLAYS with a switch, button, pressure plate or "
                 + "lever: doors, lights, gates, dispensers and droppers, note blocks. You choose only WHAT "
-                + "(`mechanism`, `controls`, a few options) and WHERE (`at`); the tool works out every block, wire, "
-                + "repeater and facing, hides the wiring underground, builds it, then TESTS it by using each control "
+                + "(`mechanism`, `controls`, a few options) and WHERE (`at`); the tool works out every block: the "
+                + "mechanism's own redstone (pistons, torches, lamps, repeaters) hidden in the wall and floor, and the "
+                + "switches where you asked. A datapack it makes reads the switches and powers the mechanism, so no "
+                + "wire has to find a way between them. It builds it, then TESTS it by using each control "
                 + "for real. If the test fails it takes everything back down and says why; nothing half-working is "
                 + "left. Mechanisms: "
                 + "piston_door: a flush 2-tall door of the wall's own blocks (or `material`), in the doorway of the "
@@ -163,6 +165,9 @@ public final class BuildMechanismTool implements McpTool {
         Schemas.prop(s, "new_opening", "boolean", "Doors: cut a NEW doorway in the building's wall nearest `at` (a "
                 + "secret passage, a hidden room) instead of using its entrance. Use a compass spot (\"<id>:west\") for "
                 + "the wall you mean.");
+        Schemas.prop(s, "link", "string", "How the switches reach the mechanism: \"datapack\" (the default: its "
+                + "datapack reads them and powers it, nothing to route) or \"wire\" (real redstone wire buried all "
+                + "the way, which may not find a way through a busy building).");
         Schemas.prop(s, "inverted", "boolean", "Lamps and other devices: ON until a switch turns them OFF.");
         Schemas.prop(s, "width", "integer", "Only for a NEW doorway: 1 or 2 wide (default 2). An existing doorway "
                 + "keeps its own width.");
@@ -251,8 +256,12 @@ public final class BuildMechanismTool implements McpTool {
                 && args.get("inverted").getAsBoolean();
         boolean newOpening = args.has("new_opening") && args.get("new_opening").isJsonPrimitive()
                 && args.get("new_opening").getAsBoolean();
+        String link = str(args, "link").toLowerCase(Locale.ROOT);
+        if (!link.isEmpty() && !link.equals("datapack") && !link.equals("wire")) {
+            return ToolResult.error("link is \"datapack\" (the default) or \"wire\".");
+        }
         Spec spec = new Spec(mechanism, at, asked, 0, material, opens, count, items, str(args, "aim"), notes,
-                instrument, inverted, newOpening);
+                instrument, inverted, newOpening, !link.equals("wire"));
         int width = args.has("width") && args.get("width").isJsonPrimitive() ? args.get("width").getAsInt() : 2;
         if (width != 1 && width != 2) {
             return ToolResult.error("width is 1 or 2.");
@@ -272,7 +281,7 @@ public final class BuildMechanismTool implements McpTool {
         try {
             Spec sp = new Spec(spec.mechanism(), spec.at(), spec.asked(), width, spec.material(), spec.opens(),
                     spec.count(), spec.items(), spec.aim(), spec.notes(), spec.instrument(), spec.inverted(),
-                    spec.newOpening());
+                    spec.newOpening(), spec.linked());
             built = AgentBridge.onServer(() -> buildOnServer(sp), 30_000L);
         } catch (RuntimeException e) {
             return ToolResult.error("Could not build it: " + e.getMessage());
@@ -280,19 +289,28 @@ public final class BuildMechanismTool implements McpTool {
         if (built.error != null) {
             return built.error;
         }
+        // 3b: a driven mechanism: the world's redstone engine must be running (installed once per world)
+        if (built.plan.linked()) {
+            String why = com.moddingfromamod.redstone.MechanismDrive.ensureEngine();
+            if (why != null) {
+                undoDriven(built);
+                return ToolResult.error("Built it, but " + why + ", so it was taken back down and the world is as it "
+                        + "was. Try again, or link \"wire\".");
+            }
+        }
         // 4: prove it, off the server thread (it waits for the game to tick)
         MechanismProof.Result proof = MechanismProof.prove(built.level, built.plan);
         if (!proof.ok()) {
-            AgentBridge.onServer(() -> {
-                MechanismWorld.takeBack(built.level, built.placed);
-                return null;
-            }, 30_000L);
+            String drive = built.plan.linked() ? AgentBridge.onServer(
+                    () -> com.moddingfromamod.redstone.MechanismDrive.describe(built.level, built.id, built.plan), 5_000L)
+                    : "";
+            undoDriven(built);
             return ToolResult.error("Built it, TESTED it, and it did not work, so it was taken back down and the world is "
-                    + "as it was. What failed: " + proof.why() + ". Try a different spot or control, or tell the "
+                    + "as it was. What failed: " + proof.why() + drive + ". Try a different spot or control, or tell the "
                     + "child this one could not be made here.");
         }
         String id = AgentBridge.onServer(() -> {
-            String fresh = MechanismStore.freshId(built.level, mechanism);
+            String fresh = built.id != null ? built.id : MechanismStore.freshId(built.level, mechanism);
             List<BlockPos> controls = built.plan.controls().stream().map(c -> LevelView.bp(c.use())).toList();
             MechanismStore.put(built.level, new MechanismStore.Entry(fresh, mechanism, built.owner,
                     built.level.dimension().location().toString(), built.summary, built.placed, controls, built.logic));
@@ -306,12 +324,31 @@ public final class BuildMechanismTool implements McpTool {
         }
         b.append("Test: ").append(String.join("; ", proof.steps())).append('\n');
         built.plan.notes().forEach(n -> b.append("Note: ").append(n).append('\n'));
+        if (built.plan.linked()) {
+            b.append("Driven by the redstone engine (datapack '").append(com.moddingfromamod.redstone.RedstoneScript.ENGINE)
+                    .append("'): no wire runs from the switches; the engine reads them and powers the mechanism's own "
+                            + "redstone. Its parts are marked: tag ").append(com.moddingfromamod.redstone.RedstoneScript.inTag(id, 0))
+                    .append(" (and .1, .2…) at each switch, ").append(com.moddingfromamod.redstone.RedstoneScript.outTag(id))
+                    .append(" where its power arrives.\n");
+        }
         b.append(built.shutAtRest ? "It is SHUT now; a switch on (or a press) opens it."
                         : built.plan.kind().equals("piston_door") || built.plan.kind().equals("iron door")
                         ? "It is OPEN now; a switch on shuts it." : "It is in its resting state now.")
                 .append(" Tell the child which switch does what. remove_mechanism id '").append(id)
                 .append("' takes it all back out.");
         return ToolResult.ok(b.toString());
+    }
+
+    /** Takes a mechanism back down after a failure, its markers and datapack included. */
+    static void undoDriven(Built built) {
+        AgentBridge.onServer(() -> {
+            MechanismWorld.takeBack(built.level, built.placed);
+            if (built.id != null) {
+                com.moddingfromamod.redstone.MechanismDrive.unmark(built.level, built.id);
+                MechanismStore.release(built.id);
+            }
+            return null;
+        }, 60_000L);
     }
 
     /** What the server-thread half made: the plan, what it placed, or the error to return. */
@@ -322,6 +359,8 @@ public final class BuildMechanismTool implements McpTool {
         String owner = "", summary = "";
         ToolResult error;
         boolean shutAtRest;
+        /** A driven mechanism's id, chosen when its markers were put (null for a wired one). */
+        String id;
         com.google.gson.JsonArray logic = new com.google.gson.JsonArray();
 
         static Built fail(ToolResult r) {
@@ -334,7 +373,12 @@ public final class BuildMechanismTool implements McpTool {
     /** Everything the agent asked for, parsed. */
     record Spec(String mechanism, String at, List<String[]> asked, int width, String material, boolean opens,
                 int count, String items, String aim, List<Integer> notes, String instrument, boolean inverted,
-                boolean newOpening) {
+                boolean newOpening, boolean linked) {
+        Spec(String mechanism, String at, List<String[]> asked, int width, String material, boolean opens, int count,
+             String items, String aim, List<Integer> notes, String instrument, boolean inverted, boolean newOpening) {
+            this(mechanism, at, asked, width, material, opens, count, items, aim, notes, instrument, inverted,
+                    newOpening, true);
+        }
         Spec(String mechanism, String at, List<String[]> asked, int width, String material, boolean opens, int count,
              String items, String aim, List<Integer> notes, String instrument, boolean inverted) {
             this(mechanism, at, asked, width, material, opens, count, items, aim, notes, instrument, inverted, false);
@@ -540,7 +584,7 @@ public final class BuildMechanismTool implements McpTool {
                 LogicParts lp = logicParts(level, view, spot.up(-1), when);
                 List<MechanismPlanner.ControlAsk> withIt = new ArrayList<>(chosen);
                 withIt.add(new MechanismPlanner.ControlAsk("logic", lp.sensorGround, null, false));
-                MechanismPlan p = MechanismPlanner.plan(view, module, withIt, foreign);
+                MechanismPlan p = planIt(spec.linked(), view, module, withIt, foreign);
                 if (!p.ok()) {
                     return Built.fail(ToolResult.error("The logic at " + c[1] + " could not be wired: " + p.why()
                             + ". Nothing was built."));
@@ -574,7 +618,7 @@ public final class BuildMechanismTool implements McpTool {
             for (MechanismPlanner.ControlAsk ask : options) {
                 List<MechanismPlanner.ControlAsk> withIt = new ArrayList<>(chosen);
                 withIt.add(ask);
-                MechanismPlan p = MechanismPlanner.plan(view, module, withIt, foreign);
+                MechanismPlan p = planIt(spec.linked(), view, module, withIt, foreign);
                 if (p.ok()) {
                     ok = p;
                     chosen = withIt;
@@ -597,7 +641,7 @@ public final class BuildMechanismTool implements McpTool {
                             }
                             List<MechanismPlanner.ControlAsk> withIt = new ArrayList<>(chosen);
                             withIt.add(new MechanismPlanner.ControlAsk(c[0], g, null, toggle));
-                            MechanismPlan p = MechanismPlanner.plan(view, module, withIt, foreign);
+                            MechanismPlan p = planIt(spec.linked(), view, module, withIt, foreign);
                             if (p.ok()) {
                                 ok = p;
                                 chosen = withIt;
@@ -617,7 +661,7 @@ public final class BuildMechanismTool implements McpTool {
                     }
                     List<MechanismPlanner.ControlAsk> withIt = new ArrayList<>(chosen);
                     withIt.add(new MechanismPlanner.ControlAsk(c[0], g, null, toggle));
-                    MechanismPlan p = MechanismPlanner.plan(view, module, withIt, foreign);
+                    MechanismPlan p = planIt(spec.linked(), view, module, withIt, foreign);
                     if (p.ok()) {
                         ok = p;
                         chosen = withIt;
@@ -668,7 +712,7 @@ public final class BuildMechanismTool implements McpTool {
                 logic.add(o);
             }
             plan = new MechanismPlan(plan.kind(), cells, plan.expects(), plan.controls(), plan.replaced(), plan.notes(),
-                    null);
+                    null, plan.feed());
         }
         Built b = new Built();
         b.logic = logic;
@@ -678,7 +722,18 @@ public final class BuildMechanismTool implements McpTool {
         b.summary = summary + (plan.replaced().isEmpty() ? "" : "; it replaced " + plan.replaced().size() + " block(s)");
         b.shutAtRest = shutAtRest;
         b.placed = MechanismWorld.place(level, plan);
+        if (plan.linked()) {
+            b.id = MechanismStore.reserve(level, spec.mechanism());
+            com.moddingfromamod.redstone.MechanismDrive.mark(level, b.id, plan);
+        }
         return b;
+    }
+
+    /** A wired plan, or one driven by its datapack (no wire from any switch: {@link MechanismPlanner#planLinked}). */
+    static MechanismPlan planIt(boolean linked, LevelView view, com.moddingfromamod.redstone.Module module,
+                                List<MechanismPlanner.ControlAsk> asks, Set<RsPos> foreign) {
+        return linked ? MechanismPlanner.planLinked(view, module, asks, foreign)
+                : MechanismPlanner.plan(view, module, asks, foreign);
     }
 
     /**
