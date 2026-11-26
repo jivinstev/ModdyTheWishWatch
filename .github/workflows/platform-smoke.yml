@@ -7,7 +7,7 @@
 #
 #   jar       the release jar, built from the ref on ubuntu by tools/store-release.sh (the same build and checks a
 #             release runs), with the NeoForge and Java versions the ref names.
-#   server    windows-latest (x64) and ubuntu-24.04-arm (arm64), required; macos-14 (arm64), the same tests but
+#   server    windows-latest (x64) and ubuntu-24.04-arm (arm64), required; macos-latest (arm64), the same tests but
 #             optional (continue-on-error: its runners are scarce). Each on its own JDK:
 #             1. tools/platform-smoke.py server: the official NeoForge installer installs a real server, the release
 #                jar goes in mods/, and the server boots twice. RED unless the Apprentice's model loads through this
@@ -120,11 +120,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # windows-latest and ubuntu-24.04-arm are REQUIRED: a red one fails the run. macos-14 runs every test the
+        # windows-latest and ubuntu-24.04-arm are REQUIRED: a red one fails the run. macos-latest runs every test the
         # others do, but its runners are scarce, so a red or unscheduled macOS leg is reported and does not fail it.
-        os: [windows-latest, ubuntu-24.04-arm, macos-14]
+        os: [windows-latest, ubuntu-24.04-arm, macos-latest]
         include:
-          - os: macos-14
+          - os: macos-latest
             optional: true
     continue-on-error: ${{ matrix.optional == true }}
     runs-on: ${{ matrix.os }}
@@ -133,6 +133,11 @@ jobs:
       run:
         shell: bash
     steps:
+      - name: Check out with LF line endings, as the release jar's tree is
+        # Windows runners default to core.autocrlf=true. The jar is built on Linux from LF files, so a CRLF checkout
+        # would test a tree no player gets: the bundled compiler reads its parser tables line by line, and a CRLF copy
+        # fails every compile ("27\r"). That is a bug for a Windows developer building from source, tracked apart.
+        run: git config --global core.autocrlf false
       - uses: actions/checkout@v7
         with:
           ref: ${{ inputs.ref || github.sha }}
@@ -218,6 +223,11 @@ jobs:
       MESA_VERSION: "26.3.1"
       MESA_SHA256: "64e84cf13d67dd354640bf443ed0445e6a83afd06a5729f0750b3744d633b3f1"
     steps:
+      - name: Check out with LF line endings, as the release jar's tree is
+        # Windows runners default to core.autocrlf=true. The jar is built on Linux from LF files, so a CRLF checkout
+        # would test a tree no player gets: the bundled compiler reads its parser tables line by line, and a CRLF copy
+        # fails every compile ("27\r"). That is a bug for a Windows developer building from source, tracked apart.
+        run: git config --global core.autocrlf false
       - uses: actions/checkout@v7
         with:
           ref: ${{ inputs.ref || github.sha }}
