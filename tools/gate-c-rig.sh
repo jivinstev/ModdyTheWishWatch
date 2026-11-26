@@ -16,13 +16,16 @@
 #
 # FLAKE POLICY: a film that fails is run ONCE more. Failed twice = FAIL; failed then passed = FLAKY, and
 # FLAKY is not a pass — the exit is non-zero and it says to run the film on the base branch to tell a
-# flake it inherited from one it made.
+# flake it inherited from one it made. Its exit code is its own (3), so Port CI's release run can tell it
+# from a failure: `.port/<mc>/gate-c.json` names it as `release_flaky_exit`, which makes a FLAKY set a
+# pass with a WARNING FLAKY row in the release notes on a release run only. This PR job stays strict.
 #
-# Exit: 0 all passed · 1 a film FAILED or was FLAKY · 2 a film could not run (setup, no result, timeout)
-# — the gate is broken, which is not a finding about the rig.
+# Exit: 0 all passed · 1 a film FAILED · 2 a film could not run (setup, no result, timeout) — the gate is
+# broken, which is not a finding about the rig · 3 every film passed, at least one only on its retry (FLAKY).
+# The worst wins: 2, then 1, then 3.
 #
 # Cost: ~3–5 min a film on a 4-vCPU machine (client boot included), ~35–50 min the set. Results and logs
-# go to $GATE_C_OUT (default /tmp/moddingfromamod-gate-c-rig).
+# go to $GATE_C_OUT (default: Port CI's $PORT_GATE_OUT, else /tmp/moddingfromamod-gate-c-rig).
 # ⚠ Never run it beside a Gate B or a build in the same checkout: these films are timing oracles, and CPU
 # contention is exactly the kind of noise they are built to reject.
 # ─────────────────────────────────────────────────────────────────────────────
@@ -66,7 +69,7 @@ fi
 COMMIT="$(git rev-parse HEAD 2>/dev/null || true)"
 DIRTY=false
 [ -n "$(git status --porcelain --untracked-files=no 2>/dev/null)" ] && DIRTY=true
-OUT="${GATE_C_OUT:-/tmp/${MOD_ID}-gate-c-rig}"
+OUT="${GATE_C_OUT:-${PORT_GATE_OUT:-/tmp/${MOD_ID}-gate-c-rig}}"   # under Port CI: the folder it uploads
 rm -rf "$OUT"; mkdir -p "$OUT"
 
 # One attempt: film -> rc, seconds, first line of its verdict. Each film its own SLOT and SIG so a
@@ -133,8 +136,8 @@ for mode in "${FILMS[@]}"; do
     a="${FIRST[$mode]}"; b="${SECOND[$mode]:-}"
     case "$a:$b" in
         0:) v="PASS" ;;
-        1:0) v="FLAKY — failed, then passed. Run it on the base branch to tell whose it is"; EXIT=$(( EXIT > 1 ? EXIT : 1 )) ;;
-        1:1|1:) v="FAIL"; EXIT=$(( EXIT > 1 ? EXIT : 1 )) ;;
+        1:0) v="FLAKY — failed, then passed. Run it on the base branch to tell whose it is"; [ "$EXIT" = 0 ] && EXIT=3 ;;
+        1:1|1:) v="FAIL"; [ "$EXIT" = 2 ] || EXIT=1 ;;
         *) v="COULD NOT RUN (rc $a${b:+/$b}) — see $OUT/$mode.*.log"; EXIT=2 ;;
     esac
     printf '  %-18s %s\n' "$mode" "$v"

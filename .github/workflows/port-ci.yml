@@ -29,9 +29,11 @@
 # (gates-full.md, gates-minimal.md, gates-<env>-<variant>.md): the gate record of the commit it was built from.
 #
 # Reuse a run: release = true with from_run = <run id> releases the jars and gate logs of that earlier run -- a
-# successful push or pull_request run of this workflow that built the same tree as this commit -- instead of building
-# and gating again (no gates job runs). The release job checks the run (this repository, this workflow, completed,
-# success), that its head commit and the tree its gates recorded are this commit's tree, and releases nothing otherwise.
+# successful push or pull_request run of this workflow that built the same tree as this commit, e.g. the push run of
+# the commit being released -- instead of building and gating again (no gates job runs). The release job checks the
+# run (this repository, this workflow, a push or pull_request run whose head commit is this repository's -- never a
+# dispatch, never a pull request from another repository -- completed, success, every gates job and the shipped-jars
+# job green), that its head commit and the tree its gates recorded are this commit's tree, and releases nothing otherwise.
 # Each gate summary's first line then names this commit, adding the commit that was tested (a pull_request run tests
 # GitHub's merge commit, in no branch's history); the rest of it is unchanged.
 #
@@ -79,7 +81,7 @@ on:
         type: boolean
         default: false
       from_run:
-        description: "With release: release the jars and gate logs of this earlier run (a pull_request run of the same tree) instead of building again"
+        description: "With release: release the jars and gate logs of this earlier green push or pull_request run of the same tree instead of building again"
         type: string
         default: ""
       dep_override:
@@ -111,11 +113,11 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0          # the author's branch is needed: mixins they left unlisted stay exempt
-      - name: Port CI kit v76 (pinned by sha256)
+      - name: Port CI kit v92 (pinned by sha256)
         run: |
           curl -fsSL -o "$RUNNER_TEMP/kit.tar.gz" \
-            "https://github.com/jivinstev/mc-mod-version-upgrade/releases/download/port-ci-kit-v76/port-ci-kit-v76.tar.gz"
-          echo "13983dceec8ec0176d45f854f746caaa366d7ea36ee34de3f3a546088504a8b5  $RUNNER_TEMP/kit.tar.gz" | sha256sum -c -
+            "https://github.com/jivinstev/mc-mod-version-upgrade/releases/download/port-ci-kit-v92/port-ci-kit-v92.tar.gz"
+          echo "d31c12e809c95089d527b4b050f8772eba422e8ea21a03b87207a76433c92386  $RUNNER_TEMP/kit.tar.gz" | sha256sum -c -
           mkdir -p .port-tools && tar -xzf "$RUNNER_TEMP/kit.tar.gz" -C .port-tools
       - uses: actions/setup-java@v4
         with:
@@ -180,9 +182,11 @@ jobs:
             mv -f "$tmp/candidate.jar" "$dir/$a-$v.jar"
             [ -f "$dir/$a-$v.pom" ] || echo "<project><modelVersion>4.0.0</modelVersion><groupId>$g</groupId><artifactId>$a</artifactId><version>$v</version><packaging>jar</packaging></project>" > "$dir/$a-$v.pom"
             echo "Dependent gate: $g:$a:$v is $asset from $from (sha256 $sha), not the pinned jar" >> "$GITHUB_STEP_SUMMARY"
+            ga="${ga:+$ga,}$g:$a"
             n=$((n+1))
           done
           [ "$n" -gt 0 ] || { echo "::error::dep_override names no entry"; exit 1; }
+          echo "PORT_CI_DEP_OVERRIDE=$ga" >> "$GITHUB_ENV"
       - name: Build and gates
         run: |
           git rev-parse "HEAD^{tree}" > "$RUNNER_TEMP/built-tree.txt"   # the tree this run built: a from_run release checks it
@@ -199,6 +203,7 @@ jobs:
           path: |
             ${{ runner.temp }}/port-ci/*.log
             ${{ runner.temp }}/port-ci/*.jsonl
+            ${{ runner.temp }}/port-ci/gate-c-out/
             ${{ runner.temp }}/gates.md
             ${{ runner.temp }}/built-tree.txt
           if-no-files-found: ignore
@@ -217,11 +222,52 @@ jobs:
             build/libs/*.jar
             !build/libs/*-sources.jar
 
+  release-gate:
+    # The fork's own check before a release (.github/port-release-gate.json, read when this workflow was
+    # generated: regenerate it after changing that file). Its script is the fork's own code, trusted like its Gradle
+    # build; it runs as an argv with the commit being released (GATE_SHA: on a from_run release this dispatch's commit,
+    # the tree released) and may find or start a workflow run of this repository (actions: write), never holding the
+    # release's contents: write. The release needs it to succeed: a failure, a skip or a cancel here releases nothing.
+    # It runs exactly when the release would, except on a dep_override run, which never releases.
+    needs: gates
+    if: ${{ !cancelled() && github.event_name != 'release' && (startsWith(github.ref, 'refs/tags/') || inputs.release || inputs.from_run) && !inputs.dep_override && (needs.gates.result == 'success' || (inputs.from_run && needs.gates.result == 'skipped')) }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+    permissions:
+      contents: read
+      actions: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - name: Release gate (tools/gate/gate.py)
+        env:
+          GATE_SHA: ${{ github.sha }}
+          GATE_REF: ${{ github.ref_name }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set +e                       # GITHUB_REPOSITORY: the runner's own
+          log="$RUNNER_TEMP/release-gate.log"
+          python3 'tools/gate/gate.py' 'release-gate' '--wait' '150' 2>&1 | tee "$log"
+          rc=${PIPESTATUS[0]}
+          if [ "$rc" -ne 0 ]; then
+            {
+              echo "### Release gate failed: tools/gate/gate.py exited $rc, nothing released"
+              echo
+              echo '```'
+              tail -n 50 "$log"
+              echo '```'
+            } >> "$GITHUB_STEP_SUMMARY"
+            echo "::error::release gate tools/gate/gate.py exited $rc: nothing released"
+            exit "$rc"
+          fi
+          echo "Release gate passed: tools/gate/gate.py at $GATE_SHA" >> "$GITHUB_STEP_SUMMARY"
+
   release:
     # from_run: the gates (and shipped) jobs are skipped and their jars and gate logs come from that earlier run; a
     # skipped job is accepted then only. A run with dep_override is refused below.
-    needs: gates
-    if: ${{ !cancelled() && github.event_name != 'release' && (startsWith(github.ref, 'refs/tags/') || inputs.release || inputs.from_run) && (needs.gates.result == 'success' || (inputs.from_run && needs.gates.result == 'skipped')) }}
+    needs: [gates, release-gate]
+    if: ${{ !cancelled() && github.event_name != 'release' && (startsWith(github.ref, 'refs/tags/') || inputs.release || inputs.from_run) && (needs.gates.result == 'success' || (inputs.from_run && needs.gates.result == 'skipped')) && needs.release-gate.result == 'success' }}
     runs-on: ubuntu-24.04
     permissions:
       contents: write
@@ -250,17 +296,27 @@ jobs:
             echo "::error::no workflow run $FROM_RUN in $GITHUB_REPOSITORY: nothing released"; exit 1
           fi
           gh api "repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" > "$RUNNER_TEMP/this-run.json"
+          if ! gh api "repos/$GITHUB_REPOSITORY/actions/runs/$FROM_RUN/jobs?filter=latest&per_page=100" > "$RUNNER_TEMP/from-run-jobs.json"; then
+            echo "::error::cannot list run $FROM_RUN's jobs: nothing released"; exit 1
+          fi
           python3 - <<'PY'
           import json, os, re, sys
-          t = os.environ["RUNNER_TEMP"]
-          r, me = (json.load(open(os.path.join(t, f), encoding="utf-8")) for f in ("from-run.json", "this-run.json"))
-          why = ("it is not a run of " + os.environ["GITHUB_REPOSITORY"]
-                 if (r.get("repository") or {}).get("full_name") != os.environ["GITHUB_REPOSITORY"] else
+          t, repo = os.environ["RUNNER_TEMP"], os.environ["GITHUB_REPOSITORY"]
+          r, me, jobs = (json.load(open(os.path.join(t, f), encoding="utf-8"))
+                         for f in ("from-run.json", "this-run.json", "from-run-jobs.json"))
+          # the jobs whose output the release publishes: every gates leg (its gate log) and the shipped-jars boot
+          gated = [j for j in jobs.get("jobs") or [] if str(j.get("name")).startswith("gates (") or j.get("name") == "shipped jars"]
+          red = [str(j.get("name")) + " " + str(j.get("conclusion")) for j in gated if j.get("conclusion") != "success"]
+          why = ("it is not a run of " + repo if (r.get("repository") or {}).get("full_name") != repo else
                  "it is a run of another workflow" if r.get("workflow_id") != me.get("workflow_id") else
-                 "it has not completed" if r.get("status") != "completed" else
-                 "it did not succeed (" + str(r.get("conclusion")) + ")" if r.get("conclusion") != "success" else
                  "it was a " + str(r.get("event")) + " run, not a push or pull_request run (which gate the pinned jars)"
                  if r.get("event") not in ("push", "pull_request") else
+                 "its head commit came from " + str((r.get("head_repository") or {}).get("full_name")) + ", not " + repo
+                 if (r.get("head_repository") or {}).get("full_name") != repo else
+                 "it has not completed" if r.get("status") != "completed" else
+                 "it did not succeed (" + str(r.get("conclusion")) + ")" if r.get("conclusion") != "success" else
+                 "it ran no gates job" if not any(str(j.get("name")).startswith("gates (") for j in gated) else
+                 "not every gate job succeeded (" + ", ".join(red) + ")" if red else
                  "it names no head commit" if not re.fullmatch(r"[0-9a-f]{40}", str(r.get("head_sha"))) else None)
           if why:
               sys.exit("::error::will not release run " + os.environ["FROM_RUN"] + ": " + why + "; nothing released")
@@ -420,12 +476,12 @@ jobs:
       # branch only, and only where the branch has a manifest. The commit sits on top of the
       # tag, so publish (needs: promote) still finds the tag in the branch's history. A failure here is reported and
       # never stops publish.
-      - name: Port CI kit v76 (pinned by sha256)
+      - name: Port CI kit v92 (pinned by sha256)
         if: ${{ github.ref_name == 'neoforge-1.21.8' && hashFiles('.github/port-install.json') != '' }}
         run: |
           curl -fsSL -o "$RUNNER_TEMP/kit.tar.gz" \
-            "https://github.com/jivinstev/mc-mod-version-upgrade/releases/download/port-ci-kit-v76/port-ci-kit-v76.tar.gz"
-          echo "13983dceec8ec0176d45f854f746caaa366d7ea36ee34de3f3a546088504a8b5  $RUNNER_TEMP/kit.tar.gz" | sha256sum -c -
+            "https://github.com/jivinstev/mc-mod-version-upgrade/releases/download/port-ci-kit-v92/port-ci-kit-v92.tar.gz"
+          echo "d31c12e809c95089d527b4b050f8772eba422e8ea21a03b87207a76433c92386  $RUNNER_TEMP/kit.tar.gz" | sha256sum -c -
           mkdir -p .port-tools && tar -xzf "$RUNNER_TEMP/kit.tar.gz" -C .port-tools
       - name: Refresh the install manifest
         if: ${{ github.ref_name == 'neoforge-1.21.8' && hashFiles('.github/port-install.json') != '' }}
@@ -437,7 +493,7 @@ jobs:
           set -euo pipefail
           if ! printf '%s' "$TAG" | grep -Eq '^[A-Za-z0-9._+-]+$'; then echo "::error::not a release tag: $TAG"; exit 1; fi
           if [ ! -f .port-tools/tools/port-manifest.py ]; then
-            echo "::warning::Port CI kit v76 has no port-manifest.py: regenerate this workflow with a newer kit"; exit 0
+            echo "::warning::Port CI kit v92 has no port-manifest.py: regenerate this workflow with a newer kit"; exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
@@ -466,11 +522,11 @@ jobs:
         with:
           ref: "neoforge-1.21.8"
           fetch-depth: 0          # tags and history, to prove the tag was built from this branch
-      - name: Port CI kit v76 (pinned by sha256)
+      - name: Port CI kit v92 (pinned by sha256)
         run: |
           curl -fsSL -o "$RUNNER_TEMP/kit.tar.gz" \
-            "https://github.com/jivinstev/mc-mod-version-upgrade/releases/download/port-ci-kit-v76/port-ci-kit-v76.tar.gz"
-          echo "13983dceec8ec0176d45f854f746caaa366d7ea36ee34de3f3a546088504a8b5  $RUNNER_TEMP/kit.tar.gz" | sha256sum -c -
+            "https://github.com/jivinstev/mc-mod-version-upgrade/releases/download/port-ci-kit-v92/port-ci-kit-v92.tar.gz"
+          echo "d31c12e809c95089d527b4b050f8772eba422e8ea21a03b87207a76433c92386  $RUNNER_TEMP/kit.tar.gz" | sha256sum -c -
           mkdir -p .port-tools && tar -xzf "$RUNNER_TEMP/kit.tar.gz" -C .port-tools
       - name: Publish to Modrinth and CurseForge
         env:
@@ -491,13 +547,42 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: "neoforge-1.21.8"
-      - name: Port CI kit v76 (pinned by sha256)
+      - name: Port CI kit v92 (pinned by sha256)
         run: |
           curl -fsSL -o "$RUNNER_TEMP/kit.tar.gz" \
-            "https://github.com/jivinstev/mc-mod-version-upgrade/releases/download/port-ci-kit-v76/port-ci-kit-v76.tar.gz"
-          echo "13983dceec8ec0176d45f854f746caaa366d7ea36ee34de3f3a546088504a8b5  $RUNNER_TEMP/kit.tar.gz" | sha256sum -c -
+            "https://github.com/jivinstev/mc-mod-version-upgrade/releases/download/port-ci-kit-v92/port-ci-kit-v92.tar.gz"
+          echo "d31c12e809c95089d527b4b050f8772eba422e8ea21a03b87207a76433c92386  $RUNNER_TEMP/kit.tar.gz" | sha256sum -c -
           mkdir -p .port-tools && tar -xzf "$RUNNER_TEMP/kit.tar.gz" -C .port-tools
       - name: Create the Modrinth draft project
         env:
           MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}
         run: python3 .port-tools/tools/port-publish.py modrinth-create --repo .
+
+  player-install:
+    # A player's install of the release just made full: the published player-install bootstrap (jivinstev/mc-mod-version-upgrade's
+    # player-install-v4, the command a README gives players; pinned by sha256 like the kit) installs exactly that
+    # tag -- NeoForge, the jar and every release it pins -- into a fresh Minecraft folder on headless Linux and boots it
+    # to the title screen with the mods loaded. Red means players cannot install what was promoted; the promotion stands.
+    # A private repository is skipped: nobody can install its releases without a token.
+    needs: promote
+    if: ${{ always() && !github.event.repository.private && (needs.promote.result == 'success' || github.event_name == 'release') }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    permissions:
+      contents: read
+    steps:
+      - name: A virtual display and software OpenGL for the boot
+        run: sudo apt-get update -q && sudo apt-get install -y -q xvfb mesa-utils libgl1-mesa-dri libegl1 libegl-mesa0
+      - name: Install the promoted release as a player does, then boot it
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ inputs.promote || github.event.release.tag_name }}
+        run: |
+          set -euo pipefail
+          if ! printf '%s' "$TAG" | grep -Eq '^[A-Za-z0-9._+-]+$'; then echo "::error::not a release tag: $TAG"; exit 1; fi
+          curl -fsSL -o "$RUNNER_TEMP/install.sh" \
+            "https://github.com/jivinstev/mc-mod-version-upgrade/releases/download/player-install-v4/install.sh"
+          echo "924d562230ab32a39dd3f20f9d1ff54887085c82a67dc986727ec2a625e6e102  $RUNNER_TEMP/install.sh" | sha256sum -c -
+          xvfb-run -a -s "-screen 0 1280x720x24" bash "$RUNNER_TEMP/install.sh" "$GITHUB_REPOSITORY" --release "$TAG" \
+            --yes --minecraft-dir "$RUNNER_TEMP/minecraft" --boot-test
+          echo "A player's install of $TAG boots (player-install player-install-v4)" >> "$GITHUB_STEP_SUMMARY"

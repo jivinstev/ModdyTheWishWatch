@@ -16,7 +16,8 @@ file and fails the build if:
 ⚠ **What a `GateC:` proof does and does not promise.** The test checks that the named
 testmode still EXISTS — not that it passes. A client film is a real client under Xvfb, minutes each,
 and nothing runs it on a commit: it is re-verified when **`./tools/gate-c-rig.sh`** runs, which
-CI requires of any pull request that touches the rig (`tools/rig-films.py --needed`). Without that, a
+CI requires of any pull request that touches the rig (`tools/rig-films.py --needed`), and which Port CI runs as
+Gate C of every `neoforge-1.21.8` build and release (`.port/1.21.8/gate-c.json`). Without that, a
 VERIFIED row's film once failed some runs on `main` for days before anyone saw it.
 
 That last one is what makes progress *monotonic*: a change that quietly stops proving something
