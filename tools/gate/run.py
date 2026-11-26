@@ -24,6 +24,30 @@ import gatelib as g
 # above this many failures, the retries share one server instead of one each (each boot costs a minute or two)
 MAX_ALONE = 8
 
+# --no-python: the directory of stub `python`/`python3` scripts put first on the game's PATH, or None. A player's game
+# never starts Python (the datapack compiler is in the jar: NoPythonTest, NoPythonGameTest), so a Gate B run proves it:
+# a stub records being started and fails, and the job is red if one was.
+NO_PYTHON: Optional[str] = None
+
+
+def no_python_stubs(out_dir: str) -> str:
+    """Write the stubs (POSIX shells; on Windows the run says it cannot check) and return their directory."""
+    d = os.path.join(out_dir, "no-python")
+    os.makedirs(d, exist_ok=True)
+    log = os.path.join(out_dir, "python-started")
+    if os.path.exists(log):
+        os.remove(log)
+    for n in ("python", "python3"):
+        path = os.path.join(d, n)
+        g.write_text(path, '#!/bin/sh\necho "$0 $*" >> "%s"\nexit 127\n' % log)
+        os.chmod(path, 0o755)
+    return d
+
+
+def python_started(out_dir: str) -> List[str]:
+    log = os.path.join(out_dir, "python-started")
+    return [ln for ln in g.read_text(log).splitlines() if ln.strip()] if os.path.exists(log) else []
+
 
 def gradle_cmd(shard: str, rundir: str, home: str, classes: List[str], not_classes: List[str],
                exclude: List[str], extra: List[str]) -> List[str]:
@@ -39,21 +63,63 @@ def gradle_cmd(shard: str, rundir: str, home: str, classes: List[str], not_class
     return cmd + list(extra)
 
 
+# Gradle could not resolve a dependency (a busy repository answering 429, a dropped connection): the server never started
+UNRESOLVED = ("Could not resolve all", "Received status code 429", "Could not GET ", "Connection reset")
+
+
+def never_started(log_text: str) -> bool:
+    """The attempt failed before any GameTest server ran, for want of a download: worth running again."""
+    return "gt-adapter:" not in log_text and any(u in log_text for u in UNRESOLVED)
+
+
+def gradle_error(log_text: str, most: int = 25) -> str:
+    """Gradle's own account of a failed build: the lines from "What went wrong" to "* Try" (or a compile error)."""
+    lines = log_text.splitlines()
+    for i, ln in enumerate(lines):
+        if "What went wrong" in ln:
+            out = []
+            for x in lines[i:i + most]:
+                if x.startswith("* Try"):
+                    break
+                out.append(x)
+            return "\n".join(out).rstrip()
+    errs = [ln for ln in lines if ": error:" in ln]
+    return "\n".join(errs[:most])
+
+
 def attempt(name: str, out_dir: str, shard: str, classes: List[str], not_classes: List[str], exclude: List[str],
-            timeout_min: float, extra: List[str]) -> dict:
+            timeout_min: float, extra: List[str], tries: int = 3) -> dict:
+    """One server, run again (up to `tries` times, with a growing pause) only when Gradle never started it for want of a
+    download. A server that started and failed is never re-run here: that is the retry rule's business."""
+    for i in range(tries):
+        a = _attempt(name, out_dir, shard, classes, not_classes, exclude, timeout_min, extra)
+        if i == tries - 1 or not never_started(g.read_text(os.path.join(out_dir, a["logFile"]))):
+            return a
+        print("gate: %s: Gradle could not resolve a dependency; trying again in %d s" % (name, 60 * (i + 1)), flush=True)
+        time.sleep(60 * (i + 1))
+    return a
+
+
+def _attempt(name: str, out_dir: str, shard: str, classes: List[str], not_classes: List[str], exclude: List[str],
+             timeout_min: float, extra: List[str]) -> dict:
     """One server. Returns {"log": parsed log, "record": the server's run record or None, "timedOut", "seconds"}."""
     home = os.path.abspath(os.path.join(out_dir, name + "-home"))
     shutil.rmtree(home, ignore_errors=True)
     os.makedirs(home, exist_ok=True)
     log_path = os.path.join(out_dir, name + ".log")
-    cmd = gradle_cmd(shard, "gate-" + name, home, classes, not_classes, exclude, extra)
+    # its own run directory (CLAUDE.md: two servers in one directory die on session.lock and still say BUILD SUCCESSFUL)
+    rundir = "gate-%s-%s" % (os.path.basename(os.path.normpath(out_dir)), name)
+    cmd = gradle_cmd(shard, rundir, home, classes, not_classes, exclude, extra)
     print("gate: %s: %s" % (name, " ".join(c if len(c) < 200 else c[:200] + "...(%d chars)" % len(c) for c in cmd)),
           flush=True)
     started = time.time()
     timed_out = False
     with open(log_path, "w", encoding="utf-8", errors="replace") as log:
         kw = {"start_new_session": True} if os.name != "nt" else {}
-        proc = subprocess.Popen(cmd, cwd=g.ROOT, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, **kw)
+        env = dict(os.environ)
+        if NO_PYTHON:
+            env["PATH"] = NO_PYTHON + os.pathsep + env.get("PATH", "")
+        proc = subprocess.Popen(cmd, cwd=g.ROOT, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, env=env, **kw)
         assert proc.stdout is not None
         deadline = started + timeout_min * 60
         for raw in proc.stdout:
@@ -75,6 +141,11 @@ def attempt(name: str, out_dir: str, shard: str, classes: List[str], not_classes
                 pass
         proc.wait()
     text = g.read_text(log_path)
+    if "gt-adapter:" not in text:
+        # the server never started: say what Gradle said, or the job's log is all a person has
+        why = gradle_error(text)
+        if why:
+            print("gate: %s: Gradle failed before the server started:\n%s" % (name, why), flush=True)
     records = sorted(glob.glob(os.path.join(home, "gate-runs", "*.json")))
     record = g.read_json(records[-1]) if records else None
     return {"log": g.parse_log(text), "record": record, "timedOut": timed_out,
@@ -140,6 +211,19 @@ def run_job(args) -> int:
     os.makedirs(out_dir, exist_ok=True)
     expect = expected_classes(tier, classes, not_classes)
     extra = list(args.gradle_arg or [])
+    global NO_PYTHON
+    NO_PYTHON = no_python_stubs(out_dir) if getattr(args, "no_python", False) and os.name != "nt" else None
+    covmap = getattr(args, "covmap_tools", None)
+    if covmap:
+        # a coverage-mapping run (docs/GATE_B.md, "The coverage map"): the JaCoCo agent on, every class in batches of
+        # its own; its pass/fail is not a Gate B verdict, so nothing is retried
+        tools = os.path.abspath(covmap)
+        agent = sorted(glob.glob(os.path.join(tools, "org.jacoco.agent-*-runtime.jar")))
+        if not agent:
+            raise SystemExit("gate: no JaCoCo agent in %s (./gradlew covmapTools)" % tools)
+        extra += ["-Pcovagent=" + agent[-1], "-Pcovmap=" + os.path.join(out_dir, "exec")]
+        shutil.rmtree(os.path.join(out_dir, "exec"), ignore_errors=True)
+        args.retry = False
 
     first = attempt("run", out_dir, args.shard, classes, not_classes, exclude, args.timeout, extra)
     problems = check_attempt(first, expect, known)
@@ -173,6 +257,9 @@ def run_job(args) -> int:
                               "error": t.get("error"), "alone": len(group) == 1}
                 if t.get("passed"):
                     r["outcome"] = "flaky"
+    started = python_started(out_dir) if NO_PYTHON else []
+    if started:
+        problems.append("the game started Python (a player's game never does): %s" % "; ".join(started[:3]))
     result = {
         "schema": 1,
         "kind": args.kind,
@@ -190,8 +277,22 @@ def run_job(args) -> int:
         "tests": rows,
         "retries": retries,
         "problems": problems,
+        "noPython": bool(NO_PYTHON),
     }
     result["verdict"] = job_verdict(result)
+    if covmap:
+        import covmap as cm
+        jars = sorted(glob.glob(os.path.join(os.path.abspath(covmap), "*.jar")))
+        jars = [j for j in jars if "agent" not in os.path.basename(j)]
+        try:
+            analysis = cm.analyze(os.path.join(g.ROOT, "build", "classes", "java", "main"),
+                                  os.path.join(out_dir, "exec"), os.path.join(out_dir, "analysis.json"), jars)
+            placed = sorted(u for u in analysis["units"] if u not in cm.PSEUDO and "#__" not in u)
+            result["covmap"] = {"units": placed, "notPlaced": [c for c in expect if c not in placed]}
+        except Exception as e:  # noqa: BLE001 - said in the result, and the merge refuses a job without its analysis
+            result["problems"].append("the coverage analysis failed: %s" % e)
+        # under coverage a failed test still maps; the verdict is whether the job produced a usable map
+        result["verdict"] = "red" if result["problems"] else "green"
     g.write_json(os.path.join(out_dir, "job.json"), result)
     print(summary(result))
     return 0 if result["verdict"] == "green" else 1

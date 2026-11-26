@@ -347,7 +347,7 @@ neoForge.runs {
         if (project.hasProperty('gatepatch')) {
             systemProperty "${project.mod_id}.gatepatch", project.property('gatepatch').toString()
         }
-        // The coverage-mapping run (tools/gate-covmap.sh, docs/GATE_COVERAGE_MAP.md): -Pcovagent is the
+        // The coverage-mapping run (tools/gate/gate.py run --covmap-tools, docs/GATE_B.md): -Pcovagent is the
         // JaCoCo agent jar, -Pcovmap the directory testing.gt.CoverageMap writes one .exec per
         // GameTest class into. output=none: the mod dumps at class boundaries, the agent never does.
         if (project.hasProperty('covagent')) {
@@ -538,6 +538,26 @@ configurations {
         canBeResolved = false
     }
     runtimeClasspath.extendsFrom localRuntime
+    // THE COVERAGE MAP'S TOOLS (tools/gate/covmap.py, docs/GATE_B.md "The coverage map"): the JaCoCo agent a mapping
+    // run's server carries (-Pcovagent) and the core library tools/gate/CovmapAnalyze.java reads its dumps with.
+    // Resolved only by the covmapTools task; nothing the mod compiles against or ships.
+    covmapTools {
+        canBeConsumed = false
+        canBeResolved = true
+    }
+}
+
+dependencies {
+    covmapTools 'org.jacoco:org.jacoco.agent:0.8.13:runtime'
+    covmapTools 'org.jacoco:org.jacoco.core:0.8.13'
+}
+
+// build/covmap-tools/: the jars a coverage-mapping run needs (tools/gate/gate.py covmap-run copies nothing itself)
+tasks.register('covmapTools', Copy) {
+    group = 'verification'
+    description = 'Copy the JaCoCo agent and core jars the coverage map is built with into build/covmap-tools'
+    from configurations.covmapTools
+    into layout.buildDirectory.dir('covmap-tools')
 }
 
 // a bundled jar's native DEBUG data never ships. MDG's jarJar resolves its configuration through an artifact view, so

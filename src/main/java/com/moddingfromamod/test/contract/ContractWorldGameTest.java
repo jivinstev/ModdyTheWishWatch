@@ -972,7 +972,8 @@ public final class ContractWorldGameTest {
     }
 
     /**
-     * A kept make over this world's size limit, fired again (a hotbar fire, "Make another one"), is MADE and stands at
+     * A kept make over this world's size limit, fired again (from his hotbar, through the real proxy; then "Make another
+     * one"), is MADE and stands at
      * the size this world allows, never refused for being big; a later round with a higher limit fired again gives it
      * its full size; nothing is persisted (his shelf keeps it as asked). Arena playtests found it refused ("too much
      * for this world right now") once a make was kept as asked.
@@ -1002,11 +1003,17 @@ public final class ContractWorldGameTest {
                 case 0 -> {
                     helper.assertTrue(now.size() == 1, Component.literal("one cat stands: " + now));
                     seen.set(Map.copyOf(now));
-                    // the first round: fired again, over the size limit as he asked it
-                    WishService.Outcome o = WishService.submit(p, "gt contract fire big", WishSource.PRESET,
-                            com.moddingfromamod.wishbuilder.BuilderAgain.recipeId(id.get()));
-                    helper.assertTrue(o == WishService.Outcome.FULFILLING,
-                            Component.literal("fired over the size limit, it is made, not refused: " + o));
+                    // the first round: fired from his HOTBAR, the real proxy and the real use, over the size limit as
+                    // he asked it: made and fitted where it stands, not LOCKED
+                    String recipe = com.moddingfromamod.wishbuilder.BuilderAgain.recipeId(id.get());
+                    var proxy = com.moddingfromamod.wish.WishHotbar.proxy(new com.moddingfromamod.marshal.WatchPanel.Cell(0,
+                            com.moddingfromamod.marshal.WatchPanel.Family.CREATION, com.moddingfromamod.marshal.WatchPanel.Action.CARD,
+                            "Rock Golem", "Rock Golem", recipe, "Rock Golem", com.moddingfromamod.marshal.WatchIcons.UNKNOWN,
+                            List.of()), p.getUUID());
+                    var fired = com.moddingfromamod.wish.WishHotbar.use(p, proxy);
+                    helper.assertTrue(fired.used() == com.moddingfromamod.wish.WishHotbar.Used.WISHED
+                                    && fired.outcome() == WishService.Outcome.FULFILLING,
+                            Component.literal("fired from the hotbar over the size limit, it is made, not refused: " + fired));
                     step.set(1);
                     helper.fail(Component.literal("waiting for the second cat"));
                 }

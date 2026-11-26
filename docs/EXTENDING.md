@@ -119,7 +119,7 @@ test world below does, with a toy formula of its own).
   | `movementSpeedAttribute` | the game's `movement_speed` attribute value (a zombie is 0.23) | a stored creature |
   | `scaleTimes` | times its normal size | a Builder creature or ride, a stored creature |
   | `builderSizeStep` | the Builder's size pick, 1 to 4 | a Builder creature, ride, building or event |
-  | `builderStrengthStep` | the Builder's strength pick, 1 to 3 | a Builder item power, snack machine or magic block |
+  | `builderStrengthStep` | the Builder's strength pick, 1 to 3 | a Builder item power, snack machine or magic block; a Builder creature or ride (its How strong, 2 when he left it as its own) |
   | `countMade` | things made at once | a Builder creature, ride, item, machine or magic block; a recipe that spawns creatures |
   | `amountItems` | items | Builder supplies |
   | `radiusBlocks` | blocks: the largest radius an effect of it takes | an item or creature effect with a `RADIUS` |
@@ -266,10 +266,10 @@ the limits the world gave.
 | Number | Fitted by |
 |---|---|
 | `scaleTimes`, `builderSizeStep` | a smaller size (a creature's named sizes, else the 1–4 step). A creature or ride MADE AGAIN from a kept make (a hotbar fire, "Make another one", a recipe) is made as it was asked and stands at the size this world allows where it stands (`LiveFit`), never refused for its size, so a later, higher limit gives it its full size |
-| `builderStrengthStep`, `durationTicks`, `radiusBlocks` | a lower strength |
+| `builderStrengthStep`, `durationTicks`, `radiusBlocks` | a lower strength (a creature's or ride's How strong too) |
 | `countMade` | fewer at once (a Builder make; a recipe's `wishmob spawn <id> <count>`) |
 | `amountItems` | fewer in a bundle of supplies |
-| `healthHalfHearts`, `attackDamageHalfHearts` | a discrete search, nothing assumed about which way they move: every lower combination of an item's material (its tier, stepped down), the size and the strength steps is tried, the most kept first, and the first whose re-derived facts fit is made. An item none fits is locked. A creature or ride none fits is made as it is and **fitted on the live creature** (below); a stored thing's own record is never changed |
+| `healthHalfHearts`, `attackDamageHalfHearts` | a discrete search, nothing assumed about which way they move: every lower combination of an item's material (its tier, stepped down), the size and the strength steps is tried, the most kept first, and the first whose re-derived facts fit is made. A creature's or ride's size and How strong move its health and damage (#103), but a limit on those is never met by making it smaller or gentler: it is fitted on the live creature, so a later raise gives it back in full. An item none fits is locked. A creature or ride none fits is made as it is and **fitted on the live creature** (below); a stored thing's own record is never changed |
 | `armorPoints`, `knockbackResistanceFraction` | no knob of a make moves them: a creature or ride over the limit is made as it is and fitted on the live creature (below) |
 | `movementSpeedAttribute`, `extentBlocks`, `moveDamageHalfHeartsPerSecond`, `effectiveDamageHalfHeartsPerSecond`, `healHalfHeartsPerSecond` | nothing: not clampable, so over the limit is locked |
 
