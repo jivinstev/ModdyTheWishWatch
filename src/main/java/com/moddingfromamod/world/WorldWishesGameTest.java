@@ -185,6 +185,9 @@ public final class WorldWishesGameTest {
         BuilderSpec golem = new BuilderSpec(BuilderSpec.CURRENT, BuilderSpec.Kind.CREATURE, "preset:bodies/rock_golem",
                 "shadow", 2, List.of("power:hostile", "power:leaps", "power:glowing"), "", 1, "", "Shadow Golem",
                 Map.of("strength", "3"));
+        final long localBefore = com.moddingfromamod.marshal.LocalOnly.refusedSoFar();
+        helper.assertFalse(com.moddingfromamod.config.Magician.enabled(),
+                Component.literal("the Magician is on: this test proves a world's wish needs nothing of it"));
         AtomicReference<BuilderMake.Result> made = new AtomicReference<>();
         AtomicReference<BuilderMake.Result> again = new AtomicReference<>();
         AtomicReference<LivingEntity> copy = new AtomicReference<>();
@@ -227,6 +230,10 @@ public final class WorldWishesGameTest {
             // its design is How strong 3 (150 health); the world held the copy at 40, and nothing undoes that
             helper.assertTrue(c.getMaxHealth() <= 40f, Component.literal("the design's copy has " + c.getMaxHealth()
                     + " health, over the ceiling of 40"));
+            // made with the Magician off and LOCAL ONLY, the make and the copy's arrival alike: no model or web call
+            helper.assertTrue(com.moddingfromamod.marshal.LocalOnly.refusedSoFar() == localBefore,
+                    Component.literal((com.moddingfromamod.marshal.LocalOnly.refusedSoFar() - localBefore)
+                            + " model or web call(s) asked during a world's wish (see the 'local only: refused' lines)"));
             c.discard();
         });
     }

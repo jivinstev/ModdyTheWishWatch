@@ -272,6 +272,12 @@ public final class WorldWishes {
     }
 
     private static void arrive(Pending p) {
+        // a world's wish is made as a Builder make is: LOCAL ONLY (marshal/LocalOnly), so any model or web call asked
+        // while its body is made is refused and recorded; WorldWishesGameTest requires none
+        com.moddingfromamod.marshal.LocalOnly.run(() -> arriveLocally(p));
+    }
+
+    private static void arriveLocally(Pending p) {
         LivingEntity body;
         try {
             if (p.spec == null) {
@@ -353,8 +359,12 @@ public final class WorldWishes {
         return carrier;
     }
 
-    /** Each copy whose final body now stands gets its marks, its fit and the world's callback. */
+    /** Each copy whose final body now stands gets its marks, its fit and the world's callback (local only). */
     private static void settle(long now) {
+        com.moddingfromamod.marshal.LocalOnly.run(() -> settleLocally(now));
+    }
+
+    private static void settleLocally(long now) {
         for (Iterator<Settling> it = SETTLING.iterator(); it.hasNext(); ) {
             Settling s = it.next();
             java.util.UUID id = com.moddingfromamod.mob.EntityReplacements.settled(s.spawned());
