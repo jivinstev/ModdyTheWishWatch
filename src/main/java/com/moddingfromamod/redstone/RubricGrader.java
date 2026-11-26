@@ -426,6 +426,8 @@ public final class RubricGrader {
                 notes.add("the switch should toggle (press on, press off) and nothing toggles");
             }
         }
+        // a mechanism the wish asked to run on a timer (a volcano every few minutes) changes by itself and pours
+        boolean timed = rules.stream().anyMatch(r -> r.getAsJsonObject("rule").get("kind").getAsString().equals("every"));
         if (spec.has("items")) {
             String item = spec.get("items").getAsString();
             boolean has = AgentBridge.onServer(() -> {
@@ -434,7 +436,10 @@ public final class RubricGrader {
                         if (level.getBlockEntity(p) instanceof net.minecraft.world.Container box2) {
                             for (int i = 0; i < box2.getContainerSize(); i++) {
                                 var st = box2.getItem(i);
-                                if (!st.isEmpty() && BuiltInRegistries.ITEM.getKey(st.getItem()).toString().equals(item)) {
+                                String got = st.isEmpty() ? "" : BuiltInRegistries.ITEM.getKey(st.getItem()).toString();
+                                // a timer may already have poured it (its bucket is then empty): that is the wish
+                                // working, not a dispenser left unloaded
+                                if (got.equals(item) || timed && item.endsWith("_bucket") && got.equals("minecraft:bucket")) {
                                     return true;
                                 }
                             }
@@ -630,6 +635,17 @@ public final class RubricGrader {
             LOGGER.info("RUBRIC designed: {} positions", d.size());
             return d;
         }, 30_000L);
+        // and lava or water a building's own design holds (a volcano's crater pool, a fountain's basin) is a source too
+        List<BlockPos> sources = new ArrayList<>(wetters);
+        AgentBridge.onServer(() -> {
+            for (BlockPos q : designed) {
+                String st = BlockStateParser.serialize(level.getBlockState(q));
+                if (st.startsWith("minecraft:lava") || st.startsWith("minecraft:water")) {
+                    sources.add(q);
+                }
+            }
+            return null;
+        }, 10_000L);
         // side effects
         int s1 = 0, s5 = 0;
         boolean s3 = false;
@@ -641,7 +657,13 @@ public final class RubricGrader {
             }
             String was = e.getValue()[0], now = e.getValue()[1];
             if ((now.startsWith("minecraft:lava") || now.startsWith("minecraft:fire")
-                    || now.startsWith("minecraft:water") && !was.startsWith("minecraft:water")) && !fluidSource(p, wetters)) {
+                    || now.startsWith("minecraft:water") && !was.startsWith("minecraft:water"))
+                    && !fluidSource(p, now.startsWith("minecraft:fire") ? wetters : sources,
+                    now.startsWith("minecraft:fire") ? 3 : 8)
+                    && !(!now.startsWith("minecraft:fire") && onDesigned(p, designed) && fluidSource(p, sources, 16))) {
+                if (!s3) {
+                    LOGGER.info("RUBRIC S3 first at {}: {} -> {}", p.toShortString(), was, now);
+                }
                 s3 = true;
             }
             boolean byOtherTools = bbox != null && inBox(p, bbox);   // a change inside his building
@@ -682,7 +704,7 @@ public final class RubricGrader {
         Map<BlockPos, String> rest2 = AgentBridge.onServer(() -> states(level, footprint), 10_000L);
         waitTicks(server, 60);
         Map<BlockPos, String> later = AgentBridge.onServer(() -> states(level, footprint), 10_000L);
-        boolean s4 = !rest2.equals(later);
+        boolean s4 = !rest2.equals(later) && !timed;
         v.addProperty("S4_runs_by_itself", s4);
         if (s4) {
             notes.add("the mechanism changes by itself at rest (a clock)");
@@ -828,10 +850,14 @@ public final class RubricGrader {
         return off ? null : "it switched on and did not come back: " + rest.get();
     }
 
-    static boolean fluidSource(BlockPos p, List<BlockPos> wetters) {
+    /**
+     * True when {@code p} is within reach of a dispenser that pours or shoots it: water and lava flow on down a slope
+     * (a volcano's cone), fire is only the dispenser's own.
+     */
+    static boolean fluidSource(BlockPos p, List<BlockPos> wetters, int reach) {
         for (BlockPos w : wetters) {
-            if (Math.abs(w.getX() - p.getX()) <= 3 && Math.abs(w.getZ() - p.getZ()) <= 3
-                    && p.getY() <= w.getY() + 1 && p.getY() >= w.getY() - 6) {
+            if (Math.abs(w.getX() - p.getX()) <= reach && Math.abs(w.getZ() - p.getZ()) <= reach
+                    && p.getY() <= w.getY() + 1 && p.getY() >= w.getY() - 2 * reach) {
                 return true;
             }
         }
@@ -984,5 +1010,15 @@ public final class RubricGrader {
             }
         }
         return true;
+    }
+
+    /** True when {@code p} lies on or against a building's own designed blocks (lava running down a volcano's cone). */
+    static boolean onDesigned(BlockPos p, Set<BlockPos> designed) {
+        for (BlockPos q : List.of(p.below(), p.north(), p.south(), p.east(), p.west(), p.below(2))) {
+            if (designed.contains(q)) {
+                return true;
+            }
+        }
+        return false;
     }
 }
