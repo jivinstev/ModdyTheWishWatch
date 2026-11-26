@@ -16,6 +16,8 @@ import history  # noqa: E402
 import issues  # noqa: E402
 import nightly  # noqa: E402
 import run  # noqa: E402
+import covmap  # noqa: E402
+import selection  # noqa: E402
 
 
 def write(root: str, rel: str, text: str) -> None:
@@ -142,6 +144,30 @@ class OneAttempt(unittest.TestCase):
         a = {"log": g.parse_log("2 required tests failed"), "record": rec(IDS, failed=[IDS[0]]), "timedOut": False}
         self.assertEqual(len(run.check_attempt(a, [], ["AGameTest", "BGameTest"])), 1)
 
+    @unittest.skipIf(os.name == "nt", "the stubs are POSIX shell scripts")
+    def test_the_no_python_stubs_fail_and_say_they_were_started(self):
+        import subprocess
+        d = tempfile.mkdtemp()
+        try:
+            stubs = run.no_python_stubs(d)
+            env = dict(os.environ, PATH=stubs + os.pathsep + os.environ.get("PATH", ""))
+            out = subprocess.run(["python3", "-c", "print(1)"], env=env, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            self.assertEqual(out.returncode, 127)
+            self.assertEqual(len(run.python_started(d)), 1)
+            self.assertIn("python3 -c print(1)", run.python_started(d)[0])
+        finally:
+            shutil.rmtree(d)
+
+    def test_a_failed_build_says_what_gradle_said(self):
+        log = "x\n* What went wrong:\nCould not resolve all artifacts\n> 429\n\n* Try:\n> --stacktrace\n"
+        self.assertEqual(run.gradle_error(log), "* What went wrong:\nCould not resolve all artifacts\n> 429")
+        self.assertIn("error: cannot find symbol", run.gradle_error("A.java:3: error: cannot find symbol\n"))
+
+    def test_only_a_run_that_never_started_for_want_of_a_download_is_run_again(self):
+        self.assertTrue(run.never_started("> Could not resolve all artifacts\nReceived status code 429 from server"))
+        self.assertFalse(run.never_started("gt-adapter: 3 tests found\nCould not GET x"), "a server that ran is not")
+        self.assertFalse(run.never_started("error: cannot find symbol"), "a compile error is not a download")
+
     def test_no_result_line_no_record_or_no_test_is_a_problem(self):
         a = {"log": g.parse_log("BUILD SUCCESSFUL"), "record": None, "timedOut": True}
         p = run.check_attempt(a, ["AGameTest"], ["AGameTest"])
@@ -184,7 +210,7 @@ class Retry(unittest.TestCase):
         g.gate_tree = lambda rev="HEAD", root=g.ROOT: "tree"
         run._commit = lambda: "abc"
         try:
-            a = types.SimpleNamespace(shard="ci,default", classes=None, classes_file=None, not_classes=None,
+            a = types.SimpleNamespace(shard="ci,default", classes=None, classes_file=None, not_classes=None, no_python=False,
                                       not_classes_file=None, exclude=None, flake_register=None, out=out, retry=True,
                                       timeout=1, kind="nightly", label="job-0", gradle_arg=None, plan=None, job=0)
             code = run.run_job(a)
@@ -328,6 +354,12 @@ class History(unittest.TestCase):
         finally:
             shutil.rmtree(d)
 
+    def test_a_pull_requests_run_is_recorded_as_one_and_is_never_full_tier_evidence(self):
+        j = job("pr-7", [(IDS[0], "flaky")])
+        rec = history.pr_record(j, {"id": 99, "html_url": "u", "pull_requests": [{"number": 7}]})
+        self.assertEqual((rec["kind"], rec["label"], rec["fullTier"], rec["runUrl"]), ("pr", "pr7", False, "u"))
+        self.assertIn("AGameTest.t0", history.flaky([dict(rec, tree="t1")]), "its flakes count")
+
     def test_the_report_names_flakes_not_in_the_register(self):
         runs = [stored("t2", "failed", "2"), stored("t2", "passed", "3")]
         self.assertIn("NOT IN THE REGISTER", history.report(runs, register={}))
@@ -365,6 +397,231 @@ class ThisTree(unittest.TestCase):
         self.assertIn("McpGameTest", p["tierClasses"])
         planned = [c for j in p["jobs"] for c in j["planned"]]
         self.assertEqual(sorted(planned), sorted(p["tierClasses"]))
+
+
+# a tiny world: two production files, three GameTest classes, and a map of which test ran what
+J = "src/main/java/"
+TIER3 = {"AGameTest": {"ns": "moddingfromamod_ci", "tests": 2, "path": J + "x/AGameTest.java"},
+         "BGameTest": {"ns": "moddingfromamod", "tests": 3, "path": J + "x/BGameTest.java"},
+         "CGameTest": {"ns": "moddingfromamod", "tests": 4, "path": J + "x/CGameTest.java"},
+         "DGameTest": {"ns": "moddingfromamod", "tests": 5, "path": J + "y/DGameTest.java"}}
+SOURCES = {J + "x/Foo.java": "class Foo { static final int K = 1; void a() {} void b() {} }",
+           J + "x/Bar.java": "class Bar { int k = Foo.K; void c() {} } // Baz in a comment",
+           J + "x/Baz.java": "class Baz { void tick() {} }",
+           J + "x/AGameTest.java": "class AGameTest {}", J + "x/BGameTest.java": "class BGameTest { Bar b; }",
+           J + "x/CGameTest.java": "class CGameTest {}", J + "y/DGameTest.java": "class DGameTest {}"}
+TABLE = {"x/Foo#<clinit>": {"file": "x/Foo.java", "lines": [[3, 3]]}, "x/Foo#a": {"file": "x/Foo.java", "lines": [[10, 20]]}, "x/Foo#b": {"file": "x/Foo.java", "lines": [[30, 40]]},
+         "x/Bar#c": {"file": "x/Bar.java", "lines": [[5, 9]]}, "x/Baz#tick": {"file": "x/Baz.java", "lines": [[3, 4]]}}
+BLOBS = {"x/Foo.java": "f1", "x/Bar.java": "b1", "x/Baz.java": "z1"}
+
+
+def a_map(built="2026-11-25T00:00:00Z"):
+    analysis = {"methods": TABLE, "units": {"__boot__": ["x/Foo#<clinit>"], "__idle__": ["x/Baz#tick"], "AGameTest": ["x/Foo#a"],
+                                             "CGameTest": ["x/Foo#b", "x/Baz#tick"], "BGameTest": ["x/Bar#c"]}}
+    m = covmap.build([analysis], "c1", "t1", BLOBS, "full")
+    m["built"] = built
+    return m
+
+
+NOW = 1795600000.0   # 2026-11-25
+
+
+def pick(changes, cmap="default", blobs=None):
+    cm = a_map() if cmap == "default" else cmap
+    return selection.Selector(TIER3, SOURCES, cm, blobs if blobs is not None else BLOBS, now=NOW).select(changes)
+
+
+class Selection(unittest.TestCase):
+    def test_a_change_inside_a_method_selects_the_tests_that_ran_it_and_ci(self):
+        s = pick([selection.Change("M", J + "x/Foo.java", J + "x/Foo.java", [(32, 33)])])
+        self.assertEqual(s["mode"], "targeted")
+        self.assertEqual(sorted(s["classes"]), ["AGameTest", "CGameTest", "DGameTest"])
+        self.assertIn("runs Foo#b", s["classes"]["CGameTest"])
+        self.assertEqual(s["classes"]["AGameTest"], ["the ci shard"], "only as ci: it never ran Foo#b")
+        self.assertEqual(s["classes"]["DGameTest"], ["the map has not placed it"])
+
+    def test_a_change_outside_every_method_is_the_whole_file(self):
+        s = pick([selection.Change("M", J + "x/Foo.java", J + "x/Foo.java", [(1, 2)], ["import x.Y;"])])
+        self.assertIn("reaches Foo (a change outside its methods)", s["classes"]["CGameTest"])
+        self.assertNotIn("BGameTest", s["classes"], "an import is not a constant: Foo's users are not reached")
+
+    def test_a_changed_constant_reaches_every_file_that_names_its_class(self):
+        s = pick([selection.Change("M", J + "x/Foo.java", J + "x/Foo.java", [(1, 1)],
+                                   ["    static final int K = 1;", "    static final int K = 2;"])])
+        self.assertIn("reaches Bar, which names Foo (a constant changed)", s["classes"]["BGameTest"],
+                      "a copied constant reaches its users, which never execute Foo")
+
+    def test_a_file_changed_since_the_map_is_the_whole_file_without_the_maps_commit(self):
+        s = pick([selection.Change("M", J + "x/Foo.java", J + "x/Foo.java", [(32, 33)])],
+                 blobs=dict(BLOBS, **{"x/Foo.java": "f2"}))
+        self.assertTrue(any("since the map" in w for w in s["classes"]["AGameTest"]))
+
+    def test_with_the_maps_commit_a_hunk_is_carried_back_through_the_drift(self):
+        # since the map, 5 lines were inserted at the top of Foo: line 37 now is line 32 then, inside Foo#b
+        drift = lambda path: [(1, 0, 2, 5)]  # noqa: E731
+        s = selection.Selector(TIER3, SOURCES, a_map(), dict(BLOBS, **{"x/Foo.java": "f2"}), now=NOW,
+                               drift=drift).select([selection.Change("M", J + "x/Foo.java", J + "x/Foo.java", [(37, 38)])])
+        self.assertIn("runs Foo#b", s["classes"]["CGameTest"])
+        self.assertEqual(s["classes"]["AGameTest"], ["the ci shard"], "not the whole file: Foo#a is not reached")
+
+    def test_drift_maps_lines_moved_and_changed(self):
+        drift = [(10, 2, 10, 5), (30, 0, 33, 4)]   # 2 lines became 5 at 10; 4 lines inserted after 29
+        self.assertEqual(selection.to_map_lines(5, 5, drift), (5, 5), "above every hunk: unmoved")
+        self.assertEqual(selection.to_map_lines(12, 12, drift), (10, 11), "inside a changed hunk: its whole old range")
+        self.assertEqual(selection.to_map_lines(20, 20, drift), (17, 17), "below it: moved by its growth")
+        self.assertEqual(selection.to_map_lines(34, 34, drift), (30, 31), "an inserted line: the lines it sits between")
+        self.assertEqual(selection.to_map_lines(40, 40, drift), (33, 33))
+
+    def test_a_version_bump_selects_nothing_but_another_property_is_the_tier(self):
+        bump = selection.Change("M", "gradle.properties", "gradle.properties", [(15, 15)],
+                                ["mod_version=1.0.10", "mod_version=1.0.11"])
+        self.assertEqual(pick([bump])["mode"], "targeted")
+        other = selection.Change("M", "gradle.properties", "gradle.properties", [(3, 3)], ["neo_version=1", "neo_version=2"])
+        self.assertEqual(pick([other])["mode"], "tier")
+
+    def test_code_that_runs_with_no_test_running_is_the_whole_tier(self):
+        s = pick([selection.Change("M", J + "x/Baz.java", J + "x/Baz.java", [(3, 3)])])
+        self.assertEqual(s["mode"], "tier")
+        self.assertTrue(any("no test running" in w for w in s["why"]))
+
+    def test_tests_that_name_a_changed_class_run_and_a_comment_is_not_a_name(self):
+        s = pick([selection.Change("A", None, J + "x/Bar2.java")])
+        self.assertNotIn("BGameTest", [c for c, w in s["classes"].items() if "names Bar2" in w])
+        s = pick([selection.Change("M", J + "x/Bar.java", J + "x/Bar.java", [(6, 6)])])
+        self.assertIn("names Bar", s["classes"]["BGameTest"])
+        s = pick([selection.Change("M", J + "x/Baz.java", J + "x/Baz.java", [])], cmap=None)
+        self.assertNotIn("names Baz", s["classes"].get("BGameTest", []), "Bar names Baz only in a comment")
+
+    def test_a_static_initialiser_run_at_start_up_reaches_its_file_and_what_names_its_class(self):
+        s = pick([selection.Change("M", J + "x/Foo.java", J + "x/Foo.java", [(3, 3)], ["static int[] T = {1};"])])
+        self.assertEqual(s["mode"], "targeted", "not the whole tier")
+        self.assertIn("reaches Foo (its static initialiser changed)", s["classes"]["CGameTest"])
+        self.assertIn("reaches Bar, which names Foo (a static initialiser changed)", s["classes"]["BGameTest"])
+
+    def test_a_tests_own_helper_is_code_the_map_sees_and_the_runner_is_the_harness(self):
+        helper = J + "com/moddingfromamod/testing/TestPlots.java"
+        self.assertEqual(pick([selection.Change("M", helper, helper, [(1, 1)])])["mode"], "targeted")
+        for p in [J + "com/moddingfromamod/testing/gt/TestHygiene.java", J + "com/moddingfromamod/testing/GateShards.java",
+                  J + "com/moddingfromamod/testing/mixin/GameTestBatchOrderMixin.java"]:
+            self.assertEqual(pick([selection.Change("M", p, p, [(1, 1)])])["mode"], "tier", p)
+
+    def test_what_the_map_cannot_see_is_the_whole_tier(self):
+        for p in ["build.gradle", "src/main/resources/data/moddingfromamod/x.json", "gradle.properties",
+                  J + "com/moddingfromamod/mixin/FooMixin.java", J + "com/moddingfromamod/testing/gt/GameTestAdapter.java",
+                  "tools/cbscript.zip", "somewhere/new.txt"]:
+            self.assertEqual(pick([selection.Change("M", p, p)])["mode"], "tier", p)
+
+    def test_docs_tools_and_unit_tests_select_only_ci_and_the_unplaced(self):
+        for p in ["docs/GATE_B.md", "README.md", ".github/workflows/ci.yml", "tools/gate/gate.py",
+                  "src/test/java/x/FooTest.java", "corpus/gate-flakes.json", "gate-a.gradle", "art/icon.png"]:
+            s = pick([selection.Change("M", p, p)])
+            self.assertEqual((s["mode"], sorted(s["classes"])), ("targeted", ["AGameTest", "DGameTest"]), p)
+
+    def test_no_map_or_an_old_map_is_the_whole_tier(self):
+        c = [selection.Change("M", J + "x/Foo.java", J + "x/Foo.java", [(32, 33)])]
+        self.assertEqual(pick(c, cmap=None)["mode"], "tier")
+        self.assertEqual(pick(c, cmap=a_map(built="2026-10-01T00:00:00Z"))["mode"], "tier")
+
+    def test_a_changed_gametest_runs_itself_and_a_new_file_reaches_its_package(self):
+        s = pick([selection.Change("M", J + "x/CGameTest.java", J + "x/CGameTest.java", [])])
+        self.assertIn("its own file changed", s["classes"]["CGameTest"])
+        s = pick([selection.Change("A", None, J + "x/Qux.java")])
+        self.assertEqual((s["mode"], sorted(s["classes"])), ("targeted", ["AGameTest", "DGameTest"]),
+                         "a new class is reached through the changed code that names it, not its whole package")
+        found = selection.Selector(TIER3, dict(SOURCES, **{J + "x/Hook.java": "@EventBusSubscriber class Hook {}"}),
+                                   a_map(), BLOBS, now=NOW).select([selection.Change("A", None, J + "x/Hook.java")])
+        self.assertEqual(found["mode"], "tier", "a class the game finds by itself")
+        client = selection.Selector(TIER3, dict(SOURCES, **{J + "x/Cl.java": "@EventBusSubscriber(value = Dist.CLIENT) class Cl {}"}),
+                                    a_map(), BLOBS, now=NOW).select([selection.Change("A", None, J + "x/Cl.java")])
+        self.assertEqual(client["mode"], "targeted", "a GameTest server never loads a client-only subscriber")
+
+    def test_a_client_asset_is_read_only_by_a_source_that_names_it(self):
+        p = "src/main/resources/assets/moddingfromamod/items/wish_egg.json"
+        self.assertEqual(pick([selection.Change("M", p, p)])["mode"], "targeted")
+        self.assertEqual(pick([selection.Change("M", "src/main/resources/lessons/creature.md",
+                                                "src/main/resources/lessons/creature.md")])["mode"], "tier")
+
+    def test_the_selection_is_deterministic(self):
+        c = [selection.Change("M", J + "x/Foo.java", J + "x/Foo.java", [(1, 2), (32, 33)])]
+        self.assertEqual(pick(c), pick(list(c)))
+
+    def test_hunks_read_from_a_zero_context_diff(self):
+        d = "@@ -10,3 +10,4 @@\n@@ -40,0 +44,2 @@\n@@ -50 +55 @@\n"
+        self.assertEqual(selection.parse_hunks(d), [(10, 12), (40, 41), (50, 50)])
+
+
+class CoverageMap(unittest.TestCase):
+    def test_ambient_methods_leave_every_unit_and_a_round_trip_keeps_the_sets(self):
+        d = covmap.decode(a_map())
+        self.assertEqual(d["units"]["CGameTest"], {"x/Foo#b"}, "Baz#tick ran with no test running")
+        self.assertEqual(d["ambient"], {"x/Baz#tick", "x/Foo#<clinit>"})
+        self.assertEqual(d["where"]["x/Foo#a"], ("x/Foo.java", [(10, 20)]))
+
+    def test_a_partial_map_keeps_what_it_did_not_remap(self):
+        prev = a_map()
+        part = covmap.build([{"methods": TABLE, "units": {"BGameTest": ["x/Foo#a"]}}], "c2", "t2", BLOBS, "partial",
+                            prev, ["BGameTest"])
+        d = covmap.decode(part)
+        self.assertEqual(d["units"]["BGameTest"], {"x/Foo#a"})
+        self.assertEqual(d["units"]["CGameTest"], {"x/Foo#b"})
+        self.assertEqual(part["units"]["CGameTest"]["commit"], "c1", "a kept unit says when it was mapped")
+
+    def test_a_dropped_class_is_reported_and_one_that_left_the_tier_is_not(self):
+        prev, cur = a_map(), a_map()
+        del cur["units"]["BGameTest"]
+        self.assertEqual(covmap.dropped(prev, cur, TIER3), ["BGameTest"])
+        self.assertEqual(covmap.dropped(prev, cur, {"AGameTest": {}}), [])
+        self.assertEqual(covmap.unplaced(cur, TIER3), ["BGameTest", "DGameTest"])
+
+    def test_two_maps_of_one_commit_must_agree_but_for_the_listed_classes(self):
+        a, b = a_map(), a_map()
+        self.assertEqual(covmap.compare(a, b), [])
+        other = covmap.build([{"methods": TABLE, "units": {"AGameTest": ["x/Foo#a", "x/Bar#c"],
+                                                             "CGameTest": ["x/Foo#b"], "BGameTest": ["x/Bar#c"],
+                                                             "__idle__": ["x/Baz#tick"]}}], "c1", "t1", BLOBS, "full")
+        self.assertEqual(covmap.compare(a, other), [], "one method is timer noise")
+        many = {"x/M%d#m" % i: {"file": "x/M%d.java" % i, "lines": [[1, 2]]} for i in range(8)}
+        wide = covmap.build([{"methods": dict(TABLE, **many), "units": {
+            "AGameTest": ["x/Foo#a"] + sorted(many), "CGameTest": ["x/Foo#b"], "BGameTest": ["x/Bar#c"],
+            "__idle__": ["x/Baz#tick"]}}], "c1", "t1", BLOBS, "full")
+        notes = []
+        self.assertTrue(covmap.compare(a, wide, notes=notes), "eight more methods of nine, and the maps agree on "
+                        "too little overall: a problem")
+        self.assertEqual(covmap.compare(a, wide, ["AGameTest"]), [], "unless the class is listed")
+        self.assertLess(covmap.noise(a, wide)["agree"], 1.0)
+
+    def test_spread_noise_is_named_but_a_broken_mapping_run_fails(self):
+        # 100 classes of 100 methods; one class gains 8 (over its own allowance): within the run's, named in notes
+        methods = {"x/M%d#m" % i: {"file": "x/M.java", "lines": [[i, i]]} for i in range(10000)}
+        def units(extra):
+            u = {"C%d" % c: ["x/M%d#m" % (c * 100 + i) for i in range(100)] for c in range(100)}
+            for c, ms in extra.items():
+                u[c] = u[c][:max(0, len(u[c]) - ms)]
+            return u
+        a = covmap.build([{"methods": methods, "units": units({})}], "c", "t", {}, "full")
+        one = covmap.build([{"methods": methods, "units": units({"C1": 8})}], "c", "t", {}, "full")
+        notes = []
+        self.assertEqual(covmap.compare(a, one, notes=notes), [])
+        self.assertEqual(len(notes), 1)
+        self.assertTrue(notes[0].startswith("C1:"))
+        broken = covmap.build([{"methods": methods, "units": units({"C%d" % c: 8 for c in range(40)})}], "c", "t", {},
+                              "full")
+        self.assertTrue(covmap.compare(a, broken), "forty classes over: the mapping process is broken")
+
+    def test_costs_keep_the_last_samples_and_their_rounded_median(self):
+        c = None
+        for s in (10.4, 30.0, 20.2, 99.0, 21.0, 22.0):
+            c = covmap.costs_update(c, {"AGameTest": s})
+        self.assertEqual(c["classes"]["AGameTest"]["samples"], [30.0, 20.2, 99.0, 21.0, 22.0])
+        self.assertEqual(c["classes"]["AGameTest"]["median"], 22)
+
+    def test_a_partial_run_maps_the_unplaced_and_the_changed(self):
+        prev = a_map()
+        blobs = dict(BLOBS, **{"x/CGameTest.java": "new"})
+        prev["files"] = dict(BLOBS, **{"x/CGameTest.java": "old", "x/AGameTest.java": "a", "x/BGameTest.java": "b"})
+        blobs.update({"x/AGameTest.java": "a", "x/BGameTest.java": "b"})
+        self.assertEqual(covmap.to_remap("partial", prev, TIER3, blobs), ["CGameTest", "DGameTest"])
+        self.assertEqual(covmap.to_remap("full", prev, TIER3, blobs), sorted(TIER3))
 
 
 if __name__ == "__main__":

@@ -24,6 +24,8 @@ def comment_text(rec: dict, action: str) -> str:
     url = rec.get("runUrl") or ""
     c = rec.get("counts", {})
     if action == "close":
+        if not c:
+            return "Green again at `%s`. Closing. %s" % (commit, url)
         return "Green again at `%s`: %d tests, %d flaky. Closing. %s" % (commit, c.get("total", 0), c.get("flaky", 0), url)
     failing = [t["name"] for t in rec.get("tests", []) if t.get("outcome") in ("failed", "skipped")]
     return "Still red at `%s`: %d failing%s, %d problem(s) with the run itself. %s" % (

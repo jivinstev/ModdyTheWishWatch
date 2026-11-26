@@ -202,8 +202,17 @@ class BuilderPageFitTest {
             f.press(PickPage.NEXT_ID);
         }
         TuneDialog d = f.tune();
+        // #103: a Builder creature's dialog asks How strong where How many was (its count is typed); the count slider
+        // is on a real farm animal's dialog
+        BuilderFlow cows = root();
+        cows.press("creature");
+        cows.press("mob:minecraft:cow");
+        for (int guard = 0; guard < 12 && cows.step() != BuilderFlow.Step.TUNE; guard++) {
+            cows.press(PickPage.NEXT_ID);
+        }
+        assertEquals(BuilderFlow.Step.TUNE, cows.step(), "a real cow's walk reaches its dialog");
         long derived = MakeFacts.derivations();
-        TuneDialog seen = BuilderPageFit.tune(f, d, Map.of(MakeFacts.COUNT_MADE, 3.0));
+        TuneDialog seen = BuilderPageFit.tune(cows, cows.tune(), Map.of(MakeFacts.COUNT_MADE, 3.0));
         assertEquals(derived, MakeFacts.derivations(), "a limit on how many is compared with the slider, no make read");
         TuneDialog.Slider count = (TuneDialog.Slider) seen.inputs().stream().filter(i -> i.key().equals("count"))
                 .findFirst().orElseThrow();

@@ -4,6 +4,7 @@
   "package": "com.moddingfromamod.testing.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
+    "GameTestBatchOrderMixin",
     "GameTestCrashGuardMixin",
     "GameTestWallClockMixin",
     "SoundSentMixin"

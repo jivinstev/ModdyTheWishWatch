@@ -414,6 +414,9 @@ public record MakeFacts(String kind, Map<String, Double> numbers, Set<String> ta
         }
         if (!spec.opt("strength").isEmpty()) {
             a.most(BUILDER_STRENGTH_STEP, num(spec.opt("strength"), 0));
+        } else if (creature && !realMob) {
+            // #103: a creature's or ride's How strong, its own (2) when unstated, so a world's limit on it reaches it
+            a.most(BUILDER_STRENGTH_STEP, BuilderCreatureStrength.OWN);
         }
         if (creature || k == BuilderSpec.Kind.ITEM || k == BuilderSpec.Kind.MACHINE || k == BuilderSpec.Kind.MAGIC_BLOCK) {
             a.most(COUNT_MADE, spec.count());
