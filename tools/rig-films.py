@@ -34,6 +34,13 @@ RIG_FILMS_EXTRA = ("vanillascale",)
 RIG_FILMS_NOT_RUN = {
     "vanillawish": "a paid real-agent wish through the Magician (Gate D), not a rig film: run it by hand",
 }
+# Films ONE Minecraft version does not run, by that version (gradle.properties' minecraft_version on the branch that
+# runs them), each with the reason: a version's declared subset of the set above. Every version branch runs this
+# file's set through the one .port/1.21.8/gate-c.json (Port CI takes the nearest lower version's file), so a film
+# that cannot run on a version is named here, on main, and reaches that branch with the next merge up. Empty means
+# every version runs every film; docs/RELEASING.md ("Gate C on every version") says which ran where.
+RIG_FILMS_NOT_ON = {
+}
 # One alternative per line, so --check can ask each whether it still matches a real file.
 RIG_PATH_RULES = (
     r"src/main/java/com/moddingfromamod/vanilla/",
@@ -48,12 +55,29 @@ RIG_PATH_RULES = (
 RIG_PATHS = re.compile("^(" + "|".join(RIG_PATH_RULES) + ")")
 
 
-def rig_films(repo=REPO):
-    """The testmodes tools/gate-c-rig.sh runs, in scoreboard order."""
+def minecraft_version(repo=REPO):
+    """This checkout's Minecraft version (gradle.properties), or "" without one."""
+    try:
+        text = open(os.path.join(repo, "gradle.properties"), encoding="utf-8").read()
+    except OSError:
+        return ""
+    m = re.search(r"(?m)^minecraft_version=(\S+)", text)
+    return m.group(1) if m else ""
+
+
+def not_on(mc=None, repo=REPO):
+    """{film: reason} this Minecraft version leaves out (RIG_FILMS_NOT_ON)."""
+    return dict(RIG_FILMS_NOT_ON.get(minecraft_version(repo) if mc is None else mc, {}))
+
+
+def rig_films(repo=REPO, mc=None, every_version=False):
+    """The testmodes tools/gate-c-rig.sh runs on this checkout's Minecraft version (or `mc`), in scoreboard order.
+    every_version: the whole set, before any version's leave-outs."""
     text = open(os.path.join(repo, SCOREBOARD), encoding="utf-8").read()
+    skip = {} if every_version else not_on(mc, repo)
     out = []
     for m in re.findall(r"GateC:([a-z0-9]+)", text) + list(RIG_FILMS_EXTRA):
-        if m not in out and m not in RIG_FILMS_NOT_RUN:
+        if m not in out and m not in RIG_FILMS_NOT_RUN and m not in skip:
             out.append(m)
     return out
 
@@ -86,6 +110,15 @@ def changed_paths(base):
 def check(repo=REPO):
     problems = []
     films = rig_films(repo)
+    every = rig_films(repo, every_version=True)
+    for mc, left in RIG_FILMS_NOT_ON.items():
+        if not re.fullmatch(r"\d+(\.\d+)+", mc):
+            problems.append(f"RIG_FILMS_NOT_ON: {mc!r} is not a Minecraft version")
+        for m, why in left.items():
+            if m not in every:
+                problems.append(f"RIG_FILMS_NOT_ON[{mc}]: {m!r} is not a film of the set")
+            if not str(why).strip():
+                problems.append(f"RIG_FILMS_NOT_ON[{mc}]: {m!r} names no reason")
     for m in films + list(RIG_FILMS_NOT_RUN):
         if film_class(m, repo) is None:
             problems.append(f"rig film '{m}' is named but no client test in {FILM_DIR} claims that testmode")
@@ -93,7 +126,9 @@ def check(repo=REPO):
     for alt in RIG_PATH_RULES:
         if not any(re.match(alt, p) for p in tracked):
             problems.append(f"rig path rule {alt!r} matches no tracked file: a rename left it stale")
-    print(f"rig-films: {len(films)} films ({', '.join(films)}); not run: {', '.join(RIG_FILMS_NOT_RUN)}")
+    left = not_on(repo=repo)
+    print(f"rig-films: {len(films)} films ({', '.join(films)}); not run: {', '.join(RIG_FILMS_NOT_RUN)}"
+          + (f"; not on Minecraft {minecraft_version(repo)}: {', '.join(left)}" if left else ""))
     return problems
 
 
@@ -127,6 +162,22 @@ def self_test():
         if m not in films:
             bad += 1
             print(f"  FAIL an extra film is missing from the set: {m}")
+    # a version's leave-outs leave that version's set only, and say why
+    every = rig_films(every_version=True)
+    saved = dict(RIG_FILMS_NOT_ON)
+    try:
+        RIG_FILMS_NOT_ON.clear()
+        RIG_FILMS_NOT_ON["9.9"] = {every[0]: "a reason"}
+        cases = [("9.9", every[0] not in rig_films(mc="9.9") and len(rig_films(mc="9.9")) == len(every) - 1),
+                 ("another version", rig_films(mc="9.8") == every),
+                 ("every_version", rig_films(mc="9.9", every_version=True) == every),
+                 ("not_on", not_on("9.9") == {every[0]: "a reason"} and not_on("9.8") == {})]
+    finally:
+        RIG_FILMS_NOT_ON.clear()
+        RIG_FILMS_NOT_ON.update(saved)
+    for what, ok in cases:
+        bad += not ok
+        print(f"  {'ok  ' if ok else 'FAIL'} RIG_FILMS_NOT_ON: {what}")
     print("✅ rig-films self-test passed" if not bad else f"❌ rig-films self-test: {bad} failure(s)")
     return 1 if bad else 0
 
@@ -144,6 +195,8 @@ def main():
     if a.list:
         for m in rig_films():
             print(m, film_class(m) or "?")
+        for m, why in not_on().items():
+            print(f"rig-films: {m} is not run on Minecraft {minecraft_version()}: {why}", file=sys.stderr)
         return 0
     if a.check:
         problems = check()

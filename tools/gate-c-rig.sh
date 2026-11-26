@@ -12,7 +12,9 @@
 # `python3 tools/rig-films.py --needed` says when a change needs this; CI's `rig-films` job runs it then.
 #
 # THE SET is read off the scoreboard (`tools/rig-films.py --list`): every film a row names, plus the
-# extras, minus the paid agent film.
+# extras, minus the paid agent film, minus the films this checkout's Minecraft version declares it cannot run
+# (RIG_FILMS_NOT_ON, each with its reason, printed below). The same script runs on every version branch: Port CI
+# takes .port/1.21.8/gate-c.json on every rung that has no file of its own (docs/RELEASING.md, "Gate C on every version").
 #
 # FLAKE POLICY: a film that fails is run ONCE more. Failed twice = FAIL; failed then passed = FLAKY, and
 # FLAKY is not a pass — the exit is non-zero and it says to run the film on the base branch to tell a
