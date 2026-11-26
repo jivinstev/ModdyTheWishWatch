@@ -1,0 +1,6 @@
+{
+  "schema": 1,
+  "script": "tools/gate/gate.py",
+  "args": ["release-gate", "--wait", "150"],
+  "timeout_minutes": 180
+}

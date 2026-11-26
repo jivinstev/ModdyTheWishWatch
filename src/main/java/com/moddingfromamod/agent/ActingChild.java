@@ -80,6 +80,9 @@ public final class ActingChild {
 
     /** The same, for a caller that already knows whose wish this is. */
     public static ServerPlayer of(MinecraftServer server, UUID owner) {
+        if (com.moddingfromamod.world.WorldOwners.is(owner)) {
+            return null;   // a world's own wish (an arena's champion design): no child stands in for it
+        }
         return resolve(server, owner, inTheWorld(standIn));
     }
 
@@ -92,11 +95,17 @@ public final class ActingChild {
             return null;
         }
         var run = AgentContext.currentRun();
+        if (run != null && com.moddingfromamod.world.WorldOwners.is(run.playerId())) {
+            return null;
+        }
         return resolveOwned(server, run == null ? null : run.playerId(), inTheWorld(standIn));
     }
 
     /** The same, for a caller that already knows whose wish this is (as {@link #of(MinecraftServer, UUID)}). */
     public static ServerPlayer person(MinecraftServer server, UUID owner) {
+        if (com.moddingfromamod.world.WorldOwners.is(owner)) {
+            return null;
+        }
         return resolveOwned(server, owner, inTheWorld(standIn));
     }
 

@@ -70,7 +70,11 @@ python3 tools/gate/gate.py run --shard ci --out /tmp/gt   # Gate B as CI runs it
   Python needed).
 - **Gate C** is a real client. Anything a player can see or hear needs it; a clean compile and green headless tests do
   not prove a texture, a sound, a menu or a creative tab. On Linux without a display, `xvfb-run` works with software
-  rendering.
+  rendering. The automated Gate C is the rig films, `./tools/gate-c-rig.sh` (every film, ~15 min in CI): CI's
+  `rig-films` job runs them on a pull request that touches the rig, and Port CI runs them, targeted (a core set plus
+  what changed since that version's last release, `--targeted`), as Gate C of every version's release
+  (`.port/<mc>/gate-c.json`, recorded in the release's `gates-full.md`; [`docs/RELEASING.md`](docs/RELEASING.md),
+  "Gate C on every version"). A 26.x client under Xvfb also needs `libegl1 libegl-mesa0`.
 - `store_jar=true` in `gradle.properties` makes `./gradlew build` produce the release jar (versioned
   `<mod_version>+mc<minecraft_version>`, the Apprentice model bundled, fetched by `tools/fetch-apprentice-model.sh`).
   `-Pstore_jar=false` builds a plain jar without the 86 MiB model download.
@@ -84,7 +88,9 @@ method, every class the map has not placed), or the whole tier for a change the 
 resources, the GameTest harness, start-up code); its summary lists each class and why
 ([`docs/GATE_B.md`](docs/GATE_B.md)). The game runs with `python` and `python3` replaced by stubs that fail
 (`gate.py run --no-python`), and a run that started one is red. A pull request that only touches `tools/client-validation/` or `.github/port-publish/` (nothing a
-build or test reads) runs the scan alone; Gate A and Gate B show as skipped. Docs are not in that list: tests read them.
+build or test reads) runs the scan alone; Gate A and Gate B show as skipped. Docs are not in that list: tests read them. CI
+reads Maven Central through Google's public mirror and runs a build that failed on a download once more
+([`docs/GATE_B.md`](docs/GATE_B.md), "Downloads in CI").
 
 **Nightly** (`.github/workflows/nightly.yml`, [`docs/GATE_B.md`](docs/GATE_B.md)): the whole `ci,default` tier on
 `main` every night, split across four runners by `tools/gate/gate.py`, skipped when `main`'s gate tree already had a
@@ -107,6 +113,9 @@ is the `neoforge-1.21.8` branch. A tag `moddingfromamod-<version>-mc1.21.8` (or 
 `release = true`) builds, gates and cuts a GitHub **pre-release** with the jar. A person plays the pre-release; then
 **promote** (`promote = <tag>`, `played_by = <login>`) makes it a full Release, and **publish** uploads a promoted
 release to Modrinth and CurseForge (`.github/port-publish.json`). Nothing is published that a person has not played.
+A release also needs a **green full-tier GameTest run of the exact code it ships** (`tools/gate/gate.py release-gate`: a
+nightly or release run on record, or it runs the tier itself; [`docs/RELEASING.md`](docs/RELEASING.md)), and every rung
+of the ladder needs its own.
 `tools/store-release.sh <version>` builds and checks the same jar locally.
 
 **`main` is the upstream of a weekly version ladder** ([`docs/RELEASING.md`](docs/RELEASING.md)).

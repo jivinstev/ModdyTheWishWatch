@@ -973,9 +973,18 @@ public final class ReferenceResearcher {
 
     // ── cache ────────────────────────────────────────────────────────────────────────────────
 
-    private static String key(String character) {
-        return character.toLowerCase(Locale.ROOT).replaceAll("[^a-z0-9]+", "_")
+    static String key(String character) {
+        String k = character.toLowerCase(Locale.ROOT).replaceAll("[^a-z0-9]+", "_")
                 .replaceAll("^_|_$", "");
+        // The key is a cache file's name: a name with no ASCII letters ("ピカチュウ") came out empty, so every such
+        // character shared ".json"; a device name Windows keeps ("Con") was no file there; a long name ran past a file
+        // name's length. Those few take store/SafeFileName's name; every other key is the one it always was.
+        if (k.isEmpty()) {
+            return com.moddingfromamod.store.SafeFileName.of(character.trim().toLowerCase(Locale.ROOT));
+        }
+        return k.length() > com.moddingfromamod.store.SafeFileName.MAX
+                || com.moddingfromamod.store.SafeFileName.isWindowsReserved(k)
+                ? com.moddingfromamod.store.SafeFileName.of(k) : k;
     }
 
     private static ReferenceSpec readCache(String key) {

@@ -282,6 +282,32 @@ class MakeFitTest {
     }
 
     @Test
+    void howManyARecipeMakesIsFittedOverTheWholeRecipe() {
+        // #174 B7: a recipe repeated or with several spawns made the most any ONE line made, so twenty summons met a
+        // limit of three
+        Map<String, Double> three = Map.of(MakeFacts.COUNT_MADE, 3.0);
+        MakeFacts.Artifacts none = (k, id) -> null;
+        List<String> wolves = java.util.Collections.nCopies(5, "summon minecraft:wolf ~ ~ ~");
+        assertEquals(3, MakeFacts.ofCommands(List.of("summon minecraft:wolf ~ ~ ~", "summon minecraft:wolf ~ ~ ~",
+                "summon minecraft:wolf ~ ~ ~"), none).number(MakeFacts.COUNT_MADE).orElse(0), 1e-9);
+        assertEquals(java.util.Collections.nCopies(3, "summon minecraft:wolf ~ ~ ~"),
+                MakeFit.fitCommands(wolves, three, none), "the summons past the most at once are not run");
+        List<String> mixed = List.of("say here they come", "wishsummon minecraft:wolf {\"count\":2,\"damage\":100}",
+                "wishsummon minecraft:wolf {\"count\":4}", "summon minecraft:cat ~ ~ ~", "say done");
+        List<String> fitted = MakeFit.fitCommands(mixed, three, none);
+        assertEquals(4, fitted.size(), "" + fitted);
+        assertEquals("say here they come", fitted.get(0));
+        assertEquals("wishsummon minecraft:wolf {\"count\":2,\"damage\":100}", fitted.get(1),
+                "its damage is held on the live wolf, never rewritten");
+        assertTrue(fitted.get(2).startsWith("wishsummon minecraft:wolf {") && fitted.get(2).contains("\"count\":1"),
+                "a spawn past what is left is lowered to it: " + fitted.get(2));
+        assertEquals("say done", fitted.get(3), "the cat past the most is not made; what makes nothing is kept");
+        Map<String, Double> zero = new LinkedHashMap<>();
+        zero.put(MakeFacts.COUNT_MADE, 0.0);
+        assertNull(MakeFit.fitCommands(wolves, zero, none), "a world that allows none refuses it");
+    }
+
+    @Test
     void aCreatureOverOnlyItsSizeIsMadeHereAndAnItemIsNot() {
         MakeFacts dragon = new MakeFacts(BuilderSpec.Kind.CREATURE.id(),
                 Map.of(MakeFacts.SCALE_TIMES, 4.0, MakeFacts.BUILDER_SIZE_STEP, 4.0, MakeFacts.HEALTH_HALF_HEARTS, 300.0),
