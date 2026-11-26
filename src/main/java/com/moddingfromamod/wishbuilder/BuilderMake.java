@@ -334,14 +334,27 @@ public final class BuilderMake {
                 spec.powers(), spec.temper(), spec.count(), spec.at(), spec.name(), opts);
         // the same design asked again (every wave, every restart) is the one already made: a world's makes never fill
         // the creature registry that children's makes share
-        String again = keptWorldMake(worldOwner(moduleId), design);
+        String key = worldOwner(moduleId) + "|" + design.toJson();
+        String known = WORLD_MADE.get(key);
+        String again = known != null && com.moddingfromamod.species.SpeciesRegistry.get(known) != null ? known
+                : keptWorldMake(worldOwner(moduleId), design);
         if (again != null) {
+            WORLD_MADE.put(key, again);
             return CompletableFuture.completedFuture(new Result(Outcome.MADE, null, again, "already made", List.of()));
         }
         Who world = new Who(worldOwner(moduleId), displayName == null || displayName.isBlank() ? moduleId : displayName,
                 server.overworld().dimension().location().toString(), 0, server.overworld().getSeaLevel(), 0);
-        return run(server, world, design, BuilderAllowlist.FOR_WORLDS, protocol(), false, false);
+        return run(server, world, design, BuilderAllowlist.FOR_WORLDS, protocol(), false, false).thenApply(r -> {
+            if (r != null && (r.outcome() == Outcome.MADE || r.outcome() == Outcome.PARTIAL) && r.madeId() != null
+                    && !r.madeId().isEmpty()) {
+                WORLD_MADE.put(key, r.madeId());
+            }
+            return r;
+        });
     }
+
+    /** A world's design (its owner and spec) → the species it was made as, this run of the game. */
+    private static final Map<String, String> WORLD_MADE = new java.util.concurrent.ConcurrentHashMap<>();
 
     /** The species a world already made from this very design (kept on its shelf, still registered), or null. */
     static String keptWorldMake(UUID owner, BuilderSpec design) {
