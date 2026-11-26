@@ -12,6 +12,8 @@
     python3 tools/gate/gate.py report --data DIR       flaky tests, the slowest classes, the trend
     python3 tools/gate/gate.py select --base origin/main [--map MAP]   targeted Gate B: the classes a change reaches
     python3 tools/gate/gate.py covmap-plan|covmap-merge|covmap-compare   the coverage map (docs/GATE_B.md)
+    python3 tools/gate/gate.py evidence --data DIR [--rev REV]   a green full-tier run of this code on record?
+    python3 tools/gate/gate.py release-gate               Port CI's release-gate hook (docs/RELEASING.md)
     python3 tools/gate/gate.py tree [REV]              the gate-relevant tree of a commit (what a result belongs to)
 
 Python 3.9+, standard library only.
@@ -123,6 +125,23 @@ def main(argv=None) -> int:
     bt.add_argument("--now", type=float, help="the clock the map's age is judged by (seconds)")
     bt.add_argument("--out")
 
+    ev = sub.add_parser("evidence", help="is there a green full-tier run of this code on record? (0 yes, 3 no)")
+    ev.add_argument("--data", required=True, help="a checkout of the gate-data branch")
+    ev.add_argument("--rev", default="HEAD")
+
+    rg = sub.add_parser("release-gate", help="pass a release only with a green full-tier run of its code, running "
+                                             "the tier if none is on record (Port CI's release-gate hook)")
+    # Port CI's release-gate job (the MMVU kit's optional hook, .github/port-release-gate.json) runs this with no
+    # expanded flags: the commit being released and its ref arrive as GATE_SHA and GATE_REF, the repository and token
+    # as GITHUB_REPOSITORY and GH_TOKEN
+    rg.add_argument("--repo", default=os.environ.get("GITHUB_REPOSITORY", ""))
+    rg.add_argument("--rev", default=os.environ.get("GATE_SHA") or os.environ.get("GITHUB_SHA") or "HEAD")
+    rg.add_argument("--ref", default=os.environ.get("GATE_REF") or os.environ.get("GITHUB_REF_NAME", ""),
+                    help="the branch or tag the tier runs on")
+    rg.add_argument("--data", default=os.path.join(os.environ.get("RUNNER_TEMP", "/tmp"), "gate-data"))
+    rg.add_argument("--workflow", default="nightly.yml")
+    rg.add_argument("--wait", type=float, default=150.0, help="minutes to wait for the tier")
+
     t = sub.add_parser("tree", help="the gate-relevant tree of a commit")
     t.add_argument("rev", nargs="?", default="HEAD")
 
@@ -177,6 +196,12 @@ def main(argv=None) -> int:
     if a.cmd == "backtest":
         import selection
         return selection.backtest_cmd(a)
+    if a.cmd == "evidence":
+        import release
+        return release.evidence_cmd(a)
+    if a.cmd == "release-gate":
+        import release
+        return release.release_gate_cmd(a)
     if a.cmd == "tree":
         print(g.gate_tree(a.rev))
         return 0

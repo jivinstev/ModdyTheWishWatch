@@ -67,11 +67,19 @@ without anyone looking at Actions.
 A failure that passed alone is `flaky`, not red. A failure of a test on the flake register is `known-flaky`: reported,
 not red, because its issue already says so.
 
+## A release needs a full tier
+
+A release needs a green full-tier run of the exact code it ships, found in the run history or run on the spot:
+`gate.py evidence --data <gate-data checkout>` says whether one is on record, `gate.py release-gate` is the check Port CI
+runs before a pre-release, and the Nightly workflow with `kind = release` is the tier it starts. Only a record of kind
+`nightly` or `release` that ran the whole tier (`fullTier`: every class, each with all its tests, nothing left out but
+the flake register's) at the same gate tree counts. docs/RELEASING.md, "The release gate", says how a release uses it.
+
 ## Which tree a result belongs to
 
 A result belongs to the code it tested, not to a commit message. `gate.py tree [REV]` hashes the `(path, blob)` pairs
-of every file Gate B can read: everything except `docs/`, `.github/`, `art/`, `src/test/`, `tools/client-validation/`
-and the top-level `*.md` files (`gatelib.NOT_GATE_B`). It is a deny list on purpose: a path wrongly left in costs a
+of every file Gate B can read: everything except `docs/`, `.github/`, `art/`, `src/test/`, `tools/client-validation/`,
+the port ledger `.port/` and the top-level `*.md` files (`gatelib.NOT_GATE_B`). It is a deny list on purpose: a path wrongly left in costs a
 re-run, while an allow list that forgot one would let a stale green stand for code it never ran. A commit that changes
 only docs has the same gate tree as its parent, so its night is skipped.
 
@@ -255,3 +263,19 @@ but the compiler bundle, `third_party/`'s licence texts, the gate tools' own `co
 **Measured** (`gate.py backtest`, every pull request merged since the move, 65, against a full map of the tier):
 see the pull request that switched CI to it for the numbers, and re-run it with
 `gate.py backtest --prs <list> --map <map>` to see them for any set of changes.
+
+## Downloads in CI
+
+Many jobs resolving Gradle dependencies cold at once (a PR that changes `build.gradle`, a split run, a mapping run) is
+what Maven Central answers with `429 Too Many Requests`, and that reddened unrelated pull requests. So, in CI only:
+
+- **Maven Central is read through Google's public mirror of it** (`maven-central.storage-download.googleapis.com`,
+  the same artifacts and checksums). Every job copies `.github/gradle/central-mirror.init.gradle` into
+  `~/.gradle/init.d/`: it points every repository that is Maven Central at the mirror, and puts the mirror first for
+  plugins, so a plugin's own dependencies (which the Gradle Plugin Portal redirects to Maven Central) come from it
+  too. A contributor's own build never sees it.
+- **A changed build starts warm**: each Gradle cache step falls back (`restore-keys`) to the newest cache when its exact
+  key misses, instead of starting cold.
+- **A build that failed for want of a download runs once more**, a minute later
+  (`.github/gradle/retry-on-download.sh`; `gate.py run` does the same for a server that never started). Any other
+  failure is returned at once.
