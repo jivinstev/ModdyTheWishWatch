@@ -16,7 +16,7 @@ datapacks a make writes) and the JDK. This boots the jar the way a player's serv
           boot 2 loads that world back (the same checks, and the model is NOT copied out again).
         RED, loudly, on: no "apprentice layer: on" line (the native library did not load: the line it logged
         instead is quoted), no native library file for this platform where the mod unpacked it, a linkage error or a
-        crash in the log, the world missing after boot 1, or a boot that does not reach "Done" or stop in time.
+        crash in the log, a wish datapack the boot could not put in place, the world missing after boot 1, or a boot that does not reach "Done" or stop in time.
     python tools/platform-smoke.py client --mode <testmode> --out <dir>
         A Gate C film (tools/gate-c-rig.sh's client test, without bash) through ./gradlew runClient on this machine's
         display: PASS is the film's own verdict. The workflow's Windows job runs it under Mesa's software OpenGL.
@@ -49,7 +49,10 @@ SAVED = re.compile(r"Saved the game")
 # A line that fails the boot whatever else it says. A missing or wrong-architecture native library is the first.
 BAD = re.compile(r"UnsatisfiedLinkError|NoClassDefFoundError|ExceptionInInitializerError|Mixin apply failed"
                  r"|Encountered an unexpected exception|Exception in server tick loop|Failed to load (?:the )?world"
-                 r"|Missing or unsupported mandatory dependencies|Mod loading has failed")
+                 r"|Missing or unsupported mandatory dependencies|Mod loading has failed"
+                 # a wish pack the boot could not put in place: on Windows, a loaded pack's zip held open, and the world
+                 # kept running the old pack (DatapackStore.installAllIntoWorld)
+                 r"|could not stage wish datapack")
 NATIVE = {"Windows": "onnxruntime.dll", "Darwin": "libonnxruntime.dylib", "Linux": "libonnxruntime.so"}
 
 
