@@ -54,6 +54,8 @@ import net.minecraft.world.phys.Vec3;
  *   <li>the agent's real {@code run_command}: a {@code summon} whose NBT sets attack 100 is held; a WILD wolf it
  *       changes ({@code attribute … base set}, {@code effect give … strength}, a multiplying modifier) is held, but
  *       never below what a wolf is without a wish;</li>
+ *   <li>a spawn egg the agent's {@code give} hands over hatches a wolf carrying the mark, and a later change no wish
+ *       scope sees is caught by the watch;</li>
  *   <li>the agent's real {@code modify_mob} on a real wolf with damage 100: held, and said so.</li>
  * </ul>
  * Each in a batch of its own: every one replaces the shared world hook.
@@ -289,6 +291,57 @@ public final class WishedVanillaMobLimitsGameTest {
             double armor = other.getAttributeValue(Attributes.ARMOR);
             check(helper, armor <= ContractWorld.HARDEST_SHELL + EPS,
                     "a multiplying armour modifier left it at armour " + armor);
+        });
+    }
+
+    // ── a spawn egg a wish hands over, and a later change the watch catches ──────────────────────────────────────
+
+    @GameTest(template = "empty_test", batch = "contract_world_vanilla_fit_egg", timeoutTicks = 600)
+    public static void aWishedSpawnEggHatchesAHeldMobAndTheWatchKeepsItHeld(GameTestHelper helper) {
+        MockPlayerNetwork.clearStaleMocks(helper);
+        ServerPlayer p = MockPlayerNetwork.inLevel(helper, "gtvanillafitegg");
+        BlockPos at = helper.absolutePos(new BlockPos(1, 2, 1));
+        p.setPos(at.getX() + 0.5, at.getY(), at.getZ() + 0.5);
+        p.getInventory().clearContent();
+        AtomicReference<Throwable> err = new AtomicReference<>();
+        AtomicReference<Boolean> done = new AtomicReference<>(false);
+        AtomicReference<ToolResult> out = new AtomicReference<>();
+        AtomicReference<LivingEntity> hatched = new AtomicReference<>();
+        inContractWorld(helper, p.getUUID(), () -> {
+            if (hatched.get() != null) {
+                hatched.get().discard();
+            }
+        });
+        asWish(p, "egg", () -> out.set(new RunCommandTool().call(commands("give @s minecraft:wolf_spawn_egg 1"))),
+                err, done);
+
+        helper.succeedWhen(() -> {
+            check(helper, err.get() == null, "run_command threw: " + err.get());
+            check(helper, Boolean.TRUE.equals(done.get()) && out.get() != null && !out.get().isError(),
+                    "waiting for the give: " + (out.get() == null ? "nothing" : out.get().text()));
+            if (hatched.get() == null) {
+                net.minecraft.world.item.ItemStack egg = net.minecraft.world.item.ItemStack.EMPTY;
+                for (net.minecraft.world.item.ItemStack s : p.getInventory().getNonEquipmentItems()) {
+                    if (s.is(net.minecraft.world.item.Items.WOLF_SPAWN_EGG)) {
+                        egg = s;
+                    }
+                }
+                check(helper, !egg.isEmpty(), "the egg did not arrive in his inventory");
+                var data = egg.get(net.minecraft.core.component.DataComponents.ENTITY_DATA);
+                check(helper, data != null && data.copyTag().toString().contains(LiveFit.HELD_TAG),
+                        "the egg a wish handed over does not say what it hatches is held: " + data);
+                // hatched as the game hatches an egg: the egg's entity data put on the mob
+                LivingEntity wolf = EntityType.WOLF.spawn(helper.getLevel(), egg, p, p.blockPosition().east(2),
+                        EntitySpawnReason.SPAWN_ITEM_USE, true, false);
+                check(helper, wolf != null, "the egg hatched nothing");
+                hatched.set(wolf);
+                check(helper, wolf.getTags().contains(LiveFit.HELD_TAG) && p.getUUID().equals(LiveFit.fitOwnerOf(wolf)),
+                        "the hatched wolf does not carry the egg's mark: " + wolf.getTags());
+                // a change no wish scope sees (a grown-up's own command, a held weapon): the watch catches it
+                wolf.getAttribute(Attributes.ATTACK_DAMAGE).setBaseValue(100.0);
+                wolf.getAttribute(Attributes.MAX_HEALTH).setBaseValue(300.0);
+            }
+            heldAtTheLimits(helper, hatched.get(), "the egg's wolf");
         });
     }
 
