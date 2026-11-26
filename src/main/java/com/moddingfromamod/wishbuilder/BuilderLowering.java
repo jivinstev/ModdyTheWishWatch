@@ -243,6 +243,25 @@ public final class BuilderLowering {
         return List.of("friendly", "shy", "wild", "guard", "boss", "pet", "stays");
     }
 
+    /**
+     * <b>Whose side it is on</b> (Moddy-Worlds#61). A spec that asks for {@code power:hostile} is hostile: the
+     * temperament's {@code friendly} (an empty temperament means friendly) and {@code skittish} are dropped, and so is a
+     * ready-made body's {@code guardian} base, which fights monsters. Before this a world's champion built on the rock
+     * golem was friendly, hostile and a guardian at once, and hunted the wave it was part of. Otherwise a guard is
+     * given the guardian base, as before.
+     */
+    static void sideOf(BuilderSpec spec, List<String> powers, JsonObject a) {
+        if (powers.contains("hostile")) {
+            powers.remove("friendly");
+            powers.remove("skittish");
+            if ("guardian".equals(str(a, "base"))) {
+                a.remove("base");
+            }
+        } else if ("guard".equals(spec.temper())) {
+            a.addProperty("base", "guardian");
+        }
+    }
+
     static List<String> temperPowers(String temper) {
         return switch (temper == null ? "" : temper) {
             case "", "friendly" -> List.of("friendly");
@@ -535,12 +554,10 @@ public final class BuilderLowering {
                 default -> throw new IllegalArgumentException("'" + p + "' is not a creature power");
             }
         }
+        sideOf(spec, powers, a);
         JsonArray pw = new JsonArray();
         powers.forEach(pw::add);
         a.add("powers", pw);
-        if ("guard".equals(spec.temper())) {
-            a.addProperty("base", "guardian");
-        }
         // how it LIVES, chosen from the picks (BehaviourChoice). A ready-made species named none, so it lived
         // its carrier's life: a flying cat fluttered like the bat it rides.
         a.addProperty(com.moddingfromamod.species.BehavesLike.ARG, behaviourOf(spec, sculpt));
@@ -826,12 +843,10 @@ public final class BuilderLowering {
                 default -> throw new IllegalArgumentException("'" + p + "' is not a creature power");
             }
         }
+        sideOf(spec, powers, a);
         JsonArray pw = new JsonArray();
         powers.forEach(pw::add);
         a.add("powers", pw);
-        if ("guard".equals(spec.temper())) {
-            a.addProperty("base", "guardian");
-        }
         // how it LIVES, chosen from the picks (BehaviourChoice). A ready-made species named none, so it lived
         // its carrier's life: a flying cat fluttered like the bat it rides.
         a.addProperty(com.moddingfromamod.species.BehavesLike.ARG, behaviourOf(spec, sculpt));
