@@ -344,7 +344,8 @@ public final class BuildMechanismTool implements McpTool {
         boolean isDoor = spec.mechanism().equals("piston_door") || spec.mechanism().equals("iron_door");
         Doorway.Found door = null;
         if (isDoor) {
-            door = box != null ? Doorway.inBuilding(view, box, start, spec.width(), spec.newOpening())
+            door = box != null ? Doorway.inBuilding(view, box, start, spec.width(), spec.newOpening(),
+                    spec.mechanism().equals("iron_door") ? 1 : 4)
                     : Doorway.find(view, start, in, spec.width());
             if (!door.ok()) {
                 return Built.fail(ToolResult.error("No door could go there: " + door.why() + "."));

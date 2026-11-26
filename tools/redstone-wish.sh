@@ -26,6 +26,12 @@ for l in open(p):
     if "=" in l and not l.startswith("#"):
         k, v = l.rstrip("\n").split("=", 1); props[k] = v
 props["level-type"] = lt
+if lt == "minecraft:flat":
+    # deep stone under the grass: the wiring goes up to 5 below a floor, and vanilla superflat has 3 layers of dirt
+    # over bedrock (measured: every device mechanism refused on it)
+    props["generator-settings"] = ('{"layers":[{"block":"minecraft:bedrock","height":1},'
+        '{"block":"minecraft:stone","height":56},{"block":"minecraft:dirt","height":3},'
+        '{"block":"minecraft:grass_block","height":1}],"biome":"minecraft:plains"}')
 open(p, "w").write("".join(f"{k}={v}\n" for k, v in props.items()))
 PY
 echo "== wish: $wish"

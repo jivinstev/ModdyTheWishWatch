@@ -184,6 +184,14 @@ public final class Doorway {
 
     /** As above; {@code newOpening} skips the existing doorways and cuts a new one (a secret passage). */
     public static Found inBuilding(WorldView w, int[] box, RsPos spot, int wantWidth, boolean newOpening) {
+        return inBuilding(w, box, spot, wantWidth, newOpening, 4);
+    }
+
+    /**
+     * As above, with {@code side}: the wall a new opening needs either side of it (4 for a piston door's pistons and
+     * towers, 1 for an iron door, which needs only a frame).
+     */
+    public static Found inBuilding(WorldView w, int[] box, RsPos spot, int wantWidth, boolean newOpening, int side) {
         record Face(RsDir in, RsPos corner, int length) {
         }
         int x0 = box[0], y0 = box[1], z0 = box[2], x1 = box[3], z1 = box[5];
@@ -242,20 +250,20 @@ public final class Doorway {
             }
         }
         int width = wantWidth == 1 ? 1 : 2;
-        if (near.length() < width + 8) {
-            return Found.no("that building's walls are too short for a piston door: it needs " + (width + 8)
-                    + " blocks of wall");
+        if (near.length() < width + 2 * side) {
+            return Found.no("that building's wall is too short for this door: it needs " + (width + 2 * side)
+                    + " blocks of wall" + (side > 1 ? " (an iron_door needs only " + (width + 2) + ")" : ""));
         }
         RsDir along = near.in().clockwise();
         int u = (near.length() - width) / 2;
         // nearest the spot along the face, keeping room for the towers (4 blocks each side)
         int su = (spot.x() - near.corner().x()) * along.dx() + (spot.z() - near.corner().z()) * along.dz();
-        if (su >= 4 && su <= near.length() - width - 4) {
+        if (su >= side && su <= near.length() - width - side) {
             u = su;
         }
         for (int du : new int[] {0, 3, -3, 5, -5}) {
             int uu = u + du;
-            if (uu < 4 || uu > near.length() - width - 4) {
+            if (uu < side || uu > near.length() - width - side) {
                 continue;
             }
             for (int dy = 0; dy <= 3; dy++) {

@@ -143,10 +143,64 @@ public final class RubricGrader {
         t.start();
     }
 
+    /** The property that switches, for each kind of output the grader knows. */
+    static final Map<String, String> SWITCH = Map.ofEntries(
+            Map.entry("minecraft:redstone_lamp", "lit"), Map.entry("minecraft:iron_door", "open"),
+            Map.entry("minecraft:iron_trapdoor", "open"), Map.entry("minecraft:dispenser", "triggered"),
+            Map.entry("minecraft:dropper", "triggered"), Map.entry("minecraft:note_block", "powered"),
+            Map.entry("minecraft:sticky_piston", "extended"), Map.entry("minecraft:piston", "extended"));
+
+    /** The case's word for a kind of output, from a block id. */
+    static String outputKind(String id) {
+        if (id.equals("minecraft:redstone_lamp")) {
+            return "lamp";
+        }
+        if (id.endsWith("_door")) {
+            return "door";
+        }
+        if (id.endsWith("_fence_gate")) {
+            return "gate";
+        }
+        if (id.endsWith("_trapdoor")) {
+            return "trapdoor";
+        }
+        if (id.equals("minecraft:dispenser")) {
+            return "dispenser";
+        }
+        if (id.equals("minecraft:dropper")) {
+            return "dropper";
+        }
+        if (id.equals("minecraft:note_block")) {
+            return "note_block";
+        }
+        if (id.equals("minecraft:sticky_piston") || id.equals("minecraft:piston")) {
+            return "piston";
+        }
+        return null;
+    }
+
+    static String switchProp(String id) {
+        if (SWITCH.containsKey(id)) {
+            return SWITCH.get(id);
+        }
+        return id.endsWith("_fence_gate") || id.endsWith("_trapdoor") || id.endsWith("_door") ? "open" : null;
+    }
+
+    static String idOf(String state) {
+        return state.contains("[") ? state.substring(0, state.indexOf('[')) : state;
+    }
+
+    static String propOf(String state, String prop) {
+        java.util.regex.Matcher m = java.util.regex.Pattern.compile("[\\[,]" + prop + "=([a-z0-9_]+)").matcher(state);
+        return m.find() ? m.group(1) : null;
+    }
+
     /**
-     * One case. Its JSON: {@code snapshot} (the file {@link #snapshot} wrote), {@code building} (whose door it is),
-     * {@code controls}: [{kind, side: outside|inside|any, maxDist}], {@code onIs}: closed|open (what a control
-     * switched ON does to the doorway), {@code cycles} (default 3).
+     * One case. Its JSON: {@code snapshot} (the file {@link #snapshot} wrote); optional {@code building} (the id whose
+     * doorway, box and sides the case speaks of); {@code outputs}: [{kind: lamp|door|gate|trapdoor|dispenser|
+     * dropper|note_block|piston, min, maxDist}] what the wish must have added; {@code controls}: [{kind (or any),
+     * side: outside|inside|any, maxDist}]; optional {@code items} (an item some added dispenser or dropper holds);
+     * {@code onIs}: open|closed for a door (what a control switched ON does), on|off otherwise; {@code cycles}.
      */
     static JsonObject grade(MinecraftServer server, Path caseFile) throws Exception {
         JsonObject spec = JsonParser.parseString(Files.readString(caseFile)).getAsJsonObject();
@@ -154,8 +208,10 @@ public final class RubricGrader {
                 spec.get("snapshot").getAsString()))).getAsJsonObject();
         ServerLevel level = server.overworld();
         int[] box = ints(snap.getAsJsonArray("box"));
-        String building = spec.get("building").getAsString();
-        int[] bbox = ints(snap.getAsJsonObject("buildings").getAsJsonArray(building));
+        String building = spec.has("building") && !spec.get("building").isJsonNull()
+                ? spec.get("building").getAsString() : null;
+        int[] bbox = building != null && snap.getAsJsonObject("buildings").has(building)
+                ? ints(snap.getAsJsonObject("buildings").getAsJsonArray(building)) : null;
         Map<BlockPos, String> before = new HashMap<>();
         for (var e : snap.getAsJsonObject("blocks").entrySet()) {
             String[] p = e.getKey().split(",");
@@ -164,7 +220,6 @@ public final class RubricGrader {
         }
         JsonObject v = new JsonObject();
         List<String> notes = new ArrayList<>();
-        // no player is on in this boot: keep the area ticking, as a child standing there would
         AgentBridge.onServer(() -> {
             for (int cx = box[0] >> 4; cx <= box[3] >> 4; cx++) {
                 for (int cz = box[2] >> 4; cz <= box[5] >> 4; cz++) {
@@ -173,8 +228,8 @@ public final class RubricGrader {
             }
             return null;
         }, 30_000L);
+        waitTicks(server, 20);
 
-        // the diff (server thread): every position whose block changed
         Map<BlockPos, String[]> diff = AgentBridge.onServer(() -> {
             Map<BlockPos, String[]> d = new LinkedHashMap<>();
             BlockPos.MutableBlockPos m = new BlockPos.MutableBlockPos();
@@ -193,8 +248,6 @@ public final class RubricGrader {
             return d;
         }, 30_000L);
         v.addProperty("changed", diff.size());
-
-        // the reported footprint: every mechanism journal position (the tool's own report)
         Set<BlockPos> footprint = new HashSet<>();
         AgentBridge.onServer(() -> {
             for (MechanismStore.Entry e : MechanismStore.all(level)) {
@@ -203,109 +256,226 @@ public final class RubricGrader {
             return null;
         }, 30_000L);
 
-        // the building's original doorway: its door blocks on the ground storey, in the snapshot
+        // the building's original doorway (its door blocks on the ground storey), for door cases
         List<BlockPos> doorway = new ArrayList<>();
-        for (var e : before.entrySet()) {
-            BlockPos p = e.getKey();
-            if (e.getValue().contains("_door[") && e.getValue().contains("half=lower") && inBox(p, bbox)
-                    && p.getY() <= bbox[1] + 3) {
-                doorway.add(p);
-                doorway.add(p.above());
+        boolean ownDoorway = spec.has("ownDoorway") && spec.get("ownDoorway").getAsBoolean();
+        if (bbox != null && ownDoorway) {
+            for (var e : before.entrySet()) {
+                BlockPos p = e.getKey();
+                if (e.getValue().contains("_door[") && e.getValue().contains("half=lower") && inBox(p, bbox)
+                        && p.getY() <= bbox[1] + 3) {
+                    doorway.add(p);
+                    doorway.add(p.above());
+                }
             }
         }
 
-        // what was added: controls and pistons
+        // what was added: outputs by kind, and controls
+        Map<String, List<BlockPos>> outputs = new HashMap<>();
         List<BlockPos> controls = new ArrayList<>();
         List<String> controlKinds = new ArrayList<>();
-        int pistons = 0;
+        boolean toggles = false;
         for (var e : diff.entrySet()) {
             String now = e.getValue()[1];
-            String id = now.contains("[") ? now.substring(0, now.indexOf('[')) : now;
+            String id = idOf(now);
             if (id.equals("minecraft:lever") || id.endsWith("_button") || id.endsWith("_pressure_plate")) {
                 controls.add(e.getKey());
                 controlKinds.add(id.equals("minecraft:lever") ? "lever" : id.endsWith("_button") ? "button"
                         : "pressure_plate");
             }
-            if (id.equals("minecraft:sticky_piston") || id.equals("minecraft:piston")) {
-                pistons++;
+            if (id.contains("copper_bulb")) {
+                toggles = true;
+            }
+            String k = outputKind(id);
+            if (k != null && !(id.endsWith("_door") && propOf(now, "half") != null
+                    && !"lower".equals(propOf(now, "half")))) {
+                outputs.computeIfAbsent(k, x -> new ArrayList<>()).add(e.getKey());
             }
         }
-
-        // F1 built
-        boolean f1 = pistons > 0 && !controls.isEmpty();
-        v.addProperty("F1_built", f1);
-        if (!f1) {
-            notes.add("no mechanism found: " + pistons + " pistons and " + controls.size() + " controls were added");
+        // a piston door shows as pistons; it counts as a door for the case
+        if (outputs.containsKey("piston") && !outputs.containsKey("door")) {
+            outputs.put("door", outputs.get("piston"));
         }
+        JsonObject counted = new JsonObject();
+        outputs.forEach((k, l) -> counted.addProperty(k, l.size()));
+        v.add("added_outputs", counted);
+        v.addProperty("added_controls", controls.size());
 
-        // F3 what was wished: the door in the building's own doorway, controls of the kinds and places asked
+        // F1 built: every output kind the case names, and a control
+        boolean f1 = !controls.isEmpty();
+        JsonArray wanted = spec.has("outputs") ? spec.getAsJsonArray("outputs") : new JsonArray();
+        for (JsonElement oe : wanted) {
+            String k = oe.getAsJsonObject().get("kind").getAsString();
+            if (alts(k).stream().noneMatch(outputs::containsKey)) {
+                f1 = false;
+                notes.add("no " + k + " was added");
+            }
+        }
+        if (controls.isEmpty()) {
+            notes.add("no switch, button or plate was added");
+        }
+        v.addProperty("F1_built", f1);
+
+        // F3 as wished: counts, distances, controls' kinds and sides, items
         boolean f3 = true;
-        if (doorway.isEmpty()) {
-            notes.add("the building had no door in the snapshot; F3 judged on the controls only");
-        } else if (diff.keySet().stream().noneMatch(doorway::contains)) {
+        for (JsonElement oe : wanted) {
+            JsonObject o = oe.getAsJsonObject();
+            String k = o.get("kind").getAsString();
+            int min = o.has("min") ? o.get("min").getAsInt() : 1;
+            int maxDist = o.has("maxDist") ? o.get("maxDist").getAsInt() : 0;
+            List<BlockPos> got = new ArrayList<>();
+            alts(k).forEach(a -> got.addAll(outputs.getOrDefault(a, List.of())));
+            List<BlockPos> near = got.stream().filter(p -> maxDist <= 0 || bbox == null || distToBox(p, bbox) <= maxDist)
+                    .toList();
+            if (near.size() < min) {
+                f3 = false;
+                notes.add("wanted at least " + min + " " + k + (maxDist > 0 ? " within " + maxDist + " of " + building : "")
+                        + ", found " + near.size());
+            }
+        }
+        if (k3(spec, "door") && !doorway.isEmpty() && diff.keySet().stream().noneMatch(doorway::contains)) {
             f3 = false;
             notes.add("nothing changed in the building's own doorway " + doorway.get(0).toShortString()
                     + ": the door went somewhere else");
         }
-        BlockPos dc = doorway.isEmpty() ? null : doorway.get(0);
-        for (JsonElement ce : spec.getAsJsonArray("controls")) {
+        BlockPos ref = !doorway.isEmpty() ? doorway.get(0) : bbox != null
+                ? new BlockPos((bbox[0] + bbox[3]) / 2, bbox[1], (bbox[2] + bbox[5]) / 2) : null;
+        JsonArray wantedControls = spec.has("controls") ? spec.getAsJsonArray("controls") : new JsonArray();
+        for (JsonElement ce : wantedControls) {
             JsonObject c = ce.getAsJsonObject();
-            String kind = c.get("kind").getAsString();
+            String kind = c.has("kind") ? c.get("kind").getAsString() : "any";
             String side = c.has("side") ? c.get("side").getAsString() : "any";
-            int maxDist = c.has("maxDist") ? c.get("maxDist").getAsInt() : 12;
+            int maxDist = c.has("maxDist") ? c.get("maxDist").getAsInt() : 16;
+            int needN = c.has("min") ? c.get("min").getAsInt() : 1;
+            int foundN = 0;
             boolean found = false;
             for (int i = 0; i < controls.size(); i++) {
                 BlockPos p = controls.get(i);
-                if (!controlKinds.get(i).equals(kind)) {
+                if (!kind.equals("any") && !controlKinds.get(i).equals(kind)) {
                     continue;
                 }
-                boolean outside = !inBox(p, bbox);
+                boolean outside = bbox == null || !inBox(p, bbox);
                 boolean sideOk = side.equals("any") || side.equals("outside") == outside;
-                boolean near = dc == null || Math.sqrt(p.distSqr(dc)) <= maxDist;
+                boolean near = ref == null || Math.sqrt(p.distSqr(ref)) <= maxDist;
                 if (sideOk && near) {
-                    found = true;
+                    foundN++;
                 }
             }
+            found = foundN >= needN;
             if (!found) {
                 f3 = false;
-                notes.add("no " + kind + " " + side + " within " + maxDist + " of the door (added: " + controlKinds
-                        + " at " + controls + ")");
+                notes.add("no " + kind + " " + side + " within " + maxDist + " (added: " + controlKinds + " at "
+                        + controls + ")");
+            }
+            if (c.has("toggle") && c.get("toggle").getAsBoolean() && !toggles) {
+                f3 = false;
+                notes.add("the switch should toggle (press on, press off) and nothing toggles");
             }
         }
-        v.addProperty("F3_as_wished", f3);
+        if (spec.has("items")) {
+            String item = spec.get("items").getAsString();
+            boolean has = AgentBridge.onServer(() -> {
+                for (String k : List.of("dispenser", "dropper")) {
+                    for (BlockPos p : outputs.getOrDefault(k, List.of())) {
+                        if (level.getBlockEntity(p) instanceof net.minecraft.world.Container box2) {
+                            for (int i = 0; i < box2.getContainerSize(); i++) {
+                                var st = box2.getItem(i);
+                                if (!st.isEmpty() && BuiltInRegistries.ITEM.getKey(st.getItem()).toString().equals(item)) {
+                                    return true;
+                                }
+                            }
+                        }
+                    }
+                }
+                return false;
+            }, 10_000L);
+            if (!has) {
+                f3 = false;
+                notes.add("no dispenser or dropper holds " + item);
+            }
+        }
 
-        // F2 works and F4 usable: fire every new control ourselves, 3 cycles; the doorway open at rest (usable)
-        boolean f2 = false, f4 = false;
-        if (f1 && !doorway.isEmpty()) {
-            String on = spec.has("onIs") && spec.get("onIs").getAsString().equals("open") ? "#open" : "#shut";
-            String off = on.equals("#open") ? "#shut" : "#open";
+        // F2 works: fire every added control ourselves; every added output of a wanted kind must switch with it
+        boolean f2 = false, f4 = true;
+        String onIs = spec.has("onIs") ? spec.get("onIs").getAsString() : "on";
+        if (f1) {
             List<Expect> expects = new ArrayList<>();
-            for (BlockPos p : doorway) {
-                expects.add(new Expect(LevelView.rs(p), off, on, "the building's doorway"));
+            Map<BlockPos, String> rest = AgentBridge.onServer(() -> {
+                Map<BlockPos, String> r = new HashMap<>();
+                for (var en : outputs.entrySet()) {
+                    for (BlockPos p : en.getValue()) {
+                        r.put(p, BlockStateParser.serialize(level.getBlockState(p)));
+                    }
+                }
+                for (BlockPos p : doorway) {
+                    r.put(p, BlockStateParser.serialize(level.getBlockState(p)));
+                }
+                return r;
+            }, 10_000L);
+            Boolean doorOpenAtRest = null;     // known only from an iron door's state or his own doorway
+            for (JsonElement oe : wanted) {
+                String kk = oe.getAsJsonObject().get("kind").getAsString();
+                List<BlockPos> those = new ArrayList<>();
+                alts(kk).forEach(a -> those.addAll(outputs.getOrDefault(a, List.of())));
+                String k = kk.contains("door") ? "door" : kk;
+                for (BlockPos p : those) {
+                    String st = rest.get(p);
+                    String id = idOf(st), prop = switchProp(id);
+                    if (prop == null || propOf(st, prop) == null) {
+                        continue;
+                    }
+                    boolean val = Boolean.parseBoolean(propOf(st, prop));
+                    expects.add(new Expect(LevelView.rs(p), id + "[" + prop + "=" + val + "]",
+                            id + "[" + prop + "=" + !val + "]", "an added " + k));
+                    if (k.equals("door") && prop.equals("open")) {
+                        doorOpenAtRest = val;
+                    }
+                }
+            }
+            if (k3(spec, "door") && !doorway.isEmpty() && outputs.containsKey("piston")) {
+                boolean openNow = AgentBridge.onServer(() -> !level.getBlockState(doorway.get(0)).blocksMotion(),
+                        10_000L);
+                doorOpenAtRest = openNow;
+                for (BlockPos p : doorway) {
+                    expects.add(new Expect(LevelView.rs(p), openNow ? "#open" : "#shut", openNow ? "#shut" : "#open",
+                            "the building's doorway"));
+                }
             }
             List<Control> cs = new ArrayList<>();
             for (int i = 0; i < controls.size(); i++) {
-                cs.add(new Control(controlKinds.get(i), LevelView.rs(controls.get(i)), List.of(), null, 0));
+                cs.add(new Control(controlKinds.get(i), LevelView.rs(controls.get(i)), List.of(), null, 0, toggles));
             }
             MechanismPlan plan = new MechanismPlan("graded", List.of(), expects, cs, List.of(), List.of(), null);
             int cycles = spec.has("cycles") ? spec.get("cycles").getAsInt() : 3;
             MechanismProof.Result r = MechanismProof.prove(level, plan, cycles);
-            f2 = r.ok();
-            v.addProperty("F2_works", f2);
-            if (!f2) {
+            f2 = r.ok() && !expects.isEmpty();
+            if (!r.ok()) {
                 notes.add("firing the controls ourselves: " + r.why());
             }
-            // usable: at rest (every control off) the doorway is open, which the proof's rest state checked
-            // usable: open at rest, or shut at rest with a way to open it from BOTH sides (or he is shut in or out)
-            boolean outside = controls.stream().anyMatch(p -> !inBox(p, bbox));
-            boolean inside = controls.stream().anyMatch(p -> inBox(p, bbox));
-            f4 = f2 && (off.equals("#open") || outside && inside);
-            if (f2 && !f4) {
-                notes.add("the doorway is SHUT at rest and can only be opened from the " + (inside ? "inside" : "outside"));
+            if (expects.isEmpty()) {
+                notes.add("nothing added that a switch can be seen to change");
             }
-        } else {
-            v.addProperty("F2_works", false);
+            // the door's sense: onIs open means a switch ON opens it, so it rests SHUT
+            if (k3(spec, "door") && doorOpenAtRest != null) {
+                boolean wantShutAtRest = onIs.equals("open");
+                if (doorOpenAtRest == wantShutAtRest) {
+                    f3 = false;
+                    notes.add("the door rests " + (doorOpenAtRest ? "open" : "shut") + " but the wish wants a switch to "
+                            + onIs + " it");
+                }
+                // usable: a door shut at rest opens from BOTH sides of the building
+                if (!doorOpenAtRest && bbox != null) {
+                    boolean out = controls.stream().anyMatch(p -> !inBox(p, bbox));
+                    boolean in = controls.stream().anyMatch(p -> inBox(p, bbox));
+                    f4 = out && in;
+                    if (!f4) {
+                        notes.add("the door rests shut and opens only from the " + (in ? "inside" : "outside"));
+                    }
+                }
+            }
         }
+        v.addProperty("F2_works", f2);
+        v.addProperty("F3_as_wished", f3);
         v.addProperty("F4_usable", f4);
 
         // side effects
@@ -318,10 +488,12 @@ public final class RubricGrader {
                 continue;
             }
             String was = e.getValue()[0], now = e.getValue()[1];
-            if (now.startsWith("minecraft:water") || now.startsWith("minecraft:lava") || now.startsWith("minecraft:fire")) {
+            if (now.startsWith("minecraft:lava") || now.startsWith("minecraft:fire")
+                    || now.startsWith("minecraft:water") && !was.startsWith("minecraft:water")) {
                 s3 = true;
             }
-            if (!was.equals("minecraft:air") && !natural(was)) {
+            boolean byOtherTools = bbox != null && inBox(p, bbox);   // a change inside his building
+            if (!was.equals("minecraft:air") && !natural(was) && byOtherTools) {
                 s1++;
                 if (s1Where.size() < 8) {
                     s1Where.add(was + " at " + p.toShortString() + " is now " + now);
@@ -332,28 +504,50 @@ public final class RubricGrader {
         }
         v.addProperty("S1_player_blocks_lost", s1);
         if (s1 > 0) {
-            notes.add("player blocks changed outside the reported footprint: " + s1Where);
+            notes.add("his building's blocks changed outside what the mechanism reported: " + s1Where);
         }
         v.addProperty("S3_environment", s3);
         v.addProperty("S5_other_changes", s5);
-
-        // S4: a clock nobody asked for. Watch the footprint at rest for 60 ticks: nothing may change.
-        Map<BlockPos, String> rest = AgentBridge.onServer(() -> states(level, footprint), 10_000L);
+        Map<BlockPos, String> rest2 = AgentBridge.onServer(() -> states(level, footprint), 10_000L);
         waitTicks(server, 60);
         Map<BlockPos, String> later = AgentBridge.onServer(() -> states(level, footprint), 10_000L);
-        boolean s4 = !rest.equals(later);
+        boolean s4 = !rest2.equals(later);
         v.addProperty("S4_runs_by_itself", s4);
         if (s4) {
             notes.add("the mechanism changes by itself at rest (a clock)");
         }
-
         boolean hard = s1 > 0 || s3 || s4;
         String verdict = f1 && f2 && f3 && f4 && !hard ? "PASS" : f1 && f2 && !hard ? "PARTIAL" : "FAIL";
+        if (spec.has("manual") && spec.get("manual").getAsBoolean()) {
+            verdict = "MANUAL";      // a wish this grader cannot judge (not a redstone output): judged by a person
+        }
         v.addProperty("verdict", verdict);
         JsonArray n = new JsonArray();
         notes.forEach(n::add);
         v.add("notes", n);
         return v;
+    }
+
+    static List<String> alts(String kind) {
+        return List.of(kind.split("\\|"));
+    }
+
+    static boolean k3(JsonObject spec, String kind) {
+        if (!spec.has("outputs")) {
+            return false;
+        }
+        for (JsonElement e : spec.getAsJsonArray("outputs")) {
+            if (alts(e.getAsJsonObject().get("kind").getAsString()).contains(kind)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    static double distToBox(BlockPos p, int[] b) {
+        double dx = Math.max(0, Math.max(b[0] - p.getX(), p.getX() - b[3]));
+        double dz = Math.max(0, Math.max(b[2] - p.getZ(), p.getZ() - b[5]));
+        return Math.hypot(dx, dz);
     }
 
     static Map<BlockPos, String> states(ServerLevel level, Set<BlockPos> at) {

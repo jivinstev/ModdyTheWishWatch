@@ -425,6 +425,12 @@ public final class HeadlessWishProbe {
                                 Math.min(area[2], e[2]), Math.max(area[3], e[3]), Math.max(area[4], e[4]),
                                 Math.max(area[5], e[5])};
                     }
+                    if (area == null) {
+                        // no buildings: the area round where he stands, which is where a wish with no place lands
+                        BlockPos c = (realChild != null ? realChild : child).blockPosition();
+                        area = new int[] {c.getX() - 28, c.getY() - 10, c.getZ() - 28, c.getX() + 28, c.getY() + 16,
+                                c.getZ() + 28};
+                    }
                     if (area != null) {
                         com.moddingfromamod.redstone.RubricGrader.snapshot(level, area, boxes,
                                 Path.of(sigDir, "before.json"));
