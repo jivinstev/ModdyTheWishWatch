@@ -50,6 +50,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
+  PYTHONUTF8: "1"   # Windows' console is cp1252 otherwise, and gate.py's summary has an arrow in it
   # The GameTest smoke: each class proves one platform-sensitive path (docs/RELEASING.md, "Platform smoke").
   #   NoPythonGameTest       a real datapack wish compiles in-process with the bundled CBScript compiler, no Python
   #   DatapackGameTest       CBScript compiles, the datapack is written to the world and loads
@@ -171,6 +172,24 @@ jobs:
             echo '```'; grep -E '^gate: |^  (failed|flaky|skipped|PROBLEM)' "$RUNNER_TEMP/gametest.txt" | tail -n 20; echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
           exit $rc
+      - name: Each failed test's error
+        if: ${{ failure() }}
+        run: |
+          python - "$RUNNER_TEMP/smoke/gametest/job.json" <<'PY'
+          import json, sys
+          try:
+              job = json.load(open(sys.argv[1], encoding="utf-8"))
+          except OSError as e:
+              sys.exit("no job.json: %s" % e)
+          for t in job.get("tests", []):
+              if t["outcome"] in ("failed", "flaky", "skipped"):
+                  print("::error title=%s %s::%s" % (t["outcome"], t["name"], (t.get("error") or "no error text")[:900]))
+                  r = t.get("retry") or {}
+                  if r.get("ran"):
+                      print("    retried alone: %s -- %s" % ("passed" if r.get("passed") else "failed", (r.get("error") or "")[:900]))
+          for p in job.get("problems", []):
+              print("::error title=problem::" + p[:900])
+          PY
       - uses: actions/upload-artifact@v5
         if: ${{ always() }}
         with:
@@ -196,8 +215,8 @@ jobs:
       # pal1000/mesa-dist-win (MIT), Mesa built for Windows: its opengl32.dll beside java.exe is the first opengl32 the
       # JDK's process loads, so LWJGL gets llvmpipe's OpenGL 4.5 instead of the runner's GDI 1.1. Downloaded here,
       # never committed. MESA_SHA256 pins the archive; empty, the run prints the sha256 it got and fails.
-      MESA_VERSION: ""
-      MESA_SHA256: ""
+      MESA_VERSION: "26.3.1"
+      MESA_SHA256: "64e84cf13d67dd354640bf443ed0445e6a83afd06a5729f0750b3744d633b3f1"
     steps:
       - uses: actions/checkout@v7
         with:
@@ -217,7 +236,7 @@ jobs:
           tag="${MESA_VERSION:-$(gh api repos/pal1000/mesa-dist-win/releases/latest --jq .tag_name)}"
           asset="$(gh api "repos/pal1000/mesa-dist-win/releases/tags/$tag" --jq '.assets[].name' | grep -E 'release-msvc\.7z$' | head -1)"
           curl -fsSL --retry 3 -o "$RUNNER_TEMP/mesa.7z" "https://github.com/pal1000/mesa-dist-win/releases/download/$tag/$asset"
-          got="$(sha256sum "$RUNNER_TEMP/mesa.7z" | cut -d' ' -f1)"
+          got="$(sha256sum "$RUNNER_TEMP/mesa.7z" | cut -d' ' -f1 | tr -d '\\')"
           echo "Mesa $tag ($asset) sha256 $got" | tee -a "$GITHUB_STEP_SUMMARY"
           if [ -z "$MESA_SHA256" ]; then echo "::error::MESA_SHA256 is not pinned: pin MESA_VERSION=$tag and MESA_SHA256=$got"; exit 1; fi
           [ "$got" = "$MESA_SHA256" ] || { echo "::error::Mesa archive sha256 $got, pinned $MESA_SHA256"; exit 1; }
