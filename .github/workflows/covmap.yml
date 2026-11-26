@@ -117,6 +117,10 @@ jobs:
             ~/.gradle/caches
             ~/.gradle/wrapper
           key: gradle-${{ runner.os }}-${{ hashFiles('gradle.properties', 'build.gradle', 'versions/*.properties', 'gradle/wrapper/gradle-wrapper.properties') }}
+          restore-keys: gradle-${{ runner.os }}-
+      - &centralMirror
+        name: Maven Central through its public mirror (CI only, .github/gradle/central-mirror.init.gradle)
+        run: mkdir -p ~/.gradle/init.d && cp .github/gradle/central-mirror.init.gradle ~/.gradle/init.d/
       - &covmapTools
         name: Compile, and the JaCoCo agent and core (retried on a busy repository)
         run: |
@@ -142,6 +146,7 @@ jobs:
           distribution: temurin
           java-version: '21'
       - *gradleCache
+      - *centralMirror
       - *covmapTools
       - name: Map this share
         env:
