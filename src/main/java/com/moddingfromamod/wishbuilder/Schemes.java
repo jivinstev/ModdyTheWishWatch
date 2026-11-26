@@ -153,6 +153,10 @@ public final class Schemes {
                     "minecraft:pink_concrete", "minecraft:light_blue_concrete", "minecraft:white_concrete", List.of("candy", "pastel", "bubblegum", "pink and blue", "candy colours", "candy colors")),
             new Scheme("royal", "Royal", "#5B2C9F", "#F2C230", "#FFFFFF",
                     "minecraft:purple_concrete", "minecraft:gold_block", "minecraft:quartz_block", List.of("royal", "fancy", "purple and gold", "king colours", "royal colours", "royal colors", "fit for a king", "like a king")),
+            // #178: the villain's colours. The arena's champions wear it, and a child may pick it for his own
+            // creature too ("make him evil"). No block that hurts or moves him: concrete, nether brick, redstone lamp.
+            new Scheme("shadow", "Shadow", "#16131A", "#B3121B", "#FF3B3B",
+                    "minecraft:black_concrete", "minecraft:red_concrete", "minecraft:red_nether_bricks", List.of("shadow", "evil", "dark", "villain", "spooky", "black and red", "shadow colours", "shadow colors", "bad guy", "scary")),
             // ── SKINS: "made of" a material. Every colour goes, in the material's three shades; a
             // building is rebuilt in its blocks. No block that hurts or moves him (no magma, no real lava, no
             // slime floor that bounces him off a tower).

@@ -186,6 +186,46 @@ stamped strings.
   one. If that switch is turned on, plain gifts are stamped too.
 - It does not fit items to a world's limits; that is the make facts' and the fit's job.
 
+## A world wishing a creature: `WorldWishes`
+
+A world module **wishes** through the Builder, exactly as a child's Builder pick is made (#178): a battle world's wave
+monsters and champions, a quest world's guardian. `WorldWishes` is an API a world calls, not a hook the core reads.
+
+- **`WorldWishes.creature(level, moduleId, spec, x, y, z, limits, slim, onArrive)`**: a Builder **real mob**
+  (`mob:<id>`, with `mobsize`, How strong `strength` 1–3 and `speed` "1"/"3": `BuilderRealMobs`).
+  - It is fitted to `limits` by the Builder's own `BuilderAllowlist.capped(spec, limits)` and held there by the live
+    fit's own modifiers (`LiveFit.holdWorld`).
+  - It is never weaker than the plain mob: the limits are floored at its vanilla numbers.
+- **`WorldWishes.species(level, moduleId, speciesId, …)`**: a copy of a **Builder design** the world made with
+  `BuilderMake.forWorld(server, moduleId, name, spec)`.
+  - That is the real Builder make, as a design only (`spawn: no`).
+  - The design is owned by `BuilderMake.worldOwner(moduleId)` and allowed by `BuilderAllowlist.FOR_WORLDS`: the
+    reviewed list plus `hostile`/`boss`, which no child's menu offers.
+  - The owner id is a world's, told from any player's by its bits (`WorldOwners.is`), so no child is told the make's
+    plan, no preview stands beside one, and its pillar is the world's colour, after a restart too.
+  - Its words (the spec's `name`, the `displayName`) pass the sweep a name a child types passes; a name that does not
+    is refused (`Outcome.REFUSED`) and nothing is made.
+  - The same design asked again (each battle, each restart) answers with the species already made, so a world's makes
+    never fill the creature registry children's makes share.
+- **Limits are per wish** (`WorldWishes.Limits`). `Limits.of(ceiling)` takes make facts (`healthHalfHearts`,
+  `attackDamageHalfHearts`, `scaleTimes`, …). `Limits.UNCAPPED` (tag `moddy_world_wished_uncapped`) is for a world's
+  boss, because boss fights are meant to be hard. Only a world module calls this, so nothing a player wishes is ever
+  uncapped.
+- **Pillars:**
+  - a crimson pillar (`PillarPalette.WORLD`, never a player's colour) rises for `RISE_TICKS` (40), then the creature
+    arrives and `onArrive` runs on the server thread;
+  - `slim` draws the beam alone (about 3 displays, against about 53), for crowds;
+  - the core staggers it: at most 4 full and 12 slim pillars stood up per tick, and at most 6 arrivals per tick.
+- `cancelAll(moduleId)` calls off what has not arrived; `pending(moduleId)` counts it.
+
+A world-wished body carries the tags `moddy_world_wished` and `moddy_world_wished:<moduleId>`. Read it with
+`Wished.isWorldWished(entity)` / `Wished.worldOwnerOf(entity)`. It is **never** `Wished.isWished`, even a design's rig
+carrier: a world's monster is not spared, fitted to a player's limits or given a creature's role. Each player's own
+pillars are drawn in their own colour (`WishOrbs.paletteOf(player)`: the lowest free slot of eight when they join,
+given back when they leave and all let go when the server stops; slot 0 is the pillar as it always was). A world wish
+persists nothing of its own (the body is a plain entity of its world; a design is a Builder make, recorded as one), so
+it publishes no provenance of its own.
+
 ## Documented extension points
 
 ### `WishCharge`

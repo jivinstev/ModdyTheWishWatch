@@ -394,6 +394,18 @@ public record MakeFacts(String kind, Map<String, Double> numbers, Set<String> ta
                 a.tags.add(HOSTILE);
                 a.tags.add(FIGHTS);
             }
+            // #178: a real mob made stronger or faster states the numbers it is made at, the same reading its lowering
+            // summons (BuilderRealMobs), so a world's limits see it (a plain mob: none, as before)
+            BuilderRealMobs.Numbers stats = BuilderRealMobs.numbers(spec);
+            if (stats != null) {
+                a.most(HEALTH_HALF_HEARTS, stats.health());
+                if (stats.damage() > 0) {
+                    a.most(ATTACK_DAMAGE_HALF_HEARTS, stats.damage());
+                }
+                if (stats.speed() > 0 && !spec.opt("speed").isEmpty()) {   // only a speed he picked
+                    a.most(MOVEMENT_SPEED_ATTRIBUTE, stats.speed());
+                }
+            }
         }
         if (k == BuilderSpec.Kind.ITEM && BuilderLooks.SHOW.equals(spec.opt("power"))) {
             a.inert = true;   // "Just for fun": a keepsake with no power

@@ -442,8 +442,25 @@ public final class BuilderLowering {
             if (!spec.name().isEmpty()) {
                 nbt.add("CustomName:\"" + nbtSafe(spec.name()) + "\",PersistenceRequired:1b");
             }
-            if (!spec.opt("mobsize").isEmpty()) {   //: a named size is the game's own scale attribute
-                nbt.add("attributes:[{id:\"minecraft:scale\",base:" + BuilderMobSizes.of(spec.opt("mobsize")).scale() + "d}]");
+            // a named size is the game's own scale attribute; How strong and fast (#178) are its health, attack
+            // damage and speed, by the Builder's own table on the mob's own numbers (BuilderRealMobs)
+            List<String> attrs = new ArrayList<>();
+            if (!spec.opt("mobsize").isEmpty()) {
+                attrs.add("{id:\"minecraft:scale\",base:" + BuilderMobSizes.of(spec.opt("mobsize")).scale() + "d}");
+            }
+            BuilderRealMobs.Numbers stats = BuilderRealMobs.numbers(spec);
+            if (stats != null) {
+                attrs.add("{id:\"minecraft:max_health\",base:" + stats.health() + "d}");
+                if (stats.damage() > 0) {
+                    attrs.add("{id:\"minecraft:attack_damage\",base:" + stats.damage() + "d}");
+                }
+                if (stats.speed() > 0) {
+                    attrs.add("{id:\"minecraft:movement_speed\",base:" + stats.speed() + "d}");
+                }
+                nbt.add("Health:" + (float) stats.health() + "f");
+            }
+            if (!attrs.isEmpty()) {
+                nbt.add("attributes:[" + String.join(",", attrs) + "]");
             }
             String nameTag = nbt.isEmpty() ? "" : " {" + String.join(",", nbt) + "}";
             for (int i = 0; i < spec.count(); i++) {
@@ -528,7 +545,8 @@ public final class BuilderLowering {
         // its carrier's life: a flying cat fluttered like the bat it rides.
         a.addProperty(com.moddingfromamod.species.BehavesLike.ARG, behaviourOf(spec, sculpt));
         speed(spec, a);
-        a.addProperty("spawn", true);
+        // opts "spawn":"no": the design alone (#178: a world makes a champion once and spawns copies itself)
+        a.addProperty("spawn", !"no".equals(spec.opt("spawn")));
         at(spec, a);
         // the parts he added, hung on the ready-made's own head or body.
         List<String> kits = BuilderParts.chosen(spec);
@@ -818,7 +836,8 @@ public final class BuilderLowering {
         // its carrier's life: a flying cat fluttered like the bat it rides.
         a.addProperty(com.moddingfromamod.species.BehavesLike.ARG, behaviourOf(spec, sculpt));
         speed(spec, a);
-        a.addProperty("spawn", true);
+        // opts "spawn":"no": the design alone (#178: a world makes a champion once and spawns copies itself)
+        a.addProperty("spawn", !"no".equals(spec.opt("spawn")));
         at(spec, a);
         // the parts he added, hung on the ready-made's own head or body.
         List<String> kits = BuilderParts.chosen(spec);

@@ -76,8 +76,8 @@ public final class LiveFit {
      * a wish creature does not.
      */
     public static List<String> apply(LivingEntity mob, String speciesId, boolean tell) {
-        if (mob == null || speciesId == null) {
-            return List.of();
+        if (mob == null || speciesId == null || com.moddingfromamod.world.Wished.isWorldWished(mob)) {
+            return List.of();   // a world's own creature: held by WorldWishes at the ceiling it named (holdWorld)
         }
         if (!MakeGate.anyWorld()) {
             // nobody answers here (now): its own numbers. A fit an answer put on before (the last region going away,
@@ -144,6 +144,25 @@ public final class LiveFit {
             LOGGER.warn("live fit of {} to {} left {} (another modifier multiplies it)", id, limit, after);
         }
         return true;
+    }
+
+    /**
+     * <b>A world's own creature held at limits it names</b> (#178, {@code WorldWishes}): the same modifiers, with the
+     * same fixed ids, as every live fit, so a world's monster is held by exactly the code that holds a child's. Server
+     * thread. @return the facts it was fitted in.
+     */
+    public static List<String> holdWorld(LivingEntity mob, Map<String, Double> limits) {
+        if (mob == null || limits == null || limits.isEmpty()) {
+            return List.of();
+        }
+        List<String> fitted = new ArrayList<>();
+        for (Stat st : STATS) {
+            if (fit(mob, st.attribute(), st.id(), limits.get(st.fact()))) {
+                fitted.add(st.fact());
+            }
+        }
+        mob.setHealth(Math.min(mob.getHealth(), mob.getMaxHealth()));
+        return fitted;
     }
 
     /** The modifier on {@code mob} for this stat's fit, or null: for a test that it is there once, and only there. */
