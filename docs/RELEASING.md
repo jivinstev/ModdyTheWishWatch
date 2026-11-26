@@ -22,9 +22,9 @@ Taking `main` into `neoforge-1.21.8` always ships a new version:
    `main`.
 3. **Port CI on `neoforge-1.21.8`** gates it and cuts the pre-release `moddingfromamod-X.Y.Z-mc1.21.8` (push the tag,
    or run the workflow with `release = true`). Its gates are Gate A, Gate B and, as Gate C, the rig films
-   (`tools/gate-c-rig.sh`, every film, declared in `.port/1.21.8/gate-c.json`), run in a real client on the full
-   environment; the release's `gates-full.md` records the Gate C row. A version branch above 1.21.8 inherits that file
-   until it has its own. A set where a film failed and then passed its one retry (FLAKY, exit 3) is a pass on a release
+   (`tools/gate-c-rig.sh --targeted`: the core films plus what changed since the last release, declared in
+   `.port/1.21.8/gate-c.json`), run in a real client on the full environment; the release's `gates-full.md` records
+   the Gate C row. Every rung declares the same in its own file ("Gate C on every version"). A set where a film failed and then passed its one retry (FLAKY, exit 3) is a pass on a release
    run only, with a `WARNING FLAKY` Gate C row in the release notes (`release_flaky_exit` in that file); a pull
    request's `rig-films` job and Port CI's push runs still count it as a failure. #171 tracks fixing the flakes.
 
@@ -86,17 +86,30 @@ issue, like any other.
 
 ## Gate C on every version
 
-**One declaration serves every rung.** Port CI reads `.port/<mc>/gate-c.json`, else the nearest lower version's, so
-`.port/1.21.8/gate-c.json` (the rig films, `tools/gate-c-rig.sh`) is the Gate C of every `neoforge-<v>` branch once
-`main` has been merged up into it. No rung has a copy of its own: a copy would be one more file to change six times. A
-rung that needs other arguments or a longer timeout gets its own file then, and that file wins on that rung.
+**Every rung declares its own Gate C: the targeted rig films.** `.port/<mc>/gate-c.json` (1.21.8, 1.21.10, 1.21.11,
+26.1.2, 26.2, 26.3, all on `main` and carried up by the merge) runs `tools/gate-c-rig.sh --targeted`, as Port CI's
+Gate C, in a real client on the full environment. Port CI takes a rung's own file, else the nearest lower version's,
+so a new rung inherits the one below until it gets its own. A targeted run is:
+
+- **the core set, always** (`RIG_FILMS_CORE` in `tools/rig-films.py`: `vanillastage`, a creature drawn and
+  photographed; `vanillawalk`, a walk with every part held to its body; `vanilladeath`, the fall and spin), about 2.5
+  minutes;
+- **plus what changed since the rung's last release** (the newest `moddingfromamod-*-mc<mc>` tag below HEAD): a
+  film whose own client test changed runs, and a change to anything every film measures (the rig, the harness, the
+  sculpt tool, the creature lesson, the scoreboard, the scripts: `RIG_PATH_RULES`) runs **every** film. With no
+  release below HEAD, every film runs.
+
+`python3 tools/rig-films.py --targeted [BASE]` prints the selection and why; `./tools/gate-c-rig.sh --targeted
+[BASE] --list` shows what a run would run. The pull request job (`rig-films` in `ci.yml`) still runs every film when a
+change touches what they measure. A film that fails is run once more and FLAKY is a pass only on a release run
+(`release_flaky_exit`), as before.
 
 **The set is decided per version, in one place.** `tools/rig-films.py` takes the films the scoreboard names, minus
 `RIG_FILMS_NOT_RUN` (never run anywhere) and minus `RIG_FILMS_NOT_ON[<minecraft_version>]`: a version's declared
-subset, each film there with its reason. `python3 tools/rig-films.py --list` on a branch prints that branch's set and
-names every film it leaves out; `--check` refuses an entry that is not a film or gives no reason. A film is left out
-only when it **cannot run** on a version (a harness that has nothing to measure there). A film that runs and fails
-on a rung is a finding about that rung's port, and goes to an issue, never into this table to turn a release green.
+subset, each film there with its reason. `--list` on a branch prints that branch's set and names every film it leaves
+out; `--check` refuses an entry that is not a film or gives no reason. A film is left out only when it **cannot run**
+on a version (a harness that has nothing to measure there). A film that runs and fails on a rung is a finding about
+that rung's port, and goes to an issue, never into this table to turn a release green. The table is empty today.
 
 **What the films needed to run on 26.x**, all fixed on `main` so every rung gets them with the merge up (proved on
 `neoforge-26.3` with `main`'s rig scripts, 2026-11-26):

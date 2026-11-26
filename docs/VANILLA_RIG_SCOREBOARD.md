@@ -17,7 +17,8 @@ file and fails the build if:
 testmode still EXISTS — not that it passes. A client film is a real client under Xvfb, minutes each,
 and nothing runs it on a commit: it is re-verified when **`./tools/gate-c-rig.sh`** runs, which
 CI requires of any pull request that touches the rig (`tools/rig-films.py --needed`), and which Port CI runs as
-Gate C of every `neoforge-1.21.8` build and release (`.port/1.21.8/gate-c.json`). Without that, a
+Gate C of every version's build and release, targeted (`.port/<mc>/gate-c.json`: a core set, and every film when
+the rig changed since that version's last release; docs/RELEASING.md, "Gate C on every version"). Without that, a
 VERIFIED row's film once failed some runs on `main` for days before anyone saw it.
 
 That last one is what makes progress *monotonic*: a change that quietly stops proving something

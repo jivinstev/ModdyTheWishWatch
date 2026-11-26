@@ -6,6 +6,9 @@
 #     ./tools/gate-c-rig.sh --only vanillawalklook,vanillahair
 #     ./tools/gate-c-rig.sh --no-retry          # one attempt per film
 #     ./tools/gate-c-rig.sh --list              # what it would run, and nothing else
+#     ./tools/gate-c-rig.sh --targeted [BASE]   # the core films, plus what changed since BASE (default: this
+#                                               # version's newest release below HEAD): Port CI's Gate C on every
+#                                               # version (.port/<mc>/gate-c.json; tools/rig-films.py --targeted)
 #
 # WHY: docs/VANILLA_RIG_SCOREBOARD.md marks rows VERIFIED against `GateC:<testmode>` films, and nothing ran
 # those films unless a person launched one by hand, so an intermittent film went unseen for days.
@@ -38,8 +41,13 @@ cd "$REPO" || exit 2
 ONLY=""
 RETRY=1
 LIST=0
+SELECT=(--list)
 while [ $# -gt 0 ]; do
     case "$1" in
+        --targeted)
+            if [ -n "${2:-}" ] && [ "${2#--}" = "$2" ]; then SELECT=(--targeted "$2"); shift 2
+            else SELECT=(--targeted); shift; fi ;;
+        --targeted=*) SELECT=(--targeted "${1#--targeted=}"); shift ;;
         --only) ONLY="${2:-}"; shift 2 ;;
         --only=*) ONLY="${1#--only=}"; shift ;;
         --no-retry) RETRY=0; shift ;;
@@ -59,7 +67,7 @@ while read -r mode _cls; do
         continue
     fi
     FILMS+=("$mode")
-done < <(python3 tools/rig-films.py --list)
+done < <(python3 tools/rig-films.py "${SELECT[@]}")
 
 echo "gate-c-rig: Minecraft $MC_T — ${#FILMS[@]} film(s): ${FILMS[*]:-none}"
 [ "$LIST" = 1 ] && exit 0
@@ -94,6 +102,8 @@ attempt() {
         "${GATE_C_CLIENT:-./tools/client-test.sh}" "$mode" > "$OUT/$mode.$round.log" 2>&1
     rc=$?
     cp "$sig/result" "$OUT/$mode.$round.result" 2>/dev/null || true
+    # the client's own log, kept per attempt: the next attempt reuses $sig, and a hang or crash is read from this
+    cp "$sig/run.log" "$OUT/$mode.$round.client.log" 2>/dev/null || true
     if [ "$rc" = 0 ] && [ -n "$drift" ] && { [ -d "$drift" ] || [ -z "${GATE_C_CLIENT:-}" ]; }; then
         if ! python3 tools/rig-drift.py "$drift" > "$OUT/$mode.$round.drift" 2>&1; then
             rc=1
