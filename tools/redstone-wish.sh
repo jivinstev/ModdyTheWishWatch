@@ -9,12 +9,26 @@
 #             "controls": [{"kind": "lever", "side": "outside", "maxDist": 12}], "onIs": "closed"}
 # OUTDIR gets: result (the probe's verdict), before.json (the snapshot), wish.log, grade.log, verdict.json.
 set -euo pipefail
+regrade=no
+if [ "${1:-}" = "--regrade" ]; then regrade=yes; shift; fi
 case_file=$(realpath "$1"); out=$(realpath -m "$2"); mkdir -p "$out"
 here=$(cd "$(dirname "$0")/.." && pwd); cd "$here"
 rundir=${RS_RUNDIR:-rsWish}
 wish=$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["wish"])' "$case_file")
 setup=$(python3 -c 'import json,sys,os; c=json.load(open(sys.argv[1])); print(os.path.join(os.path.dirname(sys.argv[1]), c["setup"]))' "$case_file")
 w64=$(printf '%s' "$wish" | base64 | tr -d '\n')
+if [ "$regrade" = yes ]; then
+  [ -d "$out/world" ] || { echo "no saved world in $out"; exit 2; }
+  rm -rf "run/$rundir/world" "$out/verdict.json" && cp -r "$out/world" "run/$rundir/world"
+  python3 - "$case_file" "$out/case.json" <<'PY'
+import json,sys
+c=json.load(open(sys.argv[1])); c["snapshot"]="before.json"; json.dump(c,open(sys.argv[2],"w"),indent=1)
+PY
+  timeout 600 ./gradlew runServer -Prundir="$rundir" --console=plain \
+    -Ptestprops="rsgrade=$out/case.json,rsgradeout=$out" > "$out/grade.log" 2>&1 || true
+  python3 -c 'import json,sys; v=json.load(open(sys.argv[1])); print("== verdict:", v["verdict"]); [print("  -",n) for n in v.get("notes",[])]' "$out/verdict.json"
+  exit 0
+fi
 rm -rf "run/$rundir/world" "$out/result" "$out/verdict.json"
 # the world's terrain: flat by default (RS_LEVEL_TYPE=minecraft:normal for real terrain), so runs compare and film
 mkdir -p "run/$rundir"; touch "run/$rundir/server.properties"
@@ -47,5 +61,8 @@ c=json.load(open(sys.argv[1])); c["snapshot"]="before.json"; json.dump(c,open(sy
 PY
 timeout 600 ./gradlew runServer -Prundir="$rundir" --console=plain \
   -Ptestprops="rsgrade=$out/case.json,rsgradeout=$out" > "$out/grade.log" 2>&1 || true
+# keep the granted world, so a corrected grader can grade this run again without paying for the wish twice
+# (tools/redstone-wish.sh --regrade CASE OUT restores it and runs only the grade)
+rm -rf "$out/world" && cp -r "run/$rundir/world" "$out/world" 2>/dev/null || true
 [ -f "$out/verdict.json" ] && python3 -c 'import json,sys; v=json.load(open(sys.argv[1])); print("== verdict:", v["verdict"]); [print("  -",n) for n in v.get("notes",[])]' "$out/verdict.json" \
   || { echo "no verdict: see $out/grade.log"; exit 2; }
