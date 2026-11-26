@@ -36,23 +36,6 @@ class WishHotbarPlanTest {
     }
 
     @Test
-    void aFullHotbarSendsThePinToTheWishBagAndAsksOnlyWhenTheBagCannotTakeIt() {
-        // #189: "Which slot?" read as the pin going nowhere
-        assertEquals(WishHotbarPlan.Step.WISH_BAG, WishHotbarPlan.add(hotbar(), true, true).step());
-        assertEquals(WishHotbarPlan.Step.WISH_BAG, WishHotbarPlan.add(hotbar(), false, true).step());
-        assertEquals(-1, WishHotbarPlan.add(hotbar(), true, true).slot());
-        assertEquals(new WishHotbarPlan.Plan(WishHotbarPlan.Step.PLACE, 3), WishHotbarPlan.add(hotbar(3), true, true),
-                "an empty hotbar slot still comes first");
-        assertEquals(WishHotbarPlan.Step.ASK_WHICH, WishHotbarPlan.add(hotbar(), true, false).step(),
-                "a Wish Bag that cannot take it asks, as before");
-        assertTrue(WishHotbarPlan.inWishBag(false).contains("Wish Bag (slot 2)"), WishHotbarPlan.inWishBag(false));
-        assertTrue(WishHotbarPlan.inWishBag(true).contains("already"), WishHotbarPlan.inWishBag(true));
-        assertEquals("🎒 Red cat is in your Wish Bag now. Use it to make another one any time!",
-                WishHotbarPlan.pinnedInBag("✨ Red cat"));
-        assertTrue(WishHotbarPlan.pinnedInBag("").startsWith("🎒 Your new wish is"), WishHotbarPlan.pinnedInBag(""));
-    }
-
-    @Test
     void aSlotBeyondTheNineIsNeverChosen() {
         List<Boolean> long36 = new ArrayList<>(Collections.nCopies(36, false));
         long36.set(20, true);

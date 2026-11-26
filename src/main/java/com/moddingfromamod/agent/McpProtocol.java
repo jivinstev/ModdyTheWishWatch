@@ -827,9 +827,6 @@ public final class McpProtocol {
                                                 false, out.imageBase64(), out.imageMime());
                                     }
                                 }
-                                if (runNow != null && !runNow.kept() && !out.isError() && "add_template".equals(name)) {
-                                    pinTaught(runNow, args);
-                                }
                                 if (runNow != null && runNow.kept() && !out.isError()) {
                                     afterKept(runNow, name, args, wishId);
                                     if ("plan_wish".equals(name)) {
@@ -1234,27 +1231,6 @@ public final class McpProtocol {
                 && decided != com.moddingfromamod.world.Landing.LANDS) {
             LOGGER.info("[kept] wish {}: kept by this world ({}, a {})", wishId, decided, kind);
         }
-    }
-
-    /**
-     * A wish that is not kept taught a recipe (add_template): it is also a hotbar wish in his Wish Bag, so he can make
-     * it again any time without finding the menu ({@code WishHotbar.pinToBag}). A kept wish is handed over at its
-     * finish instead ({@link #afterKept}).
-     */
-    private static void pinTaught(com.moddingfromamod.marshal.WishRun run, JsonObject args) {
-        if (args == null || !args.has("id") || !args.get("id").isJsonPrimitive() || run.playerId() == null) {
-            return;
-        }
-        String id = args.get("id").getAsString();
-        String icon = args.has("icon") && args.get("icon").isJsonPrimitive() ? args.get("icon").getAsString()
-                : com.moddingfromamod.marshal.WatchIcons.forKind(run.plannedKind() == null ? "other" : run.plannedKind());
-        AgentBridge.onServerRun(() -> {
-            var server = AgentBridge.serverOrNull();
-            if (server != null) {
-                com.moddingfromamod.wish.WishHotbar.pinToBag(server, run.playerId(), id,
-                        com.moddingfromamod.wish.WishPresets.labelFor(id), icon);
-            }
-        });
     }
 
     /** #70, after a kept wish's call stood: a taught recipe is remembered; finishing hands it over, once. */
