@@ -430,6 +430,7 @@ public final class BuildMechanismTool implements McpTool {
             door = d.ok() ? d : null;     // only to put switches "at the door"
         }
         RsPos ground = LevelView.rs(feet).up(-1);
+        List<String> notesBefore = new ArrayList<>();
         Module module;
         String summary;
         boolean shutAtRest = false;
@@ -504,8 +505,26 @@ public final class BuildMechanismTool implements McpTool {
                     case "dispensers", "droppers" -> {
                         boolean dropper = spec.mechanism().equals("droppers");
                         String facing = aimFacing(server, player, spec.aim(), ground);
+                        boolean bucket = spec.items().contains("_bucket");
+                        boolean turned = false;
                         for (RsPos g : Devices.groundRing(view, ground, n, 1)) {
-                            devs.add(Devices.dispenser(g.up(1), facing, spec.items(), dropper));
+                            String f = facing;
+                            // a bucket is only poured into an OPEN block; aimed at a floor or a wall it is thrown out
+                            // as an item instead and the dispenser is left empty (measured: a shower aimed down)
+                            if (bucket && !openFront(view, g.up(1), f)) {
+                                for (String alt : List.of("up", "north", "south", "east", "west")) {
+                                    if (openFront(view, g.up(1), alt)) {
+                                        f = alt;
+                                        turned = true;
+                                        break;
+                                    }
+                                }
+                            }
+                            devs.add(Devices.dispenser(g.up(1), f, spec.items(), dropper));
+                        }
+                        if (turned) {
+                            notesBefore.add("a bucket only pours into an open block, so a dispenser that faced a floor "
+                                    + "or a wall was turned to face open air");
                         }
                         what = devs.size() + " " + spec.mechanism() + " facing " + facing
                                 + (spec.items().isEmpty() ? " (empty)" : ", loaded with " + spec.items().replace(";", ", "));
@@ -541,11 +560,24 @@ public final class BuildMechanismTool implements McpTool {
             }
         }
 
+        // never over another mechanism (measured: a second door built in the first one's new doorway, over its blocks)
+        for (com.moddingfromamod.redstone.RsCell cell : module.cells()) {
+            if (MechanismStore.protects(level, LevelView.bp(cell.pos()))) {
+                String owner = MechanismStore.all(level).stream()
+                        .filter(e -> e.journal().stream().anyMatch(pl -> pl.pos().equals(LevelView.bp(cell.pos()))))
+                        .map(MechanismStore.Entry::id).findFirst().orElse("another mechanism");
+                return Built.fail(ToolResult.error("'" + owner + "' is already there. To change it, remove_mechanism '"
+                        + owner + "' first and build the new one; or pick another wall or spot. Nothing was built."));
+            }
+        }
         // A door shut at rest with every switch outside would shut him in: add a button inside beside it.
         String addedInside = null;
         if (shutAtRest && place.buildId() != null && door != null) {
             boolean anyInside = false;
             for (String[] c : asked) {
+                if (c[0].equals("logic")) {
+                    continue;      // a timer or a code is not a way out for a person shut inside
+                }
                 PlaceFinder.Place cp = PlaceFinder.find(server, player, c[1], com.moddingfromamod.builder.BuildSpots.FRONT);
                 if (cp.ok() && ("inside".equals(cp.r().spot())
                         || ControlSpots.side(door.frame(), LevelView.rs(cp.block())) > 0)) {
@@ -573,7 +605,13 @@ public final class BuildMechanismTool implements McpTool {
             }
             RsPos spot = LevelView.rs(cp.block());
             // a switch at the mechanism's own building goes beside its door: inside for "inside", else outside
-            boolean sameBuilding = cp.buildId() != null && cp.buildId().equals(place.buildId()) && door != null;
+            // ...except a spot of its own the agent named (a shower, a bed, a desk): the switch goes THERE (measured: a
+            // shower's plate put by the front door)
+            String cspot = cp.r() == null ? null : cp.r().spot();
+            boolean doorSpot = cspot == null || cspot.equals("front") || cspot.equals("inside") || cspot.equals("door")
+                    || List.of("north", "south", "east", "west").contains(cspot);
+            boolean sameBuilding = cp.buildId() != null && cp.buildId().equals(place.buildId()) && door != null
+                    && (doorSpot || isDoor);
             List<RsPos> tries = sameBuilding
                     ? ControlSpots.atDoor(door.frame(), door.width(), c[0], "inside".equals(cp.r().spot()) ? 1 : -1)
                     : door != null && ControlSpots.nearDoor(door.frame(), door.width(), spot)
@@ -680,6 +718,7 @@ public final class BuildMechanismTool implements McpTool {
         if (addedInside != null) {
             plan.notes().add("Added " + addedInside + ".");
         }
+        plan.notes().addAll(notesBefore);
         if (!notHidden.isEmpty()) {
             plan.notes().add("Could not hide the " + String.join(", ", notHidden) + " in a wall there (no wall whose "
                     + "wiring could go down out of sight), so it stands on the floor. Tell him, or try a spot by an "
@@ -921,6 +960,16 @@ public final class BuildMechanismTool implements McpTool {
     }
 
     /** A dispenser's facing from `aim`: up/down/a compass word, or toward a place; up when nothing is said. */
+    /** True when the block in front of a dispenser at {@code at} facing {@code facing} is open (air or replaceable). */
+    static boolean openFront(LevelView view, RsPos at, String facing) {
+        RsPos front = switch (facing) {
+            case "up" -> at.up(1);
+            case "down" -> at.up(-1);
+            default -> at.step(RsDir.valueOf(facing.toUpperCase(Locale.ROOT)));
+        };
+        return view.kind(front) == com.moddingfromamod.redstone.WorldView.Kind.AIR;
+    }
+
     static String aimFacing(net.minecraft.server.MinecraftServer server, ServerPlayer player, String aim, RsPos from) {
         String a = aim == null ? "" : aim.trim().toLowerCase(Locale.ROOT);
         if (a.isEmpty() || a.equals("up") || a.equals("sky")) {

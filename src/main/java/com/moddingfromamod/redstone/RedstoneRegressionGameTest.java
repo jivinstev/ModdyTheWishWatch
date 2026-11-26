@@ -256,4 +256,55 @@ public class RedstoneRegressionGameTest {
             return shutAgain ? "" : "the door stayed open after its paid time";
         });
     }
+
+    /** A second door asked for in the first one's new doorway is refused, never built over it (t096 in v2). */
+    @GameTest(template = "empty_test", batch = "redstone_regress_overlap", timeoutTicks = 4000)
+    public static void aSecondDoorOverTheFirstIsRefused(GameTestHelper helper) {
+        String id = "gt_rs_overlap";
+        site(helper, 120, HOUSE.replace("ID", id));
+        drive(helper, id, "gt-rs-overlap", () -> {
+            String ask = "{\"mechanism\":\"piston_door\",\"at\":\"" + id + ":west\",\"new_opening\":true,MAT"
+                    + "\"controls\":[{\"kind\":\"button\",\"at\":\"" + id + ":inside\"}]}";
+            ToolResult first = mech(ask.replace("MAT", ""));
+            if (first.isError()) {
+                return "first door: " + first.text();
+            }
+            ToolResult second = mech(ask.replace("MAT", "\"material\":\"minecraft:bricks\","));
+            String err = !second.isError() || !second.text().contains("is already there")
+                    ? "second door over the first: " + second.text() : "";
+            new com.moddingfromamod.agent.tools.RemoveMechanismTool().call(JsonParser.parseString(
+                    "{\"id\":\"" + BuildMechanismGameTest.builtId(first.text()) + "\"}").getAsJsonObject());
+            return err;
+        });
+    }
+
+    /** A shower aimed at the floor still holds its water after its proof: it is turned to face open air (t022). */
+    @GameTest(template = "empty_test", batch = "redstone_regress_shower", timeoutTicks = 4000)
+    public static void aShowerAimedAtTheFloorKeepsItsBucket(GameTestHelper helper) {
+        String id = "gt_rs_shower";
+        BlockPos anchor = site(helper, 120, HOUSE.replace("ID", id));
+        drive(helper, id, "gt-rs-shower", () -> {
+            ToolResult r = mech("{\"mechanism\":\"dispensers\",\"at\":\"" + id + ":inside\",\"items\":"
+                    + "\"minecraft:water_bucket*1\",\"aim\":\"down\",\"controls\":[{\"kind\":\"pressure_plate\",\"at\":\""
+                    + id + ":inside\"}]}");
+            if (r.isError()) {
+                return "shower: " + r.text();
+            }
+            boolean held = AgentBridge.onServer(() -> {
+                for (BlockPos p : BlockPos.betweenClosed(anchor.offset(-4, -2, -4), anchor.offset(16, 4, 16))) {
+                    if (helper.getLevel().getBlockEntity(p) instanceof net.minecraft.world.Container c) {
+                        for (int k = 0; k < c.getContainerSize(); k++) {
+                            if (c.getItem(k).is(net.minecraft.world.item.Items.WATER_BUCKET)) {
+                                return true;
+                            }
+                        }
+                    }
+                }
+                return false;
+            }, 10_000L);
+            new com.moddingfromamod.agent.tools.RemoveMechanismTool().call(JsonParser.parseString(
+                    "{\"id\":\"" + BuildMechanismGameTest.builtId(r.text()) + "\"}").getAsJsonObject());
+            return held ? "" : "after its proof no dispenser holds the water bucket: " + r.text();
+        });
+    }
 }

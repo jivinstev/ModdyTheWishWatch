@@ -382,6 +382,19 @@ public final class RubricGrader {
         BlockPos ref = !doorway.isEmpty() ? doorway.get(0) : bbox != null
                 ? new BlockPos((bbox[0] + bbox[3]) / 2, bbox[1], (bbox[2] + bbox[5]) / 2) : null;
         JsonArray wantedControls = spec.has("controls") ? spec.getAsJsonArray("controls") : new JsonArray();
+        // a driven mechanism's toggle has no copper bulb: its switch's marker carries the toggle tag (RedstoneScript)
+        List<Boolean> markedToggle = AgentBridge.onServer(() -> {
+            List<Boolean> out = new ArrayList<>();
+            for (BlockPos c : controls) {
+                out.add(!level.getEntitiesOfClass(net.minecraft.world.entity.Marker.class, new net.minecraft.world.phys.AABB(c),
+                        m -> m.getTags().contains(RedstoneScript.TOGGLE)).isEmpty());
+            }
+            return out;
+        }, 10_000L);
+        if (markedToggle.contains(true)) {
+            toggles = true;
+        }
+
         for (JsonElement ce : wantedControls) {
             JsonObject c = ce.getAsJsonObject();
             String kind = c.has("kind") ? c.get("kind").getAsString() : "any";
@@ -434,19 +447,6 @@ public final class RubricGrader {
                 f3 = false;
                 notes.add("no dispenser or dropper holds " + item);
             }
-        }
-
-        // a driven mechanism's toggle has no copper bulb: its switch's marker carries the toggle tag (RedstoneScript)
-        List<Boolean> markedToggle = AgentBridge.onServer(() -> {
-            List<Boolean> out = new ArrayList<>();
-            for (BlockPos c : controls) {
-                out.add(!level.getEntitiesOfClass(net.minecraft.world.entity.Marker.class, new net.minecraft.world.phys.AABB(c),
-                        m -> m.getTags().contains(RedstoneScript.TOGGLE)).isEmpty());
-            }
-            return out;
-        }, 10_000L);
-        if (markedToggle.contains(true)) {
-            toggles = true;
         }
 
         // F2 works: fire every added control ourselves; every added output of a wanted kind must switch with it
@@ -522,7 +522,7 @@ public final class RubricGrader {
                     break;
                 }
             }
-            if (r.ok() && !cs.isEmpty() && moved.size() < expects.size()) {
+            if (r.ok() && !cs.isEmpty() && moved.size() < expects.size() && rules.isEmpty()) {
                 List<String> still = new ArrayList<>();
                 expects.stream().filter(x -> !moved.contains(x)).forEach(x -> still.add(x.what() + " at " + x.pos()));
                 r = new MechanismProof.Result("no control moves " + still, List.of());
@@ -560,6 +560,31 @@ public final class RubricGrader {
                 if (!doorOpenAtRest && bbox != null) {
                     boolean out = controls.stream().anyMatch(p -> !inBox(p, bbox));
                     boolean in = controls.stream().anyMatch(p -> inBox(p, bbox));
+                    // a logic rule that WORKS is a way in too: from the side its parts stand on (code buttons, a coin
+                    // slot, a target), or from both when it has none (a timer, night and day)
+                    for (int ri = 0; ri < rules.size() && ri < logicResults.size(); ri++) {
+                        if (!"works".equals(logicResults.get(ri).getAsJsonObject().get("result").getAsString())) {
+                            continue;
+                        }
+                        List<BlockPos> parts = new ArrayList<>();
+                        JsonObject rj = rules.get(ri);
+                        for (String key : List.of("sensor", "slot", "target")) {
+                            if (rj.has(key)) {
+                                parts.add(MechanismStore.pos(rj.getAsJsonArray(key)));
+                            }
+                        }
+                        if (rj.has("buttons")) {
+                            rj.getAsJsonArray("buttons").forEach(b -> parts.add(MechanismStore.pos(b.getAsJsonArray())));
+                        }
+                        String kind = rj.getAsJsonObject("rule").get("kind").getAsString();
+                        if (parts.isEmpty() || kind.equals("every") || kind.equals("night") || kind.equals("day")) {
+                            out = true;
+                            in = true;
+                        } else {
+                            out |= parts.stream().anyMatch(q -> !inBox(q, bbox));
+                            in |= parts.stream().anyMatch(q -> inBox(q, bbox));
+                        }
+                    }
                     f4 = out && in;
                     if (!f4) {
                         notes.add("the door rests shut and opens only from the " + (in ? "inside" : "outside"));
@@ -571,15 +596,15 @@ public final class RubricGrader {
         v.addProperty("F3_as_wished", f3);
         v.addProperty("F4_usable", f4);
 
-        // dispensers that hold or held a bucket: the water or lava beside them is the wish's own (a shower, a
-        // fountain), not a side effect
+        // dispensers that hold or held a bucket or fire charges: the water, lava or fire near them is the wish's own (a
+        // shower, a fountain, a volcano, a cannon's shot), not a side effect
         List<BlockPos> wetters = AgentBridge.onServer(() -> {
             List<BlockPos> wl = new ArrayList<>();
             for (BlockPos p : outputs.getOrDefault("dispenser", List.of())) {
                 if (level.getBlockEntity(p) instanceof net.minecraft.world.Container c2) {
                     for (int i = 0; i < c2.getContainerSize(); i++) {
                         String it = BuiltInRegistries.ITEM.getKey(c2.getItem(i).getItem()).toString();
-                        if (it.endsWith("bucket")) {
+                        if (it.endsWith("bucket") || it.equals("minecraft:fire_charge")) {
                             wl.add(p);
                             break;
                         }
@@ -588,6 +613,23 @@ public final class RubricGrader {
             }
             return wl;
         }, 10_000L);
+        // what the buildings' current designs place: a block the agent's own build_structure put there (a bathroom
+        // the wish asked for, a fireplace, a secret wall) is the wish, never a mechanism's damage (measured: v3's
+        // three S1 failures were all of this kind)
+        Set<BlockPos> designed = AgentBridge.onServer(() -> {
+            Set<BlockPos> d = new HashSet<>();
+            for (var b : buildings(server)) {
+                com.moddingfromamod.builder.ComposedPlan.of(b.plan()).forEach((x, y, z, block) -> {
+                    BlockPos q = b.anchor().offset(x, y, z);
+                    if (idOf(BlockStateParser.serialize(level.getBlockState(q))).equals(idOf(block.contains(":")
+                            ? block : "minecraft:" + block))) {
+                        d.add(q);
+                    }
+                });
+            }
+            LOGGER.info("RUBRIC designed: {} positions", d.size());
+            return d;
+        }, 30_000L);
         // side effects
         int s1 = 0, s5 = 0;
         boolean s3 = false;
@@ -603,7 +645,22 @@ public final class RubricGrader {
                 s3 = true;
             }
             boolean byOtherTools = bbox != null && inBox(p, bbox);   // a change inside his building
-            if (!was.equals("minecraft:air") && !natural(was) && byOtherTools) {
+            // a fence, wall or pane that only re-joined its neighbours (a button put on a fence) lost nothing
+            boolean onlyJoined = idOf(was).equals(idOf(now));
+            // and a building the wish itself asked to change (a bathroom added) is the wish, not the mechanism: what a
+            // MECHANISM can damage is within 2 blocks of its own blocks
+            boolean nearMechanism = false;
+            for (int dx = -2; dx <= 2 && !nearMechanism; dx++) {
+                for (int dy = -2; dy <= 2 && !nearMechanism; dy++) {
+                    for (int dz = -2; dz <= 2 && !nearMechanism; dz++) {
+                        nearMechanism = footprint.contains(p.offset(dx, dy, dz));
+                    }
+                }
+            }
+            boolean asDesigned = designed.contains(p) || "minecraft:air".equals(now) && byOtherTools
+                    && wishRemoved(level, p);
+            if (!was.equals("minecraft:air") && !natural(was) && byOtherTools && !onlyJoined && nearMechanism
+                    && !asDesigned) {
                 s1++;
                 if (s1Where.size() < 8) {
                     s1Where.add(was + " at " + p.toShortString() + " is now " + now);
@@ -873,5 +930,59 @@ public final class RubricGrader {
                 return;
             }
         }
+    }
+
+    /** A building as the world's shelves saved it: its current design and where it stands. */
+    record Building(com.moddingfromamod.builder.BuildPlan plan, BlockPos anchor) {
+    }
+
+    /**
+     * Every building in this world, read from the copies of the children's shelves the world keeps
+     * ({@code moddy-players/<uuid>/buildings.json}): the grading boot has no child in it, so the registry has none.
+     */
+    static List<Building> buildings(MinecraftServer server) {
+        List<Building> out = new ArrayList<>();
+        Path root = server.getWorldPath(net.minecraft.world.level.storage.LevelResource.ROOT).resolve("moddy-players");
+        try (var dirs = Files.list(root)) {
+            for (Path dir : (Iterable<Path>) dirs::iterator) {
+                Path f = dir.resolve("buildings.json");
+                if (!Files.isRegularFile(f)) {
+                    continue;
+                }
+                JsonObject o = JsonParser.parseString(Files.readString(f)).getAsJsonObject();
+                if (!o.has("buildings")) {
+                    continue;
+                }
+                for (JsonElement el : o.getAsJsonArray("buildings")) {
+                    JsonObject b = el.getAsJsonObject();
+                    var plan = com.moddingfromamod.builder.BuildPlan.fromJson(b);
+                    if (plan == null || !b.has("placed") || !b.getAsJsonObject("placed").has("world")) {
+                        continue;
+                    }
+                    JsonObject w = b.getAsJsonObject("placed").getAsJsonObject("world");
+                    out.add(new Building(plan, new BlockPos(w.get("x").getAsInt(), w.get("y").getAsInt(),
+                            w.get("z").getAsInt())));
+                }
+            }
+        } catch (Exception e) {
+            LOGGER.warn("could not read the world's buildings: {}", e.toString());
+        }
+        return out;
+    }
+
+    /** True when no building's current design places anything at {@code p} (its shape was removed). */
+    static boolean wishRemoved(ServerLevel level, BlockPos p) {
+        for (Building b : buildings(level.getServer())) {
+            boolean[] has = {false};
+            com.moddingfromamod.builder.ComposedPlan.of(b.plan()).forEach((x, y, z, block) -> {
+                if (b.anchor().offset(x, y, z).equals(p) && !block.endsWith("air")) {
+                    has[0] = true;
+                }
+            });
+            if (has[0]) {
+                return false;
+            }
+        }
+        return true;
     }
 }
