@@ -590,11 +590,67 @@ public final class DatapackReloader {
         }
         Files.write(tmp, fixed.zip());
         try {
-            Files.move(tmp, dest, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
-        } catch (IOException atomicUnsupported) {
-            Files.move(tmp, dest, StandardCopyOption.REPLACE_EXISTING);
+            moveInto(tmp, dest);
+        } catch (java.nio.file.FileSystemException held) {
+            // WINDOWS: the pack being replaced is loaded, its zip is open in the server's resources, and Windows
+            // refuses to replace an open file ("being used by another process"), so every edit of an item or effect
+            // failed there (the platform smoke, 2026-11-26) while Linux and macOS replace it under the open handle.
+            // Reload once WITHOUT this pack, which closes its zip, then put the new one in; the reload below turns it
+            // back on. A replace that is refused for any other reason is still refused, by the second move.
+            LOGGER.info("datapack '{}' is held open by the loaded resources ({}); releasing it to replace it",
+                    featureId, held.getReason());
+            releaseLoaded(server, featureId);
+            moveInto(tmp, dest);
         }
         return enableAndReload(server, featureId);
+    }
+
+    /** Stage-to-final move: atomic where the file system has it. A test may make it refuse once, as Windows does. */
+    static void moveInto(Path tmp, Path dest) throws IOException {
+        if (holdForTest != null && holdForTest.test(dest)) {
+            holdForTest = null;
+            throw new java.nio.file.FileSystemException(dest.toString(), null,
+                    "The process cannot access the file because it is being used by another process (test)");
+        }
+        try {
+            Files.move(tmp, dest, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+        } catch (java.nio.file.AtomicMoveNotSupportedException atomicUnsupported) {
+            Files.move(tmp, dest, StandardCopyOption.REPLACE_EXISTING);
+        }
+    }
+
+    /** Test seam: the next move onto a matching path is refused as Windows refuses an open file. */
+    static volatile java.util.function.Predicate<Path> holdForTest;
+
+    /**
+     * Unload {@code featureId}'s pack so the server lets go of its zip: wait out a reload in flight, then reload
+     * everything applied but this pack, and wait for that too (the server thread keeps running tasks meanwhile). From
+     * another thread, the same on the server thread, waited for.
+     */
+    static void releaseLoaded(MinecraftServer server, String featureId) {
+        releaseLoaded(server, List.of(featureId));
+    }
+
+    /** {@link #releaseLoaded(MinecraftServer, String)} for several packs in one reload (a boot's install). */
+    static void releaseLoaded(MinecraftServer server, List<String> featureIds) {
+        Runnable release = () -> {
+            java.util.concurrent.CompletableFuture<Void> current = inFlight;
+            if (current != null) {
+                server.managedBlock(current::isDone);
+            }
+            List<String> keep = new ArrayList<>(server.getPackRepository().getSelectedIds());
+            for (String featureId : featureIds) {
+                keep.remove(packId(featureId));
+            }
+            java.util.concurrent.CompletableFuture<Void> without = server.reloadResources(keep);
+            trackReload(without);
+            server.managedBlock(without::isDone);
+        };
+        if (server.isSameThread()) {
+            release.run();
+        } else {
+            server.submit(release).join();
+        }
     }
 
     /**
