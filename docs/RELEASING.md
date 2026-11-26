@@ -24,7 +24,9 @@ Taking `main` into `neoforge-1.21.8` always ships a new version:
    or run the workflow with `release = true`). Its gates are Gate A, Gate B and, as Gate C, the rig films
    (`tools/gate-c-rig.sh`, every film, declared in `.port/1.21.8/gate-c.json`), run in a real client on the full
    environment; the release's `gates-full.md` records the Gate C row. A version branch above 1.21.8 inherits that file
-   until it has its own.
+   until it has its own. A set where a film failed and then passed its one retry (FLAKY, exit 3) is a pass on a release
+   run only, with a `WARNING FLAKY` Gate C row in the release notes (`release_flaky_exit` in that file); a pull
+   request's `rig-films` job and Port CI's push runs still count it as a failure. #171 tracks fixing the flakes.
 
 Never release the same version twice from an integrate. Port CI's `-r2`, `-r3` names are only for a port-only fix on
 a higher version branch, never for a 1.21.8 integrate.

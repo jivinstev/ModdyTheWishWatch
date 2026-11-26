@@ -25,7 +25,7 @@
 # The worst wins: 2, then 1, then 3.
 #
 # Cost: ~3–5 min a film on a 4-vCPU machine (client boot included), ~35–50 min the set. Results and logs
-# go to $GATE_C_OUT (default /tmp/moddingfromamod-gate-c-rig).
+# go to $GATE_C_OUT (default: Port CI's $PORT_GATE_OUT, else /tmp/moddingfromamod-gate-c-rig).
 # ⚠ Never run it beside a Gate B or a build in the same checkout: these films are timing oracles, and CPU
 # contention is exactly the kind of noise they are built to reject.
 # ─────────────────────────────────────────────────────────────────────────────
@@ -69,7 +69,7 @@ fi
 COMMIT="$(git rev-parse HEAD 2>/dev/null || true)"
 DIRTY=false
 [ -n "$(git status --porcelain --untracked-files=no 2>/dev/null)" ] && DIRTY=true
-OUT="${GATE_C_OUT:-/tmp/${MOD_ID}-gate-c-rig}"
+OUT="${GATE_C_OUT:-${PORT_GATE_OUT:-/tmp/${MOD_ID}-gate-c-rig}}"   # under Port CI: the folder it uploads
 rm -rf "$OUT"; mkdir -p "$OUT"
 
 # One attempt: film -> rc, seconds, first line of its verdict. Each film its own SLOT and SIG so a
