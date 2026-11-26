@@ -125,6 +125,10 @@ public final class WorldWishesGameTest {
         com.moddingfromamod.testing.MockPlayerNetwork.clearStaleMocks(helper);
         net.minecraft.server.level.ServerPlayer child =
                 com.moddingfromamod.testing.MockPlayerNetwork.inLevel(helper);   // a child connected, as in a real battle
+        // wished bodies already standing near him (an earlier test's) are not this test's: only a NEW one counts
+        java.util.Set<java.util.UUID> before = new java.util.HashSet<>();
+        child.level().getEntitiesOfClass(net.minecraft.world.entity.LivingEntity.class,
+                child.getBoundingBox().inflate(48), e -> Wished.isWished(e)).forEach(e -> before.add(e.getUUID()));
         List<String> bodies = List.of("rock_golem", "ogre", "yeti", "raptor", "t_rex");
         long[] ms = new long[bodies.size()];
         String[] outcome = new String[bodies.size()];
@@ -172,7 +176,7 @@ public final class WorldWishesGameTest {
                         Component.literal("the child was told about the world's make: " + line));
             }
             var near = child.level().getEntitiesOfClass(net.minecraft.world.entity.LivingEntity.class,
-                    child.getBoundingBox().inflate(48), e -> Wished.isWished(e));
+                    child.getBoundingBox().inflate(48), e -> Wished.isWished(e) && !before.contains(e.getUUID()));
             helper.assertTrue(near.isEmpty(), Component.literal("a world's design stood a creature beside the child: "
                     + near.stream().map(e -> e.getName().getString()).toList()));
         });
