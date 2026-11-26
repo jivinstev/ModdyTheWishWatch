@@ -10,6 +10,8 @@ import com.moddingfromamod.agent.ToolResult;
 import com.moddingfromamod.place.At;
 import com.moddingfromamod.place.PlaceFinder;
 import com.moddingfromamod.redstone.ControlSpots;
+import com.moddingfromamod.redstone.DeviceModule;
+import com.moddingfromamod.redstone.Devices;
 import com.moddingfromamod.redstone.Control;
 import com.moddingfromamod.redstone.Doorway;
 import com.moddingfromamod.redstone.LevelView;
@@ -38,7 +40,10 @@ import net.minecraft.server.level.ServerPlayer;
  */
 public final class BuildMechanismTool implements McpTool {
 
-    static final List<String> MECHANISMS = List.of("piston_door");
+    static final List<String> MECHANISMS = List.of("piston_door", "iron_door", "lamps", "gate", "dispensers",
+            "droppers", "note_blocks");
+    static final List<String> INSTRUMENTS = List.of("harp", "bell", "flute", "chime", "guitar", "xylophone", "bass",
+            "basedrum", "snare", "hat", "iron_xylophone", "cow_bell", "didgeridoo", "bit", "banjo", "pling");
     static final List<String> CONTROL_KINDS = List.of("lever", "button", "pressure_plate");
 
     @Override
@@ -49,15 +54,26 @@ public final class BuildMechanismTool implements McpTool {
     @Override
     public String description() {
         return "Build a WORKING redstone mechanism into the world, wired to the switches the child asked for. "
-                + "Use it for anything that MOVES or SWITCHES with redstone: a secret or vault door that opens and "
-                + "closes, a door worked by a lever, a button or a pressure plate. You choose only WHAT (`mechanism`, "
-                + "`controls`) and WHERE (`at`); the tool works out every block, wire, repeater and facing, hides "
-                + "the wiring underground, builds it, then TESTS it by using each control for real. If the test "
-                + "fails it takes everything back down and says why; nothing half-working is left. "
-                + "piston_door: a flush 2-tall door of the wall's own blocks, put into the doorway of the wall at "
-                + "`at` (its existing doorway, 1 or 2 wide, or a new 2-wide one). By default a switch, button or plate "
-                + "OPENS it (shut the rest of the time); on:\"close\" when he says the switch CLOSES it. Remove one "
-                + "with remove_mechanism.";
+                + "Use it for anything that MOVES, LIGHTS, SHOOTS or PLAYS with a switch, button, pressure plate or "
+                + "lever: doors, lights, gates, dispensers and droppers, note blocks. You choose only WHAT "
+                + "(`mechanism`, `controls`, a few options) and WHERE (`at`); the tool works out every block, wire, "
+                + "repeater and facing, hides the wiring underground, builds it, then TESTS it by using each control "
+                + "for real. If the test fails it takes everything back down and says why; nothing half-working is "
+                + "left. Mechanisms: "
+                + "piston_door: a flush 2-tall door of the wall's own blocks (or `material`), in the doorway of the "
+                + "wall at `at` (its existing doorway, 1 or 2 wide, or a new one). "
+                + "iron_door: an iron door (1 or 2 wide) in that doorway. "
+                + "For both doors a switch, button or plate OPENS it (shut the rest of the time); on:\"close\" when he "
+                + "says the switch CLOSES it. A door shut the rest of the time always gets a way to open it from "
+                + "inside. "
+                + "lamps: `count` redstone lamps set flush into the floor of the building at `at` (or the ground round "
+                + "a spot), lit by the switches (`inverted`: lit until switched off). "
+                + "gate: the fence gate(s) near `at` (or a new one there) opened by the switches. "
+                + "dispensers / droppers: `count` of them on the ground at `at`, loaded with `items`, facing `aim`; "
+                + "a switch fires them (fireworks: aim up; arrows: aim at a place). "
+                + "note_blocks: one note block per entry of `notes` (0-24) on `instrument`, played by the switches "
+                + "(a doorbell is one note). "
+                + "Remove one with remove_mechanism.";
     }
 
     @Override
@@ -114,6 +130,16 @@ public final class BuildMechanismTool implements McpTool {
         on.addProperty("description", "What switching it ON (or pressing, or standing on) does: \"open\" (the default) "
                 + "or \"close\" (\"a door I can shut with a lever\"). The other way round happens when it is off.");
         s.getAsJsonObject("properties").add("on", on);
+        Schemas.prop(s, "count", "integer", "How many lamps, dispensers or droppers (1-12; default 4 lamps, 1 else).");
+        Schemas.prop(s, "items", "string", "For dispensers/droppers: what to load, \"<item id>*<count>\" joined with ';' "
+                + "(e.g. \"minecraft:arrow*64\", \"minecraft:firework_rocket*32\", \"minecraft:cookie*64\").");
+        Schemas.prop(s, "aim", "string", "For dispensers/droppers: up, down, north/south/east/west, or a place "
+                + "(\"<thing>:<spot>\") to face. Default up.");
+        Schemas.list(s, "notes", "For note_blocks: the notes, 0 (low F#) to 24 (high F#), one block each; 12 is "
+                + "middle F#. Write them as numbers.", 24);
+        Schemas.prop(s, "instrument", "string", "For note_blocks: harp (default), bell, flute, chime, guitar, "
+                + "xylophone, bass, basedrum, snare, hat, iron_xylophone, cow_bell, didgeridoo, bit, banjo, pling.");
+        Schemas.prop(s, "inverted", "boolean", "Lamps and other devices: ON until a switch turns them OFF.");
         Schemas.prop(s, "width", "integer", "Only for a NEW doorway: 1 or 2 wide (default 2). An existing doorway "
                 + "keeps its own width.");
         Schemas.required(s, "mechanism", "at", "controls");
@@ -156,6 +182,33 @@ public final class BuildMechanismTool implements McpTool {
             return ToolResult.error("on is \"open\" or \"close\".");
         }
         boolean opens = !onArg.equals("close");
+        int count = args.has("count") && args.get("count").isJsonPrimitive() ? args.get("count").getAsInt() : 0;
+        if (count < 0 || count > 12) {
+            return ToolResult.error("count is 1 to 12.");
+        }
+        String items = str(args, "items");
+        String itemsWhy = itemsProblem(items);
+        if (itemsWhy != null) {
+            return ToolResult.error(itemsWhy);
+        }
+        List<Integer> notes = new ArrayList<>();
+        if (args.has("notes") && args.get("notes").isJsonArray()) {
+            for (JsonElement n : args.getAsJsonArray("notes")) {
+                try {
+                    notes.add(Integer.parseInt(n.getAsString().trim()));
+                } catch (RuntimeException e) {
+                    return ToolResult.error("notes are numbers from 0 to 24, not '" + n + "'.");
+                }
+            }
+        }
+        String instrument = str(args, "instrument").isEmpty() ? "harp" : str(args, "instrument").toLowerCase(Locale.ROOT);
+        if (!INSTRUMENTS.contains(instrument)) {
+            return ToolResult.error("instrument is one of " + INSTRUMENTS + ".");
+        }
+        boolean inverted = args.has("inverted") && args.get("inverted").isJsonPrimitive()
+                && args.get("inverted").getAsBoolean();
+        Spec spec = new Spec(mechanism, at, asked, 0, material, opens, count, items, str(args, "aim"), notes,
+                instrument, inverted);
         int width = args.has("width") && args.get("width").isJsonPrimitive() ? args.get("width").getAsInt() : 2;
         if (width != 1 && width != 2) {
             return ToolResult.error("width is 1 or 2.");
@@ -164,7 +217,9 @@ public final class BuildMechanismTool implements McpTool {
         // 1-3: resolve, plan and place on the server thread
         Built built;
         try {
-            built = AgentBridge.onServer(() -> buildOnServer(mechanism, at, asked, width, material, opens), 30_000L);
+            Spec sp = new Spec(spec.mechanism(), spec.at(), spec.asked(), width, spec.material(), spec.opens(),
+                    spec.count(), spec.items(), spec.aim(), spec.notes(), spec.instrument(), spec.inverted());
+            built = AgentBridge.onServer(() -> buildOnServer(sp), 30_000L);
         } catch (RuntimeException e) {
             return ToolResult.error("Could not build it: " + e.getMessage());
         }
@@ -197,7 +252,9 @@ public final class BuildMechanismTool implements McpTool {
         }
         b.append("Test: ").append(String.join("; ", proof.steps())).append('\n');
         built.plan.notes().forEach(n -> b.append("Note: ").append(n).append('\n'));
-        b.append(opens ? "It is SHUT now; a switch on (or a press) opens it." : "It is OPEN now; a switch on shuts it.")
+        b.append(built.shutAtRest ? "It is SHUT now; a switch on (or a press) opens it."
+                        : built.plan.kind().equals("piston_door") || built.plan.kind().equals("iron door")
+                        ? "It is OPEN now; a switch on shuts it." : "It is in its resting state now.")
                 .append(" Tell the child which switch does what. remove_mechanism id '").append(id)
                 .append("' takes it all back out.");
         return ToolResult.ok(b.toString());
@@ -210,6 +267,7 @@ public final class BuildMechanismTool implements McpTool {
         List<MechanismWorld.Placed> placed;
         String owner = "", summary = "";
         ToolResult error;
+        boolean shutAtRest;
 
         static Built fail(ToolResult r) {
             Built b = new Built();
@@ -218,16 +276,26 @@ public final class BuildMechanismTool implements McpTool {
         }
     }
 
+    /** Everything the agent asked for, parsed. */
+    record Spec(String mechanism, String at, List<String[]> asked, int width, String material, boolean opens,
+                int count, String items, String aim, List<Integer> notes, String instrument, boolean inverted) {
+    }
+
     static Built buildOnServer(String mechanism, String at, List<String[]> asked, int width, String wanted,
                                boolean opens) {
+        return buildOnServer(new Spec(mechanism, at, asked, width, wanted, opens, 0, "", "", List.of(), "harp", false));
+    }
+
+    static Built buildOnServer(Spec spec) {
+        List<String[]> asked = spec.asked();
         var server = AgentBridge.serverOrNull();
         ServerPlayer player = com.moddingfromamod.agent.ActingChild.of(server);
         if (player == null) {
             return Built.fail(ToolResult.noPlayerOnline("Nobody is in the world to build it for."));
         }
-        PlaceFinder.Place place = PlaceFinder.find(server, player, at, com.moddingfromamod.builder.BuildSpots.FRONT);
+        PlaceFinder.Place place = PlaceFinder.find(server, player, spec.at(), com.moddingfromamod.builder.BuildSpots.FRONT);
         if (!place.ok()) {
-            return Built.fail(ToolResult.error("Could not find " + at + ": " + place.why()));
+            return Built.fail(ToolResult.error("Could not find " + spec.at() + ": " + place.why()));
         }
         ServerLevel level = place.level();
         LevelView view = new LevelView(level);
@@ -244,44 +312,148 @@ public final class BuildMechanismTool implements McpTool {
             in = snap(-Math.sin(r), Math.cos(r));
         }
         int[] box = place.buildId() == null ? null : PlaceFinder.buildingBox(place.buildId());
-        Doorway.Found door = box != null ? Doorway.inBuilding(view, box, start, width)
-                : Doorway.find(view, start, in, width);
-        if (!door.ok()) {
-            return Built.fail(ToolResult.error("No door could go there: " + door.why() + "."));
-        }
-        String wall = door.wallBlock();
-        String towerTop = conducts(level, wall) ? wall : "minecraft:stone";
-        String material = wall;
-        if (!wanted.isEmpty()) {
-            String why = doorBlockProblem(level, wanted);
-            if (why != null) {
-                return Built.fail(ToolResult.error("The door cannot be made of " + wanted + ": " + why
-                        + ". Leave material out for the wall's own block, or pick a plain full block."));
+        boolean isDoor = spec.mechanism().equals("piston_door") || spec.mechanism().equals("iron_door");
+        Doorway.Found door = null;
+        if (isDoor) {
+            door = box != null ? Doorway.inBuilding(view, box, start, spec.width())
+                    : Doorway.find(view, start, in, spec.width());
+            if (!door.ok()) {
+                return Built.fail(ToolResult.error("No door could go there: " + door.why() + "."));
             }
-            material = wanted.contains(":") ? wanted : "minecraft:" + wanted;
-        } else if (doorBlockProblem(level, wall) != null) {
-            material = towerTop;           // a glass wall: the door is stone rather than nothing
+        } else if (box != null) {
+            Doorway.Found d = Doorway.inBuilding(view, box, start, 2);
+            door = d.ok() ? d : null;     // only to put switches "at the door"
         }
-        Module module = PistonDoor.plan(door.frame(), door.width(), material, towerTop, wall, opens);
+        RsPos ground = LevelView.rs(feet).up(-1);
+        Module module;
+        String summary;
+        boolean shutAtRest = false;
+        RsPos centre;
+        String wall = door == null ? null : door.wallBlock();
+        switch (spec.mechanism()) {
+            case "piston_door" -> {
+                String towerTop = conducts(level, wall) ? wall : "minecraft:stone";
+                String material = wall;
+                if (!spec.material().isEmpty()) {
+                    String why = doorBlockProblem(level, spec.material());
+                    if (why != null) {
+                        return Built.fail(ToolResult.error("The door cannot be made of " + spec.material() + ": " + why
+                                + ". Leave material out for the wall's own block, or pick a plain full block."));
+                    }
+                    material = spec.material().contains(":") ? spec.material() : "minecraft:" + spec.material();
+                } else if (doorBlockProblem(level, wall) != null) {
+                    material = towerTop;           // a glass wall: the door is stone rather than nothing
+                }
+                module = PistonDoor.plan(door.frame(), door.width(), material, towerTop, wall, spec.opens());
+                shutAtRest = spec.opens();
+                summary = "a hidden piston door " + door.width() + " wide and 2 tall in the "
+                        + (door.existing() ? "doorway" : "new doorway") + " at " + where(door.frame().origin())
+                        + ", made of " + material;
+                centre = door.frame().origin();
+            }
+            case "iron_door" -> {
+                List<DeviceModule.Device> devs = new ArrayList<>();
+                for (int u = 0; u < door.width(); u++) {
+                    devs.add(Devices.ironDoor(door.frame().at(u, 0, 0), door.frame().in(), u == 1));
+                }
+                DeviceModule.Result r = DeviceModule.plan(view, "iron door", devs, spec.opens(), Set.of(),
+                        new ArrayList<>(List.of("an iron door: " + (spec.opens() ? "switched on (or pressed) it OPENS"
+                                : "switched on it CLOSES"))));
+                if (!r.ok()) {
+                    return Built.fail(ToolResult.error("The iron door could not be wired: " + r.why() + "."));
+                }
+                module = r.module();
+                shutAtRest = spec.opens();
+                summary = "an iron door " + door.width() + " wide in the " + (door.existing() ? "doorway" : "new doorway")
+                        + " at " + where(door.frame().origin());
+                centre = door.frame().origin();
+            }
+            default -> {
+                int n = spec.count() > 0 ? spec.count() : defaultCount(spec.mechanism(), spec.notes().size());
+                List<DeviceModule.Device> devs = new ArrayList<>();
+                String what;
+                switch (spec.mechanism()) {
+                    case "lamps" -> {
+                        List<RsPos> at2 = box != null ? Devices.floorGrid(view, box, n)
+                                : Devices.groundRing(view, ground, n, 2);
+                        at2.forEach(p -> devs.add(Devices.lamp(p)));
+                        what = devs.size() + " lamp(s) set into the " + (box != null ? "floor" : "ground");
+                    }
+                    case "gate" -> {
+                        List<RsPos> gates = existingGates(level, ground, box, n);
+                        if (gates.isEmpty()) {
+                            gates = List.of(ground.up(1));
+                        }
+                        for (RsPos g : gates) {
+                            var st = level.getBlockState(LevelView.bp(g));
+                            String id = st.getBlock() instanceof net.minecraft.world.level.block.FenceGateBlock
+                                    ? net.minecraft.core.registries.BuiltInRegistries.BLOCK.getKey(st.getBlock()).toString()
+                                    : "minecraft:oak_fence_gate";
+                            RsDir f = st.hasProperty(net.minecraft.world.level.block.FenceGateBlock.FACING)
+                                    ? RsDir.valueOf(st.getValue(net.minecraft.world.level.block.FenceGateBlock.FACING).name())
+                                    : in;
+                            devs.add(Devices.fenceGate(g, f, id));
+                        }
+                        what = devs.size() + " gate(s)";
+                    }
+                    case "dispensers", "droppers" -> {
+                        boolean dropper = spec.mechanism().equals("droppers");
+                        String facing = aimFacing(server, player, spec.aim(), ground);
+                        for (RsPos g : Devices.groundRing(view, ground, n, 1)) {
+                            devs.add(Devices.dispenser(g.up(1), facing, spec.items(), dropper));
+                        }
+                        what = devs.size() + " " + spec.mechanism() + " facing " + facing
+                                + (spec.items().isEmpty() ? " (empty)" : ", loaded with " + spec.items().replace(";", ", "));
+                    }
+                    case "note_blocks" -> {
+                        List<Integer> notes = spec.notes().isEmpty() ? List.of(12) : spec.notes();
+                        List<RsPos> spots = Devices.groundRing(view, ground, notes.size(), 1);
+                        for (int i = 0; i < spots.size(); i++) {
+                            devs.add(Devices.noteBlock(spots.get(i).up(1), Math.max(0, Math.min(24, notes.get(i))),
+                                    spec.instrument()));
+                        }
+                        what = devs.size() + " note block(s) (" + spec.instrument() + ")";
+                    }
+                    default -> {
+                        return Built.fail(ToolResult.error("Unknown mechanism " + spec.mechanism() + "."));
+                    }
+                }
+                if (devs.isEmpty()) {
+                    return Built.fail(ToolResult.error("There was no room for any " + spec.mechanism() + " at "
+                            + spec.at() + " (they need flat solid ground with room above)."));
+                }
+                DeviceModule.Result r = DeviceModule.plan(view, spec.mechanism(), devs, !spec.inverted(), Set.of(),
+                        new ArrayList<>(List.of(spec.inverted() ? "on at rest; a switch turns them OFF"
+                                : "a switch turns them ON")));
+                if (!r.ok()) {
+                    return Built.fail(ToolResult.error("The " + spec.mechanism() + " could not be wired: " + r.why()
+                            + ". Try fewer, or a flatter spot."));
+                }
+                module = r.module();
+                summary = what + " at " + spec.at();
+                centre = devs.get(0).feed();
+            }
+        }
 
         // A door shut at rest with every switch outside would shut him in: add a button inside beside it.
-        boolean anyInside = false;
-        for (String[] c : asked) {
-            PlaceFinder.Place cp = PlaceFinder.find(server, player, c[1], com.moddingfromamod.builder.BuildSpots.FRONT);
-            if (cp.ok() && ("inside".equals(cp.r().spot())
-                    || ControlSpots.side(door.frame(), LevelView.rs(cp.block())) > 0)) {
-                anyInside = true;
+        String addedInside = null;
+        if (shutAtRest && place.buildId() != null && door != null) {
+            boolean anyInside = false;
+            for (String[] c : asked) {
+                PlaceFinder.Place cp = PlaceFinder.find(server, player, c[1], com.moddingfromamod.builder.BuildSpots.FRONT);
+                if (cp.ok() && ("inside".equals(cp.r().spot())
+                        || ControlSpots.side(door.frame(), LevelView.rs(cp.block())) > 0)) {
+                    anyInside = true;
+                }
+            }
+            if (!anyInside) {
+                asked = new ArrayList<>(asked);
+                asked.add(new String[] {"button", place.buildId() + ":inside"});
+                addedInside = "a button inside beside the door, so nobody is shut in";
             }
         }
-        String addedInside = null;
-        if (opens && !anyInside && place.buildId() != null) {
-            asked = new ArrayList<>(asked);
-            asked.add(new String[] {"button", place.buildId() + ":inside"});
-            addedInside = "a button inside beside the door, so nobody is shut in";
-        }
         // controls: each resolved, then the first spot the planner can wire
-        Set<RsPos> foreign = view.foreignRedstone(door.frame().origin().plus(-24, -8, -24),
-                door.frame().origin().plus(24, 8, 24));
+        Set<RsPos> foreign = view.foreignRedstone(centre.plus(-24, -10, -24), centre.plus(24, 10, 24));
         List<MechanismPlanner.ControlAsk> chosen = new ArrayList<>();
         MechanismPlan plan = null;
         for (String[] c : asked) {
@@ -290,24 +462,23 @@ public final class BuildMechanismTool implements McpTool {
                 return Built.fail(ToolResult.error("Could not find the " + c[0] + "'s place " + c[1] + ": " + cp.why()));
             }
             RsPos spot = LevelView.rs(cp.block());
-            // a switch at the door's own building goes beside its door: inside for "inside", else outside
-            boolean sameBuilding = cp.buildId() != null && cp.buildId().equals(place.buildId());
+            // a switch at the mechanism's own building goes beside its door: inside for "inside", else outside
+            boolean sameBuilding = cp.buildId() != null && cp.buildId().equals(place.buildId()) && door != null;
             List<RsPos> tries = sameBuilding
-                    ? ControlSpots.atDoor(door.frame(), door.width(), c[0],
-                            "inside".equals(cp.r().spot()) ? 1 : -1)
-                    : ControlSpots.nearDoor(door.frame(), door.width(), spot)
+                    ? ControlSpots.atDoor(door.frame(), door.width(), c[0], "inside".equals(cp.r().spot()) ? 1 : -1)
+                    : door != null && ControlSpots.nearDoor(door.frame(), door.width(), spot)
                     ? ControlSpots.atDoor(door.frame(), door.width(), c[0], ControlSpots.side(door.frame(), spot))
                     : ControlSpots.around(spot.up(-1));
             String last = null;
             MechanismPlan ok = null;
             for (RsPos guess : tries) {
-                RsPos ground = groundNear(view, guess);
-                if (ground == null) {
+                RsPos g = groundNear(view, guess);
+                if (g == null) {
                     last = "there is no ground to stand it on near " + guess;
                     continue;
                 }
                 List<MechanismPlanner.ControlAsk> withIt = new ArrayList<>(chosen);
-                withIt.add(new MechanismPlanner.ControlAsk(c[0], ground));
+                withIt.add(new MechanismPlanner.ControlAsk(c[0], g));
                 MechanismPlan p = MechanismPlanner.plan(view, module, withIt, foreign);
                 if (p.ok()) {
                     ok = p;
@@ -329,12 +500,59 @@ public final class BuildMechanismTool implements McpTool {
         b.level = level;
         b.plan = plan;
         b.owner = player.getGameProfile().getName();
-        b.summary = "a hidden piston door " + door.width() + " wide and 2 tall in the "
-                + (door.existing() ? "doorway" : "new doorway") + " at " + door.frame().origin().x() + " "
-                + door.frame().origin().y() + " " + door.frame().origin().z() + ", made of " + material
-                + (plan.replaced().isEmpty() ? "" : "; it replaced " + plan.replaced().size() + " block(s)");
+        b.summary = summary + (plan.replaced().isEmpty() ? "" : "; it replaced " + plan.replaced().size() + " block(s)");
+        b.shutAtRest = shutAtRest;
         b.placed = MechanismWorld.place(level, plan);
         return b;
+    }
+
+    static String where(RsPos p) {
+        return p.x() + " " + p.y() + " " + p.z();
+    }
+
+    static int defaultCount(String mechanism, int notes) {
+        return switch (mechanism) {
+            case "lamps" -> 4;
+            case "note_blocks" -> Math.max(1, notes);
+            default -> 1;
+        };
+    }
+
+    /** Fence gates already standing near {@code ground} (or in the building's box), nearest first. */
+    static List<RsPos> existingGates(ServerLevel level, RsPos ground, int[] box, int n) {
+        List<RsPos> out = new ArrayList<>();
+        int r = 8;
+        for (int dx = -r; dx <= r; dx++) {
+            for (int dz = -r; dz <= r; dz++) {
+                for (int dy = -1; dy <= 3; dy++) {
+                    RsPos p = ground.plus(dx, dy, dz);
+                    if (level.getBlockState(LevelView.bp(p)).getBlock()
+                            instanceof net.minecraft.world.level.block.FenceGateBlock) {
+                        out.add(p);
+                    }
+                }
+            }
+        }
+        out.sort(java.util.Comparator.comparingInt(p -> p.manhattan(ground)));
+        return out.subList(0, Math.min(Math.max(n, 1), out.size()));
+    }
+
+    /** A dispenser's facing from `aim`: up/down/a compass word, or toward a place; up when nothing is said. */
+    static String aimFacing(net.minecraft.server.MinecraftServer server, ServerPlayer player, String aim, RsPos from) {
+        String a = aim == null ? "" : aim.trim().toLowerCase(Locale.ROOT);
+        if (a.isEmpty() || a.equals("up") || a.equals("sky")) {
+            return "up";
+        }
+        if (List.of("down", "north", "south", "east", "west").contains(a)) {
+            return a;
+        }
+        if (At.parse(a) != null) {
+            PlaceFinder.Place t = PlaceFinder.find(server, player, a, com.moddingfromamod.builder.BuildSpots.FRONT);
+            if (t.ok()) {
+                return snap(t.r().x() - (from.x() + 0.5), t.r().z() - (from.z() + 0.5)).id();
+            }
+        }
+        return "up";
     }
 
     /**
@@ -351,6 +569,31 @@ public final class BuildMechanismTool implements McpTool {
                     && above == com.moddingfromamod.redstone.WorldView.Kind.AIR
                     && view.kind(g.up(2)) == com.moddingfromamod.redstone.WorldView.Kind.AIR) {
                 return g;
+            }
+        }
+        return null;
+    }
+
+    /** Null when {@code items} reads "<item id>*<count>;…" with real items. */
+    static String itemsProblem(String items) {
+        if (items.isEmpty()) {
+            return null;
+        }
+        for (String part : items.split(";")) {
+            String[] ic = part.trim().split("\\*");
+            var rl = net.minecraft.resources.ResourceLocation.tryParse(ic[0].contains(":") ? ic[0] : "minecraft:" + ic[0]);
+            if (rl == null || !net.minecraft.core.registries.BuiltInRegistries.ITEM.containsKey(rl)) {
+                return "items: there is no item '" + ic[0] + "' (write \"minecraft:arrow*64;minecraft:cookie*16\").";
+            }
+            if (ic.length > 1) {
+                try {
+                    int n = Integer.parseInt(ic[1].trim());
+                    if (n < 1 || n > 576) {
+                        return "items: a count is 1 to 576 (a dispenser holds 9 stacks).";
+                    }
+                } catch (NumberFormatException e) {
+                    return "items: '" + part + "' should read <item>*<count>.";
+                }
             }
         }
         return null;

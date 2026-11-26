@@ -160,6 +160,68 @@ public class BuildMechanismGameTest {
         });
     }
 
+    /** Every device kind through the real tool, one after another, each built, proved and removed, in one hall. */
+    @GameTest(template = "empty_test", batch = "redstone_tool_kinds", timeoutTicks = 6000)
+    public static void everyDeviceKindInAHall(GameTestHelper helper) {
+        String hall = "gt_rs_kinds_hall";
+        ServerLevel level = helper.getLevel();
+        ServerPlayer mock = MockPlayerNetwork.inLevel(helper);
+        BuildPlan plan = AutoSpotsGameTest.plainHall(hall);
+        BlockPos anchor = helper.absolutePos(new BlockPos(1, 1, 1)).offset(0, 120, 0);
+        for (int x = -14; x <= 24; x++) {
+            for (int z = -12; z <= 26; z++) {
+                for (int y = -8; y <= -1; y++) {
+                    level.setBlock(anchor.offset(x, y, z), Blocks.DIRT.defaultBlockState(), 2);
+                }
+                for (int y = 0; y <= 9; y++) {
+                    level.setBlock(anchor.offset(x, y, z), Blocks.AIR.defaultBlockState(), 2);
+                }
+            }
+        }
+        for (int cx = (anchor.getX() - 14) >> 4; cx <= (anchor.getX() + 24) >> 4; cx++) {
+            for (int cz = (anchor.getZ() - 12) >> 4; cz <= (anchor.getZ() + 26) >> 4; cz++) {
+                level.setChunkForced(cx, cz, true);
+            }
+        }
+        BuildRegistry.put(level.getServer(), plan);
+        Builder.submit(level, anchor, plan);
+        BuildSpotsGameTest.bind(level, mock, "lights and doors for the hall", "gt-rs-kinds");
+        String[] calls = {
+                "{\"mechanism\":\"lamps\",\"count\":4,\"at\":\"H:front\",\"controls\":[{\"kind\":\"lever\",\"at\":\"H:inside\"}]}",
+                "{\"mechanism\":\"iron_door\",\"at\":\"H:front\",\"controls\":[{\"kind\":\"pressure_plate\",\"at\":\"H:front\"}]}",
+                "{\"mechanism\":\"dispensers\",\"count\":2,\"items\":\"minecraft:firework_rocket*16\",\"aim\":\"up\","
+                        + "\"at\":\"H:front\",\"controls\":[{\"kind\":\"button\",\"at\":\"H:front\"}]}",
+                "{\"mechanism\":\"note_blocks\",\"notes\":[\"18\",\"14\"],\"instrument\":\"bell\",\"at\":\"H:front\","
+                        + "\"controls\":[{\"kind\":\"button\",\"at\":\"H:front\"}]}"};
+        AtomicReference<String> done = new AtomicReference<>();
+        AtomicReference<Boolean> started = new AtomicReference<>(false);
+        helper.succeedWhen(() -> {
+            helper.assertFalse(Builder.isBuilding(hall), Component.literal("waiting for the hall"));
+            if (!started.get()) {
+                started.set(true);
+                BuildSpotsGameTest.offThread(() -> AgentContext.with("gt-rs-kinds", () -> {
+                    StringBuilder out = new StringBuilder();
+                    for (String c : calls) {
+                        ToolResult r = new BuildMechanismTool().call(JsonParser.parseString(c.replace("H", hall))
+                                .getAsJsonObject());
+                        if (r.isError()) {
+                            out.append("FAILED ").append(c, 0, 40).append(": ").append(r.text()).append(" || ");
+                            continue;
+                        }
+                        new RemoveMechanismTool().call(JsonParser.parseString("{\"id\":\"" + builtId(r.text()) + "\"}")
+                                .getAsJsonObject());
+                    }
+                    done.set(out.toString());
+                    return null;
+                }));
+            }
+            helper.assertTrue(done.get() != null, Component.literal("waiting for the tools"));
+            if (!done.get().isEmpty()) {
+                throw helper.assertionException(done.get());
+            }
+        });
+    }
+
     /** The id build_mechanism reported ("Built and TESTED '<id>'"): tests in one batch share the store. */
     static String builtId(String text) {
         int a = text.indexOf('\'') + 1;
