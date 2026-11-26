@@ -464,8 +464,31 @@ public final class RubricGrader {
             }
             MechanismPlan plan = new MechanismPlan("graded", List.of(), expects, cs, List.of(), List.of(), null);
             int cycles = spec.has("cycles") ? spec.get("cycles").getAsInt() : 3;
-            MechanismProof.Result r = cs.isEmpty() ? new MechanismProof.Result(null, List.of())
-                    : MechanismProof.prove(level, plan, cycles);
+            // each control on its own: which outputs does it move? A wish can have a switch per part (a button for
+            // each side of a ship); what must hold is that every control moves something, every wanted output is
+            // moved by some control, and each control does it over every cycle.
+            MechanismProof.Result r = new MechanismProof.Result(null, List.of());
+            Set<Expect> moved = new HashSet<>();
+            for (Control c : cs) {
+                List<Expect> mine = respond(server, level, c, expects);
+                if (mine.isEmpty()) {
+                    r = new MechanismProof.Result("the " + c.kind() + " at " + c.use() + " moves none of the wanted "
+                            + "outputs", List.of());
+                    break;
+                }
+                moved.addAll(mine);
+                MechanismProof.Result one = MechanismProof.prove(level, new MechanismPlan("graded", List.of(), mine,
+                        List.of(c), List.of(), List.of(), null), cycles);
+                if (!one.ok()) {
+                    r = one;
+                    break;
+                }
+            }
+            if (r.ok() && !cs.isEmpty() && moved.size() < expects.size()) {
+                List<String> still = new ArrayList<>();
+                expects.stream().filter(x -> !moved.contains(x)).forEach(x -> still.add(x.what() + " at " + x.pos()));
+                r = new MechanismProof.Result("no control moves " + still, List.of());
+            }
             f2 = r.ok() && !expects.isEmpty();
             // each logic rule by its real stimulus: the outputs must switch on, then come back
             for (JsonObject rule : rules) {
@@ -510,6 +533,23 @@ public final class RubricGrader {
         v.addProperty("F3_as_wished", f3);
         v.addProperty("F4_usable", f4);
 
+        // dispensers that hold or held a bucket: the water or lava beside them is the wish's own (a shower, a
+        // fountain), not a side effect
+        List<BlockPos> wetters = AgentBridge.onServer(() -> {
+            List<BlockPos> wl = new ArrayList<>();
+            for (BlockPos p : outputs.getOrDefault("dispenser", List.of())) {
+                if (level.getBlockEntity(p) instanceof net.minecraft.world.Container c2) {
+                    for (int i = 0; i < c2.getContainerSize(); i++) {
+                        String it = BuiltInRegistries.ITEM.getKey(c2.getItem(i).getItem()).toString();
+                        if (it.endsWith("bucket")) {
+                            wl.add(p);
+                            break;
+                        }
+                    }
+                }
+            }
+            return wl;
+        }, 10_000L);
         // side effects
         int s1 = 0, s5 = 0;
         boolean s3 = false;
@@ -520,8 +560,8 @@ public final class RubricGrader {
                 continue;
             }
             String was = e.getValue()[0], now = e.getValue()[1];
-            if (now.startsWith("minecraft:lava") || now.startsWith("minecraft:fire")
-                    || now.startsWith("minecraft:water") && !was.startsWith("minecraft:water")) {
+            if ((now.startsWith("minecraft:lava") || now.startsWith("minecraft:fire")
+                    || now.startsWith("minecraft:water") && !was.startsWith("minecraft:water")) && !fluidSource(p, wetters)) {
                 s3 = true;
             }
             boolean byOtherTools = bbox != null && inBox(p, bbox);   // a change inside his building
@@ -540,6 +580,10 @@ public final class RubricGrader {
         }
         v.addProperty("S3_environment", s3);
         v.addProperty("S5_other_changes", s5);
+        // a button or plate the proof used comes up by itself within 20 ticks: wait for that, and never count a
+        // control's own cell (measured: a button popping up read as a clock)
+        waitTicks(server, 40);
+        footprint.removeAll(controls);
         Map<BlockPos, String> rest2 = AgentBridge.onServer(() -> states(level, footprint), 10_000L);
         waitTicks(server, 60);
         Map<BlockPos, String> later = AgentBridge.onServer(() -> states(level, footprint), 10_000L);
@@ -687,6 +731,56 @@ public final class RubricGrader {
             off = rest.get() == null;
         }
         return off ? null : "it switched on and did not come back: " + rest.get();
+    }
+
+    static boolean fluidSource(BlockPos p, List<BlockPos> wetters) {
+        for (BlockPos w : wetters) {
+            if (Math.abs(w.getX() - p.getX()) <= 3 && Math.abs(w.getZ() - p.getZ()) <= 3
+                    && p.getY() <= w.getY() + 1 && p.getY() >= w.getY() - 6) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** Which of {@code expects} one control moves: use it, wait, see; then let it go and wait for rest. */
+    static List<Expect> respond(MinecraftServer server, ServerLevel level, Control c, List<Expect> expects) {
+        AgentBridge.onServer(() -> MechanismWorld.use(level, c, true), 10_000L);
+        List<Expect> moved = new ArrayList<>();
+        for (int t = 0; t < 60; t += 2) {
+            waitTicks(server, 2);
+            moved = AgentBridge.onServer(() -> {
+                List<Expect> m = new ArrayList<>();
+                for (Expect x : expects) {
+                    if (MechanismWorld.check(level, List.of(x), true) == null) {
+                        m.add(x);
+                    }
+                }
+                return m;
+            }, 10_000L);
+            if (!moved.isEmpty()) {
+                waitTicks(server, 10);         // let the rest of what it moves get there
+                List<Expect> more = AgentBridge.onServer(() -> {
+                    List<Expect> m = new ArrayList<>();
+                    for (Expect x : expects) {
+                        if (MechanismWorld.check(level, List.of(x), true) == null) {
+                            m.add(x);
+                        }
+                    }
+                    return m;
+                }, 10_000L);
+                moved = more.size() >= moved.size() ? more : moved;
+                break;
+            }
+        }
+        if (c.toggle()) {
+            waitTicks(server, 30);
+            AgentBridge.onServer(() -> MechanismWorld.use(level, c, true), 10_000L);   // press again: back off
+        } else {
+            AgentBridge.onServer(() -> MechanismWorld.use(level, c, false), 10_000L);
+        }
+        waitTicks(server, 80);
+        return moved;
     }
 
     static boolean k3(JsonObject spec, String kind) {

@@ -203,11 +203,12 @@ public final class Doorway {
         faces.add(new Face(RsDir.WEST, new RsPos(x1, y0, z1), z1 - z0 + 1));    // east face, along = NORTH
         // each face's REAL wall: a box can be wider than its walls (a roof overhang, a porch), so step in from the
         // box's face to the first layer that is mostly wall on its ground storey (measured: a modern house's
-        // overhang put the search one block outside its walls, and neither its door nor a wall to cut was found)
+        // overhang put the search one block outside its walls, and a barn's box took in its fence, 6 out)
         List<Face> real = new ArrayList<>();
         for (Face f : faces) {
             Face use = f;
-            for (int k = 0; k <= 3; k++) {
+            int depth = Math.min(10, Math.max(box[3] - box[0], box[5] - box[2]) / 2);
+            for (int k = 0; k <= depth; k++) {
                 RsPos c = f.corner().plus(f.in().dx() * k, 0, f.in().dz() * k);
                 RsDir along = f.in().clockwise();
                 int walls = 0;
