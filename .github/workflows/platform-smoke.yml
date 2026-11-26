@@ -207,7 +207,8 @@ jobs:
           for f in "$RUNNER_TEMP"/smoke/gametest/*.log; do
             [ -f "$f" ] || continue
             echo "== $(basename "$f")"
-            grep -E -A2 '/ERROR\]|Exception|Caused by:' "$f" | grep -vE '^\s+at ' | awk '!seen[$0]++' | head -n 80
+            grep -E -A30 '/ERROR\]|Exception|Caused by:' "$f" | grep -vE '^\s+at (java|jdk|net\.minecraft|net\.neoforged|com\.mojang|cpw|org)\.' \
+              | awk '!seen[$0]++' | head -n 120
           done
       - uses: actions/upload-artifact@v5
         if: ${{ always() }}
