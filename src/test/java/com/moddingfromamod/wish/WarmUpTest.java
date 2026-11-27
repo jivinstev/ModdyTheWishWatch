@@ -130,4 +130,69 @@ class WarmUpTest {
         assertEquals(1, said.warn.size());
         assertTrue(said.error.isEmpty());
     }
+    /**
+     * Loads com.moddingfromamod classes itself, from the test classpath, until it is closed; then every such load fails,
+     * as a closed mod jar does when the server has stopped.
+     */
+    static final class ClosingLoader extends ClassLoader {
+        volatile boolean closed;
+
+        ClosingLoader(ClassLoader parent) {
+            super(parent);
+        }
+
+        @Override
+        protected Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
+            if (!name.startsWith("com.moddingfromamod.")) {
+                return super.loadClass(name, resolve);
+            }
+            synchronized (getClassLoadingLock(name)) {
+                Class<?> c = findLoadedClass(name);
+                if (c == null) {
+                    if (closed) {
+                        throw new ClassNotFoundException(name + " (the jar is closed)");
+                    }
+                    String res = name.replace('.', '/') + ".class";
+                    try (java.io.InputStream in = getParent().getResourceAsStream(res)) {
+                        if (in == null) {
+                            throw new ClassNotFoundException(name);
+                        }
+                        byte[] b = in.readAllBytes();
+                        c = defineClass(name, b, 0, b.length);
+                    } catch (java.io.IOException e) {
+                        throw new ClassNotFoundException(name, e);
+                    }
+                }
+                if (resolve) {
+                    resolveClass(c);
+                }
+                return c;
+            }
+        }
+    }
+
+    @Test
+    @DisplayName("the jar closes during the warm-up: judging the failure loads no class from it, nothing escapes")
+    @SuppressWarnings("unchecked")
+    void closedJarDuringWarmIsQuiet() throws Exception {
+        ClosingLoader loader = new ClosingLoader(WarmUpTest.class.getClassLoader());
+        AtomicBoolean running = new AtomicBoolean(true);
+        Runnable job = () -> {
+            running.set(false);   // the server stops...
+            loader.closed = true; // ...and its jar closes, while the job is still loading classes
+            throw new NoClassDefFoundError("com/moddingfromamod/wishbuilder/English");
+        };
+        // the caller does what ApprenticeService.warm does: WarmUp.load() while the jar is open, then a direct call
+        java.util.function.Supplier<String> caller = (java.util.function.Supplier<String>) Class
+                .forName("com.moddingfromamod.wish.WarmUpCaller", true, loader)
+                .getDeclaredConstructor(java.util.function.BooleanSupplier.class, Runnable.class)
+                .newInstance((java.util.function.BooleanSupplier) running::get, job);
+        String got;
+        try {
+            got = caller.get();
+        } catch (LinkageError e) {
+            throw new AssertionError("a failure escaped the warm-up: " + e, e);
+        }
+        assertEquals("STOPPED [debug]", got, "a stop is quiet: one debug line, no warning or error");
+    }
 }
