@@ -277,9 +277,11 @@ public final class PrecompiledPacks {
     }
 
     /**
-     * What the store was compiled FROM: every effect and item template, both catalogues and the CBScript compiler (its vendored tree's digest),
-     * hashed by path and content under the source tree's {@code src/main/resources}. The store's manifest records it,
-     * and {@code PrecompiledFingerprintTest} fails Gate A when it no longer matches.
+     * What the store was compiled FROM: every effect and item template, both catalogues, the CBScript compiler (its
+     * vendored tree's digest) and the code that renders a ready-made's CBScript ({@link RenderingSource#FILES}, by its
+     * code alone), hashed by path and content under the source tree's {@code src/main/resources} and
+     * {@code src/main/java}. The store's manifest records it, and {@code PrecompiledFingerprintTest} fails Gate A when
+     * it no longer matches.
      */
     public static String fingerprint(Path resources) throws IOException {
         List<Path> files = new ArrayList<>();
@@ -306,6 +308,15 @@ public final class PrecompiledPacks {
                 md.update(resources.relativize(f).toString().replace('\\', '/').getBytes(StandardCharsets.UTF_8));
                 md.update((byte) 0);
                 md.update(Files.readAllBytes(f));
+                md.update((byte) 0);
+            }
+            // The rendering: a tool's give line or derived parameter changes what a power is compiled from, as a
+            // template does, but no unit test can replay it (it asks the game's registries). Its code is hashed.
+            Path java = resources.resolveSibling("java");
+            for (String f : RenderingSource.FILES) {
+                md.update(("render " + f).getBytes(StandardCharsets.UTF_8));
+                md.update((byte) 0);
+                md.update(RenderingSource.read(java, f).getBytes(StandardCharsets.UTF_8));
                 md.update((byte) 0);
             }
             return HexFormat.of().formatHex(md.digest());
