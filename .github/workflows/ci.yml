@@ -120,6 +120,8 @@ jobs:
           python3 tools/licence-scan.py --range -- HEAD
       - name: The compiler bundle's refresh tool still builds, records and refuses
         run: python3 tools/test-refresh-cbscript-bundle.py
+      - name: The platform smoke's boot-log check lets through only the stock kqueue line
+        run: python3 tools/test-platform-smoke.py
 
   gate-a:
     name: Gate A (build and unit tests)

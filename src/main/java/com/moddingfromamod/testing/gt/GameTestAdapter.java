@@ -148,8 +148,12 @@ public final class GameTestAdapter {
                         CoverageMap.enter(cls);
                         long start = System.currentTimeMillis();
                         helper.runAfterDelay(CoverageMap.SETTLE_TICKS, () -> helper.succeedWhen(() -> {
-                            if (!CoverageMap.settled(start, System.currentTimeMillis(), CoverageMap.quiet())) {
+                            String busy = CoverageMap.busy();
+                            if (!CoverageMap.settled(start, System.currentTimeMillis(), busy == null)) {
                                 throw GameTestCompat.failure(new IllegalStateException("settling"));
+                            }
+                            if (busy != null) {
+                                CoverageMap.gaveUp(cls, busy);
                             }
                         }));
                     });
@@ -190,7 +194,8 @@ public final class GameTestAdapter {
                     ResourceLocation sid = CoverageMap.settleId(cls);
                     e.registerTest(sid, new FunctionGameTestInstance(ResourceKey.create(Registries.TEST_FUNCTION, sid),
                             new TestData<>(settle, ResourceLocation.fromNamespaceAndPath(sid.getNamespace(), "empty_test"),
-                                    2000, 0, true, net.minecraft.world.level.block.Rotation.NONE, false, 1, 1, false)));
+                                    CoverageMap.SETTLE_TIMEOUT_TICKS, 0, true,
+                                    net.minecraft.world.level.block.Rotation.NONE, false, 1, 1, false)));
                 }
                 Holder<TestEnvironmentDefinition> idle = e.registerEnvironment(
                         ResourceLocation.fromNamespaceAndPath(CoverageMap.IDLE_ID.getNamespace(),
