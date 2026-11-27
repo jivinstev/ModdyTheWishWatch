@@ -127,6 +127,11 @@ class ApprenticeTest {
         assertEquals(Apprentice.Band.CLOSE, c.apply("a robot dog").band());
         assertEquals(Apprentice.Band.NOTHING, c.apply("do my homework").band());
         assertEquals("auto", c.apply("a dragon that spits flames").stratum());
+        // A power the body already has is granted, not left out: the dragon flies on its own.
+        assertEquals(Apprentice.Band.SURE, c.apply("a dragon that can fly").band());
+        assertEquals(Apprentice.Band.SURE, c.apply("a dragon that breathes fire and can fly").band());
+        assertTrue(APPRENTICE.notes("a dragon that can fly", APPRENTICE.match("a dragon that can fly").offers().get(0))
+                .cant().isEmpty(), "\"fly\" is not something the dragon leaves out");
     }
 
     @Test
