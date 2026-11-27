@@ -1,3 +1,4 @@
+# (control run for #216: main unchanged but for this line; close without merging)
 # Coverage map: which production methods each GameTest class executes, built on GitHub runners (docs/GATE_B.md,
 # "The coverage map"). Targeted Gate B reads it to pick the GameTests a pull request's change can reach.
 #
