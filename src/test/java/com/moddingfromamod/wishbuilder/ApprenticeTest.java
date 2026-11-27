@@ -135,6 +135,51 @@ class ApprenticeTest {
     }
 
     @Test
+    @DisplayName("a power the body already has is granted, for every body that has one, not left out")
+    void aBuiltInPowerIsKeptForEveryBody() {
+        // The general case of "a dragon that can fly": every creature or ride body whose "has" facts name a power,
+        // wished for with that power in its own words. The body does it on its own, so the Builder adds no pick,
+        // and the word must still count as granted (never in the tile's "cant").
+        int checked = 0;
+        List<String> wrong = new java.util.ArrayList<>();
+        for (BuilderTree.Kind k : TREE.kinds()) {
+            for (BuilderTree.Form f : k.forms()) {
+                BuilderTree.Slot from = f.slot("from");
+                BuilderTree.Slot powers = f.slot("powers");
+                if (from == null || powers == null) {
+                    continue;
+                }
+                for (BuilderTree.Entry body : from.entries()) {
+                    String has = body.facts().getOrDefault("has", "");
+                    if (has.isBlank() || body.words().isEmpty()) {
+                        continue;
+                    }
+                    for (String p : has.split(",")) {
+                        BuilderTree.Entry power = powers.entry("power:" + p.strip());
+                        if (power == null || power.words().isEmpty()) {
+                            continue;
+                        }
+                        String wish = "a " + BuilderTree.Term.parse(body.words().get(0)).phrase() + " that "
+                                + BuilderTree.Term.parse(power.words().get(0)).phrase();
+                        Apprentice.Answer a = APPRENTICE.match(wish);
+                        if (a.offers().isEmpty() || !a.offers().get(0).kind().equals(k.id())
+                                || !a.offers().get(0).form().equals(f.id())
+                                || !body.id().equals(a.offers().get(0).first("from"))) {
+                            continue;   // another body won the words; not this rule's question
+                        }
+                        checked++;
+                        if (!APPRENTICE.notes(wish, a.offers().get(0)).cant().isEmpty()) {
+                            wrong.add(wish + " -> " + APPRENTICE.notes(wish, a.offers().get(0)).cant());
+                        }
+                    }
+                }
+            }
+        }
+        assertTrue(checked >= 10, "the sweep must reach real cases, not pass empty: " + checked);
+        assertTrue(wrong.isEmpty(), "a built-in power read as left out: " + wrong);
+    }
+
+    @Test
     @DisplayName("the longer phrase wins: a lion tail is a tail, not a lion")
     void theLongerPhraseWins() {
         Apprentice.Pick p = top("an eagle with a lion tail");
