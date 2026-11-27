@@ -183,7 +183,7 @@
       ],
       "id": "KI-9",
       "lowest": "1.21.8",
-      "notes": "found by the round at 1.21.8 (fix)",
+      "notes": "found by the round at 1.21.8 (fix); keep-current 2026-11-27 (authors' merge of origin/main at cdc44cc3ef23 into neoforge-1.21.8): decision keep (still open at 1.21.8) -- the merge's 40 files do not include .port/1.21.8/GATES-AB.md (git diff --stat 6d6eb02 bf7fe0a), and the port carries no fix commit for it to reconcile; no A/B (keep needs none)",
       "override": null,
       "rubric": {
         "failure": "cosmetic",
@@ -205,7 +205,7 @@
       ],
       "id": "KI-10",
       "lowest": "1.21.8",
-      "notes": "found by the round at 1.21.8 (fix)",
+      "notes": "found by the round at 1.21.8 (fix); keep-current 2026-11-27 (authors' merge of origin/main at cdc44cc3ef23 into neoforge-1.21.8): decision keep (still open at 1.21.8) -- the merge's 40 files do not include docs/EXTENDING.md, world/WorldMakes.java (git diff --stat 6d6eb02 bf7fe0a), and the port carries no fix commit for it to reconcile; no A/B (keep needs none)",
       "override": null,
       "rubric": {
         "failure": "cosmetic",
@@ -226,7 +226,7 @@
       ],
       "id": "KI-11",
       "lowest": "1.21.8",
-      "notes": "found by the round at 1.21.8 (fix)",
+      "notes": "found by the round at 1.21.8 (fix); keep-current 2026-11-27 (authors' merge of origin/main at cdc44cc3ef23 into neoforge-1.21.8): decision keep (still open at 1.21.8) -- the merge's 40 files do not include agent/tools/MakeItemTool.java (git diff --stat 6d6eb02 bf7fe0a), and the port carries no fix commit for it to reconcile; no A/B (keep needs none)",
       "override": null,
       "rubric": {
         "failure": "cosmetic",
