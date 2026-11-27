@@ -13,10 +13,10 @@ reviewer may add `missing` (a file that should exist) and `shared` (a shared hel
 the reviewing agent, distinct from the fixer; `commit` is the commit reviewed (`git rev-parse --short HEAD`).
 tools/fork-port.py adds a `?` row for every item it finds unreviewed; it never changes a verdict.
 
-- reviewer: keep-current round fresh reviewer (ModdyTheWishWatch@1.21.11_review)
+- reviewer: fresh agent of the keep-current weekly round (week 2026-11-26, job ModdyTheWishWatch@1.21.11_review), not the fixer
 - date: 2026-11-27
-- commit: f4889c4
-- re-check: fresh re-checker agent of the keep-current weekly round (week 2026-11-26), neither the reviewer nor the fixer, 2026-11-27: the 1 row the fix changed (f4889c4) re-checked; 0 not-ok left
+- commit: 8b8802d
+- re-review: every row re-read at 8b8802d (the cascade merge of neoforge-1.21.10 8eca36d); the src files changed since f4889c4 are the parent's own commits (71bc0a5 Gate C settled stage, 01b7483 Apprentice warm-up) arriving through the merge, identical to the parent but for the 1.21.11 rows (rows below); fork-port --check-done wrote no `?` row; layer-inventory check: 315 same, 1 changed (the `item` row), 0 unaccounted; 0 not-ok
 
 | kind | file | verdict | note |
 |---|---|---|---|
@@ -68,6 +68,13 @@ tools/fork-port.py adds a `?` row for every item it finds unreviewed; it never c
 | changed | tools/client-validation/playtests/05-magician-wish.playtest | ok | setup rules advance_time / spawn_mobs (1.21.11 ids) |
 | changed | tools/client-validation/playtests/06-builder-last-sword.playtest | ok | setup rules advance_time / spawn_mobs (1.21.11 ids) |
 | changed | versions/1.21.11.properties | ok | renamed from 1.21.10's: minecraft 1.21.11, range [1.21.11,1.21.12), NeoForge 21.11.45; header comment is the author's, unchanged |
+| changed | src/main/java/com/moddingfromamod/gatec/ClientHarness.java | ok | settledStage arrived from the parent (71bc0a5) unchanged; differs from neoforge-1.21.10 only by the gamerules.GameRules import; javap of NeoForge 21.11.45: SectionRenderDispatcher isQueueEmpty/getToUpload/getCompileQueueSize, LevelRenderer countRenderedSections and ClientChunkCache getLoadedChunksCount exist; the jar was built after the merge |
+| changed | src/main/java/com/moddingfromamod/gatec/VanillaDeathClientTest.java | ok | the parent's settledStage call kept as merged; only diff from the parent is RULE_DAYLIGHT/RULE_WEATHER_CYCLE -> ADVANCE_TIME/ADVANCE_WEATHER on the overworld's rules, same values (nit: `,false` lacks the file's space after the comma) |
+| changed | src/main/java/com/moddingfromamod/gatec/VanillaStateClientTest.java | ok | as VanillaDeathClientTest: the parent's settledStage call kept, the two rules under 1.21.11 names, same values |
+| changed | src/main/java/com/moddingfromamod/gatec/VanillaTwoClientTest.java | ok | as VanillaDeathClientTest: the parent's settledStage call kept, the two rules under 1.21.11 names, same values |
+| changed | src/main/java/com/moddingfromamod/agent/tools/ModifyMobTool.java | ok | REMERGE.json flags the authors' 79b2bc30ca7b..dfe4d6b67bed change as not merged, but it is in the file: identical to neoforge-1.21.10's; of its 82 added lines only `e.getServer()` differs, written `e.level().getServer()` (the parent's 1.21.9+ spelling); the REMERGE entry is stale, not a lost change |
+| changed | src/main/java/com/moddingfromamod/test/contract/WishedVanillaMobLimitsGameTest.java | ok | REMERGE flag stale as for ModifyMobTool: identical to the parent; the one line that differs from the authors' is copyTag() -> copyTagWithoutId() (TypedEntityData, 1.21.9+), the same HELD_TAG check |
+| changed | src/main/java/com/moddingfromamod/wish/LiveFit.java | ok | REMERGE flag stale: the authors' change is there; the lines that differ are ResourceLocation -> Identifier, location() -> identifier() (this version's rows) and the parent's TypedEntityData handling of entity_data (commented, 1.21.9); same modifier ids |
 | deleted | src/test/java/com/moddingfromamod/wish/CommandTree.java | ok | moved to src/main/java/.../testing/CommandTree.java (testing/ never ships) for the GameTest; accounted |
 | deleted | src/test/java/com/moddingfromamod/wish/CommandsReadme.java | ok | moved to src/main/java/.../testing/CommandsReadme.java; its pure halves still tested in Gate A (testing/CommandsReadmeTest) |
 | deleted | src/test/java/com/moddingfromamod/wish/PublicCommandsReadmeTest.java | ok | replaced by wish/PublicCommandsReadmeGameTest (ci shard): same assertions incl. no moddyop, plus a live-dispatcher check; Commands' static init needs Bootstrap in 1.21.11, the why is in its javadoc |
