@@ -168,6 +168,10 @@ class OneAttempt(unittest.TestCase):
         self.assertTrue(run.never_started("> Could not resolve all artifacts\nReceived status code 429 from server"))
         self.assertFalse(run.never_started("gt-adapter: 3 tests found\nCould not GET x"), "a server that ran is not")
         self.assertFalse(run.never_started("error: cannot find symbol"), "a compile error is not a download")
+        for log in DOWNLOAD_LOGS:
+            self.assertTrue(run.never_started(log), log)
+        for log in NOT_DOWNLOAD_LOGS:
+            self.assertFalse(run.never_started(log), log)
 
     def test_no_result_line_no_record_or_no_test_is_a_problem(self):
         a = {"log": g.parse_log("BUILD SUCCESSFUL"), "record": None, "timedOut": True}
@@ -182,6 +186,83 @@ class OneAttempt(unittest.TestCase):
         tier = {"AGameTest": {}, "BGameTest": {}, "CGameTest": {}}
         self.assertEqual(run.expected_classes(tier, ["AGameTest.t0", "CGameTest"], []), ["AGameTest", "CGameTest"])
         self.assertEqual(run.expected_classes(tier, [], ["agametest"]), ["BGameTest", "CGameTest"])
+
+
+# fake Gradle logs (docs/GATE_B.md, "Downloads in CI"): failures before any server ran, for want of a download ...
+DOWNLOAD_LOGS = [
+    # the coverage map's red of 26 Nov: the Mojang asset download, 9 s into Gradle
+    "> Task :downloadAssets FAILED\nBUILD FAILED in 9s\n* What went wrong:\n"
+    "Execution failed for task ':downloadAssets' (registered in build file 'build.gradle').\n",
+    "* What went wrong:\nCould not resolve net.neoforged:neoform:1.21.8.\n> Could not GET 'https://x/y.pom'.\n",
+    "> Could not find a:b:1.\n  Searched in the following locations:\nnot found in any of the following sources:\n",
+    "> Could not GET 'https://x/y.jar'. Received status code 503 from server: Service Unavailable\n",
+    "Caused by: java.net.SocketTimeoutException: Read timed out\n",
+    "> Could not HEAD 'https://x'.\n> Connection reset\n",
+]
+# ... and failures that are not downloads, or came after the server started: never retried
+NOT_DOWNLOAD_LOGS = [
+    "A.java:3: error: cannot find symbol\n> Task :compileJava FAILED\nBUILD FAILED\n",
+    # a compile failure is not a download even beside a download-looking line (a warning, an offline repository)
+    "Could not GET 'https://x' (offline)\n> Task :compileJava FAILED\n* What went wrong:\nCompilation failed\n",
+    # the server ran: a GameTest failure (even one that read the network) is the retry rule's business
+    "gt-adapter: 3 tests found\nConnection reset\n2 required tests failed :(\n",
+    "1 required tests failed :(\nRead timed out\n",
+    "> Task :test FAILED\nThere were failing tests.\n",
+    "* What went wrong:\nExecution failed for task ':runGameTestServer'.\n> exit value 1\n",
+    "BUILD SUCCESSFUL in 3m\n",
+]
+
+
+class DownloadRetry(unittest.TestCase):
+    """attempt() with Gradle replaced: a download failure runs ONCE more, a minute later; nothing else is re-run."""
+
+    def drive(self, logs):
+        out = tempfile.mkdtemp()
+        calls, sleeps = [], []
+
+        def fake(name, out_dir, shard, classes, not_classes, exclude, timeout, extra):
+            text = logs[min(len(calls), len(logs) - 1)]
+            calls.append(name)
+            g.write_text(os.path.join(out_dir, name + ".log"), text)
+            return {"log": g.parse_log(text), "record": None, "timedOut": False, "seconds": 9.0,
+                    "logFile": name + ".log"}
+
+        old = run._attempt
+        run._attempt = fake
+        try:
+            a = run.attempt("run", out, "ci", [], [], [], 1, [], sleep=sleeps.append)
+            return a, calls, sleeps, sorted(os.listdir(out))
+        finally:
+            run._attempt = old
+            shutil.rmtree(out)
+
+    def test_a_download_failure_runs_once_more_after_a_minute_and_is_recorded(self):
+        a, calls, sleeps, files = self.drive([DOWNLOAD_LOGS[0], LOG_OK])
+        self.assertEqual(calls, ["run", "run"])
+        self.assertEqual(sleeps, [run.DOWNLOAD_RETRY_SECONDS])
+        self.assertEqual(run.DOWNLOAD_RETRY_SECONDS, 60)
+        self.assertIn("downloadAssets", a["downloadRetry"]["why"])
+        self.assertEqual(a["downloadRetry"]["firstLog"], "run-download-failed.log")
+        self.assertEqual(files, ["run-download-failed.log", "run.log"], "the failed attempt's log is kept")
+
+    def test_a_second_download_failure_is_not_run_a_third_time(self):
+        a, calls, sleeps, _ = self.drive([DOWNLOAD_LOGS[1]])
+        self.assertEqual(calls, ["run", "run"], "once more, never twice")
+        self.assertEqual(len(sleeps), 1)
+        self.assertIn("downloadRetry", a)
+
+    def test_a_compile_test_or_gate_failure_is_never_retried(self):
+        for log in NOT_DOWNLOAD_LOGS:
+            a, calls, sleeps, _ = self.drive([log, LOG_OK])
+            self.assertEqual((calls, sleeps), (["run"], []), log)
+            self.assertNotIn("downloadRetry", a)
+
+    def test_the_job_says_it_passed_on_a_download_retry(self):
+        res = {"kind": "covmap", "label": "job-0-r0", "verdict": "green", "tests": [], "problems": [],
+               "downloadRetries": [{"attempt": "run", "why": "> Task :downloadAssets FAILED"}]}
+        self.assertIn("passed on a download retry", run.summary(res))
+        res["verdict"] = "red"
+        self.assertNotIn("passed on a download retry", run.summary(res))
 
 
 class Retry(unittest.TestCase):
