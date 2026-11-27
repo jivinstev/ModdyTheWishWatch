@@ -15,7 +15,8 @@ tools/fork-port.py adds a `?` row for every item it finds unreviewed; it never c
 
 - reviewer: keep-current round fresh reviewer (ModdyTheWishWatch@1.21.11_review)
 - date: 2026-11-27
-- commit: 1d0848d
+- commit: f4889c4
+- re-check: fresh re-checker agent of the keep-current weekly round (week 2026-11-26), neither the reviewer nor the fixer, 2026-11-27: the 1 row the fix changed (f4889c4) re-checked; 0 not-ok left
 
 | kind | file | verdict | note |
 |---|---|---|---|
@@ -72,7 +73,7 @@ tools/fork-port.py adds a `?` row for every item it finds unreviewed; it never c
 | deleted | src/test/java/com/moddingfromamod/wish/PublicCommandsReadmeTest.java | ok | replaced by wish/PublicCommandsReadmeGameTest (ci shard): same assertions incl. no moddyop, plus a live-dispatcher check; Commands' static init needs Bootstrap in 1.21.11, the why is in its javadoc |
 | deleted | versions/1.21.10.properties | ok | renamed to versions/1.21.11.properties (this tree builds one target) |
 | renames | .port/1.21.11/renames.tsv @3c6363b0dc39 | ok | renames.tsv: permission ints -> LevelBasedPermissionSet / Permissions, hasImpulse -> needsSync, playNotifySound -> mv/NotifySound (one small shim, same packet to that player alone), getRule().get/set -> get/set by key, server rules -> overworld's, location() -> identifier(), RULE_* -> 1.21.11 GameRules names; each matches 1.21.11's API, no behaviour change |
-| resources | src/main/resources/META-INF/accesstransformer.cfg @d69e504efc24 | not-ok | new AT makes RenderType(String,RenderSetup) public 'for com.moddingfromamod.mv.LegacyRenderType', a class this tree does not have (only mv/NotifySound exists): a dead entry with porting-machinery wording ('fork layer') — no behaviour change, but not needed by this port (P2/P6); same line on 26.x |
+| resources | src/main/resources/META-INF/accesstransformer.cfg @d69e504efc24 | ok | re-checked at f4889c4: the file is deleted, as in the parent (neoforge-1.21.10 has no access transformer); nothing in the tree names RenderType's constructor, LegacyRenderType or an access transformer (git grep; build.gradle and neoforge.mods.toml declare none), so nothing relied on it; the 'fork layer' wording is gone with it |
 | resources | src/main/resources/assets/wishpack/items @c5e0390fa1af | ok | hotbar.json regenerated (one line, the badge model) for 1.21.11's item list |
 | resources | src/main/resources/items/hotbar-badge.json @916f53e22f70 | ok | minecraft 1.21.11; the seven spears added to flatBlocks; WishHotbarGameTest checks the rule against the item registry |
 | resources | src/main/resources/precompiled/manifest.json @ce71cda1fb02 | ok | fingerprint of the recompile from bundle java-port-1.21.11 f9b9aa5; entries 152 unchanged |
