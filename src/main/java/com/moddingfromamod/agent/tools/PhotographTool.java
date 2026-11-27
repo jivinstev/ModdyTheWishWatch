@@ -1981,8 +1981,11 @@ public final class PhotographTool implements McpTool {
         java.util.UUID wish = currentWishId();
         // ONE TAKE, ONE NAME: two wishes' takes were both "finish_building__event", so each found
         // the other's strip (or neither did). The wish's short id makes every take its own.
-        final String name = wish == null ? baseName : baseName + "_" + wish.toString().substring(0, 8);
-        String stem = sanitizeStem(name);
+        // The label part is bounded (it was not: a long label ran past a file name's length) and never a device name
+        // Windows keeps; the wish's eight hex characters always survive the cut, or two takes would share a strip.
+        String stem = com.moddingfromamod.store.SafeFileName.stem(baseName, 55, "film")
+                + (wish == null ? "" : "_" + wish.toString().substring(0, 8));
+        final String name = stem;
         long started = System.currentTimeMillis();
         String sent;
         try {
@@ -2183,11 +2186,6 @@ public final class PhotographTool implements McpTool {
         } catch (java.io.IOException e) {
             return null;
         }
-    }
-
-    /** The client's file-name rule (ClipStrip.sanitize), here because the server may not load client classes. */
-    static String sanitizeStem(String s) {
-        return s == null ? "" : s.toLowerCase(java.util.Locale.ROOT).replaceAll("[^a-z0-9_-]", "_");
     }
 
     private static java.util.UUID currentWishId() {
@@ -3371,18 +3369,9 @@ public final class PhotographTool implements McpTool {
         }
     }
 
-    /** Mirrors {@code PhotoClient.photoPath} without touching that client-only class. */
+    /** Where a photo with this label is kept: {@code photos/<stem>.png}, a name every OS accepts (store/SafeFileName). */
     private static Path photoPath(String label) {
-        StringBuilder sb = new StringBuilder();
-        for (char c : label.toLowerCase(java.util.Locale.ROOT).toCharArray()) {
-            sb.append((c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || c == '_' || c == '-'
-                    ? c : '_');
-            if (sb.length() >= 64) {
-                break;
-            }
-        }
-        String safe = sb.length() == 0 ? "photo" : sb.toString();
-        return RuntimeConfig.home().resolve("photos").resolve(safe + ".png");
+        return RuntimeConfig.home().resolve("photos").resolve(com.moddingfromamod.store.SafeFileName.stem(label, 64, "photo") + ".png");
     }
 
     private static long lastModified(Path p) {

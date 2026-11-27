@@ -120,7 +120,8 @@ public final class WorldModuleHost {
      * when nothing fences it (no bases, no base-reach rule, no wish bound).
      */
     public static Region fenceFor(java.util.UUID caster) {
-        return BaseReach.fence(caster, liveBases(), WorldRulesService.loadedOrNull());
+        Regions.Reach where = Regions.reachFor(caster, liveBases(), WorldRulesService.loadedOrNull());   // #182
+        return BaseReach.fence(caster, where.bases(), where.rules());
     }
 
     /** Pin the bases for a test (null restores) — like {@code WorldRulesService.forTest}; a batch of its own. */

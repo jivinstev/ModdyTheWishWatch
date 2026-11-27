@@ -7,7 +7,8 @@ carries this directory at `META-INF/third_party/`.
 | File | Component (version shipped) |
 |---|---|
 | `cbscript.NOTICE.txt` | CBScript by SethBling, via Moddy's fork (no open-source licence; used with the author's permission) |
-| `ply-3.11.LICENSE.txt` | PLY (Python Lex-Yacc) 3.11, inside the CBScript zip (BSD-3-Clause) |
+| `fdlibm.NOTICE.txt` | fdlibm's notice (Sun Microsystems), for the formulas the CBScript compiler's sinh, cosh and tanh follow |
+| `moddy-cbscript/` | the CBScript compiler (Java), vendored by `tools/refresh-cbscript-bundle.sh`: its `LICENSE`, `NOTICE.md` and `THIRD_PARTY.md` ship; its sources are compiled into the jar |
 | `twelvemonkeys-3.15.3.LICENSE.txt` | TwelveMonkeys ImageIO 3.15.3 and its common libraries (BSD-3-Clause) |
 | `onnxruntime-1.31.1.LICENSE.txt` | ONNX Runtime (Java) 1.31.1 (MIT) |
 | `onnxruntime-1.31.1.ThirdPartyNotices.txt` | the notices ONNX Runtime 1.31.1 ships for the libraries it includes |

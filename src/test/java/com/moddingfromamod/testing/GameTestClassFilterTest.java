@@ -21,7 +21,7 @@ class GameTestClassFilterTest {
     @Test
     void aFilterKeepsExactlyItsClasses() {
         Set<String> f = GameTestClassFilter.parse("McpGameTest, WishGameTest,,");
-        assertEquals(Set.of("McpGameTest", "WishGameTest"), f);
+        assertEquals(Set.of("mcpgametest", "wishgametest"), f, "kept lower case: a test's id is");
         assertTrue(GameTestClassFilter.allows(f, "McpGameTest"));
         assertFalse(GameTestClassFilter.allows(f, "HitProxyGameTest"));
         assertFalse(GameTestClassFilter.allows(f, "McpGameTestX"), "simple names match exactly, never by prefix");
@@ -54,5 +54,26 @@ class GameTestClassFilterTest {
         assertTrue(GameTestClassFilter.bedrockCaseAllowed("BedrockBatchGameTest", "watch_panel_grid", "a,watch_panel_grid"));
         assertFalse(GameTestClassFilter.bedrockCaseAllowed("BedrockBatchGameTest", "watch_panel_grid", "apprentice_pocket"));
         assertTrue(GameTestClassFilter.bedrockCaseAllowed("JoinWordsGameTest", "x", "apprentice_pocket"), "never another class");
+    }
+
+    @Test
+    void oneTestOfAClassRunsByItselfAndCaseNeverMatters() {
+        // a retry names one test, in the lower case of its id; the rest of its class stays out
+        Set<String> f = GameTestClassFilter.parse("mcpgametest.handshakeworks,WishGameTest");
+        assertTrue(GameTestClassFilter.allows(f, "McpGameTest"), "a class one of whose tests is named registers");
+        assertTrue(GameTestClassFilter.allowsMethod(f, "McpGameTest", "handshakeWorks"));
+        assertFalse(GameTestClassFilter.allowsMethod(f, "McpGameTest", "toolsList"), "only the named test of it");
+        assertTrue(GameTestClassFilter.allowsMethod(f, "WishGameTest", "anything"), "a bare class keeps every test");
+        assertFalse(GameTestClassFilter.allows(f, "McpGameTestX"), "a prefix is not a class");
+        assertTrue(GameTestClassFilter.allowsMethod(Set.of(), "AnyGameTest", "any"), "no filter, every test");
+    }
+
+    @Test
+    void theDenyListTakesEveryClassButItsOwn() {
+        // the first job of a split run: whatever no other job named, a class nobody has heard of included
+        Set<String> deny = GameTestClassFilter.parse("McpGameTest,WishGameTest");
+        assertFalse(GameTestClassFilter.notDenied(deny, "mcpgametest"));
+        assertTrue(GameTestClassFilter.notDenied(deny, "BrandNewGameTest"));
+        assertTrue(GameTestClassFilter.notDenied(Set.of(), "McpGameTest"), "an empty deny list denies nothing");
     }
 }

@@ -65,6 +65,14 @@ public final class ArtifactMemoryStore {
     }
 
     /**
+     * The file a key is saved in. An item's id is {@code id:<name>}, which Windows refuses in a file name, so the key
+     * goes through {@link com.moddingfromamod.store.SafeFileName} (a file saved under the raw name moves on first read).
+     */
+    static String fileName(String key) {
+        return com.moddingfromamod.store.SafeFileName.of(key) + ".json";
+    }
+
+    /**
      * Record one wish's worth of work, merged onto whatever is already known.
      *
      * @return the memory as it now stands, or null if there was nothing to record
@@ -96,7 +104,7 @@ public final class ArtifactMemoryStore {
         if (cached != null) {
             return cached;
         }
-        ArtifactMemory loaded = readFile(k);
+        ArtifactMemory loaded = readFile(k, true);
         if (loaded != null) {
             CACHE.put(k, loaded);
             return loaded;
@@ -122,15 +130,15 @@ public final class ArtifactMemoryStore {
      */
     public static ArtifactMemory savedOnDisk(String artifactId) {
         String k = key(artifactId);
-        return k.isEmpty() ? null : readFile(k);
+        return k.isEmpty() ? null : readFile(k, false);
     }
 
-    private static ArtifactMemory readFile(String k) {
+    private static ArtifactMemory readFile(String k, boolean migrate) {
         Path dir = dir();
         if (dir == null) {
             return null;
         }
-        Path file = dir.resolve(k + ".json");
+        Path file = com.moddingfromamod.store.SafeFileName.resolve(dir, k, ".json", migrate);
         if (!Files.isReadable(file)) {
             return null;
         }
@@ -193,7 +201,7 @@ public final class ArtifactMemoryStore {
             return;   // no world open (a unit test); the cache still works
         }
         String blocked = com.moddingfromamod.store.WishStoreFile.writeBlocker(
-                dir.resolve(key + ".json"), "version", VERSION);
+                dir.resolve(fileName(key)), "version", VERSION);
         if (blocked != null) {
             // A newer or damaged note is left alone — see WishStoreFile.writeBlocker.
             LOGGER.error("NOT saving memory '{}' — {}. The file has been left alone on purpose.",
@@ -202,8 +210,8 @@ public final class ArtifactMemoryStore {
         }
         try {
             Files.createDirectories(dir);
-            Path dest = dir.resolve(key + ".json");
-            Path tmp = dir.resolve("." + key + ".json.tmp");
+            Path dest = dir.resolve(fileName(key));
+            Path tmp = dir.resolve("." + fileName(key) + ".tmp");
             Files.writeString(tmp, toJson(m).toString(), StandardCharsets.UTF_8);
             try {
                 Files.move(tmp, dest, StandardCopyOption.REPLACE_EXISTING,

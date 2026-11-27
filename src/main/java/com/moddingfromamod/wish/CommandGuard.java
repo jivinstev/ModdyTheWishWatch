@@ -2,6 +2,7 @@ package com.moddingfromamod.wish;
 
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
@@ -616,6 +617,34 @@ public final class CommandGuard {
     }
 
     /** The command word, lower-cased and stripped of any namespace. */
+    /**
+     * Every command this one RUNS, outermost first: itself, then each {@code execute … run} tail, split exactly as
+     * {@link #isAllowed} splits them (the same root, the same {@code run} keyword, the same depth bound). For a reader
+     * that must judge what a command does rather than grep it (#70: a kept wish places nothing).
+     */
+    public static List<String> runChain(String command) {
+        List<String> out = new java.util.ArrayList<>();
+        String c = command == null ? "" : command.trim();
+        for (int depth = 0; depth <= MAX_DEPTH && !c.isEmpty(); depth++) {
+            out.add(c);
+            Rule r = RULES.get(root(c));
+            if (r == null || (r.limit() != Limit.RUN_TAIL && r.limit() != Limit.RUN_TAIL_REQUIRED)) {
+                break;
+            }
+            int idx = indexOfRunKeyword(c);
+            if (idx < 0) {
+                break;
+            }
+            c = c.substring(idx + " run ".length()).trim();
+        }
+        return out;
+    }
+
+    /** The root word of a command as the guard reads it ({@code minecraft:summon} is {@code summon}). */
+    public static String rootOf(String command) {
+        return command == null || command.isBlank() ? "" : root(command);
+    }
+
     private static String root(String command) {
         String c = command.trim();
         int sp = c.indexOf(' ');

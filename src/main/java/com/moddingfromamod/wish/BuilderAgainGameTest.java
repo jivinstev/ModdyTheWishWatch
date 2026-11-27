@@ -204,7 +204,7 @@ public final class BuilderAgainGameTest {
                 Component.literal("Next opens the tune dialog: " + (flow == null ? "no flow" : flow.step())));
         try {
             helper.getLevel().getServer().getCommands().getDispatcher().execute(
-                    "moddy builder make " + flow.token + " 2 1 ocean", child.createCommandSourceStack());
+                    "moddy builder make " + flow.token + " 2 ocean 2 2", child.createCommandSourceStack());
         } catch (com.mojang.brigadier.exceptions.CommandSyntaxException e) {
             helper.fail(Component.literal("the Make command did not parse: " + e.getMessage()));
             return;

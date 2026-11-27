@@ -1,7 +1,7 @@
 {
  "behaves_like": "villager",
- "damage": 0,
- "health": 20,
+ "damage": 1,
+ "health": 8,
  "id": "gnome",
  "name": "Garden Gnome",
  "note": "Classic cheerful garden gnome: blue tunic, big white beard, tall red pointy hat built from stacked shrinking boxes, smiling 3-box mouth, friendly.",

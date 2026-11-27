@@ -36,7 +36,7 @@ class MakeFactsTest {
     @Test
     void theVocabularyIsPinnedAndDocumented() throws Exception {
         assertEquals(List.of("fights", "hostile", "boss", "changes_blocks", "builds", "summons", "gives_items",
-                "world_rule", "decorative", "harmless"), MakeFacts.TAGS,
+                "world_rule", "decorative", "harmless", "vehicle"), MakeFacts.TAGS,
                 "a tag added, renamed or dropped is a change every world jar reads: update docs/EXTENDING.md with it");
         String doc = Files.readString(Path.of("docs/EXTENDING.md"));
         for (String t : MakeFacts.TAGS) {
@@ -46,6 +46,10 @@ class MakeFactsTest {
         assertEquals(List.of("healthHalfHearts", "attackDamageHalfHearts", "movementSpeedAttribute", "scaleTimes",
                 "builderSizeStep", "builderStrengthStep", "countMade", "amountItems", "radiusBlocks", "durationTicks",
                 "extentBlocks", "armorPoints", "knockbackResistanceFraction"), MakeFacts.NUMBERS.subList(0, 13),
+                "a shipped number was renamed, removed or reordered: add new ones at the end, never change these");
+        // #102: what a creature's moves do, added at the end
+        assertEquals(List.of("moveDamageHalfHeartsPerSecond", "effectiveDamageHalfHeartsPerSecond",
+                "healHalfHeartsPerSecond"), MakeFacts.NUMBERS.subList(13, 16),
                 "a shipped number was renamed, removed or reordered: add new ones at the end, never change these");
         for (String n : MakeFacts.NUMBERS) {
             assertTrue(doc.contains("`" + n + "`"), "docs/EXTENDING.md does not describe the number " + n);
@@ -304,6 +308,55 @@ class MakeFactsTest {
         }
     }
 
+    /** #174 B1, B2, B4, B7: the Super Wolf's own recipe, and every way a command can carry a mob's numbers. */
+    @Test
+    void aLearnedRealMobIsRatedByTheNumbersItsCommandSets() {
+        MakeFacts.Artifacts none = (kind, id) -> null;
+        String wolf = "wishsummon minecraft:wolf {\"speed\":0.6,\"damage\":100,\"health\":200,\"friendly\":true,"
+                + "\"name\":\"Super Wolf\",\"persistent\":true}";
+        MakeFacts f = MakeFacts.ofCommands(List.of(wolf), none);
+        assertEquals("creature", f.kind(), f.toString());
+        assertEquals(100.0, f.number(MakeFacts.ATTACK_DAMAGE_HALF_HEARTS).orElse(-1), f.toString());
+        assertEquals(200.0, f.number(MakeFacts.HEALTH_HALF_HEARTS).orElse(-1), f.toString());
+        assertEquals(0.6, f.number(MakeFacts.MOVEMENT_SPEED_ATTRIBUTE).orElse(-1), f.toString());
+        // the plain game's real mob, with no numbers set, still reads as itself
+        assertEquals(MakeFacts.ofCommands(List.of("summon minecraft:wolf"), none).kind(), "creature");
+        // a summon's NBT
+        MakeFacts nbt = MakeFacts.ofCommands(List.of("summon minecraft:zombie ~ ~ ~ {attributes:[{id:\"minecraft:attack_damage\","
+                + "base:100},{base:300d,id:\"minecraft:max_health\"}]}"), none);
+        assertEquals(100.0, nbt.number(MakeFacts.ATTACK_DAMAGE_HALF_HEARTS).orElse(-1), nbt.toString());
+        assertEquals(300.0, nbt.number(MakeFacts.HEALTH_HALF_HEARTS).orElse(-1), nbt.toString());
+        // what an execute runs
+        MakeFacts ex = MakeFacts.ofCommands(List.of("execute as @s at @s run " + wolf), none);
+        assertEquals(100.0, ex.number(MakeFacts.ATTACK_DAMAGE_HALF_HEARTS).orElse(-1), ex.toString());
+        // three lines that each make one make three
+        MakeFacts three = MakeFacts.ofCommands(List.of(wolf, wolf, wolf), none);
+        assertEquals(3.0, three.number(MakeFacts.COUNT_MADE).orElse(-1), three.toString());
+    }
+
+    @Test
+    void aLearnedRealMobThatFollowsHimIsNotRatedAMonster() {
+        // a wishsummon spec that makes the mob follow him or never attack him acts as the Builder's "Follows you" or
+        // "Friendly": with its numbers now read, a pet wolf must not newly read as the hostile wolf a plain one may be
+        MakeFacts.Artifacts none = (kind, id) -> null;
+        assertFalse(MakeFacts.ofCommands(List.of("wishsummon minecraft:wolf {\"follow\":true,\"damage\":100}"), none)
+                .has(MakeFacts.HOSTILE));
+        assertFalse(MakeFacts.ofCommands(List.of("wishsummon minecraft:wolf {\"friendly\":true}"), none)
+                .has(MakeFacts.HOSTILE));
+        assertTrue(MakeFacts.ofCommands(List.of("wishsummon minecraft:wolf {\"damage\":100}"), none)
+                .has(MakeFacts.HOSTILE), "a real wolf as the game makes it is rated as the game makes it");
+    }
+
+    @Test
+    void theSuperWolfsRecipeIsLetThroughOnlyBecauseItIsFittedLive() {
+        MakeFacts.Artifacts none = (kind, id) -> null;
+        String wolf = "wishsummon minecraft:wolf {\"damage\":100,\"health\":200}";
+        Map<String, Double> step1 = Map.of(MakeFacts.ATTACK_DAMAGE_HALF_HEARTS, 5.0, MakeFacts.HEALTH_HALF_HEARTS, 40.0);
+        MakeFacts f = MakeFacts.ofCommands(List.of(wolf), none);
+        assertFalse(MakeFit.satisfies(f, step1), "it is over the step's numbers: " + f);
+        assertTrue(MakeFit.satisfiesHere(f, step1), "a creature over only in what LiveFit holds where it stands");
+    }
+
     @Test
     void aRecipeIsRatedByWhatItsCommandsMake() {
         JsonObject dragon = JsonParser.parseString("{\"id\":\"d\",\"name\":\"Dragon\",\"powers\":[\"boss\",\"flies\"],"
@@ -354,5 +407,37 @@ class MakeFactsTest {
         assertEquals("machine", c.kind());
         assertEquals(Map.of(MakeFacts.COUNT_MADE, 3.0, MakeFacts.DURATION_TICKS, 60.0), c.numbers());
         assertEquals(Set.of(MakeFacts.GIVES_ITEMS, MakeFacts.FIGHTS), c.tags());
+    }
+
+    @Test
+    void aCreaturesMovesAreCountedAndAVehicleIsSaid() {
+        // #102: a friendly creature whose attack is its ranged move no longer reads as harmless in the a-second numbers
+        JsonObject spitter = JsonParser.parseString("{\"id\":\"gt_spit\",\"powers\":[\"friendly\"],\"health\":40,"
+                + "\"damage\":6,\"abilities\":[\"ranged\",\"heal\"]}").getAsJsonObject();
+        MakeFacts f = MakeFacts.ofArtifact("creature", spitter);
+        assertEquals(6.0, f.number(MakeFacts.ATTACK_DAMAGE_HALF_HEARTS).orElse(-1), "the bite's number keeps its meaning");
+        assertEquals(1.5, f.number(MakeFacts.MOVE_DAMAGE_HALF_HEARTS_PER_SECOND).orElse(-1), 1e-9);
+        assertEquals(1.5, f.number(MakeFacts.EFFECTIVE_DAMAGE_HALF_HEARTS_PER_SECOND).orElse(-1), 1e-9,
+                "a friendly creature never bites: only its moves");
+        assertEquals(0.8, f.number(MakeFacts.HEAL_HALF_HEARTS_PER_SECOND).orElse(-1), 1e-9);
+        // a guard bites once a second too
+        JsonObject guard = JsonParser.parseString("{\"id\":\"gt_guard\",\"powers\":[\"friendly\"],\"base\":\"guardian\","
+                + "\"health\":40,\"damage\":6}").getAsJsonObject();
+        MakeFacts g = MakeFacts.ofArtifact("creature", guard);
+        assertEquals(6.0, g.number(MakeFacts.EFFECTIVE_DAMAGE_HALF_HEARTS_PER_SECOND).orElse(-1), 1e-9);
+        assertTrue(g.number(MakeFacts.MOVE_DAMAGE_HALF_HEARTS_PER_SECOND).isEmpty(), "no move, no move number");
+        assertTrue(g.number(MakeFacts.HEAL_HALF_HEARTS_PER_SECOND).isEmpty());
+        assertFalse(g.has(MakeFacts.VEHICLE));
+        // a stored car is a vehicle, and a Builder car too
+        JsonObject car = JsonParser.parseString("{\"id\":\"gt_car\",\"powers\":[\"friendly\",\"rideable\"],"
+                + "\"behaves\":\"vehicle\",\"health\":40,\"damage\":0}").getAsJsonObject();
+        assertTrue(MakeFacts.ofArtifact("creature", car).has(MakeFacts.VEHICLE));
+        MakeFacts builderCar = MakeFacts.of(spec(BuilderSpec.Kind.RIDE, "preset:bodies/car", 2, List.of(), "friendly", 1, Map.of()));
+        assertTrue(builderCar.has(MakeFacts.VEHICLE), builderCar.toString());
+        assertEquals(0.0, builderCar.number(MakeFacts.EFFECTIVE_DAMAGE_HALF_HEARTS_PER_SECOND).orElse(-1), 1e-9);
+        MakeFacts builderBear = MakeFacts.of(spec(BuilderSpec.Kind.CREATURE, "preset:bodies/bear", 2, List.of(), "guard", 1, Map.of()));
+        assertFalse(builderBear.has(MakeFacts.VEHICLE), builderBear.toString());
+        assertTrue(builderBear.number(MakeFacts.EFFECTIVE_DAMAGE_HALF_HEARTS_PER_SECOND).orElse(0) > 0,
+                "a guard bear bites: " + builderBear);
     }
 }

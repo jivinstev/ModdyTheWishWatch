@@ -133,6 +133,9 @@ public final class WishExecutor {
             List<com.moddingfromamod.item.delivery.DeliveryWords.Landed> landed = new ArrayList<>();
             Result r = com.moddingfromamod.item.delivery.WishDelivery.collect(landed,
                     () -> runOneInScope(server, level, pos, asPlayer, command));
+            // EVERY BODY IT BROUGHT IN OR CHANGED IS HELD TO THE WORLD'S LIMITS NOW (#174), as the one who ran it,
+            // before it can act: a summon's NBT, a learned recipe's wishsummon, an attribute or effect on a mob.
+            LiveFitWatch.afterWishCommand(server, asPlayer);
             if (!landed.isEmpty()) {
                 List<String> out = new ArrayList<>(r.output());
                 out.add(com.moddingfromamod.item.delivery.DeliveryWords.forAgent(landed));
@@ -208,9 +211,14 @@ public final class WishExecutor {
         // McpProtocol's tools/call (BaseReach.refusal); a button, a template or a rule replays here
         // with no agent, and a child's buttons follow him from world to world. So with no
         // worker bound, the same rule is asked here, measured from where the command runs.
-        com.moddingfromamod.world.Bases bases = com.moddingfromamod.world.WorldModuleHost.liveBases();
+        // #182: a caster (or, with nobody near, the spot) in a region is judged by its bases and reach rules
+        com.moddingfromamod.world.Regions.Reach where = com.moddingfromamod.world.Regions.reachAt(
+                asPlayer == null ? null : asPlayer.getUUID(), level.dimension().identifier().toString(), pos.x, pos.y,
+                pos.z, com.moddingfromamod.world.WorldModuleHost.liveBases(),
+                com.moddingfromamod.world.WorldRulesService.loadedOrNull());
+        com.moddingfromamod.world.Bases bases = where.bases();
         if (bases != null && com.moddingfromamod.agent.AgentContext.workerId().isEmpty()) {
-            com.moddingfromamod.world.WorldRules rules = com.moddingfromamod.world.WorldRulesService.loadedOrNull();
+            com.moddingfromamod.world.WorldRules rules = where.rules();
             String dim = level.dimension().identifier().toString();
             // A standing rule can fire with nobody near (asPlayer null): it is then the rule of whoever's
             // base it fires on, and on a world that fences wishes to bases, nobody's base is refused.

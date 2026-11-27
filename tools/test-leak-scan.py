@@ -74,9 +74,9 @@ class BuiltInRules(unittest.TestCase):
         self.assertEqual(self.cats("bob@parents.example and noreply@anthropic.com and x@example.com"), [])
 
     def test_an_email_in_a_licence_notice_is_attribution(self):
-        self.assertEqual(self.cats("Copyright (c) Kevin <kevina" + "@users.sourceforge.net>", "words.NOTICE.txt"), [])
-        self.assertEqual(self.cats("Copyright (c) Kevin <kevina" + "@users.sourceforge.net>", "third_party/scowl.LICENSE.txt"), [])
-        self.assertEqual(self.cats("Copyright (c) Kevin <kevina" + "@users.sourceforge.net>", "third_partyish/notes.txt"), ["email"])
+        self.assertEqual(self.cats("Copyright (c) Kevin <kevina" + "@users.sourceforge.net>", "words.NOTICE.txt"), [])  # licence-scan: allow a made-up notice the leak scan is tested on
+        self.assertEqual(self.cats("Copyright (c) Kevin <kevina" + "@users.sourceforge.net>", "third_party/scowl.LICENSE.txt"), [])  # licence-scan: allow a made-up notice the leak scan is tested on
+        self.assertEqual(self.cats("Copyright (c) Kevin <kevina" + "@users.sourceforge.net>", "third_partyish/notes.txt"), ["email"])  # licence-scan: allow a made-up notice the leak scan is tested on
 
     def test_a_routable_ip_is_found_and_a_private_or_version_one_is_not(self):
         self.assertEqual(self.cats("door at " + IP + " today"), ["ip"])

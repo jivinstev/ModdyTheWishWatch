@@ -157,14 +157,22 @@ public class WishGiveKindGameTest {
         return com.moddingfromamod.compat.EntityCommands.source(p).withPermission(net.minecraft.server.permissions.LevelBasedPermissionSet.GAMEMASTER).withSuppressedOutput();
     }
 
-    /** Run {@code lines} as a datapack function, as the player, the way an item's use runs one. */
+    /** A wish pack's namespace for {@link #runAsFunction} (#80: only a wish's own pack is scoped). */
+    static final String WISH_PACK = "gt_give_kind_pack";
+
+    /** Run {@code lines} as a WISH datapack's function, as the player, the way an item's use runs one. */
     static void runAsFunction(ServerPlayer p, String... lines) {
         var functions = p.level().getServer().getFunctions();
         CommandSourceStack source = useSource(p);
         CommandFunction<CommandSourceStack> fn = CommandFunction.fromLines(
-                Identifier.fromNamespaceAndPath(ModdingFromAModMod.MODID, "gt_give_kind"),
+                Identifier.fromNamespaceAndPath(WISH_PACK, "gt_give_kind"),
                 functions.getDispatcher(), source, List.of(lines));
-        functions.execute(fn, source);
+        com.moddingfromamod.datapack.WishPacks.forceForTest(WISH_PACK, true);
+        try {
+            functions.execute(fn, source);
+        } finally {
+            com.moddingfromamod.datapack.WishPacks.forceForTest(WISH_PACK, false);
+        }
     }
 
     /**

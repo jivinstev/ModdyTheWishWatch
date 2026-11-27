@@ -47,7 +47,8 @@ Moddy is made for children. Everything a player reads or types goes through the 
 - `corpus/`: small public data sets the tests read.
 - `tools/`: `store-release.sh` (builds the release jar), `precompile-ready-mades.sh` (rebuilds the precompiled
   Builder and Apprentice powers), `fetch-apprentice-model.sh` (the Apprentice's pinned sentence
-  model), `secret-scan.py` (refuses a committed credential), `leak-scan.py`, and their tests.
+  model), `secret-scan.py` (refuses a committed credential), `leak-scan.py`, `licence-scan.py` (refuses third-party
+  code off the licence allow-list; its rules in `licence-rules.json`), and their tests.
 - `art/`: source art for icons.
 
 ## Build and test
@@ -55,42 +56,94 @@ Moddy is made for children. Everything a player reads or types goes through the 
 ```bash
 ./gradlew build                                     # Gate A: compile, unit tests, the jar in build/libs/
 ./gradlew runGameTestServer -Pshard=ci              # Gate B, the quick screen every pull request runs
-./gradlew runGameTestServer -Pshard=ci,default      # Gate B, the full default tier (CI runs it on pushes to main)
+./gradlew runGameTestServer -Pshard=ci,default      # Gate B, the full default tier (the nightly runs it on main)
+python3 tools/gate/gate.py run --shard ci --out /tmp/gt   # Gate B as CI runs it: counted, a failure retried alone
 ./gradlew runClient                                 # play it in a development client
 ```
 
 - **Gate A** is `./gradlew build`: compile, every unit test (`gate-a.gradle` configures the `test` task: one retry of a
-  failed test, recorded, and the ambient API keys removed so a test that needs one fails here rather than in CI).
+  failed test, recorded, and the ambient API keys removed so a test that needs one fails here rather than in CI), and
+  the licence checks (`licenceRegister`: `tools/licence-scan.py --tree`; `licenceCheck`: every library the jar nests).
 - **Gate B** boots a headless dedicated server and runs every `@GameTest` in the chosen shards. `-Pshard` takes a
-  comma-separated list (`ci`, `default`, or `all`); `-Pgametests=ClassA,ClassB` runs only those classes. Gate B needs
-  Python 3 with `ply` (`pip install ply`) for the datapack compiler; without it every datapack test fails with a
-  message that blames the catalogue, not the missing package.
+  comma-separated list (`ci`, `default`, or `all`); `-Pgametests=ClassA,ClassB` runs only those classes
+  (`ClassA.method` one test), `-Pgatenotclasses=…` every class but those. The datapack compiler is in the jar (no
+  Python needed).
 - **Gate C** is a real client. Anything a player can see or hear needs it; a clean compile and green headless tests do
   not prove a texture, a sound, a menu or a creative tab. On Linux without a display, `xvfb-run` works with software
-  rendering.
+  rendering. The automated Gate C is the rig films, `./tools/gate-c-rig.sh` (every film, ~15 min in CI): CI's
+  `rig-films` job runs them on a pull request that touches the rig, and Port CI runs them, targeted (a core set plus
+  what changed since that version's last release, `--targeted`), as Gate C of every version's release
+  (`.port/<mc>/gate-c.json`, recorded in the release's `gates-full.md`; [`docs/RELEASING.md`](docs/RELEASING.md),
+  "Gate C on every version"). A 26.x client under Xvfb also needs `libegl1 libegl-mesa0`.
 - `store_jar=true` in `gradle.properties` makes `./gradlew build` produce the release jar (versioned
   `<mod_version>+mc<minecraft_version>`, the Apprentice model bundled, fetched by `tools/fetch-apprentice-model.sh`).
   `-Pstore_jar=false` builds a plain jar without the 86 MiB model download.
 - Where a new GameTest goes is checked by `GateShardsTest` (Gate A): it fails by file name and says which annotation
   to use. A test in no shard would never run while the gate stays green.
 
-**CI** (`.github/workflows/ci.yml`): the leak scan, Gate A and Gate B's `ci` shard on every pull request; a pull request
-merges on those three green. A pull request that only touches `tools/client-validation/` or `.github/port-publish/` (nothing a
-build or test reads) runs the scan alone; Gate A and Gate B show as skipped. Docs are not in that list: tests read them. The `ci,default` tier is the long one and runs when started by hand (Actions → CI).
+**CI** (`.github/workflows/ci.yml`): the leak, secret and licence scans, Gate A and **targeted Gate B** on every pull
+request; a pull request merges on those three green. Targeted Gate B runs the `ci` shard plus every GameTest the change
+can reach (`tools/gate/gate.py select`: the tests naming a changed class, every class the coverage map saw run a changed
+method, every class the map has not placed), or the whole tier for a change the map cannot see (build files, mixins,
+resources, the GameTest harness, start-up code); its summary lists each class and why
+([`docs/GATE_B.md`](docs/GATE_B.md)). The game runs with `python` and `python3` replaced by stubs that fail
+(`gate.py run --no-python`), and a run that started one is red. A pull request that only touches `tools/client-validation/` or `.github/port-publish/` (nothing a
+build or test reads) runs the scan alone; Gate A and Gate B show as skipped. Docs are not in that list: tests read them. CI
+reads Maven Central through Google's public mirror and runs a build that failed on a download once more
+([`docs/GATE_B.md`](docs/GATE_B.md), "Downloads in CI").
+
+**Nightly** (`.github/workflows/nightly.yml`, [`docs/GATE_B.md`](docs/GATE_B.md)): the whole `ci,default` tier on
+`main` every night, split across four runners by `tools/gate/gate.py`, skipped when `main`'s gate tree already had a
+green night. Each job checks its server ran every test it registered and retries a failed test once, by itself
+(`flaky` if it then passes); the verdict checks every class of the tier ran with as many tests as its source declares.
+A red night opens or updates the one issue labelled `nightly-red`; a green night closes it. Each run is recorded, one
+file, on the data-only `gate-data` branch, and so is every pull request's targeted run (collected nightly from its
+`gate-run-record` artifact); `python3 tools/gate/gate.py report --data <checkout>` prints the flaky tests
+(passed and failed at one tree), the slowest classes and the trend. Known-flaky tests are listed, each with its issue, in
+`corpus/gate-flakes.json`.
+
+**Coverage map** (`.github/workflows/covmap.yml`, [`docs/GATE_B.md`](docs/GATE_B.md)): which production methods each
+GameTest class executes, mapped under JaCoCo on GitHub runners: the whole tier every Sunday (twice, and the two maps
+must agree but for timer noise and `corpus/gate-covmap-unstable.json`), the unplaced and changed classes every day. It
+lives on the data-only `gate-map` branch; `python3 tools/gate/gate.py select --base origin/main --map <map>` reads
+it to list the GameTests a change can reach. A failed refresh opens or updates the issue labelled `covmap-red`.
 
 **Releases** (`.github/workflows/port-ci.yml`, generated by the Port CI kit; do not edit it by hand). The release line
 is the `neoforge-1.21.8` branch. A tag `moddingfromamod-<version>-mc1.21.8` (or running the workflow with
 `release = true`) builds, gates and cuts a GitHub **pre-release** with the jar. A person plays the pre-release; then
 **promote** (`promote = <tag>`, `played_by = <login>`) makes it a full Release, and **publish** uploads a promoted
 release to Modrinth and CurseForge (`.github/port-publish.json`). Nothing is published that a person has not played.
+A release also needs a **green full-tier GameTest run of the exact code it ships** (`tools/gate/gate.py release-gate`: a
+nightly or release run on record, or it runs the tier itself; [`docs/RELEASING.md`](docs/RELEASING.md)), and every rung
+of the ladder needs its own.
 `tools/store-release.sh <version>` builds and checks the same jar locally.
+
+**`main` is the upstream of a weekly version ladder** ([`docs/RELEASING.md`](docs/RELEASING.md)).
+- **Every integrate is a new version.** Whoever takes `main` into `neoforge-1.21.8` (a worker mid-week, or the weekly
+  round) does it the same way:
+  1. If `main` names no version past the newest `moddingfromamod-*-mc1.21.8` release, open a `Version X.Y.Z: …` PR on
+     `main` that changes only `mod_version`, to the next patch.
+  2. Merge `main` into `neoforge-1.21.8` with a merge commit titled `Merge main into neoforge-1.21.8: X.Y.Z, …`.
+  3. Port CI releases 1.21.8.
+
+  A mid-week integrate starts no cascade, so 1.21.8 may lead the other version branches.
+- **The weekly round** (MMVU keep-current) runs the plan issue on Tuesday (Actions, no model) and the round on
+  Wednesday morning Pacific (a Claude scheduled task).
+  - The plan offers "take `main`" as a box, ticked by default; the round then bumps the version and integrates the
+    same way, by itself.
+  - Either way, the round carries `neoforge-1.21.8` up the other version branches and pre-releases them.
+- **A hotfix:** a pair of pull requests, `main` first, then `neoforge-1.21.8`, with the version bump.
+- **Promotion:** only the owner's `/promote`, after playing the build.
+
+Never cascade by hand. The plan workflow and the round task are installed only by MMVU's Setup, never edited by hand.
 
 **A fix lands on `main` first.** `main` holds every change; `neoforge-1.21.8` is `main` at a release point, and a
 higher `neoforge-<mc>` branch holds only its port's own changes plus `main` merged upward. A hotfix the release line
 needs before the next release point is made on `main` and **cherry-picked down** in the same change, never committed to
 the release line alone. `.github/workflows/release-line.yml` refuses a push or pull request that brings
 `neoforge-1.21.8` a commit with no equivalent on `main` (each commit not reachable from `main` is matched by patch-id against `main`, so a merge of `main` or a
-cherry-pick passes); the one exception is Port CI's own install-manifest refresh.
+cherry-pick passes). Two kinds of commit are exempt: Port CI's own install-manifest refresh, and the weekly round's records
+(a commit that changes only `.port/KNOWN-ISSUES.json` and/or the README's Ports block).
 
 ## Building on it: extension points
 
@@ -155,10 +208,8 @@ or the jar from `build/libs/` in a NeoForge 1.21.8 install):
    API keys** (shown only when a key is set). One press sets the four model choices, checks the program is installed
    and signed in, runs the Magician check (every safety grader, one forced refusal and one small test wish, about 3
    minutes) and turns the Magician on, with progress on the action bar and one result line; a failure says the one
-   thing to do. The setup also checks for a working **Python 3** (`datapack/PythonCheck`: the Windows Store stub and
-   Python 2 are recognised, then a tiny compile proves the bundled compiler runs); Python missing never blocks turning
-   the Magician on, it adds one result line saying what to install, and a power wished without it gets one clear tool
-   error (`PythonCheck.agentMessage`). **Choose models myself** keeps the per-choice pages (each model, how it is
+   thing to do. Powers need nothing installed: the CBScript compiler is in the jar (`NoPythonTest` and
+   `NoPythonGameTest` hold a player's game to starting no Python). **Choose models myself** keeps the per-choice pages (each model, how it is
    paid for, fallbacks); a change there re-checks the programs at once and says the Magician is off until **Turn on
    (about 3 minutes)** passes.
 
@@ -223,15 +274,16 @@ change.
   ran.
 - **Don't compile while a gate is running** (it rewrites `build/resources` under the running server), and **don't edit
   a shell script while it runs** (bash reads it by byte offset).
-- **The CBScript compiler ships bundled** in the jar (`tools/cbscript.zip`); a version-specific id or spelling belongs
-  in the compiler, not in a lesson.
-  Rebuild it with `./tools/refresh-cbscript-bundle.sh --ref <branch|commit>`, which also writes `tools/cbscript.SOURCE`.
+- **The CBScript compiler is built into the jar**: moddy-cbscript's Java port, vendored at `third_party/moddy-cbscript`
+  (do not edit it there: fix it in moddy-cbscript, where its parity corpus holds it to the Python compiler). It runs
+  in-process, so no player needs Python. A version-specific id or spelling belongs in the compiler, not in a lesson.
+  Re-vendor it with `./tools/refresh-cbscript-bundle.sh --ref <branch|commit>`, which also writes `tools/cbscript.SOURCE`.
 - **Builder and Apprentice powers are precompiled** (`datapack/PrecompiledPacks`, `datapack/ReadyMadeSkeleton`): every
-  template is compiled at build time with sentinels where a player's values go, and Java puts the values back, so no
-  player needs Python for them. Changed a template in `effects/` or `items/`, a catalogue, the bundled compiler, or how
+  template is compiled at build time with sentinels where a player's values go, and Java puts the values back, so a
+  Builder power is made with nothing compiled. Changed a template in `effects/` or `items/`, a catalogue, the compiler, or how
   a tool renders a ready-made? Run `./tools/precompile-ready-mades.sh` and commit `src/main/resources/precompiled/`:
   `PrecompiledFingerprintTest` (Gate A) and `ReadyMadePrecompileGameTest` (Gate B, every Builder power made with
-  Python off) fail until you do. A value the compiler would rewrite (a selector argument, an old component spelling)
+  the compiler off) fail until you do. A value the compiler would rewrite (a selector argument, an old component spelling)
   stays literal in the skeleton, so it is a different precompiled pack, never a wrong one (`PrecompiledEquivalenceTest`).
 - **A rule tested only where it is defined is not tested where it runs.** Drive the real entry point (the tool the
   agent calls, the real command), and check that a guard's enabling condition is actually written by shipped code.
@@ -261,3 +313,18 @@ maintainer reviews and merges it. Nobody pushes to `main` directly, and nothing 
   and for the live values of the keys in your environment, and never prints a value; CI runs it too. A test that needs a
   fake token builds it by concatenation so the file is not a hit. If a real key ever reaches a commit, rotate it first.
   Never bypass a refusal with `--no-verify`.
+- **Third-party code and text.** Nothing written by someone else is copied, ported, translated or closely paraphrased
+  into this repository unless its licence is on the allow-list: MIT, BSD-2-Clause, BSD-3-Clause, Apache-2.0, MPL-2.0,
+  ISC, Zlib, the Unlicense, CC0 / public domain; CC BY 4.0 for art and presets only. Anything else stops the work and
+  goes to the owner, with the source and its licence, **before** a commit: a copyleft licence, a share-alike,
+  non-commercial or no-derivatives Creative Commons licence, a font licence, "all rights reserved", no licence at all,
+  or code whose origin you do not know (a Stack Overflow answer is share-alike). Reading copyleft code to understand a
+  problem is fine; writing ours from it is a port. **Pushing a branch to this public repository publishes it**, draft
+  or not. What we keep gets a row in [THIRD_PARTY.md](THIRD_PARTY.md) (source, licence, why) in the same pull request,
+  and its licence text travels with it (`third_party/`, and a bundled component's row in
+  [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)); a licence held for the owner's decision reads `PENDING #<issue>`.
+  `tools/licence-scan.py` checks this at commit and push (`./tools/public-hooks/install.sh`), in CI (the tree and
+  every commit's added lines), and in Gate A (`licenceRegister`, and `licenceCheck` over every library the jar nests).
+  A line that only names a licence carries `licence-scan: allow <reason>`; a file that discusses licences goes in the
+  `exempt` list of `tools/licence-rules.json` with its reason. Widening the allow-list is the owner's decision, and an
+  approval for particular files is path-scoped (`scoped`, or a `permissions` entry's `globs`), never a general licence.

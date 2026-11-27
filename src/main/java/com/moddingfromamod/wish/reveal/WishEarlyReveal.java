@@ -149,7 +149,9 @@ public final class WishEarlyReveal {
         // A creature DESIGNED and not spawned (spawn:false, the schema's advice for anything with a
         // power) stands as a preview, so the early reveal is not pushed to the end (WishShimmer).
         String previewOf = stood.isEmpty() && !wasShown && !alreadyStanding
-                && "sculpt_creature".equals(tool) ? designed : null;
+                && "sculpt_creature".equals(tool) && !run.kept()
+                && !com.moddingfromamod.world.WorldOwners.is(run.playerId())   // a world's design has no audience
+                ? designed : null;   // a kept make stands nothing (#70)
         if (stood.isEmpty() && !wasShown && previewOf == null) {
             return;
         }

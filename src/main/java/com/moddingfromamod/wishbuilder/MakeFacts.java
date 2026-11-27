@@ -73,7 +73,9 @@ import com.moddingfromamod.species.Species;
  *   <li>{@link #GIVES_ITEMS}: it hands items over (supplies, a prize table, a creature that drops treats);</li>
  *   <li>{@link #WORLD_RULE}: it changes a rule for the whole world;</li>
  *   <li>{@link #DECORATIVE}: it does nothing but be there (a picture, a "just for fun" item);</li>
- *   <li>{@link #HARMLESS}: none of fights, hostile, boss, changes blocks, summons, world rule.</li>
+ *   <li>{@link #HARMLESS}: none of fights, hostile, boss, changes blocks, summons, world rule;</li>
+ *   <li>{@link #VEHICLE}: a creature that is a vehicle (its life is the vehicle's), so a world can leave it out of a
+ *       fight (#102).</li>
  * </ul>
  *
  * <p><b>{@link #known} false</b> when the facts were not read from the thing itself (an artifact that is gone or does
@@ -97,6 +99,12 @@ public record MakeFacts(String kind, Map<String, Double> numbers, Set<String> ta
     public static final String EXTENT_BLOCKS = "extentBlocks";
     public static final String ARMOR_POINTS = "armorPoints";
     public static final String KNOCKBACK_RESISTANCE_FRACTION = "knockbackResistanceFraction";
+    /** #102: health points a second a creature's moves (ranged, slam, charge) deal one target. */
+    public static final String MOVE_DAMAGE_HALF_HEARTS_PER_SECOND = "moveDamageHalfHeartsPerSecond";
+    /** #102: health points a second a creature deals one target: its bite when it fights, and its moves. */
+    public static final String EFFECTIVE_DAMAGE_HALF_HEARTS_PER_SECOND = "effectiveDamageHalfHeartsPerSecond";
+    /** #102: health points a second a creature's heal move gives it back. */
+    public static final String HEAL_HALF_HEARTS_PER_SECOND = "healHalfHeartsPerSecond";
 
     /**
      * Every number's name, as shipped. Additive only: a name here is never renamed, removed or given another unit
@@ -104,7 +112,8 @@ public record MakeFacts(String kind, Map<String, Double> numbers, Set<String> ta
      */
     public static final List<String> NUMBERS = List.of(HEALTH_HALF_HEARTS, ATTACK_DAMAGE_HALF_HEARTS,
             MOVEMENT_SPEED_ATTRIBUTE, SCALE_TIMES, BUILDER_SIZE_STEP, BUILDER_STRENGTH_STEP, COUNT_MADE, AMOUNT_ITEMS,
-            RADIUS_BLOCKS, DURATION_TICKS, EXTENT_BLOCKS, ARMOR_POINTS, KNOCKBACK_RESISTANCE_FRACTION);
+            RADIUS_BLOCKS, DURATION_TICKS, EXTENT_BLOCKS, ARMOR_POINTS, KNOCKBACK_RESISTANCE_FRACTION,
+            MOVE_DAMAGE_HALF_HEARTS_PER_SECOND, EFFECTIVE_DAMAGE_HALF_HEARTS_PER_SECOND, HEAL_HALF_HEARTS_PER_SECOND);
 
     public static final String FIGHTS = "fights";
     public static final String HOSTILE = "hostile";
@@ -116,10 +125,12 @@ public record MakeFacts(String kind, Map<String, Double> numbers, Set<String> ta
     public static final String WORLD_RULE = "world_rule";
     public static final String DECORATIVE = "decorative";
     public static final String HARMLESS = "harmless";
+    /** #102: a vehicle (a car, a boat, a plane): it never fights, whatever else it carries. */
+    public static final String VEHICLE = "vehicle";
 
     /** The whole vocabulary, in the order the docs list it. A tag a world names that is not here matches nothing. */
     public static final List<String> TAGS = List.of(FIGHTS, HOSTILE, BOSS, CHANGES_BLOCKS, BUILDS, SUMMONS, GIVES_ITEMS,
-            WORLD_RULE, DECORATIVE, HARMLESS);
+            WORLD_RULE, DECORATIVE, HARMLESS, VEHICLE);
 
     /** The tags that make a thing NOT harmless. */
     static final List<String> NOT_HARMLESS = List.of(FIGHTS, HOSTILE, BOSS, CHANGES_BLOCKS, SUMMONS, WORLD_RULE);
@@ -383,6 +394,18 @@ public record MakeFacts(String kind, Map<String, Double> numbers, Set<String> ta
                 a.tags.add(HOSTILE);
                 a.tags.add(FIGHTS);
             }
+            // #178: a real mob made stronger or faster states the numbers it is made at, the same reading its lowering
+            // summons (BuilderRealMobs), so a world's limits see it (a plain mob: none, as before)
+            BuilderRealMobs.Numbers stats = BuilderRealMobs.numbers(spec);
+            if (stats != null) {
+                a.most(HEALTH_HALF_HEARTS, stats.health());
+                if (stats.damage() > 0) {
+                    a.most(ATTACK_DAMAGE_HALF_HEARTS, stats.damage());
+                }
+                if (stats.speed() > 0 && !spec.opt("speed").isEmpty()) {   // only a speed he picked
+                    a.most(MOVEMENT_SPEED_ATTRIBUTE, stats.speed());
+                }
+            }
         }
         if (k == BuilderSpec.Kind.ITEM && BuilderLooks.SHOW.equals(spec.opt("power"))) {
             a.inert = true;   // "Just for fun": a keepsake with no power
@@ -403,6 +426,9 @@ public record MakeFacts(String kind, Map<String, Double> numbers, Set<String> ta
         }
         if (!spec.opt("strength").isEmpty()) {
             a.most(BUILDER_STRENGTH_STEP, num(spec.opt("strength"), 0));
+        } else if (creature && !realMob) {
+            // #103: a creature's or ride's How strong, its own (2) when unstated, so a world's limit on it reaches it
+            a.most(BUILDER_STRENGTH_STEP, BuilderCreatureStrength.OWN);
         }
         if (creature || k == BuilderSpec.Kind.ITEM || k == BuilderSpec.Kind.MACHINE || k == BuilderSpec.Kind.MAGIC_BLOCK) {
             a.most(COUNT_MADE, spec.count());
@@ -524,7 +550,9 @@ public record MakeFacts(String kind, Map<String, Double> numbers, Set<String> ta
                         a.most(ATTACK_DAMAGE_HALF_HEARTS, damage);
                     }
                     double armor = numeric(from == null ? null : from.get("armor"));
-                    double knockback = numeric(from == null ? null : from.get("knockbackResistance"));
+                    // the tool's own word (#101: a Builder sculpt sends it), else a species record's
+                    double knockback = numeric(from == null ? null : from.has("knockback_resistance")
+                            ? from.get("knockback_resistance") : from.get("knockbackResistance"));
                     if (!Double.isNaN(armor)) {
                         a.most(ARMOR_POINTS, armor);
                     }
@@ -532,6 +560,25 @@ public record MakeFacts(String kind, Map<String, Double> numbers, Set<String> ta
                         a.most(KNOCKBACK_RESISTANCE_FRACTION, knockback);
                     }
                     creatureLives(a, strings(args.get("powers")));
+                    // #102: its moves a second and whether it is a vehicle, from the creature this sculpt makes
+                    // (what it starts from, under what the sculpt names); only when its damage is known
+                    if (!Double.isNaN(damage)) {
+                        JsonObject made = new JsonObject();
+                        JsonObject base = startsFrom(str(args, "start_from"));
+                        if (base != null) {
+                            base.entrySet().forEach(e -> made.add(e.getKey(), e.getValue().deepCopy()));
+                        }
+                        args.entrySet().forEach(e -> made.add(e.getKey(), e.getValue().deepCopy()));
+                        if (made.has(com.moddingfromamod.species.BehavesLike.ARG)) {
+                            made.add("behaves", made.get(com.moddingfromamod.species.BehavesLike.ARG).deepCopy());
+                        }
+                        made.addProperty("id", "facts");
+                        made.addProperty("damage", damage);
+                        Species sp = Species.fromJson(made);
+                        if (sp != null) {
+                            creatureMoves(a, sp);
+                        }
+                    }
                 }
                 if ("guardian".equals(str(args, "base"))) {
                     a.tags.add(FIGHTS);
@@ -828,7 +875,29 @@ public record MakeFacts(String kind, Map<String, Double> numbers, Set<String> ta
         a.most(MOVEMENT_SPEED_ATTRIBUTE, s.speed());
         a.most(ARMOR_POINTS, s.armor());
         a.most(KNOCKBACK_RESISTANCE_FRACTION, s.knockbackResistance());
+        creatureMoves(a, s);
         return a.done();
+    }
+
+    /**
+     * #102: what its moves do a second, and whether it is a vehicle. Its bite counts only when it fights; a move a
+     * compiled pack gives it is not counted ({@link com.moddingfromamod.species.MovePower}).
+     */
+    private static void creatureMoves(Acc a, Species s) {
+        if (s.archetype() == com.moddingfromamod.species.Archetype.VEHICLE) {
+            a.tags.add(VEHICLE);
+        }
+        boolean fights = com.moddingfromamod.vanilla.RigInstinct.of(s).fights();
+        double moves = com.moddingfromamod.species.MovePower.moveDamagePerSecond(s.damage(), s.abilities());
+        if (com.moddingfromamod.species.MovePower.hasDamagingMove(s.abilities())) {
+            a.most(MOVE_DAMAGE_HALF_HEARTS_PER_SECOND, moves);
+        }
+        a.most(EFFECTIVE_DAMAGE_HALF_HEARTS_PER_SECOND,
+                com.moddingfromamod.species.MovePower.meleeDamagePerSecond(s.damage(), fights) + moves);
+        if (s.abilities().contains(com.moddingfromamod.runtime.Abilities.Kind.HEAL)) {
+            a.most(HEAL_HALF_HEARTS_PER_SECOND, com.moddingfromamod.species.MovePower.healPerSecond(s.health(),
+                    s.abilities()));
+        }
     }
 
     private static MakeFacts item(JsonObject stored) {
@@ -888,7 +957,14 @@ public record MakeFacts(String kind, Map<String, Double> numbers, Set<String> ta
     }
 
     /** One thing a replay command makes: its kind ({@link #KINDS}), the id it is stored under (or a mob), how many. */
-    public record Ref(String kind, String id, int count) {
+    public record Ref(String kind, String id, int count, Map<String, Double> stats, String acts) {
+        public Ref(String kind, String id, int count) {
+            this(kind, id, count, Map.of(), "");
+        }
+
+        public Ref(String kind, String id, int count, Map<String, Double> stats) {
+            this(kind, id, count, stats, "");
+        }
     }
 
     /**
@@ -905,17 +981,138 @@ public record MakeFacts(String kind, Map<String, Double> numbers, Set<String> ta
         if (w.length == 0 || w[0].isEmpty()) {
             return null;
         }
+        if (w[0].equals("execute")) {
+            // #174 B4: what an execute runs is what it makes ("execute as @s at @s run summon …")
+            int at = (" " + command.strip() + " ").indexOf(" run ");
+            return at < 0 ? null : ref(command.strip().substring(at + 4).strip());
+        }
         return switch (w[0]) {
+            // #174 B1: a hotbar fire of a learned real mob carries its numbers in a JSON spec
+            case "wishsummon" -> w.length >= 2 ? new Ref(BuilderSpec.Kind.CREATURE.id(), "mob:" + w[1],
+                    wishsummonCount(command), wishsummonStats(command), wishsummonActs(command)) : null;
+            // #174 B2: a summon's NBT can set any attribute
+            case "summon" -> w.length >= 2 ? new Ref(BuilderSpec.Kind.CREATURE.id(), "mob:" + w[1], 1,
+                    summonStats(command)) : null;
             case "wishmob" -> w.length >= 3 && w[1].equals("spawn")
                     ? new Ref(BuilderSpec.Kind.CREATURE.id(), w[2], w.length >= 4 ? Math.max(1, num(w[3], 1)) : 1) : null;
             case "wishdatapack" -> w.length >= 2 ? new Ref(BuilderSpec.Kind.ITEM.id(), w[1], 1) : null;
             case "wishbuild" -> w.length >= 2 ? new Ref(BuilderSpec.Kind.BUILDING.id(), w[1], 1) : null;
             case "wishpaint" -> w.length >= 2 ? new Ref(BuilderSpec.Kind.PICTURE.id(), w[1], 1) : null;
             case "moddyevent" -> w.length >= 3 && w[1].equals("stage") ? new Ref(BuilderSpec.Kind.EVENT.id(), w[2], 1) : null;
-            case "summon" -> w.length >= 2 ? new Ref(BuilderSpec.Kind.CREATURE.id(), "mob:" + w[1], 1) : null;
             case "give" -> w.length >= 3 ? new Ref(BuilderSpec.Kind.SUPPLIES.id(), w[2], 1) : null;
             default -> null;
         };
+    }
+
+    /** The JSON spec of {@code wishsummon <mob> {spec}}, or null. */
+    static JsonObject wishsummonSpec(String command) {
+        int brace = command.indexOf('{');
+        if (brace < 0) {
+            return null;
+        }
+        try {
+            JsonElement e = com.google.gson.JsonParser.parseString(command.substring(brace));
+            return e.isJsonObject() ? e.getAsJsonObject() : null;
+        } catch (RuntimeException notJson) {
+            return null;
+        }
+    }
+
+    /**
+     * How a wishsummon's mob acts, as the Builder's {@link BuilderActs} names it: a spec that makes it follow him is a
+     * pet, one that makes it never attack him is friendly, and so is neither rated the monster a plain real mob may be.
+     */
+    static String wishsummonActs(String command) {
+        JsonObject o = wishsummonSpec(command);
+        if (o == null) {
+            return "";
+        }
+        if (isTrue(o, "follow")) {
+            return "pet";
+        }
+        return isTrue(o, "friendly") ? "friendly" : "";
+    }
+
+    private static boolean isTrue(JsonObject o, String field) {
+        try {
+            return o.has(field) && o.get(field).isJsonPrimitive() && o.get(field).getAsBoolean();
+        } catch (RuntimeException e) {
+            return false;
+        }
+    }
+
+    private static int wishsummonCount(String command) {
+        JsonObject o = wishsummonSpec(command);
+        try {
+            return o != null && o.has("count") ? Math.max(1, o.get("count").getAsInt()) : 1;
+        } catch (RuntimeException e) {
+            return 1;
+        }
+    }
+
+    /** The numbers a wishsummon spec sets, in this vocabulary (health and damage are already half hearts). */
+    static Map<String, Double> wishsummonStats(String command) {
+        JsonObject o = wishsummonSpec(command);
+        Map<String, Double> out = new LinkedHashMap<>();
+        if (o == null) {
+            return out;
+        }
+        putNum(out, HEALTH_HALF_HEARTS, o, "health");
+        putNum(out, ATTACK_DAMAGE_HALF_HEARTS, o, "damage");
+        putNum(out, MOVEMENT_SPEED_ATTRIBUTE, o, "speed");
+        putNum(out, SCALE_TIMES, o, "scale");
+        putNum(out, ARMOR_POINTS, o, "armor");
+        putNum(out, KNOCKBACK_RESISTANCE_FRACTION, o, "knockback_resistance");
+        putNum(out, KNOCKBACK_RESISTANCE_FRACTION, o, "knockbackResistance");
+        return out;
+    }
+
+    private static void putNum(Map<String, Double> out, String key, JsonObject o, String field) {
+        try {
+            if (o.has(field) && o.get(field).isJsonPrimitive()) {
+                out.put(key, o.get(field).getAsDouble());
+            }
+        } catch (RuntimeException notANumber) {
+            // a value the summon would not take either
+        }
+    }
+
+    private static final java.util.regex.Pattern ATTRIBUTE_ID_FIRST = java.util.regex.Pattern.compile(
+            "id\\s*:\\s*\"?(?:minecraft:)?(?:generic\\.)?([a-z_]+)\"?\\s*,\\s*base\\s*:\\s*(-?[0-9.]+)");
+    private static final java.util.regex.Pattern ATTRIBUTE_BASE_FIRST = java.util.regex.Pattern.compile(
+            "base\\s*:\\s*(-?[0-9.]+)[a-z]?\\s*,\\s*id\\s*:\\s*\"?(?:minecraft:)?(?:generic\\.)?([a-z_]+)\"?");
+
+    /** The attributes a summon's NBT sets ({@code attributes:[{id:"minecraft:attack_damage",base:100}]}). */
+    static Map<String, Double> summonStats(String command) {
+        Map<String, Double> out = new LinkedHashMap<>();
+        var m = ATTRIBUTE_ID_FIRST.matcher(command);
+        while (m.find()) {
+            putAttribute(out, m.group(1), m.group(2));
+        }
+        m = ATTRIBUTE_BASE_FIRST.matcher(command);
+        while (m.find()) {
+            putAttribute(out, m.group(2), m.group(1));
+        }
+        return out;
+    }
+
+    private static void putAttribute(Map<String, Double> out, String attribute, String value) {
+        String key = switch (attribute) {
+            case "max_health" -> HEALTH_HALF_HEARTS;
+            case "attack_damage" -> ATTACK_DAMAGE_HALF_HEARTS;
+            case "movement_speed" -> MOVEMENT_SPEED_ATTRIBUTE;
+            case "scale" -> SCALE_TIMES;
+            case "armor" -> ARMOR_POINTS;
+            case "knockback_resistance" -> KNOCKBACK_RESISTANCE_FRACTION;
+            default -> null;
+        };
+        if (key != null) {
+            try {
+                out.merge(key, Double.parseDouble(value), Math::max);
+            } catch (NumberFormatException e) {
+                // not a number: nothing read
+            }
+        }
     }
 
     /**
@@ -938,14 +1135,37 @@ public record MakeFacts(String kind, Map<String, Double> numbers, Set<String> ta
             return cautious(OTHER);
         }
         MakeFacts all = combine(each);
+        // #174 B7: a recipe that spawns three times makes three, not the most any one line makes
+        double made = 0;
+        boolean counted = false;
+        for (MakeFacts f : each) {
+            Double c = f.numbers().get(COUNT_MADE);
+            if (c != null) {
+                made += c;
+                counted = true;
+            }
+        }
+        if (counted && each.size() > 1) {
+            Map<String, Double> n = new LinkedHashMap<>(all.numbers());
+            n.put(COUNT_MADE, made);
+            all = new MakeFacts(all.kind(), n, all.tags(), all.known());
+        }
         return unknown ? new MakeFacts(all.kind(), all.numbers(), all.tags(), false) : all;
     }
 
     private static MakeFacts ofRef(Ref r, Artifacts artifacts) {
         if (r.id().startsWith("mob:")) {
             BuilderSpec mob = new BuilderSpec(BuilderSpec.CURRENT, BuilderSpec.Kind.CREATURE,
-                    "mob:" + r.id().substring(4), "", 2, List.of(), "", r.count(), "", "", Map.of());
-            return of(mob);
+                    "mob:" + r.id().substring(4), "", 2, List.of(), "", r.count(), "", "",
+                    r.acts().isEmpty() ? Map.of() : Map.of(BuilderActs.SLOT, r.acts()));
+            MakeFacts f = of(mob);
+            if (r.stats().isEmpty()) {
+                return f;
+            }
+            // #174 B1/B2: the numbers its command sets are what it is, not the plain mob's
+            Map<String, Double> n = new LinkedHashMap<>(f.numbers());
+            n.putAll(r.stats());
+            return new MakeFacts(f.kind(), n, f.tags(), f.known());
         }
         if (r.kind().equals(BuilderSpec.Kind.SUPPLIES.id())) {
             Acc a = new Acc(r.kind());

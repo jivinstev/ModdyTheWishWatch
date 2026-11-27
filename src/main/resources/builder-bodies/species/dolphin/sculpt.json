@@ -5,7 +5,7 @@
   "powers": [
     "friendly"
   ],
-  "damage": 0,
+  "damage": 3,
   "health": 20,
   "palette": [
     {

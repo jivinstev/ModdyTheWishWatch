@@ -1,10 +1,10 @@
 {
   "vehicle": false,
-  "armor": 0.0,
+  "armor": 6.0,
   "body": "humanoid",
   "createdAt": 1793172237956,
-  "damage": 0.0,
-  "health": 30.0,
+  "damage": 5.0,
+  "health": 40.0,
   "id": "robot",
   "knockbackResistance": 0.0,
   "modelKey": "robot",

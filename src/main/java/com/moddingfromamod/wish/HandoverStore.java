@@ -59,6 +59,14 @@ public final class HandoverStore {
     }
 
     /**
+     * The file a key is saved in. An item's id is {@code id:<name>}, which Windows refuses in a file name, so the key
+     * goes through {@link com.moddingfromamod.store.SafeFileName} (a file saved under the raw name moves on first read).
+     */
+    static String fileName(String key) {
+        return com.moddingfromamod.store.SafeFileName.of(key) + ".json";
+    }
+
+    /**
      * Record what this wish learned, merged onto whatever the last one left.
      *
      * <p>Merged rather than replaced: a revision chain that overwrites is an earlier issue's rework
@@ -86,7 +94,7 @@ public final class HandoverStore {
         if (cached != null) {
             return cached;
         }
-        HandoverRecord loaded = readFile(k);
+        HandoverRecord loaded = readFile(k, true);
         if (loaded != null) {
             CACHE.put(k, loaded);
         }
@@ -105,15 +113,15 @@ public final class HandoverStore {
      */
     public static HandoverRecord savedOnDisk(String artifactId) {
         String k = key(artifactId);
-        return k.isEmpty() ? null : readFile(k);
+        return k.isEmpty() ? null : readFile(k, false);
     }
 
-    private static HandoverRecord readFile(String k) {
+    private static HandoverRecord readFile(String k, boolean migrate) {
         Path dir = dir();
         if (dir == null) {
             return null;
         }
-        Path file = dir.resolve(k + ".json");
+        Path file = com.moddingfromamod.store.SafeFileName.resolve(dir, k, ".json", migrate);
         if (!Files.isReadable(file)) {
             return null;
         }
@@ -141,7 +149,7 @@ public final class HandoverStore {
             return;   // no world open (a unit test); the cache still works
         }
         String blocked = com.moddingfromamod.store.WishStoreFile.writeBlocker(
-                dir.resolve(key + ".json"), "version", VERSION);
+                dir.resolve(fileName(key)), "version", VERSION);
         if (blocked != null) {
             // A newer or damaged note is left alone — see WishStoreFile.writeBlocker.
             LOGGER.error("NOT saving handover record '{}' — {}. The file has been left alone on purpose.",
@@ -150,8 +158,8 @@ public final class HandoverStore {
         }
         try {
             Files.createDirectories(dir);
-            Path dest = dir.resolve(key + ".json");
-            Path tmp = dir.resolve("." + key + ".json.tmp");
+            Path dest = dir.resolve(fileName(key));
+            Path tmp = dir.resolve("." + fileName(key) + ".tmp");
             Files.writeString(tmp, toJson(record).toString(), StandardCharsets.UTF_8);
             try {
                 Files.move(tmp, dest, StandardCopyOption.REPLACE_EXISTING,

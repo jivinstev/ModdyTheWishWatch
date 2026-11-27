@@ -87,6 +87,7 @@ public final class WishAimer {
         double t = com.moddingfromamod.builder.LoadedRay.loadedFraction(eye.x, eye.z, end.x, end.z,
                 (cx, cz) -> chunks.getChunkNow(cx, cz) != null);
         WishAim.Hit hit = null;
+        boolean sure = false;
         if (t > 0.0) {
             if (t < 1.0) {
                 end = eye.add(end.subtract(eye).scale(t));
@@ -98,9 +99,29 @@ public final class WishAimer {
                 BlockPos b = r.getBlockPos();
                 Direction f = r.getDirection();
                 hit = new WishAim.Hit(b.getX(), b.getY(), b.getZ(), f.getStepX(), f.getStepY(), f.getStepZ());
+                sure = sure(player, level, r, eye);
             }
         }
-        return WishAim.aim(pure(snapshot(player)), hit, world(level));
+        return WishAim.aim(pure(snapshot(player)), hit, world(level), sure);
+    }
+
+    /** {@link AimConfidence} for this hit: the face, where on it, how square on, how far, and his last looks. */
+    static boolean sure(ServerPlayer player, ServerLevel level, BlockHitResult r, Vec3 eye) {
+        BlockPos b = r.getBlockPos();
+        Direction f = r.getDirection();
+        Vec3 at = r.getLocation();
+        double lx = at.x - b.getX(), ly = at.y - b.getY(), lz = at.z - b.getZ();
+        double u, v;
+        switch (f.getAxis()) {
+            case X -> { u = ly; v = lz; }
+            case Y -> { u = lx; v = lz; }
+            default -> { u = lx; v = ly; }
+        }
+        Vec3 view = player.getViewVector(1.0f);
+        double dot = Math.abs(view.x * f.getStepX() + view.y * f.getStepY() + view.z * f.getStepZ());
+        double incidence = Math.toDegrees(Math.asin(Math.min(1.0, dot)));
+        boolean solid = world(level).at(b.getX(), b.getY(), b.getZ()) == WishAim.Cell.SOLID;
+        return AimConfidence.confident(solid, u, v, incidence, eye.distanceTo(at), GazeHistory.recent(player));
     }
 
     /**

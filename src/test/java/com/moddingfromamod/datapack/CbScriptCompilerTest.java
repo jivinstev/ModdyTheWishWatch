@@ -9,15 +9,13 @@ import java.nio.file.Path;
 import java.util.zip.ZipFile;
 
 import com.moddingfromamod.ModdingFromAModMod;
-import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 /**
- * <b>Gate A — pure JUnit.</b> The header normalisation and id rules are pure and always run. The
- * real end-to-end compile runs only when the CBScript compiler is present on this machine
- * ({@link CbScriptCompiler#available()}) and skip-succeeds otherwise, so a clean CI checkout without
- * the Python fork stays green — but on a dev box it proves the whole Java→Python→datapack path.
+ * <b>Gate A — pure JUnit.</b> The header normalisation and id rules, and real end-to-end compiles: the CBScript
+ * compiler (moddy-cbscript's Java port, vendored in third_party/) is part of the mod, so they always run, on any
+ * machine, with no Python.
  */
 class CbScriptCompilerTest {
 
@@ -61,8 +59,7 @@ class CbScriptCompilerTest {
 
     @Test
     void compilesARealDatapackWhenTheCompilerIsAvailable(@TempDir Path work) throws Exception {
-        Assumptions.assumeTrue(CbScriptCompiler.available(),
-                "CBScript compiler not on this machine — skipping the live compile");
+        assertTrue(CbScriptCompiler.available(), "the CBScript compiler is part of the mod");
         Path zip = work.resolve("out.zip");
         String source = String.join("\n",
                 "function mark()",
@@ -87,7 +84,7 @@ class CbScriptCompilerTest {
     @Test
     void aCompiledPackCarriesNoClickableLink(@TempDir Path work) throws Exception {
         // the strip is on the one path every compile takes, so the COMPILED function has no link.
-        Assumptions.assumeTrue(CbScriptCompiler.available(), "compiler not present — skipping");
+        assertTrue(CbScriptCompiler.available(), "the CBScript compiler is part of the mod");
         Path zip = work.resolve("out.zip");
         String source = String.join("\n",
                 "function greet()",
@@ -109,7 +106,7 @@ class CbScriptCompilerTest {
 
     @Test
     void aBrokenSourceReportsAFixableError(@TempDir Path work) {
-        Assumptions.assumeTrue(CbScriptCompiler.available(), "compiler not present — skipping");
+        assertTrue(CbScriptCompiler.available(), "the CBScript compiler is part of the mod");
         // 'reset' with no closing 'end' is a syntax error the agent must be told about.
         CompileResult r = CbScriptCompiler.compile(work, "broken_dp", "bad",
                 "reset\n    /say hi\n", work.resolve("b.zip"));
@@ -162,7 +159,7 @@ class CbScriptCompilerTest {
         // The A/B, so the test above cannot pass because `compile` refuses everything. OFF grades
         // nothing, so this source reaches the compiler and fails (or succeeds) on its own merits --
         // what must NOT happen is a SAFETY refusal.
-        Assumptions.assumeTrue(CbScriptCompiler.available(), "compiler not present — skipping");
+        assertTrue(CbScriptCompiler.available(), "the CBScript compiler is part of the mod");
         String mode = ModdingFromAModMod.MODID + ".childsafety";
         String before = System.getProperty(mode);
         System.setProperty(mode, "off");
@@ -183,38 +180,19 @@ class CbScriptCompilerTest {
         }
     }
 
-    // ---- Gate D: a denied/unreadable compiler checkout is caught HERE, not mid-compile ----
+    // ---- the compiler is in the jar: nothing to find, extract or run ----
 
     @Test
-    void aReadableCompilerDirIsUsable(@TempDir Path dir) throws Exception {
-        Files.writeString(dir.resolve("compile_once.py"), "print('{}')\n");
-        assertTrue(CbScriptCompiler.isReadableCompilerDir(dir),
-                "a checkout whose compile_once.py can be read is usable");
-    }
-
-    @Test
-    void aMissingCompilerFileIsNotUsable(@TempDir Path dir) {
-        assertFalse(CbScriptCompiler.isReadableCompilerDir(dir),
-                "an empty dir has no compiler and must be rejected");
-    }
-
-    @Test
-    void anUnreadableCompilerFileIsRejectedNotCrashed(@TempDir Path dir) throws Exception {
-        // This is the exact TCC failure that broke Spikor's fireball: the compiler file EXISTS but
-        // the process can't READ it. It must be reported as "not usable" up front, so resolution
-        // falls through to the bundled tool instead of throwing FileSystemException mid-compile.
-        Path entry = dir.resolve("compile_once.py");
-        Files.writeString(entry, "print('{}')\n");
-        boolean madeUnreadable = entry.toFile().setReadable(false, false);
-        // Skip if the OS/user can't actually remove read (e.g. running as root) — the assertion would
-        // be meaningless there.
-        Assumptions.assumeTrue(madeUnreadable && !Files.isReadable(entry),
-                "could not make the file unreadable on this platform/user — skipping");
-        try {
-            assertFalse(CbScriptCompiler.isReadableCompilerDir(dir),
-                    "a present-but-unreadable compiler must be rejected, not selected");
-        } finally {
-            entry.toFile().setReadable(true, false); // restore so @TempDir cleanup can delete it
+    void theCompilerAndItsLibrariesAndLessonsAreOnTheClasspath() throws Exception {
+        assertTrue(CbScriptCompiler.available(), "the CBScript compiler is part of the mod; only a test turns it off");
+        var libs = com.moddingfromamod.cbscript.CbScript.bundledLibraries();
+        String common = libs.read("common.cblib");
+        assertTrue(common != null && !common.isBlank(), "the bundled .cblib libraries load from the jar");
+        // The LESSONS cbscript_help appends to the primer. The Python bundle once shipped only code, so the
+        // commonest compile failures were rules the file already had.
+        try (var in = CbScriptCompilerTest.class.getResourceAsStream("/com/moddingfromamod/cbscript/cbscript-lessons.md")) {
+            assertNotNull(in, "CBSCRIPT_LESSONS.md ships in the jar");
+            assertFalse(new String(in.readAllBytes(), java.nio.charset.StandardCharsets.UTF_8).isBlank());
         }
     }
 }
