@@ -655,6 +655,15 @@ class CoverageMap(unittest.TestCase):
         self.assertEqual(covmap.dropped(prev, cur, {"AGameTest": {}}), [])
         self.assertEqual(covmap.unplaced(cur, TIER3), ["BGameTest", "DGameTest"])
 
+    def test_the_sweep_between_classes_is_ambient_never_a_class_s(self):
+        # testing/gt/CoverageMap dumps the harness's sweep (and the leave handlers it fires) as __sweep__
+        m = covmap.decode(covmap.build([{"methods": TABLE, "units": {
+            "__sweep__": ["x/Bar#c"], "AGameTest": ["x/Foo#a", "x/Bar#c"], "BGameTest": ["x/Bar#c"]}}],
+            "c1", "t1", BLOBS, "full"))
+        self.assertIn("x/Bar#c", m["ambient"])
+        self.assertEqual(m["units"]["AGameTest"], {"x/Foo#a"})
+        self.assertNotIn("__sweep__", m["units"])
+
     def test_two_maps_of_one_commit_must_agree_but_for_the_listed_classes(self):
         a, b = a_map(), a_map()
         self.assertEqual(covmap.compare(a, b), [])

@@ -53,4 +53,44 @@ class CoverageMapOrderTest {
         org.junit.jupiter.api.Assertions.assertTrue(CoverageMap.settled(t0, t0 + CoverageMap.SETTLE_MAX_MS, false),
                 "a thread that never stops cannot hold the run");
     }
+
+    @Test
+    void aClassOwnsTheBuilderPageWalkItStartedEvenUnderCoverage() {
+        // the page-facts walk a class starts when its world first answers makes: 99 s under coverage (27 Nov 2026).
+        // At 15 s it ran on through the next five or six classes, a different number each run.
+        long t0 = 1_000_000;
+        long walk = 99_000;
+        org.junit.jupiter.api.Assertions.assertFalse(CoverageMap.settled(t0, t0 + walk, false),
+                "still walking at 99 s: the class that started it is still settling");
+        org.junit.jupiter.api.Assertions.assertTrue(CoverageMap.settled(t0, t0 + walk, true), "and it ends when it does");
+        org.junit.jupiter.api.Assertions.assertTrue(CoverageMap.SETTLE_MAX_MS >= 2 * walk,
+                "room for a slower runner than the one measured");
+        // the wall clock ends a settle window, never its ticks: hundreds a second for the longest window
+        org.junit.jupiter.api.Assertions.assertTrue(
+                CoverageMap.SETTLE_TIMEOUT_TICKS >= 1000 * (CoverageMap.SETTLE_MAX_MS / 1000),
+                "a tick budget that outlasts the most at a thousand ticks a second");
+    }
+
+    @Test
+    void theSweepBetweenTwoClassesIsTheHarnessesNotTheNextClass() {
+        // dumped as __sweep__ (ambient in tools/gate/covmap.py): the leave handlers it fires (PetBehaviours#onLeave,
+        // LiveFitWatch#onLeave) were counted in whichever classes followed one that left a mob
+        org.junit.jupiter.api.Assertions.assertEquals("__sweep__", CoverageMap.SWEEP);
+        org.junit.jupiter.api.Assertions.assertTrue(CoverageMap.sweeps("FooGameTest", "BarGameTest"));
+        org.junit.jupiter.api.Assertions.assertTrue(CoverageMap.sweeps(CoverageMap.BOOT, CoverageMap.IDLE));
+        org.junit.jupiter.api.Assertions.assertTrue(CoverageMap.sweeps("BarGameTest", CoverageMap.SHUTDOWN));
+        org.junit.jupiter.api.Assertions.assertFalse(CoverageMap.sweeps("BedrockBatchGameTest#__setup__",
+                "BedrockBatchGameTest#watch_panel_grid"), "the Bedrock batch's cases share one staged board");
+    }
+
+    @Test
+    void theSweepIsAmbientInTheMapTools() throws java.io.IOException {
+        // the pure rule's other half lives in tools/gate/covmap.py: a dump nobody reads as ambient would be a class
+        String py = java.nio.file.Files.readString(java.nio.file.Path.of("tools/gate/covmap.py"));
+        java.util.regex.Matcher m = java.util.regex.Pattern.compile("PSEUDO = \\(([^)]*)\\)").matcher(py);
+        org.junit.jupiter.api.Assertions.assertTrue(m.find(), "covmap.py names its pseudo-units");
+        for (String unit : List.of(CoverageMap.BOOT, CoverageMap.IDLE, CoverageMap.SHUTDOWN, CoverageMap.SWEEP)) {
+            org.junit.jupiter.api.Assertions.assertTrue(m.group(1).contains("\"" + unit + "\""), unit + " is ambient");
+        }
+    }
 }

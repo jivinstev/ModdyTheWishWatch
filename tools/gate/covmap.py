@@ -3,7 +3,7 @@
 A mapping run is Gate B with the JaCoCo agent on (`-Pcovagent`, `-Pcovmap`): `testing/gt/CoverageMap` gives every
 GameTest class batches of its own, so no two classes run at once, and dumps the agent's data each time the running
 class changes. `CovmapAnalyze.java` turns one job's dumps into the methods each UNIT (a GameTest class, or the
-server's own `__boot__`, `__idle__` and `__shutdown__`) executed. This module builds the map from those, merges a
+server's own `__boot__`, `__idle__` and `__shutdown__`, and the harness's `__sweep__` between two classes) executed. This module builds the map from those, merges a
 partial run into the last map, says what a run DROPPED, and checks two maps of one commit agree.
 
 The map (`covmap/map.json.gz` on the gate-data branch):
@@ -27,7 +27,7 @@ from typing import Dict, Iterable, List, Optional, Set, Tuple
 
 import gatelib as g
 
-PSEUDO = ("__boot__", "__idle__", "__shutdown__")
+PSEUDO = ("__boot__", "__idle__", "__shutdown__", "__sweep__")
 UNSTABLE = os.path.join(g.ROOT, "corpus", "gate-covmap-unstable.json")
 COST_SAMPLES = 5
 
