@@ -12,6 +12,11 @@ import java.util.function.BooleanSupplier;
  * That is expected and is logged quietly. The same failure while the server is still running is a real fault and is
  * logged at ERROR, never swallowed. A job that never finished costs nothing: the matcher is built again at the first
  * wish.
+ *
+ * <p>Nothing on that path may load a class from the mod's jar, because once the server has stopped the jar can be
+ * closed and the load itself fails. That load would be a second {@link NoClassDefFoundError}, thrown from inside the
+ * handler, which no catch here sees. So {@link Outcome} is loaded with this class ({@link #OUTCOMES}), and the caller
+ * loads this class on the server thread before the job's thread starts ({@link #load()}).
  */
 public final class WarmUp {
 
@@ -36,7 +41,20 @@ public final class WarmUp {
         void error(String message, Throwable cause);
     }
 
+    /** Every outcome, loaded with this class so that judging a failure never loads one. */
+    private static final Outcome[] OUTCOMES = Outcome.values();
+
     private WarmUp() {
+    }
+
+    /**
+     * Load this class and everything {@link #run} needs to judge a failure. Call it on the thread that starts the
+     * warm-up, while the server is up, so that a stop before the job's thread starts cannot fail to load it.
+     *
+     * @return how many outcomes there are (a value, so the call is not optimised away)
+     */
+    public static int load() {
+        return OUTCOMES.length;
     }
 
     /**

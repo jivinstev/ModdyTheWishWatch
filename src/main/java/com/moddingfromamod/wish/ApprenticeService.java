@@ -142,6 +142,7 @@ public final class ApprenticeService {
     static void warm(java.util.function.BooleanSupplier running) {
         BuilderSettings s = BuilderSettings.current();
         if (s.enabled()) {
+            WarmUp.load(); // on the server thread, while the jar is open: the warm-up thread may outlive both
             Thread t = new Thread(() -> WarmUp.run("the Apprentice's matcher", running, () -> matcher(s.allow()),
                     WARM_LOG), "moddy-apprentice-warm");
             t.setDaemon(true);
