@@ -283,7 +283,7 @@ public final class WishHotbar {
                 return i;
             }
         }
-        int in = com.moddingfromamod.bag.WishBagService.add(sp.getServer(), sp.getUUID(), proxy(cell, sp.getUUID()));
+        int in = com.moddingfromamod.bag.WishBagService.add(sp.level().getServer(), sp.getUUID(), proxy(cell, sp.getUUID()));
         if (in > 0) {
             return -1;
         }
@@ -298,13 +298,13 @@ public final class WishHotbar {
         for (int i = 0; i < WishHotbarPlan.SLOTS; i++) {
             empty.add(inv.getItem(i).isEmpty());
         }
-        WishHotbarPlan.Plan plan = WishHotbarPlan.add(empty, freeBagSlot(inv) >= 0, sp.getServer() != null);
+        WishHotbarPlan.Plan plan = WishHotbarPlan.add(empty, freeBagSlot(inv) >= 0, sp.level().getServer() != null);
         if (plan.step() == WishHotbarPlan.Step.WISH_BAG) {
             // A full hotbar (#189): his Wish Bag, never a question he has to answer and never nowhere. Only a bag that
             // cannot take it falls back to asking which slot to give up. The same on every client: it is all here.
             sp.closeContainer();
             boolean already = inBag(sp, cell.recipeId());
-            if (already || com.moddingfromamod.bag.WishBagService.add(sp.getServer(), sp.getUUID(),
+            if (already || com.moddingfromamod.bag.WishBagService.add(sp.level().getServer(), sp.getUUID(),
                     proxy(cell, sp.getUUID())) > 0) {
                 sp.sendSystemMessage(Component.literal(WishHotbarPlan.inWishBag(already)));
                 return;
@@ -405,10 +405,10 @@ public final class WishHotbar {
 
     /** Is a proxy for this recipe in his Wish Bag? */
     public static boolean inBag(ServerPlayer sp, String recipeId) {
-        if (sp.getServer() == null || recipeId == null) {
+        if (sp.level().getServer() == null || recipeId == null) {
             return false;
         }
-        for (ItemStack e : com.moddingfromamod.bag.WishBagService.contents(sp.getServer(), sp.getUUID())) {
+        for (ItemStack e : com.moddingfromamod.bag.WishBagService.contents(sp.level().getServer(), sp.getUUID())) {
             if (recipeId.equals(recipeOf(e))) {
                 return true;
             }
@@ -418,13 +418,13 @@ public final class WishHotbar {
 
     /** Take every proxy for this recipe out of his Wish Bag; how many went. */
     static int takeFromBag(ServerPlayer sp, String recipeId) {
-        if (sp.getServer() == null || recipeId == null) {
+        if (sp.level().getServer() == null || recipeId == null) {
             return 0;
         }
         int n = 0;
-        for (ItemStack e : com.moddingfromamod.bag.WishBagService.contents(sp.getServer(), sp.getUUID())) {
+        for (ItemStack e : com.moddingfromamod.bag.WishBagService.contents(sp.level().getServer(), sp.getUUID())) {
             if (recipeId.equals(recipeOf(e))) {
-                n += com.moddingfromamod.bag.WishBagService.take(sp.getServer(), sp.getUUID(), e.copy(), e.getCount());
+                n += com.moddingfromamod.bag.WishBagService.take(sp.level().getServer(), sp.getUUID(), e.copy(), e.getCount());
             }
         }
         return n;

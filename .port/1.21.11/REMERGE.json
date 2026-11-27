@@ -1,22 +1,6 @@
 {
  "conflicts": [
   {
-   "overlay": ".port/1.21.10/renames.tsv",
-   "digest": "60ad55eb747c57e92f3d18e7abc374f5d3d9c43e6fac7b0c15288df48963974a",
-   "reason": "a conflict with 1.21.11's own change: kept as 1.21.11 had it, a default decision",
-   "since": "79b2bc30ca7b..b7cefc2e8fc2",
-   "from": "79b2bc30ca7b5ae4b68df698a2be565d94693144",
-   "to": "b7cefc2e8fc25310d8693fd356e06aec98ba11f1",
-   "diff": "diff --git a/.port/1.21.10/renames.tsv b/.port/1.21.10/renames.tsv\nindex 2e2355e..36fcc01 100644\n--- a/.port/1.21.10/renames.tsv\n+++ b/.port/1.21.10/renames.tsv\n@@ -2,8 +2,10 @@\n p.getGameProfile().getName()\tp.getGameProfile().name()\n p.getServer()\tp.level().getServer()\n player.getServer()\tplayer.level().getServer()\n-# 1.21.9 renamed the block and item minecraft:chain to minecraft:iron_chain (DataFixers: \"Rename chain to iron_chain\", schema 4541); applied to the shipped presets as well\n-re:\"minecraft:chain\"\t\"minecraft:iron_chain\"\n+# 1.21.9 renamed the block and item minecraft:chain to minecraft:iron_chain (DataFixers: \"Rename chain to iron_chain\", schema 4541); the \"minecraft:chain\" row is in the shared tables now, this one is the fork's own bare-id check\n re:equals\\(\"chain\"\\)\tequals(\"iron_chain\")\n-# 1.21.9: ServerChunkCache.broadcast(Entity, Packet) is sendToTrackingPlayers (CATALOG M89); the compile loop had put a loop over level.players() in its place\n-re:getChunkSource\\(\\)\\.broadcast\\(\tgetChunkSource().sendToTrackingPlayers(\n+# 1.21.9 dropped Entity.getServer() and authlib's GameProfile became a record: the names the merged code calls them on\n+player.getGameProfile().getName()\tplayer.getGameProfile().name()\n+sp.getServer()\tsp.level().getServer()\n+e.getServer() != null\te.level().getServer() != null\n+ActingChild.person(e.getServer())\tActingChild.person(e.level().getServer())\n",
-   "id": "d8fe56973bc2",
-   "class": "authors-fix",
-   "escalate": false,
-   "default": "take the authors' change through the rows, our change re-applied around it",
-   "choice": "patch",
-   "reasoning": "their fix, adapted through the rows (the authors' design intent)",
-   "source": "parent"
-  },
-  {
    "overlay": "src/main/resources/precompiled/manifest.json",
    "digest": "82b1323c5b971035cdac2174e4f4986dd4488194ad71f1990f3610c8808005c0",
    "reason": "a conflict with 1.21.11's own change: kept as 1.21.11 had it, a default decision",
