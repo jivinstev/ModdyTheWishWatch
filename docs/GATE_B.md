@@ -292,5 +292,17 @@ what Maven Central answers with `429 Too Many Requests`, and that reddened unrel
 - **A changed build starts warm**: each Gradle cache step falls back (`restore-keys`) to the newest cache when its exact
   key misses, instead of starting cold.
 - **A build that failed for want of a download runs once more**, a minute later
-  (`.github/gradle/retry-on-download.sh`; `gate.py run` does the same for a server that never started). Any other
-  failure is returned at once.
+  (`.github/gradle/retry-on-download.sh`). Any other failure is returned at once.
+- **So does a GameTest server Gradle never started for want of one** (`gate.py run`, so every job of the nightly, the
+  release gate's tier and the coverage map): a failed `:downloadAssets` (the Mojang asset download), `Could not
+  resolve`, `Could not GET`/`HEAD`, `not found in any of the following sources`, HTTP 429 or 5xx, a timeout or a reset
+  connection, with no server started, no compile error and no failed test. It runs once more after 60 s, never twice;
+  the first attempt's log is kept as `<attempt>-download-failed.log`, the job's result lists it (`downloadRetries`)
+  and its summary says `passed on a download retry`. A compile, test or gate failure is never retried this way
+  (`run.download_failure`, pinned by `test_gate.py`'s fake logs).
+- **The coverage map caches Gradle's libraries, never Minecraft content.** This repository is public and a fork's pull
+  request can read the base branch's Actions cache, so `covmap.yml` caches only `~/.gradle/caches/modules-2` and
+  `~/.gradle/wrapper`, keyed on the build files and the wrapper, with `com.mojang`, `net.minecraft`,
+  `net.neoforged/neoform*` and `net.neoforged/neoforge*` pruned before the one save (the warm job's). The NeoForm
+  runtime (`neoformruntime`), the Minecraft jars and assets and `jars-*`/`transforms*` are never cached, so each map
+  job rebuilds or downloads them; the asset download's failures are the retry's to absorb, not the cache's.
