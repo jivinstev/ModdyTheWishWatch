@@ -7,8 +7,8 @@
     "flies",
     "friendly"
   ],
-  "damage": 0,
-  "health": 20,
+  "damage": 4,
+  "health": 16,
   "palette": [
     {
       "colour": "#4A2E1A",

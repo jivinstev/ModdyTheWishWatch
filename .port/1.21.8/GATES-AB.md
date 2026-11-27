@@ -1,4 +1,9 @@
-# Gates A/B for Minecraft 1.21.8 (rung 0 of #6). Gate C is OPEN.
+# Gates A/B for Minecraft 1.21.8 (rung 0 of #6)
+
+**Gate C now:** Port CI runs core's rig films (`tools/gate-c-rig.sh`, every film) as Gate C on the full environment,
+declared in [`gate-c.json`](gate-c.json), from the first release built with it on. Each release's `gates-full.md`
+records the row `Gate C -- fork's own (tools/gate-c-rig.sh, release set) | PASS`. The record below is the rung 0 run
+of `7f5e22c`, kept as it was: Gate C was open then.
 
 Not MMVU's `GATES.md`. That file records a green full run only, Gate C included, and this record is
 not one. The table below is MMVU `ci-gates.py`'s own summary of `fork-port.py --target 1.21.8
@@ -20,7 +25,7 @@ Gates for `moddingfromamod` at `7f5e22c` for Minecraft 1.21.8 (full environment)
 
 Not covered by any automated gate: gameplay by a person.
 
-## Gate C (real client): open, not passed
+## Gate C (real client) at rung 0: open, not passed (closed since by the rig films, above)
 
 MMVU's Gate C runs `runClient -Pboottest -Ptestmode=launch|spawn|battle|gauntlet` and waits for a
 `MODDINGFROMAMOD_BOOT_TEST: PASS|FAIL` line. Nothing in this repository prints that line: the client boot

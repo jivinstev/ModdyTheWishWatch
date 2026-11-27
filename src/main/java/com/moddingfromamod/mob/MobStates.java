@@ -43,7 +43,9 @@ public final class MobStates {
                 glowOf(scoreboard, e),
                 e.getCustomName() == null ? null : e.getCustomName().getString(),
                 e.isInvulnerable(),
-                PetBehaviours.stored(e));
+                PetBehaviours.stored(e),
+                value(e, Attributes.ARMOR),
+                value(e, Attributes.KNOCKBACK_RESISTANCE));
     }
 
     /**
@@ -72,6 +74,13 @@ public final class MobStates {
             any = true;
         }
         if (was.speed() != null && set(e, Attributes.MOVEMENT_SPEED, was.speed())) {
+            any = true;
+        }
+        // #115: null in a v1 record is "not captured", and is left as it is
+        if (was.armor() != null && set(e, Attributes.ARMOR, was.armor())) {
+            any = true;
+        }
+        if (was.knockbackResistance() != null && set(e, Attributes.KNOCKBACK_RESISTANCE, was.knockbackResistance())) {
             any = true;
         }
         if (was.name() == null) {

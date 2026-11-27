@@ -104,7 +104,9 @@ test world below does, with a toy formula of its own).
   - `summons`: makes other creatures appear; `gives_items`: hands items over (supplies, prizes, a creature's treats);
   - `world_rule`: changes a rule for the whole world;
   - `decorative`: does nothing but be there (a picture, a "just for fun" item);
-  - `harmless`: none of `fights`, `hostile`, `boss`, `changes_blocks`, `summons`, `world_rule`.
+  - `harmless`: none of `fights`, `hostile`, `boss`, `changes_blocks`, `summons`, `world_rule`;
+  - `vehicle`: a creature that is a vehicle (a car, a boat, a plane: its life is the vehicle's). It never fights,
+    whatever else it carries, so a world can leave vehicles out of a fight.
 - **`numbers`**, measured, in real game units, the unit in the name (`MakeFacts.NUMBERS`). Read one with
   `facts.number(name)`, an `OptionalDouble`: a number is there only where the make really carries it, and **absent
   means not known, never 0**. The names are a stable vocabulary: additive only, never renamed or given another unit
@@ -112,12 +114,12 @@ test world below does, with a toy formula of its own).
 
   | Number | Unit | Present for |
   |---|---|---|
-  | `healthHalfHearts` | health points (one is half a heart) | a Builder creature or ride (what it is made with: a body's own; a ready-made species' record in this world, else a new creature's), a stored creature |
+  | `healthHalfHearts` | health points (one is half a heart) | a Builder creature or ride (its ready-made's own shipped numbers, the same in every world: a pet dragon's 60; a world holds them down with its limits, never by its record of the species), a stored creature |
   | `attackDamageHalfHearts` | health points | a Builder creature or ride (as health), a stored creature; a Builder item with a base item: hitting with it in the main hand, read at run time from the item's own attribute modifiers and the player's base attack damage (nothing of the game's numbers is copied into the mod, so another version or another mod's item answers for itself) |
   | `movementSpeedAttribute` | the game's `movement_speed` attribute value (a zombie is 0.23) | a stored creature |
   | `scaleTimes` | times its normal size | a Builder creature or ride, a stored creature |
   | `builderSizeStep` | the Builder's size pick, 1 to 4 | a Builder creature, ride, building or event |
-  | `builderStrengthStep` | the Builder's strength pick, 1 to 3 | a Builder item power, snack machine or magic block |
+  | `builderStrengthStep` | the Builder's strength pick, 1 to 3 | a Builder item power, snack machine or magic block; a Builder creature or ride (its How strong, 2 when he left it as its own) |
   | `countMade` | things made at once | a Builder creature, ride, item, machine or magic block; a recipe that spawns creatures |
   | `amountItems` | items | Builder supplies |
   | `radiusBlocks` | blocks: the largest radius an effect of it takes | an item or creature effect with a `RADIUS` |
@@ -125,6 +127,17 @@ test world below does, with a toy formula of its own).
   | `extentBlocks` | blocks: its longest side | a stored building |
   | `armorPoints` | the game's armour points (a full iron suit is 15) | a Builder creature or ride (as health), a stored creature |
   | `knockbackResistanceFraction` | 0 (pushed as anyone) to 1 (never pushed) | a Builder creature or ride (as health), a stored creature |
+  | `moveDamageHalfHeartsPerSecond` | health points a second, to one target | a creature with a move that hurts (`ranged`, `slam`, `charge`), each at its own pace: what its moves alone deal, whatever its instinct (a friendly creature's moves still land on what it fights for him) |
+  | `effectiveDamageHalfHeartsPerSecond` | health points a second, to one target | a Builder creature or ride (as health), a stored creature: its bite once a second when its instinct fights (a friendly one never bites), plus its moves. A creature whose attack is its breath, slam, ranged or charge no longer reads as harmless here, as it does in `attackDamageHalfHearts` (the bite alone, unchanged) |
+  | `healHalfHeartsPerSecond` | health points a second, back to itself | a creature with the `heal` move |
+
+  The three a-second numbers come from the rig's own moves (`species.MovePower`). A move a compiled ability pack or an
+  effect gives a creature (a dragon's breath) lives in a datapack and is not counted, so for such a creature they read
+  low, never high; it carries the `fights` tag as before.
+
+  A stored creature's numbers are its record's. One exception, the library-copy rule (`docs/STORE_MIGRATIONS.md`): a
+  world's unowned copy of a library creature (the shared one its first spawn registered) always reads its shipped
+  health, attack damage, armour and knockback, so a stock creature's facts are the same in every world.
 
   `combine` (several things one recipe makes) keeps each number's largest value; a number none of them carries stays
   absent.
@@ -146,12 +159,89 @@ on a set of tags. Today it reads two markers:
 | Marker | Put on | Meaning |
 |---|---|---|
 | `wishmob` | every sculpted wish creature, and a rig's carrier (the living entity that holds a rig creature's stats), at spawn and again on every load | a creature a wish made |
-| `moddy_wished` | a plain mob that joined the world inside a spawn scope: a wish's command (the Magician's `summon`, a recipe's command), a Builder or Magician event, or **any datapack function**, run by a tick or a schedule | a mob the wishes' spawn budget counts |
+| `moddy_wished` | a plain mob that joined the world inside a spawn scope: a wish's command (the Magician's `summon`, a recipe's command), a Builder or Magician event, or a function of a **wish's own datapack** (a namespace a wish wrote, `datapack/WishPacks`), run by a tick or a schedule | a mob the wishes' spawn budget counts |
 
-A rig's display parts are parts of a body, never one, and are never wished. A mob the world spawns by itself, or a
-child's own spawn egg, carries neither marker. Note the last row: a mob **your world's own datapack function** spawns
-is inside the same scope and is marked too; a world that spawns mobs from its own functions tags them itself and checks
-its own tag first.
+A rig's display parts are parts of a body, never one, and are never wished. A mob the world spawns by itself, a
+child's own spawn egg, and a mob your world's own datapack function (or vanilla's, or another mod's) spawns carry
+neither marker (#80): those functions run with no spawn scope, exactly as without Moddy, so what they spawn is not
+wished and is not counted against the wishes' spawn budget.
+
+A world's limits (`WorldMakes.limits`, below) hold a few more bodies than `isWished` names, by markers of the live fit's
+own (`wish/LiveFit`); they say nothing about the spawn budget, and a world reads them only if it wants to know why a
+body is held:
+
+| Marker | Put on | Meaning |
+|---|---|---|
+| `moddy_held` | a mob hatched from a spawn egg a wish handed over (`item/delivery/WishDelivery` puts it in the egg's `entity_data` while a world answers) | a body a wish brought in, held to the limits |
+| `moddy_touched` | a body the world made whose attributes a wish changed: `modify_mob`, or any change while a spawn scope is open (an `attribute` or `effect` command, a recipe's replay, a wish datapack's function; `mixin/AttributeTouchMixin`) | held to the limits, but never below its own kind's default for a stat, so a wish never makes the world's own creature weaker |
+| `moddy_fit_owner:<uuid>` | any held body without a species, the first time it is held for a player | whose limits hold it; with none, the tightest any player online is held to |
+
+## Telling a wished item stack from any other: `WishedItem`
+
+`com.moddingfromamod.world.WishedItem.madeBy(stack)` is the item twin of `Wished`: the one documented way to ask "did
+a player's wish make this item stack, and whose wish was it?". It returns `Optional<Made>`, where `Made` holds
+`wishId` (the wish's id) and `maker` (the UUID of the player whose wish it was); it is empty for anything else. Read
+it rather than the component, whose shape may change. `WishedItem.of(wishId, maker)` is the same decision on the two
+stamped strings.
+
+- **Stamped at hand-over** (`WishDelivery.give`, the one path every wish's items take): a Builder or Apprentice make,
+  "Make another one", a hotbar fire, and the Magician's `make_item` and give. It lives in the stack's
+  `minecraft:custom_data` (which a stock client accepts) under `ModdyMadeBy`. **Ids only, never the player's words**
+  nor any name he typed.
+- **"Give me one"** makes no new wish: its stack names the kept thing it was given again, `wishId` `again:<its key>`,
+  with the player it was given to as the maker (a copy that already says which wish made it keeps that).
+- **A plain vanilla gift is not stamped, so `madeBy` answers "not wish-made" for it** (a wish's 32 melon slices): a
+  mark would stop it stacking with his own melon slices, which the owner decided against (`WishedItems.TAG_PLAIN_GIFTS`,
+  false). Only an item a wish MADE is stamped; it already carries the wish's own data and never stacks with a vanilla
+  one. If that switch is turned on, plain gifts are stamped too.
+- It does not fit items to a world's limits; that is the make facts' and the fit's job.
+
+## A world wishing a creature: `WorldWishes`
+
+A world module **wishes** through the Builder, exactly as a child's Builder pick is made (#178): a battle world's wave
+monsters and champions, a quest world's guardian. `WorldWishes` is an API a world calls, not a hook the core reads.
+
+- **`WorldWishes.creature(level, moduleId, spec, x, y, z, limits, slim, onArrive)`**: a Builder **real mob**
+  (`mob:<id>`, with `mobsize`, How strong `strength` 1–3 and `speed` "1"/"3": `BuilderRealMobs`).
+  - It is fitted to `limits` by the Builder's own `BuilderAllowlist.capped(spec, limits)` and held there by the live
+    fit's own modifiers (`LiveFit.holdWorld`).
+  - It is never weaker than the plain mob: the limits are floored at its vanilla numbers.
+- **`WorldWishes.species(level, moduleId, speciesId, …)`**: a copy of a **Builder design** the world made with
+  `BuilderMake.forWorld(server, moduleId, name, spec)`.
+  - That is the real Builder make, as a design only (`spawn: no`).
+  - The design is owned by `BuilderMake.worldOwner(moduleId)` and allowed by `BuilderAllowlist.FOR_WORLDS`: the
+    reviewed list plus `hostile`/`boss`, which no child's menu offers.
+  - The owner id is a world's, told from any player's by its bits (`WorldOwners.is`), so no child is told the make's
+    plan, no preview stands beside one, and its pillar is the world's colour, after a restart too.
+  - Its words (the spec's `name`, the `displayName`) pass the sweep a name a child types passes; a name that does not
+    is refused (`Outcome.REFUSED`) and nothing is made.
+  - The same design asked again (each battle, each restart) answers with the species already made, so a world's makes
+    never fill the creature registry children's makes share.
+  - **Its own colours, inline:** the spec opt `palette` (`Schemes.PALETTE_OPT`) is
+    `"#RRGGBB,#RRGGBB,#RRGGBB"` (main, accent, trim), optionally followed by `";block,block,block"` for a building,
+    each block one the core's own schemes already build in (`Schemes.reviewedBlocks()`). Anything else is refused
+    (`Outcome.REFUSED`) and nothing is made. No scheme is registered: a player's scheme list and Builder tree never
+    change, and `BuilderAllowlist.capped` takes `palette` off any player's spec. The made species keeps the resolved
+    colours, so nothing depends on the world staying installed. A world keeps its own named palettes (a "Shadow") in
+    its own files.
+- **Limits are per wish** (`WorldWishes.Limits`). `Limits.of(ceiling)` takes make facts (`healthHalfHearts`,
+  `attackDamageHalfHearts`, `scaleTimes`, …). `Limits.UNCAPPED` (tag `moddy_world_wished_uncapped`) is for a world's
+  boss, because boss fights are meant to be hard. Only a world module calls this, so nothing a player wishes is ever
+  uncapped.
+- **Pillars:**
+  - a crimson pillar (`PillarPalette.WORLD`, never a player's colour) rises for `RISE_TICKS` (40), then the creature
+    arrives and `onArrive` runs on the server thread;
+  - `slim` draws the beam alone (about 3 displays, against about 53), for crowds;
+  - the core staggers it: at most 4 full and 12 slim pillars stood up per tick, and at most 6 arrivals per tick.
+- `cancelAll(moduleId)` calls off what has not arrived; `pending(moduleId)` counts it.
+
+A world-wished body carries the tags `moddy_world_wished` and `moddy_world_wished:<moduleId>`. Read it with
+`Wished.isWorldWished(entity)` / `Wished.worldOwnerOf(entity)`. It is **never** `Wished.isWished`, even a design's rig
+carrier: a world's monster is not spared, fitted to a player's limits or given a creature's role. Each player's own
+pillars are drawn in their own colour (`WishOrbs.paletteOf(player)`: the lowest free slot of eight when they join,
+given back when they leave and all let go when the server stops; slot 0 is the pillar as it always was). A world wish
+persists nothing of its own (the body is a plain entity of its world; a design is a Builder make, recorded as one), so
+it publishes no provenance of its own.
 
 ## Documented extension points
 
@@ -183,7 +273,9 @@ afford it, charging and refunding, and the words a menu, the guide book and `/mo
 - **`WishAsk`** (`com.moddingfromamod.wish.WishAsk`) is the value a hook that takes one is asked about, the same shape
   at every such hook: `player()` (UUID), `source()` (`WishSource`), `recipe()` (the id `/moddy again` takes, also the
   `builder:<id>` of the kept make a Builder edit changes, or the key `/moddy give` takes for "Give me one"; `""` when
-  none), `magic()` and `text()` (the wish's words: typed words, a recipe's words, a Builder make's `Builder: …`).
+  none), `magic()`, `text()` (the wish's words: typed words, a recipe's words, a Builder make's `Builder: …`) and
+  `where()` (a `Bases.Pos`: the place the question is about when it is not where the player stands, today a living
+  creature fitted where it stands; `null` otherwise).
   (`distress()` and `withDistress(…)` remain only for older world jars: always `false`, and a no-op.) The magic is told truthfully at each start: `BUILDER` for a Builder make (and a Builder change on a
   thing the Magician made); `APPRENTICE` for typed words the Apprentice's page or the re-wish reader will answer, and
   for a make an Apprentice tile pressed; `REPLAY` for a thing made again with no model (a recipe button, a cached
@@ -232,13 +324,13 @@ the limits the world gave.
 
 | Number | Fitted by |
 |---|---|
-| `scaleTimes`, `builderSizeStep` | a smaller size (a creature's named sizes, else the 1–4 step) |
-| `builderStrengthStep`, `durationTicks`, `radiusBlocks` | a lower strength |
+| `scaleTimes`, `builderSizeStep` | a smaller size (a creature's named sizes, else the 1–4 step). A creature or ride MADE AGAIN from a kept make (a hotbar fire, "Make another one", a recipe) is made as it was asked and stands at the size this world allows where it stands (`LiveFit`), never refused for its size, so a later, higher limit gives it its full size |
+| `builderStrengthStep`, `durationTicks`, `radiusBlocks` | a lower strength (a creature's or ride's How strong too) |
 | `countMade` | fewer at once (a Builder make; a recipe's `wishmob spawn <id> <count>`) |
 | `amountItems` | fewer in a bundle of supplies |
-| `healthHalfHearts`, `attackDamageHalfHearts` | a discrete search, nothing assumed about which way they move: every lower combination of an item's material (its tier, stepped down), the size and the strength steps is tried, the most kept first, and the first whose re-derived facts fit is made. An item none fits is locked. A creature or ride none fits is made as it is and **fitted on the live creature** (below); a stored thing's own record is never changed |
+| `healthHalfHearts`, `attackDamageHalfHearts` | a discrete search, nothing assumed about which way they move: every lower combination of an item's material (its tier, stepped down), the size and the strength steps is tried, the most kept first, and the first whose re-derived facts fit is made. A creature's or ride's size and How strong move its health and damage (#103), but a limit on those is never met by making it smaller or gentler: it is fitted on the live creature, so a later raise gives it back in full. An item none fits is locked. A creature or ride none fits is made as it is and **fitted on the live creature** (below); a stored thing's own record is never changed |
 | `armorPoints`, `knockbackResistanceFraction` | no knob of a make moves them: a creature or ride over the limit is made as it is and fitted on the live creature (below) |
-| `movementSpeedAttribute`, `extentBlocks` | nothing: not clampable, so over the limit is locked |
+| `movementSpeedAttribute`, `extentBlocks`, `moveDamageHalfHeartsPerSecond`, `effectiveDamageHalfHeartsPerSecond`, `healHalfHeartsPerSecond` | nothing: not clampable, so over the limit is locked |
 
 - **Fitted on the live creature** (`wish/LiveFit`): the last step for a creature's health and attack damage. At spawn
   (and when the creature is loaded or rebuilt), after its species has set its numbers, the core puts ONE attribute
@@ -252,6 +344,7 @@ the limits the world gave.
   | `minecraft:attack_damage` | `moddingfromamod:world_fit/attack_damage` |
   | `minecraft:armor` | `moddingfromamod:world_fit/armor` |
   | `minecraft:knockback_resistance` | `moddingfromamod:world_fit/knockback_resistance` |
+  | `minecraft:movement_speed` | `moddingfromamod:world_fit/movement_speed` (a creature already standing; a NEW make over a `movementSpeedAttribute` limit is still locked) |
 
   Armour toughness has no fact and no fit: no wish creature carries any (a species has no such number), so there is
   nothing to hold down.
@@ -261,14 +354,85 @@ the limits the world gave.
   species, the shelf or any wish store, so the same make comes out at its own strength in another world. It covers every
   creature made here: Builder, Apprentice, "Make another one" and the Magician's. The player is told once, as for any
   fitted make.
+
+  It holds **every** wished body, whatever made it strong (#174), by one watch rather than per route
+  (`wish/LiveFitWatch`, which keeps an index of the bodies it holds and never scans every entity): a plain mob a wish brought in (a recipe's `wishsummon` or `summon` with NBT attributes, a
+  datapack's summon, a spawn egg a wish handed over) and a body the world made that a wish then changed (the markers
+  above) are fitted the moment the wish command ends, as the player who ran it, and twice a second every marked body
+  that stands above the limits it is held to (an effect, a held weapon, a later command) is fitted again. A fit also
+  lands under another modifier that multiplies the value. A creature already standing is held even when this world's
+  answer for its make would now lock it or call it too much: being held never takes its fit away. A player whose
+  `limits` stamp changes without `limitsChanged` (a world that answers by where he stands) has his creatures refit
+  within half a second, as if it had been called. Items and effects on the player are not fitted live: only the
+  fitting tools (`ToolArgFit`) and a Builder make fit those.
 - **When this player's limits change, tell the core**: `WorldMakes.limitsChanged(player)` (a round begins, a level is
   earned; server thread). The core never polls `limits(player)`. Every living creature that player's wishes made, a
   wish creature or a rig's carrier, wherever it stands, is fitted again from its own UNFITTED numbers (each fit removed
-  and worked out afresh). A raise keeps how hurt it was (half its hearts before, half after: never healed to full,
+  and worked out afresh), and drawn again at the size it is fitted to now: it grows on a raise and shrinks back on a
+  lower. Only creatures whose size changes are reshaped, once for the change and never per tick (in place, on the
+  carrier they already have). A raise keeps how hurt it was (half its hearts before, half after: never healed to full,
   never left half-empty); a lower keeps what it has, up to its new most. The player is told ONCE for the change, not
   once per creature: "✨ Your creatures are stronger now! This world lets them do more." or "✨ Your creatures are held
   back a little in this world for now.", swept like any line. So "the strongest dragon ever" made in an early round is
   held down and comes out fully later, without being wished again.
+- **Where a finished make goes** (#70): `landing(facts, ask)` returns a `world/Landing`, asked once per new make,
+  before its first placing step, with the facts as this world fits it and the same `WishAsk`. Cheap and free of side
+  effects; an exception or a null answer means `LANDS`.
+
+  | Answer | What happens |
+  |---|---|
+  | `Landing.LANDS` (the default) | it appears where it was aimed, as always |
+  | `Landing.KEPT` | it is made and kept as any make, but **not placed**: a creature is sculpted and not spawned (no preview stands), an item is made and not given, a building is saved and not built, an event's design is kept and not staged. It is put on his hotbar as a wish for its recipe, in the first empty slot, or in his Wish Bag when the hotbar is full (he is never asked to give a slot up; with no room in either he is told, and it stays on his shelf). Fired, it appears where he aims it, like any hotbar wish |
+  | `Landing.KEPT_AS_ITEM` | an item make hands over the real item, as `LANDS` does; a creature is kept as `KEPT` |
+
+  `landing` is asked **exactly once** per make, on the server thread, and its answer is locked into the make as its
+  aim is: it is never asked again while the make is built. Then the world is told with `handedOver(HandedOver)`, data
+  only (never your words or his): the player, the make's id and kind (`creature` or `item`), the recipe its hotbar wish
+  fires (`builder:<id>`, the one "Make another one" uses), its `MakeFacts` as this world made it, the hotbar slot it
+  went to (0 to 8, or `-1` for his Wish Bag or the real item) and `realItem`. He is told where it went ("🎯 Red cat is
+  on your hotbar. Aim and use it to make it appear.").
+
+  A kept make is **not charged when it is kept**: there is no charge to repeat, so nothing has to remember one across
+  a restart. Each fire of its hotbar wish is its own wish, a make-again charged once by `WishCharge` like any other.
+  The kept make itself is its shelf row (`builder-specs.json`, a versioned store that refuses a file it cannot read),
+  and its provenance is published as for any make (the same tools make it). If it could not be handed over (he left
+  first, or his hotbar and Wish Bag were full), it stays on his shelf, and the watch's own "Add to hotbar" puts it
+  there as for any make he has.
+
+  **Builder and Apprentice**: every new **creature, ride, item** (a machine or magic block too), **building** and
+  **event**, asked before its first placing step with its own facts; its recipe is the kept make's, `builder:<id>`.
+  A creature made several at once is handed over as one wish, which makes one each time it is fired.
+
+  **The Magician** (`agent/KeptWish`, in `McpProtocol`'s one dispatch): asked ONCE, at the wish's first `plan_wish`,
+  with `MakeFacts.cautious(kind)` (nothing is made yet, so the most a thing of that kind could be) and a `WishAsk` of
+  magic `MAGICIAN`, and locked on the run. The wish still does all its work (plan, design, datapack, every safety
+  layer); only the placing is held. The plan's result tells the agent: place nothing, teach the replay command with
+  `add_template`, then `finish_wish`. Every placing call during a kept wish is refused in the dispatch with a tool error
+  that says why: `sculpt_creature`/`define_creature` without `spawn:false`, `build_structure` without `build:false`,
+  `stage_event` without `now:false`, `make_item` with an `at`, `paint_surface`, `give_items` (allowed for
+  `KEPT_AS_ITEM`), and a `run_command` that summons, sets blocks or gives (`summon`, `setblock`, `fill`, `clone`,
+  `place`, `give`, `item`, `loot`, `function`, `wishmob`, `wishsummon`, `wishbuild`, `wishpaint`, `moddyevent`,
+  `wishdatapack`, read through `execute … run`; an item kept as the real item may run its own
+  `wishdatapack <id> give`). Finishing hands over the wish's newest taught recipe, the one "Make another one" and a
+  hotbar fire use. A Magician wish is charged as a wish when it is asked, as always; each fire of its hotbar wish is a
+  recipe wish, charged by `WishCharge` like any.
+
+  **Always land, and the world's answer is not used:** a change to something he already has (a Magician plan whose
+  `about` is not `new`), a real mob, supplies, a rule, a **picture** (not yet kept), and a Magician wish of any kind
+  but `creature`, `building`, `event` or `item` (no replay recipe places it, `wish/ReplayContract`). A Builder change is
+  not asked at all.
+
+  **When the world asked to keep a make and the core did not**, the world is told, once per make, with
+  `notKept(NotKept)`: the player, the kind (`creature`, `item`, `building`, `event`, `picture` or `other`), what it
+  asked, and why (`NO_REPLAY_RECIPE`: it landed; `A_CHANGE`: a change to his thing, changed where it stands;
+  `NOTHING_TAUGHT`: a kept Magician wish finished having taught no recipe, so nothing could be handed over and nothing
+  was placed). Data only, never words. It is also logged as a warning; it is never dropped silently. With no world
+  answering nothing changes and nothing is asked.
+
+  The Magician's `run_command` is read the way `CommandGuard` reads it (`CommandGuard.runChain`: the command and each
+  `execute … run` tail, by root word), never by searching its text. `function` is refused outright during a kept wish:
+  a datapack function may place anything, and nothing can show beforehand that it will not. The "place nothing" text
+  the agent reads is the core's own, with no world's words in it.
 - **Where the core asks:** every Builder and Apprentice make and every Builder change (`BuilderMake.make`, whatever page
   drew its tile); every tile of the Builder's pages and its tune dialog, per draw; each ranked make on the Apprentice's page, as it opens; a recipe, "Make another one" and a
   hotbar fire (`WishService.submit`, by the facts of what the recipe makes, fitted at fire); "Give me one"; each thing on
@@ -277,15 +441,90 @@ the limits the world gave.
 - **Order and the rules that do not bend:** the safety layers and a world's rules file run first, so a refused wish is
   never fitted into an allowed one; nothing is charged for a make that is hidden or locked; the answer is a VIEW, worked out when asked and never written to his
   shelf or any store, because the shelf follows him to every world.
+- **Kept as asked, fitted every time.** A Builder or Apprentice make is kept on his shelf, and remembered as the
+  recipe "Make another one" and a hotbar fire make again, **as he asked for it** (within the server's allowlist),
+  never as this world fitted it. It is fitted afresh at every make and every fire: how many and how strong when it is
+  made, and a creature's **size where it stands, at every spawn** (`LiveFit.drawnScale`: the kept make fitted through
+  the same gate, and any creature held to a `scaleTimes` limit). So a creature made under tight limits and made again
+  after they rise comes out bigger, up to the new limit, without being wished again. A creature already standing is
+  fitted again when its limits change (`WorldMakes.limitsChanged`): its health, damage, armour and knockback at once,
+  and its size drawn again. A make kept by 1.0.10, which kept the fitted spec, stays as it was kept: the asked
+  values were never stored, so there is nothing to bring back, and it is fitted from there like any other.
 - **The Apprentice's tiles** (`wishbuilder/ApprenticeFit`): fitted AFTER ranking and outside the matcher, so its
   ranking, gold-set floors and tree fingerprint are the same in every world. Each ranked make is asked through the
   same gate and fitting its press goes through: one this world hides, or that no fit could bring within its limits, is
   dropped; one it locks is shown locked with its words; one it fits is drawn as it is, made fitted when pressed and told
   once. The order is the matcher's. With no world answering the page is exactly today's.
-- **Not yet** (a later change): the Magician's tool arguments are fitted from limits carried in its brief.
+- **The Magician** (`agent/ToolArgFit`, #69). Its brief carries this world's limits for the wish's player **as data
+  only**: the fact keys from the closed vocabulary and their numbers (`THIS WORLD'S LIMITS (numbers only, by make
+  fact): healthHalfHearts=40, …`), never a word a world wrote. Each making tool's arguments that a fact measures (today
+  `sculpt_creature`'s and `define_species`'s `health`, `damage`, `scale`, `armor`, `knockbackResistance`;
+  `define_species`'s and `stage_event`'s `count` as `countMade`; `give_items`'s and `make_item`'s `count` as
+  `amountItems`) are fitted when they are over it,
+  in the one dispatch every tool call passes (`McpProtocol`, after the safety layers and the world's rules, so a
+  refused call is never fitted into an allowed one), and the tool result ends with a note the core writes from the fact
+  and the limit alone, so the agent tells the player in its own words, which the text sweep reads as it reads all of
+  them. A creature's stats and size are fitted where it stands, at every spawn (the live fit), so the tool keeps what
+  was asked and the note says "health is held to 40 where it stands: this world's limit": lowering it in the arguments
+  would write this world's limit into the creature's record for good, and a later round could never let it out. **The
+  rule: a world's limit is never persisted into a creature.** Only a fact the core cannot fit live (how many at once,
+  how many items) is set to the limit in the arguments ("count was set to 3: this world's limit"). A Builder make goes
+  through the same dispatch but is fitted by the Builder itself, so it is left alone here. What no fact measures (a custom datapack power) is kept as it is:
+  the thing is made, and a world that cannot measure it shows it as it chooses on his watch (locked, in the contract
+  world), never refused at the tool. A lesson the agent reads before it builds a creature or an item tells it to make
+  the strongest version the limits allow ("the strongest sword ever" is the strongest sword allowed); a test pins it.
+  With no world answering, the brief carries nothing and no argument is touched.
 - **Cheap, and free of side effects:** a menu asks once per tile per draw, on the server thread. Default methods only.
 - **Example:** `ContractWorld` (the contract test world below): hostile makes hidden, a make its own toy rating puts at
   4 or more locked, everything else fitted to three at once, size step 3, 40 health and 6 attack damage.
+
+### `WorldRegions`
+*`com.moddingfromamod.world.WorldRegions`, read with `all`.* **A part of a world with rules of its own** (#182): a
+battle arena built inside a survival or island world, a minigame zone, a protected square. A world runs one
+`WorldModule`, and the core asks it three things about every wish: may it be made and what does it cost (`charge()`),
+how strong may it be (`makes()`), and where may it land (its `Bases`, judged by the reach rules). A region
+(`WorldRegion`) answers the same three for the part of the world it covers, and changes nothing outside it.
+
+- **A region is chosen by a place, never by who asks** (`Regions`):
+  - **a wish**: the spot it was made at, locked at submit. The region that charged it is the one that refunds it, even
+    after he has walked off;
+  - **a living wish creature**, or any body the world's limits hold: where it stands. `LiveFit` fits it with its place
+    on the question (`WishAsk.where()`, `LiveFit.limitsAt`), so `makes().limits(owner)` and `makes().view(facts, ask)`
+    are asked of the region the body is in, whoever owns it and wherever he is. A body that crosses a region's edge is
+    fitted again within half a second (`LiveFitWatch`, the one watcher), and its owner is told once: a creature held
+    down inside comes back when it leaves;
+  - **any other question about a player** (a menu, a Builder page, a make he is pressing): where he stands now;
+  - **reach**: the caster's region; for a caster in none, the region his wish is aimed into. So a wish cast inside a
+    fenced region stays in it, and one cast from outside into it is the region's to admit.
+- **Who wins:**
+  - Inside a region, each of its non-null answers. Each of `charge()`, `makes()`, `bases()` and `rules()` may return
+    `null`, meaning "ask the world": a region overrides only what it cares about.
+  - Outside every region, the world's module (or the registered default), exactly as before.
+  - Where regions overlap, the first registered plug-in whose `at` answers wins; within one plug-in, the region its
+    `at` returns.
+- **Limits** are answered as `WorldMakes` answers them: a view, never written into a make. When what a region's
+  `makes()` answers for a player changes (a wave begins), call `WorldMakes.limitsChanged(player)`.
+- **Reach:** a region's `bases()` is judged by its `rules()`, else the world's rules, else `WorldRules.CLOSED`
+  (wishes stay on their base, nothing world-wide). Return `null` from `bases().baseOf(player)` for a player the region
+  does not admit. The reach rule measures bases in the overworld, so a fenced region in another dimension refuses
+  every placed wish.
+- **`at(dimension, x, y, z)`** is asked often (per wish, per menu draw, per reach check, and for each wish creature
+  twice a second while a region exists): keep it a cheap lookup, free of side effects. Return `null` where you have no
+  region.
+- **`any()`** (default `true`): return `false` while you have no region in the running world. Then the core asks
+  nobody, wraps nothing and answers exactly as it did before regions existed. When the first region appears or the
+  last one goes, every wish creature is fitted once again.
+- **`all()`** and **`WorldRegion.area()`** (optional): list your regions and say which columns each covers, so a world
+  that lays things out keeps clear of them. `Regions.overlaps(dimension, area)` is the question it asks.
+- **Default:** no regions; the module answers everywhere.
+- **Contract test:** `test/contract/ContractRegionGameTest` (a region inside a plain world: its charge, its limits on
+  a creature that walks in and out, its fence, an outsider aiming in).
+- **Example:**
+
+```java
+plugins.add(WorldRegions.class, (dimension, x, y, z) -> myZone.contains(dimension, x, z) ? myZone : null);
+// myZone implements WorldRegion: id(), and any of charge(), makes(), bases(), rules()
+```
 
 ### `WorldModuleType`
 *`com.moddingfromamod.world.WorldModuleType`, read with `all`.* **A kind of world**: code that runs for one world and

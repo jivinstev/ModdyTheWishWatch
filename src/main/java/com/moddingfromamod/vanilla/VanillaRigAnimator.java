@@ -273,7 +273,7 @@ public final class VanillaRigAnimator {
         var clips = StandInSculpt.isStandIn(sculpted)
                 ? java.util.Map.<String, BedrockAnimation>of()
                 : com.moddingfromamod.runtime.ModelRepository.animations(sp.modelKey());
-        return RigGeometryPrint.of(parts, sp.scale(), RigPose.animatedBones(clips));
+        return RigGeometryPrint.of(parts, com.moddingfromamod.wish.LiveFit.drawnScale(sp), RigPose.animatedBones(clips));
     }
 
     /**
@@ -353,7 +353,7 @@ public final class VanillaRigAnimator {
                 ? Map.of()
                 : com.moddingfromamod.runtime.ModelRepository.animations(sp.modelKey());
         List<CreatureSculpt.Part> rigSpace = RigFit.intoRigSpace(parts);
-        return new SpeciesInputs(rigSpace, clips, planFor(rigSpace), sp.scale());
+        return new SpeciesInputs(rigSpace, clips, planFor(rigSpace), com.moddingfromamod.wish.LiveFit.drawnScale(sp));
     }
 
     /** Every rig being driven, read-only. */
@@ -457,7 +457,7 @@ public final class VanillaRigAnimator {
         var clips = StandInSculpt.isStandIn(sculpted)
                 ? java.util.Map.<String, com.moddingfromamod.runtime.BedrockAnimation>of()
                 : com.moddingfromamod.runtime.ModelRepository.animations(sp.modelKey());
-        DisplayRig rig = DisplayRig.adopt(level, carrier, parts, sp.scale(),
+        DisplayRig rig = DisplayRig.adopt(level, carrier, parts, com.moddingfromamod.wish.LiveFit.drawnScale(sp),
                 CarrierPool.movementOf(sp, parts));
         if (rig == null && !rebuild) {
             return Adopt.WAIT;
@@ -546,7 +546,7 @@ public final class VanillaRigAnimator {
                 ? java.util.Map.<String, BedrockAnimation>of()
                 : com.moddingfromamod.runtime.ModelRepository.animations(sp.modelKey());
         b = new SpeciesBuild(revision, sp, List.copyOf(sculpted), List.copyOf(parts),
-                RigGeometryPrint.of(parts, sp.scale(), RigPose.animatedBones(clips)));
+                RigGeometryPrint.of(parts, com.moddingfromamod.wish.LiveFit.drawnScale(sp), RigPose.animatedBones(clips)));
         BUILDS.put(sp.id(), b);
         return b;
     }
@@ -596,13 +596,13 @@ public final class VanillaRigAnimator {
         }
         // Record the new geometry for the reveal, which is what veils the rebuilt creature from a
         // stock child until it is revealed.
-        RigReveal.publish(level.getServer(), sp.id(), parts, sp.scale(), true);
+        RigReveal.publish(level.getServer(), sp.id(), parts, com.moddingfromamod.wish.LiveFit.drawnScale(sp), true);
 
         // ON THE CARRIER IT ALREADY HAS when a fresh spawn would pick the same one: no
         // blink, the same UUID, and nothing to carry across by hand.
         DisplayRig reshaped;
         try {
-            reshaped = DisplayRig.reshapeInPlace(level, live.rig, parts, sp.scale(), sp.id(),
+            reshaped = DisplayRig.reshapeInPlace(level, live.rig, parts, com.moddingfromamod.wish.LiveFit.drawnScale(sp), sp.id(),
                     CarrierPool.movementOf(sp, parts));
         } catch (RuntimeException e) {
             // Halfway through, the old displays may already be gone: never leave an invisible,
@@ -685,7 +685,7 @@ public final class VanillaRigAnimator {
         RigAbilities.forget(oldId);
         RigTransformation.newCarrier(level, live.rig, () -> {
             try {
-                DisplayRig rebuilt = DisplayRig.spawn(level, at, yaw, parts, sp.scale(), sp.id(),
+                DisplayRig rebuilt = DisplayRig.spawn(level, at, yaw, parts, com.moddingfromamod.wish.LiveFit.drawnScale(sp), sp.id(),
                         CarrierPool.movementOf(sp, parts));
                 DisplayRig.applyVitals(rebuilt.living(), vitals, sp.id());
                 animal.putOn(level, rebuilt.base(), sp);
@@ -741,7 +741,7 @@ public final class VanillaRigAnimator {
             var clips = StandInSculpt.isStandIn(sculpted)
                     ? java.util.Map.<String, com.moddingfromamod.runtime.BedrockAnimation>of()
                     : com.moddingfromamod.runtime.ModelRepository.animations(sp.modelKey());
-            DisplayRig rebuilt = DisplayRig.spawn(level, at, yaw, parts, sp.scale(), sp.id(),
+            DisplayRig rebuilt = DisplayRig.spawn(level, at, yaw, parts, com.moddingfromamod.wish.LiveFit.drawnScale(sp), sp.id(),
                     CarrierPool.movementOf(sp, parts));
             // The same creature in a new body, not a new creature: it keeps its birth (WishShimmer).
             WishShimmer.rebuilt(base.getUUID(), rebuilt.living().getUUID());

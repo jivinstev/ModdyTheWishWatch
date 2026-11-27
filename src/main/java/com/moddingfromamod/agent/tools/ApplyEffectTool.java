@@ -293,8 +293,7 @@ public final class ApplyEffectTool implements McpTool {
         com.moddingfromamod.datapack.ReadyMadeSkeleton.Skeleton skeleton;
         try {
             source = catalogue.render(effect, params);
-            // Its precompiled pack's key: a ready-made the store holds is built with no compiler, so no
-            // player needs Python for a Builder or Apprentice power.
+            // Its precompiled pack's key: a ready-made the store holds is built without compiling it.
             skeleton = catalogue.skeleton(effect, params);
         } catch (IllegalArgumentException e) {
             // Straight back to the agent, which can correct itself: this is the misspelled- or
@@ -304,7 +303,7 @@ public final class ApplyEffectTool implements McpTool {
         long renderedMs = (System.nanoTime() - t0) / 1_000_000;
 
         if (!CbScriptCompiler.available() && !com.moddingfromamod.datapack.PrecompiledPacks.covers(DatapackForge.dialect(skeleton))) {
-            return ToolResult.error("no CBScript compiler is available (it needs Python 3), and this ready-made "
+            return ToolResult.error("the CBScript compiler is turned off here (a test), and this ready-made "
                     + "effect is not one of the precompiled ones, so it cannot be built here.");
         }
         try {

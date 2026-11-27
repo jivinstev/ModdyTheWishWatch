@@ -59,7 +59,14 @@ tasks.withType(JavaCompile).configureEach { options.compilerArgs += ['-Xmaxerrs'
 sourceSets.main.resources {
     srcDir('src/generated/resources')
     exclude("src/generated/**/.cache")
+    // The CBScript compiler's parser tables, its .cblib libraries and CBSCRIPT_LESSONS.md (vendored, below).
+    srcDir('third_party/moddy-cbscript/src/main/resources')
 }
+
+// THE CBSCRIPT COMPILER, compiled into this jar from source: moddy-cbscript's Java port, vendored at a named commit by
+// tools/refresh-cbscript-bundle.sh (third_party/moddy-cbscript, its SOURCE in src/main/resources/tools/cbscript.SOURCE).
+// It is what made the Magician stop needing Python: CbScriptCompiler calls it in-process.
+sourceSets.main.java.srcDir('third_party/moddy-cbscript/src/main/java')
 
 repositories {
     maven { name = 'NeoForged'; url = 'https://maven.neoforged.net/releases' }
@@ -314,10 +321,14 @@ neoForge.runs {
         } else {
             systemProperty 'neoforge.enabledGameTestNamespaces', shardNames.values().join(',')
         }
-        // -Pgametests=A,B,C runs only those GameTest classes (GameTestClassFilter, via
-        // GameTestRegistryMixin). tools/gate-b.sh passes gate-select.py --policy targeted's list.
+        // -Pgametests=A,B,C.method runs only those GameTest classes (or that one test of a class), and
+        // -Pgatenotclasses=D,E every class but those (GameTestClassFilter, read by GameTestAdapter). tools/gate/gate.py
+        // passes them: the targeted selection, one job's share of a split run, a failed test retried by itself.
         if (project.hasProperty('gametests')) {
             systemProperty "${project.mod_id}.gameTestClasses", project.property('gametests').toString()
+        }
+        if (project.hasProperty('gatenotclasses')) {
+            systemProperty "${project.mod_id}.gameTestNotClasses", project.property('gatenotclasses').toString()
         }
         // G2: the branch's gate-relevant patch id (gate-select.py --patch-id), recorded so a
         // green run of the same patch is REUSED after a base merge instead of re-run.
@@ -337,7 +348,7 @@ neoForge.runs {
         if (project.hasProperty('gatepatch')) {
             systemProperty "${project.mod_id}.gatepatch", project.property('gatepatch').toString()
         }
-        // The coverage-mapping run (tools/gate-covmap.sh, docs/GATE_COVERAGE_MAP.md): -Pcovagent is the
+        // The coverage-mapping run (tools/gate/gate.py run --covmap-tools, docs/GATE_B.md): -Pcovagent is the
         // JaCoCo agent jar, -Pcovmap the directory testing.gt.CoverageMap writes one .exec per
         // GameTest class into. output=none: the mod dumps at class boundaries, the agent never does.
         if (project.hasProperty('covagent')) {
@@ -528,6 +539,26 @@ configurations {
         canBeResolved = false
     }
     runtimeClasspath.extendsFrom localRuntime
+    // THE COVERAGE MAP'S TOOLS (tools/gate/covmap.py, docs/GATE_B.md "The coverage map"): the JaCoCo agent a mapping
+    // run's server carries (-Pcovagent) and the core library tools/gate/CovmapAnalyze.java reads its dumps with.
+    // Resolved only by the covmapTools task; nothing the mod compiles against or ships.
+    covmapTools {
+        canBeConsumed = false
+        canBeResolved = true
+    }
+}
+
+dependencies {
+    covmapTools 'org.jacoco:org.jacoco.agent:0.8.13:runtime'
+    covmapTools 'org.jacoco:org.jacoco.core:0.8.13'
+}
+
+// build/covmap-tools/: the jars a coverage-mapping run needs (tools/gate/gate.py covmap-run copies nothing itself)
+tasks.register('covmapTools', Copy) {
+    group = 'verification'
+    description = 'Copy the JaCoCo agent and core jars the coverage map is built with into build/covmap-tools'
+    from configurations.covmapTools
+    into layout.buildDirectory.dir('covmap-tools')
 }
 
 // a bundled jar's native DEBUG data never ships. MDG's jarJar resolves its configuration through an artifact view, so
@@ -797,7 +828,11 @@ tasks.named('jar') {
     }
     // each bundled component's full licence text (the public repo's third_party/, staged here under root/)
     def thirdParty = file('third_party').isDirectory() ? file('third_party') : file('docs/public-repo/root/third_party')
-    if (thirdParty.isDirectory()) from(thirdParty) { into 'META-INF/third_party' }
+    // (the vendored CBScript compiler's SOURCES are compiled into the jar, not copied: only its licence and notices)
+    if (thirdParty.isDirectory()) from(thirdParty) {
+        into 'META-INF/third_party'
+        exclude 'moddy-cbscript/src/**', 'moddy-cbscript/README.md'
+    }
     if (BUNDLE_MODEL) {
         def dir = file(BUNDLE_MODEL)
         // checked when the jar task runs, after storeApprenticeModel has filled the cache

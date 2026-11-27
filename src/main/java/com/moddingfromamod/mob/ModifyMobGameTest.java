@@ -234,6 +234,27 @@ public class ModifyMobGameTest {
         return entity;
     }
 
+    /**
+     * #101 (smoke): a REAL mob shaped by modify_mob is told its power too, read from the live entity, and a guardian
+     * instinct put on a mob with no attack of its own is flagged, as a sculpted guard with 0 damage is.
+     */
+    @GameTest(template = "empty_test", timeoutTicks = 300, batch = "modifymob_guardcow")
+    public static void aRealMobShapedIsToldItsPowerAndAGuardWithNoAttackIsFlagged(GameTestHelper helper) {
+        besideTheChild(helper, EntityType.COW);
+        AtomicReference<ToolResult> reply = new AtomicReference<>();
+        offThread(() -> reply.set(new ModifyMobTool().call(
+                args("{\"scope\":\"one\",\"target\":\"cow\",\"base\":\"guardian\",\"powers\":[\"friendly\"],\"health\":30}"))));
+        helper.succeedWhen(() -> {
+            ToolResult r = reply.get();
+            helper.assertTrue(r != null, Component.literal("waiting for modify_mob"));
+            helper.assertFalse(r.isError(), Component.literal("modify_mob should have worked: " + r.text()));
+            helper.assertTrue(r.text().contains("Power: 30 health, 0 damage"),
+                    Component.literal("the cow's power, read from the live cow: " + r.text()));
+            helper.assertTrue(r.text().contains("⚠ It fights (base 'guardian'"),
+                    Component.literal("a guardian cow with no attack is flagged: " + r.text()));
+        });
+    }
+
     private static JsonObject args(String json) {
         return JsonParser.parseString(json).getAsJsonObject();
     }

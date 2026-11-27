@@ -99,6 +99,7 @@ public final class WishMobLimit {
         if (stop == SpawnBudget.Stop.NONE) {
             e.addTag(WISHED_TAG);
             joined(level, k);
+            com.moddingfromamod.wish.LiveFitWatch.admitted(e);   // held to the world's limits when its command ends
             scope.admitted(k, typeId);
             if (!scope.wishKey().isEmpty()) {
                 synchronized (WISH_OF) {

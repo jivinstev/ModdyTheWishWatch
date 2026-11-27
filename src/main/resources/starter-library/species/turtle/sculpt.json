@@ -326,7 +326,7 @@
     "friendly",
     "persistent"
   ],
-  "damage": 0,
+  "damage": 2,
   "health": 40,
   "speed": 0.15,
   "scale": 1.5,

@@ -167,7 +167,14 @@ public final class SculptCreatureTool implements McpTool {
         Schemas.prop(s, "scale", "number", "Overall size multiplier, 0.2 to 8.0. 1.0 = as built.");
         Schemas.prop(s, "health", "number", "Hit points, 1 to 500.");
         Schemas.prop(s, "speed", "number", "Move speed, 0.05 to 0.6. 0.25 is normal.");
-        Schemas.prop(s, "damage", "number", "Attack damage, 0 to 40. Use 0 for a friendly character.");
+        Schemas.prop(s, "damage", "number", "Attack damage, 0 to 40: the damage its body would have, like a "
+                + "vanilla mob its size (a wolf 4, a zombie 3, a polar bear 6, a ravager 12, an iron golem 15). A friendly "
+                + "creature never attacks whatever this says, so never 0 to make it gentle: its moves, a guard and any "
+                + "world that enlists it use this number. 0 lands nothing.");
+        Schemas.prop(s, "armor", "number", "Armour points, 0 to 30 (a full iron suit is 15): a shell, scales, a robot's "
+                + "plates. Leave out for none.");
+        Schemas.prop(s, "knockback_resistance", "number", "0 to 1: how hard it is to push (1 = never pushed, for a huge or "
+                + "very heavy body). Leave out for none.");
         Schemas.prop(s, "powers", "array",
                 "Any of: hostile, friendly, leaps, fireproof, skittish, glowing, persistent, "
                         + "flies, hops, naps, boss, explodes, rideable. 'friendly' = HARMLESS: it never attacks anyone. "
@@ -1371,7 +1378,13 @@ public final class SculptCreatureTool implements McpTool {
         JsonObject speciesJson = inheritSpecies(args);
         speciesJson.addProperty("id", key);
         speciesJson.addProperty("modelKey", key);
+        // its shape, read off its own parts (#132), for the stand-in if its model is ever not to hand
+        speciesJson.addProperty("body",
+                com.moddingfromamod.vanilla.SculptBody.of(parts).name().toLowerCase(java.util.Locale.ROOT));
         speciesJson.remove("parts");
+        if (speciesJson.has("knockback_resistance")) {   // the tool's word for the record's field
+            speciesJson.add("knockbackResistance", speciesJson.remove("knockback_resistance"));
+        }
         speciesJson.remove("spawn");
         speciesJson.remove("sounds");
         speciesJson.remove("voice");
@@ -1382,7 +1395,8 @@ public final class SculptCreatureTool implements McpTool {
             // Resolved above to an archetype's key; with start_from and none named, the base's life stays.
             speciesJson.addProperty("behaves", args.get(com.moddingfromamod.species.BehavesLike.ARG).getAsString());
         }
-        Species species = Species.fromJson(speciesJson);
+        // a number it was not given comes from its size (#100): measured on the body it was just given
+        Species species = Species.fromJson(speciesJson, com.moddingfromamod.runtime.CreatureSculpt.volume(parts));
         if (species == null) {
             return ToolResult.error("Couldn't build the creature's stats.");
         }
@@ -1532,12 +1546,22 @@ public final class SculptCreatureTool implements McpTool {
                 // a live wish went that way, and a datapack compile died deriving a scoreboard
                 // objective from "§6SPIKOR, King of the Kroaks". See WishMobTags.
                 StringBuilder sb = new StringBuilder("Sculpted '" + stored.id() + "' ("
-                        + stored.name() + ") from " + partCount + " coloured parts, "
-                        + (int) stored.health() + " health, scale " + stored.scale() + "."
+                        + stored.name() + ") from " + partCount + " coloured parts, scale " + stored.scale() + "."
                         + " Select it with "
                         + com.moddingfromamod.entity.WishMobTags.selector(stored.id())
                         + " — NEVER by name. Call inspect_creature '" + stored.id()
                         + "' for its real height and where its mouth and eyes are.");
+                // #101: what its numbers mean, and a guard that cannot hit is caught before the reveal
+                double bodyVolume = com.moddingfromamod.runtime.CreatureSculpt.volume(parts);
+                sb.append(' ').append(com.moddingfromamod.species.PowerLine.of(stored, bodyVolume));
+                String zeroHit = com.moddingfromamod.species.PowerLine.zeroHitFlag(stored, bodyVolume);
+                if (!zeroHit.isEmpty()) {
+                    sb.append(' ').append(zeroHit);
+                }
+                String farAbove = com.moddingfromamod.species.PowerLine.farAbove(stored, bodyVolume);
+                if (!farAbove.isEmpty()) {
+                    sb.append(' ').append(farAbove);
+                }
 
                 ServerPlayer player = com.moddingfromamod.agent.ActingChild.of(server);
                 if (spawn && player != null) {

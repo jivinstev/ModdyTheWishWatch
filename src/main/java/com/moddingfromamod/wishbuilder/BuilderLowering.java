@@ -243,6 +243,25 @@ public final class BuilderLowering {
         return List.of("friendly", "shy", "wild", "guard", "boss", "pet", "stays");
     }
 
+    /**
+     * <b>Whose side it is on</b> (Moddy-Worlds#61). A spec that asks for {@code power:hostile} is hostile: the
+     * temperament's {@code friendly} (an empty temperament means friendly) and {@code skittish} are dropped, and so is a
+     * ready-made body's {@code guardian} base, which fights monsters. Before this a world's champion built on the rock
+     * golem was friendly, hostile and a guardian at once, and hunted the wave it was part of. Otherwise a guard is
+     * given the guardian base, as before.
+     */
+    static void sideOf(BuilderSpec spec, List<String> powers, JsonObject a) {
+        if (powers.contains("hostile")) {
+            powers.remove("friendly");
+            powers.remove("skittish");
+            if ("guardian".equals(str(a, "base"))) {
+                a.remove("base");
+            }
+        } else if ("guard".equals(spec.temper())) {
+            a.addProperty("base", "guardian");
+        }
+    }
+
     static List<String> temperPowers(String temper) {
         return switch (temper == null ? "" : temper) {
             case "", "friendly" -> List.of("friendly");
@@ -405,20 +424,25 @@ public final class BuilderLowering {
         return out;
     }
 
-    private static Call plan(BuilderSpec spec, Edit edit) {
-        JsonObject a = new JsonObject();
-        JsonArray steps = new JsonArray();
-        steps.add(BuilderWords.step(spec, edit != null));   //: a wish's plan, not "make Its raining chickens from the Builder"
-        a.add("steps", steps);
-        a.addProperty("about", edit == null || edit.about() == null || edit.about().isBlank() ? "new" : edit.about());
-        a.addProperty("kind", switch (spec.kind()) {
+    /** The plan kind a spec is: creature, item, building, picture, event or other. */
+    static String kindOf(BuilderSpec spec) {
+        return switch (spec.kind()) {
             case CREATURE, RIDE -> "creature";
             case ITEM, MACHINE, MAGIC_BLOCK, SUPPLIES -> "item";
             case BUILDING -> "building";
             case PICTURE -> "picture";
             case EVENT -> "event";
             default -> "other";
-        });
+        };
+    }
+
+    private static Call plan(BuilderSpec spec, Edit edit) {
+        JsonObject a = new JsonObject();
+        JsonArray steps = new JsonArray();
+        steps.add(BuilderWords.step(spec, edit != null));   //: a wish's plan, not "make Its raining chickens from the Builder"
+        a.add("steps", steps);
+        a.addProperty("about", edit == null || edit.about() == null || edit.about().isBlank() ? "new" : edit.about());
+        a.addProperty("kind", kindOf(spec));
         return new Call("plan_wish", a);
     }
 
@@ -437,8 +461,25 @@ public final class BuilderLowering {
             if (!spec.name().isEmpty()) {
                 nbt.add("CustomName:\"" + nbtSafe(spec.name()) + "\",PersistenceRequired:1b");
             }
-            if (!spec.opt("mobsize").isEmpty()) {   //: a named size is the game's own scale attribute
-                nbt.add("attributes:[{id:\"minecraft:scale\",base:" + BuilderMobSizes.of(spec.opt("mobsize")).scale() + "d}]");
+            // a named size is the game's own scale attribute; How strong and fast (#178) are its health, attack
+            // damage and speed, by the Builder's own table on the mob's own numbers (BuilderRealMobs)
+            List<String> attrs = new ArrayList<>();
+            if (!spec.opt("mobsize").isEmpty()) {
+                attrs.add("{id:\"minecraft:scale\",base:" + BuilderMobSizes.of(spec.opt("mobsize")).scale() + "d}");
+            }
+            BuilderRealMobs.Numbers stats = BuilderRealMobs.numbers(spec);
+            if (stats != null) {
+                attrs.add("{id:\"minecraft:max_health\",base:" + stats.health() + "d}");
+                if (stats.damage() > 0) {
+                    attrs.add("{id:\"minecraft:attack_damage\",base:" + stats.damage() + "d}");
+                }
+                if (stats.speed() > 0) {
+                    attrs.add("{id:\"minecraft:movement_speed\",base:" + stats.speed() + "d}");
+                }
+                nbt.add("Health:" + (float) stats.health() + "f");
+            }
+            if (!attrs.isEmpty()) {
+                nbt.add("attributes:[" + String.join(",", attrs) + "]");
             }
             String nameTag = nbt.isEmpty() ? "" : " {" + String.join(",", nbt) + "}";
             for (int i = 0; i < spec.count(); i++) {
@@ -471,13 +512,25 @@ public final class BuilderLowering {
         a.addProperty("note", "Builder make: " + label(spec) + " from the ready-made "
                 + Catalogue.bare(preset) + ".");
         a.addProperty("scale", creatureScale(spec, sculpt));
-        Schemes.Scheme scheme = Schemes.byId(spec.scheme());
+        Schemes.Scheme scheme = Schemes.resolve(spec);
         if (scheme != null) {
             JsonObject recolour = Schemes.recolour(sculpt.getAsJsonArray("parts"), scheme);
             if (recolour.size() > 0) {
                 a.add("recolour", recolour);
             }
         }
+        // #74: its health and attack damage are the ready-made's SHIPPED ones, sent with the sculpt: a Builder pet dragon
+        // has its 60 health in every world. Inheriting them from this world's record of the species made it 20 in a
+        // fresh world, and something else wherever a world had its own record. The shipped record wins over a world's;
+        // a world holds it down with its limits (#14), never by its record of the species.
+        JsonObject shipped = LibraryPresets.SHIPPED.species(Catalogue.bare(preset));
+        for (String k : new String[] {"health", "damage"}) {
+            if (shipped != null && shipped.has(k) && shipped.get(k).isJsonPrimitive()) {
+                a.add(k, shipped.get(k).deepCopy());
+            }
+        }
+        defence(shipped, a);
+        strength(spec, a, sculpt.getAsJsonArray("parts"), BuilderParts.vehicle(preset, shipped));
         List<String> powers = new ArrayList<>(temperPowers(spec.temper()));
         // what the starter does by being itself (a dragon flies and never burns, a T-Rex pounces). The lowering's
         // list replaces the starter's own file, so before this a Builder pet dragon walked and burned.
@@ -501,17 +554,16 @@ public final class BuilderLowering {
                 default -> throw new IllegalArgumentException("'" + p + "' is not a creature power");
             }
         }
+        sideOf(spec, powers, a);
         JsonArray pw = new JsonArray();
         powers.forEach(pw::add);
         a.add("powers", pw);
-        if ("guard".equals(spec.temper())) {
-            a.addProperty("base", "guardian");
-        }
         // how it LIVES, chosen from the picks (BehaviourChoice). A ready-made species named none, so it lived
         // its carrier's life: a flying cat fluttered like the bat it rides.
         a.addProperty(com.moddingfromamod.species.BehavesLike.ARG, behaviourOf(spec, sculpt));
         speed(spec, a);
-        a.addProperty("spawn", true);
+        // opts "spawn":"no": the design alone (#178: a world makes a champion once and spawns copies itself)
+        a.addProperty("spawn", !"no".equals(spec.opt("spawn")));
         at(spec, a);
         // the parts he added, hung on the ready-made's own head or body.
         List<String> kits = BuilderParts.chosen(spec);
@@ -537,6 +589,62 @@ public final class BuilderLowering {
             calls.add(new Call("run_command", more));
         }
         withYou(spec, newId, calls);
+    }
+
+    /**
+     * #101: a ready-made's shipped armour and knockback resistance (a turtle's shell, a rock golem that is never pushed),
+     * sent with its sculpt now that the tool takes them; only where it has some, so every other make is unchanged.
+     */
+    static void defence(JsonObject shipped, JsonObject sculptArgs) {
+        if (shipped == null) {
+            return;
+        }
+        for (String[] k : new String[][] {{"armor", "armor"}, {"knockbackResistance", "knockback_resistance"}}) {
+            if (shipped.has(k[0]) && shipped.get(k[0]).isJsonPrimitive() && shipped.get(k[0]).getAsDouble() > 0) {
+                sculptArgs.add(k[1], shipped.get(k[0]).deepCopy());
+            }
+        }
+    }
+
+    /**
+     * #103: its size and How strong move its health and attack damage ({@link BuilderCreatureStrength}), and a guard
+     * always hits for at least its size band's damage, measured on the body it is made with ({@code parts}) at the
+     * scale it is made at. A number the sculpt does not carry is left to the tool (its band's default, #100), except a
+     * guard's damage, which it always carries.
+     */
+    static void strength(BuilderSpec spec, JsonObject sculptArgs, JsonArray parts, boolean vehicle) {
+        BuilderMobSizes.Level size = BuilderCreatureStrength.sizeOf(spec);
+        int st = BuilderCreatureStrength.strengthOf(spec);
+        boolean guard = "guard".equals(spec.temper());
+        if (sculptArgs.has("health") && sculptArgs.get("health").isJsonPrimitive()) {
+            sculptArgs.addProperty("health", BuilderCreatureStrength.health(sculptArgs.get("health").getAsDouble(), size, st));
+        }
+        if (sculptArgs.has("damage") && sculptArgs.get("damage").isJsonPrimitive() || guard) {
+            double body = sculptArgs.has("damage") && sculptArgs.get("damage").isJsonPrimitive()
+                    ? sculptArgs.get("damage").getAsDouble() : 0;
+            double scale = sculptArgs.has("scale") ? sculptArgs.get("scale").getAsDouble() : 1.0;
+            double band = com.moddingfromamod.species.PowerBand.forVolume(
+                    com.moddingfromamod.species.PowerBand.volume(boxes(parts), scale)).damage();
+            sculptArgs.addProperty("damage", BuilderCreatureStrength.damage(body, size, st, guard, band, vehicle));
+        }
+    }
+
+    /** A sculpt's parts as boxes ({@code from} and {@code to} in pixels), for measuring its solid volume. */
+    static List<double[]> boxes(JsonArray parts) {
+        List<double[]> out = new ArrayList<>();
+        if (parts == null) {
+            return out;
+        }
+        for (JsonElement e : parts) {
+            JsonObject p = e.getAsJsonObject();
+            if (p.has("from") && p.has("to")) {
+                JsonArray f = p.getAsJsonArray("from");
+                JsonArray t = p.getAsJsonArray("to");
+                out.add(new double[] {f.get(0).getAsDouble(), f.get(1).getAsDouble(), f.get(2).getAsDouble(),
+                        t.get(0).getAsDouble(), t.get(1).getAsDouble(), t.get(2).getAsDouble()});
+            }
+        }
+        return out;
     }
 
     /** step 6: the tune dialog's "How fast" (1 slow, 2 its own pace, 3 fast) as sculpt_creature's speed. */
@@ -676,7 +784,7 @@ public final class BuilderLowering {
         a.addProperty("id", newId);
         a.addProperty("name", spec.name().isEmpty() ? str(sculpt, "name") : spec.name());
         JsonArray parts = sculpt.getAsJsonArray("parts").deepCopy();
-        Schemes.Scheme scheme = Schemes.byId(spec.scheme());
+        Schemes.Scheme scheme = Schemes.resolve(spec);
         if (scheme != null) {
             JsonObject recolour = Schemes.recolour(parts, scheme);
             for (JsonElement e : parts) {
@@ -709,6 +817,8 @@ public final class BuilderLowering {
                 a.add(k, sculpt.get(k).deepCopy());
             }
         }
+        defence(LibraryPresets.SHIPPED.species(Catalogue.bare(preset)), a);
+        strength(spec, a, parts, BuilderParts.vehicle(preset, LibraryPresets.SHIPPED.species(Catalogue.bare(preset))));
         List<String> powers = new ArrayList<>(temperPowers(spec.temper()));
         // (was an earlier issue's flies alone): a body brings what it does by being itself (a plane flies, a rabbit hops, a
         // phoenix glows and never burns, BuilderNatural); every other power is his pick on the powers page. A make saved
@@ -733,17 +843,16 @@ public final class BuilderLowering {
                 default -> throw new IllegalArgumentException("'" + p + "' is not a creature power");
             }
         }
+        sideOf(spec, powers, a);
         JsonArray pw = new JsonArray();
         powers.forEach(pw::add);
         a.add("powers", pw);
-        if ("guard".equals(spec.temper())) {
-            a.addProperty("base", "guardian");
-        }
         // how it LIVES, chosen from the picks (BehaviourChoice). A ready-made species named none, so it lived
         // its carrier's life: a flying cat fluttered like the bat it rides.
         a.addProperty(com.moddingfromamod.species.BehavesLike.ARG, behaviourOf(spec, sculpt));
         speed(spec, a);
-        a.addProperty("spawn", true);
+        // opts "spawn":"no": the design alone (#178: a world makes a champion once and spawns copies itself)
+        a.addProperty("spawn", !"no".equals(spec.opt("spawn")));
         at(spec, a);
         // the parts he added, hung on the ready-made's own head or body.
         List<String> kits = BuilderParts.chosen(spec);
@@ -895,7 +1004,7 @@ public final class BuilderLowering {
             // missing base. make_item's real-item hint is for the Magician; without this it refuses the tile.
             a.addProperty("only_looks_like", true);
         }
-        Schemes.Scheme scheme = Schemes.byId(spec.scheme());
+        Schemes.Scheme scheme = Schemes.resolve(spec);
         if (scheme != null) {
             a.addProperty("colour", scheme.main());
             a.addProperty("accent", scheme.accent());
@@ -978,8 +1087,9 @@ public final class BuilderLowering {
         BuilderBuildings.Type body = parts ? null : BuilderBuildings.type(preset);
         boolean working = body != null && body.working();
         double f = parts || working ? 1.0 : BUILDING_SCALE[spec.size() - 1];   // floors are a simple building's size
-        Schemes.Scheme scheme = working ? null : Schemes.byId(spec.scheme());
-        java.util.Map<String, String> reblock = scheme == null ? java.util.Map.of() : Schemes.reblock(shapes, scheme);
+        Schemes.Scheme scheme = working ? null : Schemes.resolve(spec);
+        java.util.Map<String, String> reblock = scheme == null || scheme.mainBlock() == null ? java.util.Map.of()
+                : Schemes.reblock(shapes, scheme);   // a world's colours-only palette keeps a building's own blocks
         if (f != 1.0) {
             scaleAll(shapes, f);
         }
@@ -1017,7 +1127,7 @@ public final class BuilderLowering {
         JsonObject pic = new JsonObject();
         pic.add("size", stored.get("size"));
         JsonArray rects = stored.getAsJsonArray("rects").deepCopy();
-        Schemes.Scheme scheme = Schemes.byId(spec.scheme());
+        Schemes.Scheme scheme = Schemes.resolve(spec);
         if (scheme != null) {
             java.util.Map<String, String> to = Schemes.recolourRects(rects, scheme);
             for (JsonElement e : rects) {

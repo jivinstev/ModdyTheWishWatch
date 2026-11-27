@@ -1,0 +1,5 @@
+{
+  "schema": 1,
+  "about": "A renamed GameTest keeps its run history: old name -> new name, `Class` or `Class.method`. Add a row in the pull request that renames the test. docs/GATE_B.md, 'Run history'.",
+  "renames": {}
+}

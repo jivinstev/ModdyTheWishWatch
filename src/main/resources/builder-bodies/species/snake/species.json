@@ -3,7 +3,7 @@
   "armor": 0.0,
   "body": "humanoid",
   "createdAt": 1793164944762,
-  "damage": 0.0,
+  "damage": 2.0,
   "health": 12.0,
   "id": "snake",
   "knockbackResistance": 0.0,

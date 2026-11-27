@@ -1,4 +1,6 @@
 {
+ "damage": 1,
+ "health": 8,
  "id": "duck",
  "name": "Yellow Duck",
  "note": "Started from the chicken starter (closest bird body), recoloured bright yellow with orange beak and feet like a rubber duck; friendly, chicken voice.",

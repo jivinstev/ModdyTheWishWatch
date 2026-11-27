@@ -1,8 +1,8 @@
 {
  "base": "wild",
  "behaves_like": "buzzer",
- "damage": 0,
- "health": 20,
+ "damage": 3,
+ "health": 16,
  "id": "ghost",
  "name": "Little Ghost",
  "note": "Friendly cute ghost: white sheet body with wavy hem bumps, big round black eyes, 3-box upturned smile, pink cheeks; floats via flies, friendly, small scale. Mood: sweet.",

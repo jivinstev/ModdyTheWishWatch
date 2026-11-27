@@ -10,10 +10,10 @@ import org.slf4j.LoggerFactory;
 
 /**
  * <b>Which production classes does each GameTest class actually execute?</b> — the mapping run
- * behind dynamic test selection (docs/GATE_COVERAGE_MAP.md).
+ * behind targeted Gate B (docs/GATE_B.md, "The coverage map").
  *
  * <p>On only when {@code -Dmoddingfromamod.covmap=<dir>} is set AND the JVM carries the JaCoCo agent
- * ({@code -Pcovagent=<jacocoagent.jar>}, which {@code tools/gate-covmap.sh} passes). Then
+ * ({@code -Pcovagent=<jacocoagent.jar>}, which {@code tools/gate/gate.py run --covmap-tools} passes). Then
  * {@link GameTestAdapter} gives every GameTest CLASS its own environment, so classes run strictly
  * one after another, and {@link #enter} dumps and resets the agent's execution data each time the
  * running class changes: {@code <dir>/__boot__.0.exec} is everything before the first test,
@@ -33,9 +33,89 @@ public final class CoverageMap {
      */
     static final String IDLE = "__idle__";
     static final String SHUTDOWN = "__shutdown__";
+    /**
+     * A class's SETTLE window: after its last batch, a synthetic test of its own unit that only waits, so what the class
+     * left running (a listener, a make on a worker thread, a periodic poll it started) is counted as the class's, not
+     * as whichever class happens to run next. At least SETTLE_TICKS ticks and SETTLE_MS of wall time.
+     */
+    static final int SETTLE_TICKS = 40;
+    static final long SETTLE_MS = 1500;
+    /**
+     * ...and then until no other thread is running the mod's code (a Builder make on its worker thread, a pack being
+     * compiled, a poll it kicked), at most this long. Measured before: a make a class started finished in whichever
+     * class ran next, a block of about 105 methods that landed in a different class each run.
+     */
+    static final long SETTLE_MAX_MS = 15_000;
+
+    /**
+     * Is the mod's own work done? No thread but the caller (the server thread, which runs the settle window's check)
+     * is RUNNABLE with a frame of the mod's code. Threads parked, sleeping or waiting (an idle pool, a poll between
+     * rounds) are done; the GameTest harness's own frames do not count.
+     */
+    static boolean quiet() {
+        Thread self = Thread.currentThread();
+        for (java.util.Map.Entry<Thread, StackTraceElement[]> e : Thread.getAllStackTraces().entrySet()) {
+            Thread t = e.getKey();
+            if (t == self || t.getState() != Thread.State.RUNNABLE) {
+                continue;
+            }
+            for (StackTraceElement f : e.getValue()) {
+                String c = f.getClassName();
+                if (c.startsWith("com.moddingfromamod.") && !c.startsWith("com.moddingfromamod.testing.")) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+    /** Has a settle window that started at {@code startMs} waited enough (pure: the clock and the check handed in)? */
+    static boolean settled(long startMs, long nowMs, boolean quiet) {
+        long ran = nowMs - startMs;
+        return ran >= SETTLE_MS && (quiet || ran >= SETTLE_MAX_MS);
+    }
+    /** Every synthetic test of a mapping run is named {@code moddingfromamod:covmapidle.*}; none is a test of the tier. */
+    public static final String SYNTHETIC_PREFIX = "covmapidle.";
     static final int IDLE_TICKS = 400;
     static final net.minecraft.resources.Identifier IDLE_ID =
             net.minecraft.resources.Identifier.fromNamespaceAndPath("moddingfromamod", "covmapidle.idle");
+
+    /** The settle window's test id for a class (lower case, as every test id is). */
+    static net.minecraft.resources.Identifier settleId(String simpleClass) {
+        return net.minecraft.resources.Identifier.fromNamespaceAndPath("moddingfromamod",
+                SYNTHETIC_PREFIX + "settle_" + simpleClass.toLowerCase(java.util.Locale.ROOT));
+    }
+
+    /**
+     * The environment (batch) name of one of a class's batches on a mapping run, and of its settle window. Sorted by
+     * name ({@code testing/mixin/GameTestBatchOrderMixin}), a class's batches come together ({@code covmap_<class>.b_...}),
+     * its settle window right after them ({@code covmap_<class>.s}: {@code b} sorts before {@code s}, and {@code .}
+     * before any character a class name can hold, so no class's batches fall between another's, even {@code Foo}'s
+     * and {@code Foo_C}'s), and the idle window ({@code covmap_0idle}) before them all.
+     */
+    static String batchName(String simpleClass, String batch) {
+        return "covmap_" + simpleClass + ".b_" + batch;
+    }
+
+    static String settleBatch(String simpleClass) {
+        return "covmap_" + simpleClass + ".s";
+    }
+
+    static final String IDLE_BATCH = "covmap_0idle";
+
+    /** A mapping run's batches in the order of their environment names (stable: a name's chunks keep their order). */
+    public static java.util.List<net.minecraft.gametest.framework.GameTestBatch> inOrder(
+            java.util.List<net.minecraft.gametest.framework.GameTestBatch> batches) {
+        java.util.List<net.minecraft.gametest.framework.GameTestBatch> out = new java.util.ArrayList<>(batches);
+        out.sort(java.util.Comparator.comparing((net.minecraft.gametest.framework.GameTestBatch b) -> envName(b))
+                .thenComparingInt(net.minecraft.gametest.framework.GameTestBatch::index));
+        return out;
+    }
+
+    static String envName(net.minecraft.gametest.framework.GameTestBatch b) {
+        // the PATH alone: a class of the ci shard (namespace moddingfromamod_ci) keeps its settle window (moddingfromamod)
+        return b.environment().unwrapKey().map(k -> k.identifier().getPath()).orElse("");
+    }
 
     private static final Path DIR = dir();
     private static Object agent;
@@ -177,7 +257,7 @@ public final class CoverageMap {
         try {
             byte[] data = (byte[]) getExecutionData.invoke(agent, true);
             // a class's batches need not run back to back, so it may be entered more than once: numbered
-            // segments, which tools/gate-covmap.py unions
+            // segments, which tools/gate/CovmapAnalyze.java unions
             Files.write(DIR.resolve(name + "." + (segment++) + ".exec"), data);
         } catch (ReflectiveOperationException | IOException e) {
             throw new IllegalStateException("covmap: could not write " + name, e);

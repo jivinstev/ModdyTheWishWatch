@@ -6,7 +6,6 @@ import java.nio.file.Path;
 import java.util.zip.ZipFile;
 
 import com.moddingfromamod.ModdingFromAModMod;
-import com.moddingfromamod.tools.ToolDeploy;
 import com.moddingfromamod.testing.gt.GameTest;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.MinecraftServer;
@@ -48,15 +47,10 @@ public class DatapackGameTest {
     }
 
     /**
-     * The mod process can invoke the CBScript compiler and receive a valid 1.21.1 datapack. Skips
-     * (succeeds) when the compiler isn't installed on this machine, so a clean checkout stays green.
+     * The mod process can invoke the CBScript compiler and receive a valid 1.21.1 datapack.
      */
     @GameTest(template = "empty_test")
     public static void compilesADatapackFromInsideTheGame(GameTestHelper helper) {
-        if (!CbScriptCompiler.available()) {
-            helper.succeed();  // no Python fork here — nothing to prove, don't fail the gate
-            return;
-        }
         try {
             Path tmp = Files.createTempDirectory("dp_dp_gametest");
             Path zip = tmp.resolve("out.zip");
@@ -110,65 +104,29 @@ public class DatapackGameTest {
     }
 
     /**
-     * <b>Gate D — deploy-as-a-tool works end to end.</b> The CBScript compiler bundled in the jar
-     * extracts to a writable location and, run by Python from there, produces a valid 1.21.1 datapack
-     * — with NO dev checkout and no TCC-protected path involved. Skips (green) when Python isn't on
-     * this machine, since then the deploy is proven but there's nothing to run it with. Invokes the
-     * extracted bundle directly (its own temp root) so it can't race the shared compiler resolution.
+     * <b>Gate D — the compiler is in the jar.</b> A datapack compiles from inside the running game with nothing
+     * extracted, found or started: the CBScript compiler (moddy-cbscript's Java port) runs in this process.
+     * {@link NoPythonGameTest} watches the processes; this proves the pack is right.
      */
     @GameTest(template = "empty_test")
-    public static void theBundledCompilerDeploysAndCompiles(GameTestHelper helper) {
+    public static void theBundledCompilerCompilesInProcess(GameTestHelper helper) {
         try {
-            Path root = Files.createTempDirectory("dp_gd_deploy");
-            Path dir = ToolDeploy.extractTo("cbscript", root);
-            helper.assertTrue(dir != null && Files.isRegularFile(dir.resolve("compile_once.py")),
-                    Component.literal("the bundled cbscript tool must extract to a runnable directory"));
-
-            String python = CbScriptCompiler.python();
-            if (python == null) {
-                helper.succeed();  // no interpreter here — deploy proven, nothing to compile with
-                return;
-            }
             Path work = Files.createTempDirectory("dp_gd_work");
-            Path src = work.resolve("gt_deploy.cbscript");
-            Files.writeString(src, "dir \".\"\ndesc \"gd\"\n\nfunction m()\n    /say hi\nend\nreset\nend\n",
-                    java.nio.charset.StandardCharsets.UTF_8);
             Path zip = work.resolve("out.zip");
-
-            ProcessBuilder pb = new ProcessBuilder(python, dir.resolve("compile_once.py").toString(),
-                    src.toString(), "--out", zip.toString());
-            pb.directory(work.toFile());
-            pb.redirectInput(new java.io.File("/dev/null"));
-            pb.redirectErrorStream(true);   // merge PLY warnings in; we only check the zip, don't parse
-            Process p = pb.start();
-            String out = new String(p.getInputStream().readAllBytes(),
-                    java.nio.charset.StandardCharsets.UTF_8);
-            p.waitFor(30, java.util.concurrent.TimeUnit.SECONDS);
-
-            helper.assertTrue(Files.isRegularFile(zip),
-                    Component.literal("the deployed bundle must compile a datapack. compiler output: " + out));
+            CompileResult r = CbScriptCompiler.compile(work, "gt_deploy", "gd", "function m()\n    /say hi\nend\nreset\nend\n",
+                    zip);
+            helper.assertTrue(r.ok(), Component.literal("the built-in compiler must compile a datapack: "
+                    + (r.ok() ? "" : r.failureSummary())));
             try (ZipFile zf = new ZipFile(zip.toFile())) {
                 helper.assertTrue(zf.getEntry("data/gt_deploy/function/m.mcfunction") != null,
                         Component.literal("compiled datapack has the expected 1.21.1 function path"));
             }
         } catch (Exception e) {
-            helper.fail(Component.literal("bundled-compiler deploy+compile failed: " + e));
+            helper.fail(Component.literal("built-in compile failed: " + e));
         }
         helper.succeed();
     }
 
-    /**
-     * <b>Activating a second wish must not switch off the first.</b>
-     *
-     * <p>{@code getSelectedIds()} reports the selection currently APPLIED, and a reload lands over
-     * the following ticks — so two activations in quick succession both read the same stale
-     * selection, and the second one's set omits the first pack. Two wishes in a row is not an edge
-     * case, and the failure is silent: both report "activated", both are dead, and the only clue in
-     * the log is that each reload prints the same pack count.
-     *
-     * <p>Checked at the selection layer rather than by really reloading twice, because a live reload
-     * mid-batch re-runs every other pack's load functions (see this class's header).
-     */
     @GameTest(template = "empty_test")
     public static void enablingOneWishKeepsTheOthersOn(GameTestHelper helper) {
         MinecraftServer server = helper.getLevel().getServer();

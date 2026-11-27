@@ -207,7 +207,7 @@ public final class WishChargeAskGameTest {
                 Component.literal("Next opens the tune dialog: " + (flow == null ? "no flow" : flow.step())));
         try {
             p.level().getServer().getCommands().getDispatcher().execute(
-                    "moddy builder make " + flow.token + " 2 1 ocean", p.createCommandSourceStack());
+                    "moddy builder make " + flow.token + " 2 ocean 2 2", p.createCommandSourceStack());
         } catch (com.mojang.brigadier.exceptions.CommandSyntaxException e) {
             helper.fail(Component.literal("the Make command did not parse: " + e.getMessage()));
         }
