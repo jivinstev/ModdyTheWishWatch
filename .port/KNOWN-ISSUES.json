@@ -176,6 +176,70 @@
         "1.21.11": "fixed@5993cd9"
       },
       "title": "[upgrade-only, from 1.21.11] a datapack wished before 1.21.11 fails to load its reset function (old game-rule name)"
+    },
+    {
+      "files": [
+        ".port/1.21.8/GATES-AB.md"
+      ],
+      "id": "KI-9",
+      "lowest": "1.21.8",
+      "notes": "found by the round at 1.21.8 (fix)",
+      "override": null,
+      "rubric": {
+        "failure": "cosmetic",
+        "reach": "latent",
+        "visibility": "invisible",
+        "workaround": true
+      },
+      "severity": "S4",
+      "source": "review",
+      "status": {
+        "1.21.8": "open"
+      },
+      "title": "GATES-AB.md says Gate C runs every rig film, but gate-c.json runs them --targeted"
+    },
+    {
+      "files": [
+        "docs/EXTENDING.md",
+        "src/main/java/com/moddingfromamod/world/WorldMakes.java"
+      ],
+      "id": "KI-10",
+      "lowest": "1.21.8",
+      "notes": "found by the round at 1.21.8 (fix)",
+      "override": null,
+      "rubric": {
+        "failure": "cosmetic",
+        "reach": "latent",
+        "visibility": "invisible",
+        "workaround": true
+      },
+      "severity": "S4",
+      "source": "review",
+      "status": {
+        "1.21.8": "open"
+      },
+      "title": "EXTENDING.md and WorldMakes Javadoc say the core never polls limits(player); LiveFitWatch now polls MakeGate.limits(p).stamp() every 10 ticks"
+    },
+    {
+      "files": [
+        "src/main/java/com/moddingfromamod/agent/tools/MakeItemTool.java"
+      ],
+      "id": "KI-11",
+      "lowest": "1.21.8",
+      "notes": "found by the round at 1.21.8 (fix)",
+      "override": null,
+      "rubric": {
+        "failure": "cosmetic",
+        "reach": "latent",
+        "visibility": "invisible",
+        "workaround": true
+      },
+      "severity": "S4",
+      "source": "review",
+      "status": {
+        "1.21.8": "open"
+      },
+      "title": "MakeItemTool: the alwaysEdibleFood Javadoc sits between ownModifiers' Javadoc and ownModifiers, orphaning that doc"
     }
   ],
   "schema": 1
