@@ -211,7 +211,11 @@ public final class VanillaDeathClientTest {
                     hold(mc);
                     if (ticks > 10) {
                         if (shotEmpty == null) {
-                            shotEmpty = grab(mc, "0-empty");
+                            // the world has to have finished drawing the stage first (ClientHarness.settledStage)
+                            shotEmpty = ClientHarness.settledStage(mc, SIG, ticks, () -> grab(mc, "0-empty"));
+                            if (shotEmpty == null) {
+                                return;
+                            }
                         }
                         spawn(mc);
                     }
