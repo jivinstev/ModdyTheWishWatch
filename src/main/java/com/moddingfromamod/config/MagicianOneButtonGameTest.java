@@ -22,8 +22,7 @@ import net.minecraft.server.level.ServerPlayer;
  *   <li>"Use my Claude subscription" sets the four choices, checks Claude Code, runs the full check and turns the
  *       Magician on, with one result line; the tile then says what it runs on;</li>
  *   <li>a program that is not signed in stops it with the one thing to do, and the check never runs;</li>
- *   <li>with no working Python 3 the Magician still turns on, and one result line names Python and the fix;
- *       with Python there, nothing is said about it.</li>
+ *   <li>nothing in the setup mentions Python: the Magician's powers are compiled by the mod itself.</li>
  * </ul>
  *
  * <p>Its own batch: it hides any plug-in's override and sets the setup's statics, which are global.
@@ -35,24 +34,10 @@ public final class MagicianOneButtonGameTest {
     private static final class Probe implements HarnessProbe {
         final AtomicInteger looked = new AtomicInteger();
         final AtomicInteger ran = new AtomicInteger();
-        final AtomicInteger pythonAsked = new AtomicInteger();
         final boolean claudeSignedIn;
-        final com.moddingfromamod.datapack.PythonCheck.Verdict python;
 
         Probe(boolean claudeSignedIn) {
-            this(claudeSignedIn, new com.moddingfromamod.datapack.PythonCheck.Verdict(
-                    com.moddingfromamod.datapack.PythonCheck.Kind.FOUND, "/stand-in/python3", "3.12.1", ""));
-        }
-
-        Probe(boolean claudeSignedIn, com.moddingfromamod.datapack.PythonCheck.Verdict python) {
             this.claudeSignedIn = claudeSignedIn;
-            this.python = python;
-        }
-
-        @Override
-        public com.moddingfromamod.datapack.PythonCheck.Verdict python() {
-            pythonAsked.incrementAndGet();
-            return python;
         }
 
         @Override
@@ -141,7 +126,7 @@ public final class MagicianOneButtonGameTest {
                     Component.literal("the host's tile: " + MagicianSetup.watchTile(host)));
             helper.assertTrue(MagicianSetup.watchTile(guest).orElse("").equals(MagicianPresets.OFF_GUEST),
                     Component.literal("the guest's tile: " + MagicianSetup.watchTile(guest)));
-            helper.assertTrue(probe.looked.get() == 0 && probe.ran.get() == 0 && probe.pythonAsked.get() == 0,
+            helper.assertTrue(probe.looked.get() == 0 && probe.ran.get() == 0,
                     Component.literal("the watch looked for a program before anything was pressed"));
             // The tile runs /moddy magician: a guest is told only the host sets it up.
             helper.getLevel().getServer().getCommands().performPrefixedCommand(guest.createCommandSourceStack(), "moddy magician");
@@ -151,7 +136,7 @@ public final class MagicianOneButtonGameTest {
             helper.assertTrue(tileIds(host).containsAll(java.util.List.of(MagicianPresets.CLAUDE, MagicianPresets.MUSE,
                             MagicianSetup.MANUAL)) && !tileIds(host).contains(MagicianPresets.API),
                     Component.literal("the first page's buttons (no key set): " + tileIds(host)));
-            helper.assertTrue(probe.ran.get() == 0 && probe.pythonAsked.get() == 0,
+            helper.assertTrue(probe.ran.get() == 0,
                     Component.literal("opening the page ran a program"));
             MagicianSetup.press(host, MagicianPresets.CLAUDE);
             helper.assertTrue(MagicianPicks.current().equals(MagicianPresets.CLAUDE_SUBSCRIPTION.picks()),
@@ -172,9 +157,8 @@ public final class MagicianOneButtonGameTest {
                 helper.assertTrue(MockPlayerNetwork.chat(host).contains(
                                 MagicianPresets.turnedOn(MagicianPresets.CLAUDE_SUBSCRIPTION)),
                         Component.literal("no result line: " + MockPlayerNetwork.chat(host)));
-                helper.assertTrue(probe.pythonAsked.get() > 0
-                                && MockPlayerNetwork.chat(host).stream().noneMatch(l -> l.contains("Python")),
-                        Component.literal("Python was not checked, or a working one was talked about: "
+                helper.assertTrue(MockPlayerNetwork.chat(host).stream().noneMatch(l -> l.contains("Python")),
+                        Component.literal("the setup talked about Python, which the Magician no longer needs: "
                                 + MockPlayerNetwork.chat(host)));
                 helper.assertTrue(MockPlayerNetwork.chat(host).stream().noneMatch(l -> l.startsWith("Set ")),
                         Component.literal("the one button said each choice: " + MockPlayerNetwork.chat(host)));
@@ -224,45 +208,4 @@ public final class MagicianOneButtonGameTest {
         });
     }
 
-    @GameTest(template = "empty_test", batch = "magician_one_button_no_python", timeoutTicks = 400)
-    public static void noPythonStillTurnsOnAndSaysTheOneThingToDo(GameTestHelper helper) {
-        ServerPlayer host = MockPlayerNetwork.inLevel(helper, "OneButtonNoPython");
-        Probe probe = new Probe(true, com.moddingfromamod.datapack.PythonCheck.Verdict.missing());
-        Passing steps = new Passing();
-        Runnable cleanup = setUp(host, probe, steps, Map.of());
-        try {
-            MagicianSetup.open(host);
-            MagicianSetup.press(host, MagicianPresets.CLAUDE);
-        } catch (RuntimeException | AssertionError e) {
-            cleanup.run();
-            throw e;
-        }
-        boolean[] done = {false};
-        helper.onEachTick(() -> {
-            if (done[0] || MagicianSetup.busy() || !steps.wished) {
-                return;
-            }
-            done[0] = true;
-            try {
-                helper.assertTrue(Magician.enabled(), Component.literal(
-                        "no Python and the Magician stayed off: " + MockPlayerNetwork.chat(host)));
-                java.util.List<String> chat = MockPlayerNetwork.chat(host);
-                String on = MagicianPresets.turnedOn(MagicianPresets.CLAUDE_SUBSCRIPTION);
-                String py = com.moddingfromamod.datapack.PythonCheck.setupLine(
-                        com.moddingfromamod.datapack.PythonCheck.Verdict.missing(),
-                        com.moddingfromamod.datapack.PythonCheck.windows()).orElseThrow();
-                helper.assertTrue(py.contains("Python 3") && py.contains("python.org") && py.contains("press the button"),
-                        Component.literal("the line does not name Python and the fix: " + py));
-                helper.assertTrue(chat.contains(on) && chat.contains(py) && chat.indexOf(py) > chat.indexOf(on),
-                        Component.literal("not 'on' then the Python line: " + chat));
-                helper.assertTrue(chat.stream().filter(l -> l.contains("Python")).count() == 1,
-                        Component.literal("more than one Python line: " + chat));
-                helper.assertTrue(MagicianSetup.python() != null && !MagicianSetup.python().works(),
-                        Component.literal("the setup did not remember that Python is missing"));
-            } finally {
-                cleanup.run();
-            }
-            helper.succeed();
-        });
-    }
 }

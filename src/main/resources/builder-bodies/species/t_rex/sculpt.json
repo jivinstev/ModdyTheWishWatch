@@ -280,8 +280,8 @@
   "powers": [
     "friendly"
   ],
-  "health": 80,
-  "damage": 0,
+  "health": 200,
+  "damage": 12,
   "scale": 2,
   "note": "Plain base T-rex: olive-green scaled body, tan belly/jaw, white teeth, yellow eyes; big head, tiny arms, thick legs, two-piece tail. No accessories so later wishes can start_from it. Friendly by default."
 }

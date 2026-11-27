@@ -1,7 +1,7 @@
 {
  "behaves_like": "grazer",
- "damage": 0,
- "health": 10,
+ "damage": 1,
+ "health": 6,
  "id": "hamster",
  "name": "Tiny Hamster",
  "note": "Hamster from cat starter: chubbier body, tiny tail, golden-orange fur, cream legs, pink ears, scale 0.4 for tiny. Friendly, sweet.",

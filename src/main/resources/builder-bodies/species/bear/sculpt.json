@@ -16,7 +16,7 @@
     "friendly"
   ],
   "base": "wild",
-  "damage": 0,
+  "damage": 6,
   "health": 30,
   "speed": 0.22,
   "status": "Sculpting your brown bear",

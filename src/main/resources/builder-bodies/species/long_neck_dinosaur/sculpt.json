@@ -7,8 +7,8 @@
     "persistent"
   ],
   "base": "wild",
-  "damage": 0,
-  "health": 120,
+  "damage": 8,
+  "health": 160,
   "speed": 0.15,
   "status": "Sculpting your long-neck dinosaur",
   "note": "Plain reusable brontosaurus base: olive-green back, tan belly, 4 pillar legs, neck rises forward (+z) in 3 tilted segments, tail tapers back in 3 segments. Scale 3, friendly, no accessories by request.",

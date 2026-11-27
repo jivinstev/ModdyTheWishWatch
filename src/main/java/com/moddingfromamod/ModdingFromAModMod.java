@@ -127,6 +127,7 @@ public class ModdingFromAModMod {
         NeoForge.EVENT_BUS.register(com.moddingfromamod.mob.PrimedTntLimit.class);
         // the same backstop for WISHED creatures, per class (SpawnBudget).
         NeoForge.EVENT_BUS.register(com.moddingfromamod.mob.WishMobLimit.class);
+        NeoForge.EVENT_BUS.register(com.moddingfromamod.wish.LiveFitWatch.class);   // #174: every wished body held to a world's limits
         NeoForge.EVENT_BUS.register(com.moddingfromamod.wish.WishProgress.class);
         NeoForge.EVENT_BUS.register(com.moddingfromamod.wish.WishCapture.class);
         NeoForge.EVENT_BUS.register(com.moddingfromamod.wish.WatchSnapshot.class);

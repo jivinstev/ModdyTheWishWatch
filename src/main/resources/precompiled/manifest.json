@@ -1,5 +1,5 @@
 {
-  "_comment": "#2655: the ready-made packs compiled at build time, so no Builder or Apprentice power needs Python. Generated: do not edit. Regenerate with ./tools/precompile-ready-mades.sh (PrecompiledFingerprintTest fails Gate A when it is stale).",
-  "fingerprint": "2e816a59b2c3d3ae8ff42d74a295524af2b1698fbe73fed8805d88697948f79d",
+  "_comment": "#2655: the ready-made packs compiled at build time, so no Builder or Apprentice power waits for a compile. Generated: do not edit. Regenerate with ./tools/precompile-ready-mades.sh (PrecompiledFingerprintTest fails Gate A when it is stale).",
+  "fingerprint": "29f1468a56087e1ebd726c2bb9f56064aacc87e38604d030998a6950251f2153",
   "entries": 152
 }

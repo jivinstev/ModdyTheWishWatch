@@ -3,8 +3,8 @@
   "name": "Chicken",
   "scale": 1.2,
   "base": "companion",
-  "damage": 0,
-  "health": 20,
+  "damage": 1,
+  "health": 6,
   "powers": [
     "friendly",
     "persistent"

@@ -48,7 +48,7 @@ public final class MobHandleStore {
      * the store latches, so an older build never WRITES over a newer file ({@code WishStoreFile.writeBlocker}),
      * which would drop every field it did not understand.
      */
-    public static final int VERSION = 1;
+    public static final int VERSION = 2;   // v2 (#115): undo records carry armour and knockback (MobState v2)
 
     private MobHandleStore() {
     }
@@ -94,7 +94,9 @@ public final class MobHandleStore {
             return;
         }
         Path p = file(server);
-        String blocked = com.moddingfromamod.store.WishStoreFile.writeBlocker(p, "version", VERSION);
+        String blocked = EntityHandles.global().refusedNewer()
+                ? "it holds an undo record written by a newer Moddy (MobState v" + MobState.RECORD_VERSION + "+)"
+                : com.moddingfromamod.store.WishStoreFile.writeBlocker(p, "version", VERSION);
         if (blocked != null) {
             // A newer or damaged file is left alone — see WishStoreFile.writeBlocker.
             LOGGER.error("NOT saving mob handles — {}. The file has been left alone on purpose.",

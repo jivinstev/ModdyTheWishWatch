@@ -128,6 +128,52 @@ public final class OnConsumeShapeGameTest {
         });
     }
 
+    /**
+     * #173: a wished food is eaten on a FULL hunger bar. A heal he wished for is eaten when he is hurt, not hungry, and
+     * a cookie's own food refused to start on a full bar, so the click did nothing. The stack make_item hands over is
+     * already always edible (its give line says so, before any click), and it is eaten at food 20.
+     */
+    @GameTest(template = "empty_test", batch = "onconsume_full", timeoutTicks = 900)
+    public static void aWishedCookieIsEatenOnAFullHungerBar(GameTestHelper helper) {
+        if (!CbScriptCompiler.available()) {
+            helper.succeed();
+            return;
+        }
+        MockPlayerNetwork.clearStaleMocks(helper);
+        ServerPlayer p = MockPlayerNetwork.inLevel(helper);
+        p.setGameMode(GameType.SURVIVAL);
+        ItemStack stack = made(helper, p, "Heal Cookie " + helper.getLevel().getGameTime(), "on_consume",
+                "minecraft:cookie", 2);
+        if (stack.isEmpty()) {
+            MockPlayerNetwork.remove(p);
+            return;
+        }
+        var food = stack.get(net.minecraft.core.component.DataComponents.FOOD);
+        var cookie = Items.COOKIE.components().get(net.minecraft.core.component.DataComponents.FOOD);
+        helper.assertTrue(food != null && food.canAlwaysEat(),
+                Component.literal("the wished cookie make_item handed over cannot always be eaten: " + food));
+        helper.assertTrue(food.nutrition() == cookie.nutrition() && food.saturation() == cookie.saturation(),
+                Component.literal("its nutrition and saturation are a cookie's own: " + food + " vs " + cookie));
+        BlockPos feet = helper.absolutePos(new BlockPos(1, 2, 1));
+        p.snapTo(feet.getX() + 0.5, feet.getY(), feet.getZ() + 0.5, 0.0F, 0.0F);
+        p.getFoodData().setFoodLevel(20);
+        p.getFoodData().setSaturation(5.0F);
+        p.getInventory().clearContent();
+        p.setItemInHand(InteractionHand.MAIN_HAND, stack);
+        p.gameMode.useItem(p, p.level(), p.getMainHandItem(), InteractionHand.MAIN_HAND);
+        helper.assertTrue(p.isUsingItem(), Component.literal("a full hunger bar refused the wished cookie"));
+        finishUsing(p);
+        helper.assertTrue(p.getMainHandItem().getCount() == 1,
+                Component.literal("the cookie was not eaten: in hand " + p.getMainHandItem()));
+        BlockPos ahead = feet.offset(0, 1, 5);
+        helper.succeedWhen(() -> {
+            if (!glowstoneNear(helper, ahead, 2)) {
+                throw GameTestCompat.assertion("the cookie was eaten on a full bar and the wish never came");
+            }
+            MockPlayerNetwork.remove(p);
+        });
+    }
+
     @GameTest(template = "empty_test", batch = "onconsume_food", timeoutTicks = 900)
     public static void aWishedCookieIsEatenAndThenTheWishHappens(GameTestHelper helper) {
         eatOrDrink(helper, "Glow Cookie", "minecraft:cookie", null, 4, "eaten");

@@ -160,6 +160,12 @@ public final class VanillaDeathClientTest {
      */
     private static final int FALL_WINDOW = 18;
 
+    /** A standing cow facing the camera reads ~0.43 wide-over-tall; over this it is not a standing cow (#147). */
+    private static final double COW_STANDING_MAX = 1.5;
+    /** Ticks the standing control is measured again before the run says it never stood. */
+    private static final int STANDING_TRIES = 20;
+    private static int standingTries;
+
     private static int drivenTicks;
     private static int maxDeathTime;
     private static float maxFlopDegrees;
@@ -205,7 +211,11 @@ public final class VanillaDeathClientTest {
                     hold(mc);
                     if (ticks > 10) {
                         if (shotEmpty == null) {
-                            shotEmpty = grab(mc, "0-empty");
+                            // the world has to have finished drawing the stage first (ClientHarness.settledStage)
+                            shotEmpty = ClientHarness.settledStage(mc, SIG, ticks, () -> grab(mc, "0-empty"));
+                            if (shotEmpty == null) {
+                                return;
+                            }
                         }
                         spawn(mc);
                     }
@@ -349,9 +359,28 @@ public final class VanillaDeathClientTest {
         boxA = box(shotEmpty, shot, 0, (int) (w * 0.40));
         boxZ = box(shotEmpty, shot, (int) (w * 0.40), (int) (w * 0.60));
         boxB = box(shotEmpty, shot, (int) (w * 0.60), w);
+        // #147: THE CONTROL MUST BE STANDING BEFORE IT IS KILLED. The cow's box is every changed pixel in its strip, so
+        // a frame where it has not drawn yet, or where something else changed beside it, reads a "standing" cow far
+        // wider than tall (CI once: 3.80), and a fall can never beat that: "the VANILLA COW never fell over", with the
+        // cow fine. A standing cow faces the camera at ~0.43; one not under COW_STANDING_MAX is measured again, a
+        // tick at a time, and after STANDING_TRIES the run says what it saw rather than blaming the flop.
+        if (boxZ != null && aspect(boxZ) > COW_STANDING_MAX && standingTries < STANDING_TRIES) {
+            standingTries++;
+            if (standingTries == 1) {
+                NOTES.add("the cow did not read as standing at first (box " + fmt(boxZ) + " aspect "
+                        + r2(aspect(boxZ)) + "); measuring it again");
+            }
+            return;
+        }
         if (boxA == null || boxB == null || boxZ == null) {
             finish(false, "a subject never drew anything: A=" + fmt(boxA) + " cow=" + fmt(boxZ)
                     + " B=" + fmt(boxB));
+            return;
+        }
+        if (aspect(boxZ) > COW_STANDING_MAX) {
+            finish(false, "the vanilla cow never read as standing (box " + fmt(boxZ) + " aspect " + r2(aspect(boxZ))
+                    + " after " + STANDING_TRIES + " more ticks): the stage frame is not what the oracle measures, "
+                    + "nothing was killed");
             return;
         }
         uprightA = aspect(boxA);
@@ -533,7 +562,7 @@ public final class VanillaDeathClientTest {
         }
         if (flatZ <= uprightZ * 1.15) {
             bad.add("the VANILLA COW never fell over (aspect " + r2(uprightZ) + " -> " + r2(flatZ)
-                    + ") -- the oracle is not measuring a flop at all");
+                    + ", standing box " + fmt(boxZ) + ") -- the oracle is not measuring a flop at all");
         } else if (flatB <= uprightB * 1.15) {
             bad.add("the rig never fell over: " + RESULTS.get("flop"));
         } else {

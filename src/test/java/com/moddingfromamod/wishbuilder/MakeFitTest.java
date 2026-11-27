@@ -93,7 +93,7 @@ class MakeFitTest {
                 if (f.changed()) {
                     fitted++;
                     if (f.spec().size() > s.size() || f.spec().count() > s.count()
-                            || num(f.spec().opt("strength")) > num(s.opt("strength"))
+                            || strength(f.spec()) > strength(s)
                             || f.spec().kind() != s.kind() || !f.spec().from().equals(s.from())) {
                         bad.add("a fit made more or something else: " + s.toJson() + " → " + f.spec().toJson());
                     }
@@ -108,6 +108,12 @@ class MakeFitTest {
         assertTrue(bad.isEmpty(), bad.size() + " failures, e.g.\n" + String.join("\n", bad.subList(0, Math.min(10, bad.size()))));
         assertTrue(fitted > 100, "only " + fitted + " fits changed anything: the spread does not reach the knobs");
         assertTrue(live > 0, "no make was fitted live: the spread does not reach a tough creature");
+    }
+
+    /** Its strength step: a creature's or ride's unstated one is its own (#103, BuilderCreatureStrength.OWN). */
+    private static int strength(BuilderSpec s) {
+        boolean creature = s.kind() == BuilderSpec.Kind.CREATURE || s.kind() == BuilderSpec.Kind.RIDE;
+        return creature && s.opt("strength").isEmpty() ? BuilderCreatureStrength.OWN : num(s.opt("strength"));
     }
 
     private static int num(String v) {
@@ -131,8 +137,10 @@ class MakeFitTest {
         assertTrue(three.fits() && three.changed() && three.spec().count() == 3, three.toString());
         assertEquals(List.of(MakeFacts.COUNT_MADE), three.lowered());
         for (var e : MakeFit.FACTS.values()) {
-            assertEquals(e.clampable(), !List.of(MakeFacts.MOVEMENT_SPEED_ATTRIBUTE, MakeFacts.EXTENT_BLOCKS)
-                    .contains(e.key()), e.key());
+            // #102: what a creature's moves do a second is read, not lowered
+            assertEquals(e.clampable(), !List.of(MakeFacts.MOVEMENT_SPEED_ATTRIBUTE, MakeFacts.EXTENT_BLOCKS,
+                    MakeFacts.MOVE_DAMAGE_HALF_HEARTS_PER_SECOND, MakeFacts.EFFECTIVE_DAMAGE_HALF_HEARTS_PER_SECOND,
+                    MakeFacts.HEAL_HALF_HEARTS_PER_SECOND).contains(e.key()), e.key());
         }
     }
 
@@ -145,16 +153,20 @@ class MakeFitTest {
         // within the limit: made as it is
         MakeFit.Fitted within = MakeFit.fit(cat, Map.of(MakeFacts.HEALTH_HALF_HEARTS, health));
         assertTrue(within.fits() && !within.changed());
-        // over it: every size and strength step is tried, highest first, each re-derived; the cat's health is its
-        // ready-made's whatever its size, so no step lowers it: the last step fits it on the live creature, and the
-        // make itself is not changed
+        // over it: a creature's health and damage are fitted on the LIVE creature, never by making it smaller or
+        // gentler (#103: its size and strength move them now, but a world that raises its limits later must get it
+        // back at full strength); the make itself is not changed
         MakeFit.Fitted over = MakeFit.fit(cat, Map.of(MakeFacts.HEALTH_HALF_HEARTS, health - 1));
         assertTrue(over.fits() && over.spec().equals(cat) && over.lowered().equals(List.of(MakeFacts.HEALTH_HALF_HEARTS)),
                 over.toString());
-        // the search tries every lower combination, the most kept first
-        List<BuilderSpec> tried = MakeFit.steps(cat);
-        assertTrue(tried.size() >= 3, tried.size() + " steps");
-        assertTrue(tried.stream().noneMatch(s -> s.equals(cat)), "the make as it is is no candidate");
+        // a limit on its strength is its own knob: that one makes it gentler
+        MakeFit.Fitted gentle = MakeFit.fit(cat, Map.of(MakeFacts.BUILDER_STRENGTH_STEP, 1.0));
+        assertTrue(gentle.fits() && gentle.changed() && gentle.spec().opt("strength").equals("1"), gentle.toString());
+        BuilderSpec sword = sword(3);
+        // a creature offers no steps for health and damage; an item's search tries every lower combination
+        assertTrue(MakeFit.steps(cat).isEmpty(), "a creature's health and damage are fitted live");
+        List<BuilderSpec> tried = MakeFit.steps(sword);
+        assertTrue(tried.stream().noneMatch(s -> s.equals(sword)), "the make as it is is no candidate");
         BuilderSpec imp = new BuilderSpec(BuilderSpec.CURRENT, BuilderSpec.Kind.CREATURE, "preset:species/fire_imp", "", 2,
                 List.of(), "friendly", 1, "", "", Map.of());
         double damage = MakeFacts.of(imp).number(MakeFacts.ATTACK_DAMAGE_HALF_HEARTS).orElse(-1);
@@ -259,5 +271,57 @@ class MakeFitTest {
         Map<String, Double> l = new LinkedHashMap<>();
         l.put(MakeFacts.COUNT_MADE, 0.0);
         assertNull(MakeFit.fitCommands(List.of("wishmob spawn d 2"), l, store));
+        // a creature over a SIZE limit is made too, its command as it is: its size is fitted where it stands
+        // (LiveFit.drawnScale), never refused for being big, never written into its record
+        JsonObject giant = JsonParser.parseString("{\"id\":\"g\",\"name\":\"G\",\"powers\":[\"friendly\"],\"scale\":6}")
+                .getAsJsonObject();
+        MakeFacts.Artifacts giants = (k, id) -> id.equals("g") ? giant : null;
+        assertEquals(List.of("wishmob spawn g"),
+                MakeFit.fitCommands(List.of("wishmob spawn g"), Map.of(MakeFacts.SCALE_TIMES, 2.0), giants));
+        assertEquals(6.0, giant.get("scale").getAsDouble(), 1e-9, "its record is untouched");
+    }
+
+    @Test
+    void howManyARecipeMakesIsFittedOverTheWholeRecipe() {
+        // #174 B7: a recipe repeated or with several spawns made the most any ONE line made, so twenty summons met a
+        // limit of three
+        Map<String, Double> three = Map.of(MakeFacts.COUNT_MADE, 3.0);
+        MakeFacts.Artifacts none = (k, id) -> null;
+        List<String> wolves = java.util.Collections.nCopies(5, "summon minecraft:wolf ~ ~ ~");
+        assertEquals(3, MakeFacts.ofCommands(List.of("summon minecraft:wolf ~ ~ ~", "summon minecraft:wolf ~ ~ ~",
+                "summon minecraft:wolf ~ ~ ~"), none).number(MakeFacts.COUNT_MADE).orElse(0), 1e-9);
+        assertEquals(java.util.Collections.nCopies(3, "summon minecraft:wolf ~ ~ ~"),
+                MakeFit.fitCommands(wolves, three, none), "the summons past the most at once are not run");
+        List<String> mixed = List.of("say here they come", "wishsummon minecraft:wolf {\"count\":2,\"damage\":100}",
+                "wishsummon minecraft:wolf {\"count\":4}", "summon minecraft:cat ~ ~ ~", "say done");
+        List<String> fitted = MakeFit.fitCommands(mixed, three, none);
+        assertEquals(4, fitted.size(), "" + fitted);
+        assertEquals("say here they come", fitted.get(0));
+        assertEquals("wishsummon minecraft:wolf {\"count\":2,\"damage\":100}", fitted.get(1),
+                "its damage is held on the live wolf, never rewritten");
+        assertTrue(fitted.get(2).startsWith("wishsummon minecraft:wolf {") && fitted.get(2).contains("\"count\":1"),
+                "a spawn past what is left is lowered to it: " + fitted.get(2));
+        assertEquals("say done", fitted.get(3), "the cat past the most is not made; what makes nothing is kept");
+        Map<String, Double> zero = new LinkedHashMap<>();
+        zero.put(MakeFacts.COUNT_MADE, 0.0);
+        assertNull(MakeFit.fitCommands(wolves, zero, none), "a world that allows none refuses it");
+    }
+
+    @Test
+    void aCreatureOverOnlyItsSizeIsMadeHereAndAnItemIsNot() {
+        MakeFacts dragon = new MakeFacts(BuilderSpec.Kind.CREATURE.id(),
+                Map.of(MakeFacts.SCALE_TIMES, 4.0, MakeFacts.BUILDER_SIZE_STEP, 4.0, MakeFacts.HEALTH_HALF_HEARTS, 300.0),
+                java.util.Set.of(), true);
+        Map<String, Double> low = Map.of(MakeFacts.SCALE_TIMES, 2.0, MakeFacts.BUILDER_SIZE_STEP, 2.0,
+                MakeFacts.HEALTH_HALF_HEARTS, 40.0);
+        assertTrue(MakeFit.satisfiesHere(dragon, low), "size and health are both fitted where it stands");
+        assertFalse(MakeFit.satisfies(dragon, low), "though it is over them as asked");
+        MakeFacts tooMany = new MakeFacts(BuilderSpec.Kind.CREATURE.id(), Map.of(MakeFacts.COUNT_MADE, 9.0),
+                java.util.Set.of(), true);
+        assertFalse(MakeFit.satisfiesHere(tooMany, Map.of(MakeFacts.COUNT_MADE, 3.0)), "how many is not fitted where it stands");
+        MakeFacts bigBuilding = new MakeFacts(BuilderSpec.Kind.BUILDING.id(), Map.of(MakeFacts.BUILDER_SIZE_STEP, 4.0),
+                java.util.Set.of(), true);
+        assertFalse(MakeFit.satisfiesHere(bigBuilding, Map.of(MakeFacts.BUILDER_SIZE_STEP, 2.0)),
+                "a building is not a creature: its size is its make's");
     }
 }

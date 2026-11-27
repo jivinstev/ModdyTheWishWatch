@@ -108,6 +108,53 @@ public class ArtifactMemoryGameTest {
     }
 
     /**
+     * <b>An item's memory and hand-over note, under the names Windows accepts, and an old save still loads.</b> An item's
+     * id is {@code id:<name>}; both stores once named the file {@code id:<name>.json}, which Windows refuses
+     * ({@code InvalidPathException} inside a server task: a Builder edit of an item never finished there). Now the file
+     * is {@code store/SafeFileName}'s. Where this OS can hold the old name (Linux, macOS: where every such save was
+     * written), a file saved under it is put there by hand and must load, and move to the new name; where it cannot
+     * (Windows), the round trip through the real stores is the regression itself.
+     */
+    @GameTest(template = "empty_test", batch = "artifactMemoryNames")
+    public static void anItemsNotesLoadUnderWindowsSafeNamesAndOldSavesStillLoad(GameTestHelper helper) {
+        long t = helper.getLevel().getGameTime();
+        java.nio.file.Path wishes = com.moddingfromamod.runtime.WorldPaths.wishesDir();
+        helper.assertTrue(wishes != null, Component.literal("no world directory"));
+        // 1. the round trip, under an id with a ':' (it threw on Windows)
+        String fresh = "id:gt_name_new_" + t;
+        ArtifactMemoryStore.append(fresh, "item", turn("w1", "a zappy wand", "first"), "a wand", "", List.of(), List.of());
+        helper.assertTrue(ArtifactMemoryStore.savedOnDisk(fresh) != null, Component.literal("an item's memory is saved"));
+        helper.assertTrue(java.nio.file.Files.isRegularFile(wishes.resolve("memory").resolve(ArtifactMemoryStore.fileName(fresh))),
+                Component.literal("under " + ArtifactMemoryStore.fileName(fresh)));
+        HandoverStore.write(new HandoverRecord(fresh, "item", "a zappy wand", List.of(), "", "", "", 1, "", System.currentTimeMillis()));
+        helper.assertTrue(HandoverStore.savedOnDisk(fresh) != null, Component.literal("an item's hand-over note is saved"));
+        // 2. a save written under the old raw name, where this OS can hold it
+        String old = "id:gt_name_old_" + t;
+        java.nio.file.Path oldFile;
+        try {
+            oldFile = wishes.resolve("memory").resolve(old + ".json");
+        } catch (java.nio.file.InvalidPathException windows) {
+            helper.succeed();   // this OS can never have saved the old name: part 1 is the whole regression here
+            return;
+        }
+        try {
+            java.nio.file.Files.createDirectories(oldFile.getParent());
+            java.nio.file.Files.writeString(oldFile, ArtifactMemoryStore.toJson(
+                    ArtifactMemory.of(old, "item").plus(turn("w0", "an old wand", "saved before the rename"),
+                            "an old wand", "", List.of(), List.of())).toString());
+        } catch (java.io.IOException e) {
+            throw new IllegalStateException(e);
+        }
+        ArtifactMemory back = ArtifactMemoryStore.read(old);
+        helper.assertTrue(back != null && back.whatItIs().equals("an old wand"),
+                Component.literal("a memory saved under its old name must load, got " + back));
+        java.nio.file.Path moved = wishes.resolve("memory").resolve(ArtifactMemoryStore.fileName(old));
+        helper.assertTrue(java.nio.file.Files.isRegularFile(moved) && !java.nio.file.Files.exists(oldFile),
+                Component.literal("and move to " + moved.getFileName() + " on that first read"));
+        helper.succeed();
+    }
+
+    /**
      * A brand-new artifact gets ONE turn, not a phantom migration of the record this very wish
      * just wrote.
      *

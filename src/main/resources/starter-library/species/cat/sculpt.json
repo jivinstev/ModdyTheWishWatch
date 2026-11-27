@@ -6,8 +6,8 @@
   "powers": [
     "friendly"
   ],
-  "damage": 0,
-  "health": 20,
+  "damage": 3,
+  "health": 12,
   "speed": 0.3,
   "status": "Finishing your cat",
   "note": "Restoring name/stats lost on start_from resculpt. Orange tabby, friendly smile.",

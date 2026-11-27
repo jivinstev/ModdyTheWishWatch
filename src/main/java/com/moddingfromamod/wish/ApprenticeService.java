@@ -46,7 +46,7 @@ public final class ApprenticeService {
     /** The world is up: build the matcher now, off the server thread, so the first wish does not pay for it. */
     @net.neoforged.bus.api.SubscribeEvent
     public static void onServerStarted(net.neoforged.neoforge.event.server.ServerStartedEvent event) {
-        warm();
+        warm(event.getServer()::isRunning);
         // The trained layer: loaded on its own worker, and only where the model has been put. A world with
         // the Builder off, or with the layer turned off, never loads it.
         BuilderSettings s = BuilderSettings.current();
@@ -75,6 +75,36 @@ public final class ApprenticeService {
     }
 
     private static final Logger LOGGER = LoggerFactory.getLogger("moddingfromamod/apprentice");
+
+    private static final WarmUp.Log WARM_LOG = new WarmUp.Log() {
+
+        @Override
+
+        public void debug(String message) {
+
+            LOGGER.debug(message);
+
+        }
+
+
+        @Override
+
+        public void warn(String message) {
+
+            LOGGER.warn(message);
+
+        }
+
+
+        @Override
+
+        public void error(String message, Throwable cause) {
+
+            LOGGER.error(message, cause);
+
+        }
+
+    };
 
     /** What an open page is waiting on. {@code words} is empty for a Crafter, always. */
     /** {@code name}:, the name a Magician gave in his words, for the make (null for none, and always for a Crafter). */
@@ -105,17 +135,15 @@ public final class ApprenticeService {
         return MATCHERS.computeIfAbsent(allow, a -> new Apprentice(tree(a), Apprentice.english()));
     }
 
-    /** Build the matcher off the first wish: called when the world's Builder settings are known. */
-    public static void warm() {
+    /**
+     * Build the matcher off the first wish: called when the world's Builder settings are known. The server may stop
+     * while it builds; {@link WarmUp} tells that expected end from a real fault.
+     */
+    static void warm(java.util.function.BooleanSupplier running) {
         BuilderSettings s = BuilderSettings.current();
         if (s.enabled()) {
-            Thread t = new Thread(() -> {
-                try {
-                    matcher(s.allow());
-                } catch (RuntimeException e) {
-                    LOGGER.warn("apprentice: could not build the matcher ahead of the first wish: {}", e.toString());
-                }
-            }, "moddy-apprentice-warm");
+            Thread t = new Thread(() -> WarmUp.run("the Apprentice's matcher", running, () -> matcher(s.allow()),
+                    WARM_LOG), "moddy-apprentice-warm");
             t.setDaemon(true);
             t.start();
         }

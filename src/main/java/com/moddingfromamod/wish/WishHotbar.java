@@ -264,6 +264,32 @@ public final class WishHotbar {
 
     // ── adding ────────────────────────────────────────────────────────────────────────────────────
 
+    /**
+     * A kept make (#70, {@code WorldMakes.landing}), put on his hotbar as a wish: the first empty hotbar slot, else his
+     * Wish Bag (never a slot he has to give up: nothing is asked of him). The same proxy "Add to hotbar" makes, so it
+     * fires and is aimed like any hotbar wish. Returns the hotbar slot, {@code -1} for the Wish Bag, or {@code -2} when
+     * neither had room (he is told). Server thread.
+     */
+    public static int addKept(ServerPlayer sp, String recipeId, String name, String icon) {
+        WatchPanel.Cell cell = new WatchPanel.Cell(0, WatchPanel.Family.CREATION, WatchPanel.Action.WISH, name, "",
+                recipeId, "", icon, List.of());
+        remove(sp, recipeId);   // never two of one wish
+        Inventory inv = sp.getInventory();
+        for (int i = 0; i < WishHotbarPlan.SLOTS; i++) {
+            if (inv.getItem(i).isEmpty()) {
+                inv.setItem(i, proxy(cell, sp.getUUID()));
+                showRests(sp);
+                return i;
+            }
+        }
+        int in = com.moddingfromamod.bag.WishBagService.add(sp.level().getServer(), sp.getUUID(), proxy(cell, sp.getUUID()));
+        if (in > 0) {
+            return -1;
+        }
+        sp.sendSystemMessage(Component.literal("🎯 Your hotbar and your Wish Bag are full. Make some room first."));
+        return -2;
+    }
+
     /** "Add to hotbar": the first empty slot, or ask which slot to give up. */
     public static void add(ServerPlayer sp, WatchPanel.Cell cell) {
         Inventory inv = sp.getInventory();

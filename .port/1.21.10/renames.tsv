@@ -2,8 +2,10 @@
 p.getGameProfile().getName()	p.getGameProfile().name()
 p.getServer()	p.level().getServer()
 player.getServer()	player.level().getServer()
-# 1.21.9 renamed the block and item minecraft:chain to minecraft:iron_chain (DataFixers: "Rename chain to iron_chain", schema 4541); applied to the shipped presets as well
-re:"minecraft:chain"	"minecraft:iron_chain"
+# 1.21.9 renamed the block and item minecraft:chain to minecraft:iron_chain (DataFixers: "Rename chain to iron_chain", schema 4541); the "minecraft:chain" row is in the shared tables now, this one is the fork's own bare-id check
 re:equals\("chain"\)	equals("iron_chain")
-# 1.21.9: ServerChunkCache.broadcast(Entity, Packet) is sendToTrackingPlayers (CATALOG M89); the compile loop had put a loop over level.players() in its place
-re:getChunkSource\(\)\.broadcast\(	getChunkSource().sendToTrackingPlayers(
+# 1.21.9 dropped Entity.getServer() and authlib's GameProfile became a record: the names the merged code calls them on
+player.getGameProfile().getName()	player.getGameProfile().name()
+sp.getServer()	sp.level().getServer()
+e.getServer() != null	e.level().getServer() != null
+ActingChild.person(e.getServer())	ActingChild.person(e.level().getServer())

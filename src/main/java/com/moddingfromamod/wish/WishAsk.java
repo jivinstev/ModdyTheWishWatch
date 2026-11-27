@@ -17,8 +17,12 @@ import java.util.UUID;
  * @param magic    what kind of magic grants it
  * @param text     the wish's words as the core holds them (sanitised typed words, a recipe's words, a Builder make's
  *                 {@code Builder: …} line), or {@code ""}
+ * @param where    the place the question is about, when it is about a place rather than the player (a living creature
+ *                 fitted where it stands, #182), or {@code null}: where the player stands. A region
+ *                 ({@code WorldRegions}) is chosen by it; a world's own hooks may read it too.
  */
-public record WishAsk(UUID player, WishSource source, String recipe, Magic magic, String text) {
+public record WishAsk(UUID player, WishSource source, String recipe, Magic magic, String text,
+                      com.moddingfromamod.world.Bases.Pos where) {
 
     /** The kind of magic a wish is granted by. */
     public enum Magic {
@@ -51,7 +55,7 @@ public record WishAsk(UUID player, WishSource source, String recipe, Magic magic
      * The kind of magic is always named by the caller: there is no default to assume.
      */
     public static WishAsk of(UUID player, WishSource source, Magic magic) {
-        return new WishAsk(player, source, "", magic, "");
+        return new WishAsk(player, source, "", magic, "", null);
     }
 
     /** A kept thing made again from {@code recipe}: what a hotbar proxy asks about. */
@@ -74,15 +78,20 @@ public record WishAsk(UUID player, WishSource source, String recipe, Magic magic
     }
 
     public WishAsk withRecipe(String recipe) {
-        return new WishAsk(player, source, recipe, magic, text);
+        return new WishAsk(player, source, recipe, magic, text, where);
     }
 
     public WishAsk withMagic(Magic magic) {
-        return new WishAsk(player, source, recipe, magic, text);
+        return new WishAsk(player, source, recipe, magic, text, where);
     }
 
     public WishAsk withText(String text) {
-        return new WishAsk(player, source, recipe, magic, text);
+        return new WishAsk(player, source, recipe, magic, text, where);
+    }
+
+    /** The same question, about the place {@code where} (#182): a living creature fitted where it stands. */
+    public WishAsk withWhere(com.moddingfromamod.world.Bases.Pos where) {
+        return new WishAsk(player, source, recipe, magic, text, where);
     }
 
     /**

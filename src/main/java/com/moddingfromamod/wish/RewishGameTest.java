@@ -249,6 +249,13 @@ public class RewishGameTest {
         com.moddingfromamod.test.RealTime.succeedWhen(helper, () -> {
             helper.assertTrue(wrong.get() == null, Component.literal(String.valueOf(wrong.get())));
             helper.assertTrue(pressed.get(), Component.literal("still making the cats"));
+            // The press starts a make of its own, and its run stays WORKING in the process-wide marshal until that
+            // make finishes. Passing before then leaked it into the next batch, where AgentContext's single-live-run
+            // fallback made this child's run "the wish": modify_mob measured from him, gone, so found no mob at all
+            // (ModifyMobGameTest.anUnmatchedTargetExplainsWhatIsNearby, "No mobs within 24 blocks of the child").
+            helper.assertTrue(com.moddingfromamod.marshal.Marshal.global().working().stream()
+                            .noneMatch(run -> p.getUUID().equals(run.playerId())),
+                    Component.literal("still making the pressed Fluffy Red"));
             var rs = com.moddingfromamod.species.SpeciesRegistry.get(red.get());
             var bs = com.moddingfromamod.species.SpeciesRegistry.get(blue.get());
             helper.assertTrue(rs != null && rs.scale() > redWas.get() + 0.3,

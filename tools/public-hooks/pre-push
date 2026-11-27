@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# PRE-PUSH: refuse a push whose commits ADD private work to this repository.
+# PRE-PUSH: refuse a push whose commits ADD private work to this repository, or third-party code or text under a licence
+# that is not on the allow-list (tools/licence-scan.py --range; CLAUDE.md, "Third-party code and text").
 #
 # Installed by tools/public-hooks/install.sh (git config core.hooksPath tools/public-hooks). For every ref being
 # pushed it scans what each new commit adds (its added lines, new file names, message, author and committer) with
@@ -15,10 +16,12 @@ set -uo pipefail
 remote="${1:-origin}"
 top="$(git rev-parse --show-toplevel)" || exit 1
 scan="$top/tools/leak-scan.py"
-if [ ! -f "$scan" ]; then
-    echo "pre-push: $scan is missing, so nothing can be checked; refusing the push" >&2
-    exit 1
-fi
+for f in leak-scan.py licence-scan.py licence-rules.json; do
+    if [ ! -f "$top/tools/$f" ]; then
+        echo "pre-push: tools/$f is missing, so nothing can be checked; refusing the push" >&2
+        exit 1
+    fi
+done
 args=()
 listed="$(git config --get moddy.forbidden || true)"
 [ -n "$listed" ] && args=(--forbidden "$listed")
@@ -39,9 +42,11 @@ while read -r _lref lsha _rref rsha; do
     if ! python3 "$scan" "${args[@]}" --repo "$top" --commits -- "${revs[@]}"; then
         rc=1
     fi
+    python3 "$top/tools/licence-scan.py" --repo "$top" --range -- "${revs[@]}" >&2 || rc=1
 done
 if [ "$rc" -ne 0 ]; then
-    echo "pre-push: REFUSED. A commit above adds private work (or the scan could not run). Fix the commit itself:" >&2
+    echo "pre-push: REFUSED. A commit above adds private work or code under a licence off the allow-list (or a scan" >&2
+    echo "pre-push: could not run). Fix the commit itself:" >&2
     echo "pre-push: a later commit that deletes it still leaves it in the history." >&2
 fi
 exit "$rc"

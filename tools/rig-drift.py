@@ -43,6 +43,7 @@ ABRUPT = 0.5         # a stall starts from at least half the local median speed:
 RESUME = 0.75        # a stall resumes the same motion when it picks up at this share of its speed before, or more
 SPIN_STILL = 0.3     # deg per game tick: a frame turning slower than this (and under FREEZE x the median) is still
 MAX_SPIN_FREEZE = 0.5  # game ticks: a turning body drawn still this long, then moving again, had no ease running
+AXIS_SAME = 0.7      # cos of the angle between q0's turn before a stall and after it: under this, two motions (#138)
 
 
 def load(path):
@@ -114,6 +115,52 @@ def kink(fr):
     return out
 
 
+def qmul(a, b):
+    ax, ay, az, aw = a
+    bx, by, bz, bw = b
+    return (aw * bx + ax * bw + ay * bz - az * by, aw * by - ax * bz + ay * bw + az * bx,
+            aw * bz + ax * by - ay * bx + az * bw, aw * bw - ax * bx - ay * by - az * bz)
+
+
+def turn_of(fr, k, t):
+    """Part 0's drawn turn from frame k-1 to k, deg per game tick about its axis (x, y, z); None without q0 columns."""
+    try:
+        a = tuple(float(fr[k][c]) for c in ("q0x", "q0y", "q0z", "q0w"))
+        b = tuple(float(fr[k - 1][c]) for c in ("q0x", "q0y", "q0z", "q0w"))
+    except (KeyError, ValueError, TypeError):
+        return None
+    d = qmul(a, (-b[0], -b[1], -b[2], b[3]))
+    if d[3] < 0:
+        d = tuple(-x for x in d)
+    dt = t[k] - t[k - 1]
+    sn = math.sqrt(max(0.0, 1 - d[3] * d[3]))
+    if dt <= 0 or sn < 1e-9:
+        return (0.0, 0.0, 0.0)
+    ang = math.degrees(2 * math.acos(min(1.0, d[3]))) / dt
+    return (d[0] / sn * ang, d[1] / sn * ang, d[2] / sn * ang)
+
+
+def another_motion(fr, t, before_k, k):
+    """#138: is what moves after a stall a DIFFERENT motion from what moved before it? Read off part 0's own drawn turn
+    (the CSV's q0): turning before AND after, about axes more than ~45 degrees apart (a leg's swing ending as the walker
+    stops, then the body turning round). When part 0 did not turn on either side (it is not the moving part), or the CSV
+    has no q0, nothing is vetoed: the check falls back to angvel_fwd alone."""
+    if before_k < 1:
+        return False
+    a = turn_of(fr, before_k, t)
+    if a is None:
+        return False
+    after = [turn_of(fr, j, t) for j in range(k, min(k + 3, len(fr)))]
+    after = [v for v in after if v is not None]
+    if not after:
+        return False
+    b = max(after, key=lambda v: math.hypot(*v))
+    na, nb = math.hypot(*a), math.hypot(*b)
+    if na < SPIN_STILL or nb < SPIN_STILL:
+        return False
+    return (a[0] * b[0] + a[1] * b[1] + a[2] * b[2]) / (na * nb) < AXIS_SAME
+
+
 def spin(fr):
     """The drawn ROTATION of the parts, timed by game time (client tick + partial), the meter's angvel_max: a whole-body
     turn (the death flop, a swing) that freezes and then lurches. Position stutter misses a part turning about its own
@@ -131,6 +178,7 @@ def spin(fr):
     turning = freezes = jumps = 0
     run = longest = before = 0.0
     frames = 0
+    before_k = 0
     seen = g[0]
     for k in range(1, len(fr)):
         win = sorted(w[max(0, k - WIN):k + WIN + 1])
@@ -152,6 +200,7 @@ def spin(fr):
         if w[k] < FREEZE * med and w[k] < SPIN_STILL:
             if run == 0.0:
                 before = w[k - 1]
+                before_k = k - 1
                 frames = 0
             freezes += 1
             frames += 1
@@ -163,8 +212,12 @@ def spin(fr):
             # and only an ABRUPT stop of more than one frame: one frame's dip is the client restarting its ease from
             # the last frame it drew (at real speed a software client draws about one frame a tick, so that frame
             # alone spans most of a tick), and a speed that eases down to a turnaround (a head sweep) is not a stall
+            # and only the SAME motion: angvel_fwd after a stall can be measured against the new motion's own first
+            # frame (a part still too long to remember its way adopts the new one at once), so part 0's own turn
+            # before and after is compared too (#138)
             if (run > 0.0 and frames >= 2 and before >= ABRUPT * med
-                    and max(fwd[k:k + 3]) >= RESUME * before):
+                    and max(fwd[k:k + 3]) >= RESUME * before
+                    and not another_motion(fr, t, before_k, k)):
                 longest = max(longest, run)
             run = 0.0
             if w[k] > JUMP * med:

@@ -3,7 +3,7 @@
   "armor": 0.0,
   "body": "humanoid",
   "createdAt": 1793168093716,
-  "damage": 0.0,
+  "damage": 3.0,
   "health": 20.0,
   "id": "dolphin",
   "knockbackResistance": 0.0,
