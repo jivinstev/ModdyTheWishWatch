@@ -13,8 +13,8 @@ import org.junit.jupiter.api.Test;
 /**
  * <b>The precompiled ready-mades are compiled from THESE templates and THIS compiler</b>. The store
  * ({@code precompiled/ready-mades.json.gz}) is what lets a player with no Python make every Builder and Apprentice
- * power; it was compiled from the effect and item templates, both catalogues and the bundled CBScript compiler, and
- * its manifest records their fingerprint. Change any of them and the store describes packs nobody would compile any
+ * power; it was compiled from the effect and item templates, both catalogues, the bundled CBScript compiler and the
+ * tools' rendering of a ready-made ({@link RenderingSource}), and its manifest records their fingerprint. Change any of them and the store describes packs nobody would compile any
  * more, so this fails, naming the command that rebuilds it.
  */
 class PrecompiledFingerprintTest {
@@ -29,8 +29,8 @@ class PrecompiledFingerprintTest {
         assertTrue(Files.isRegularFile(manifest), "there is no precompiled store: " + FIX);
         JsonObject m = JsonParser.parseString(Files.readString(manifest)).getAsJsonObject();
         assertEquals(m.get("fingerprint").getAsString(), PrecompiledPacks.fingerprint(RESOURCES),
-                "a ready-made template, a catalogue or the bundled CBScript compiler changed since the precompiled "
-                        + "packs were built, so players with no Python would get stale packs: " + FIX);
+                "a ready-made template, a catalogue, the bundled CBScript compiler or the code that renders a "
+                        + "ready-made (RenderingSource.FILES) changed since the precompiled packs were built, so players with no Python would get stale packs: " + FIX);
     }
 
     @Test
