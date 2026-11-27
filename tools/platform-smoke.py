@@ -48,11 +48,24 @@ LAYER = re.compile(r"apprentice layer: (on|off)\b.*")
 SAVED = re.compile(r"Saved the game")
 # A line that fails the boot whatever else it says. A missing or wrong-architecture native library is the first.
 BAD = re.compile(r"UnsatisfiedLinkError|NoClassDefFoundError|ExceptionInInitializerError|Mixin apply failed"
+                 r"|AppenderLoggingException"
                  r"|Encountered an unexpected exception|Exception in server tick loop|Failed to load (?:the )?world"
                  r"|Missing or unsupported mandatory dependencies|Mod loading has failed"
                  # a wish pack the boot could not put in place: on Windows, a loaded pack's zip held open, and the world
                  # kept running the old pack (DatapackStore.installAllIntoWorld)
                  r"|could not stage wish datapack")
+# The one line BAD would match that a stock server logs too: vanilla 1.21.11 (and later) asks
+# KQueue.isAvailable() on every OS, and off macOS/BSD the log appender reports the class it could not initialize.
+# Only this exact cause is let through; any other appender error or NoClassDefFoundError still fails the boot.
+STOCK = re.compile(r"AppenderLoggingException: java\.lang\.NoClassDefFoundError: "
+                   r"Could not initialize class io\.netty\.channel\.kqueue\.Native\s*$")
+
+
+def bad(line: str) -> bool:
+    """Whether a server log line fails the boot."""
+    return bool(BAD.search(STOCK.sub("", line)))
+
+
 NATIVE = {"Windows": "onnxruntime.dll", "Darwin": "libonnxruntime.dylib", "Linux": "libonnxruntime.so"}
 
 
@@ -197,7 +210,7 @@ def boot(folder: str, args_file: str, out: str, n: int, problems: list, timeout:
     finally:
         s.kill()
     for line in s.all:
-        if BAD.search(line):
+        if bad(line):
             problems.append("boot %d: %s" % (n, line.strip()[:400]))
             break
     row["copiedModel"] = any("apprentice layer:" in ln and "copied" in ln.lower() for ln in s.all)
