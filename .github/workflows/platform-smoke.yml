@@ -46,6 +46,7 @@ on:
     paths:
       - .github/workflows/platform-smoke.yml
       - tools/platform-smoke.py
+      - tools/test-platform-smoke.py
 
 permissions:
   contents: read

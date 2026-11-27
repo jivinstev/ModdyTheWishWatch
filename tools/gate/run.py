@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import glob
 import os
+import re
 import shutil
 import signal
 import subprocess
@@ -63,13 +64,45 @@ def gradle_cmd(shard: str, rundir: str, home: str, classes: List[str], not_class
     return cmd + list(extra)
 
 
-# Gradle could not resolve a dependency (a busy repository answering 429, a dropped connection): the server never started
-UNRESOLVED = ("Could not resolve all", "Received status code 429", "Could not GET ", "Connection reset")
+# What a failed DOWNLOAD looks like in Gradle's output (docs/GATE_B.md, "Downloads in CI"): a dependency it could not
+# resolve or fetch, the Mojang asset download (`:downloadAssets`), a busy or broken server (429, 5xx), a timeout or a
+# dropped connection. Only these are worth running again: the same build would fail the same way for anything else.
+DOWNLOAD = re.compile(
+    r"Task :downloadAssets FAILED"
+    r"|Execution failed for task ':downloadAssets'"
+    r"|Could not resolve "
+    r"|Could not GET "
+    r"|Could not HEAD "
+    r"|not found in any of the following sources"
+    r"|[Ss]tatus code (?:429|5\d\d)"
+    r"|HTTP/\S+ (?:429|5\d\d)"
+    r"|\b(?:429 Too Many Requests|50[234] (?:Bad Gateway|Service Unavailable|Gateway Time-?out))"
+    r"|(?:Read|[Cc]onnect) timed out|SocketTimeoutException|ConnectTimeoutException"
+    r"|Connection reset|Remote host terminated the handshake|Premature end of Content-Length")
+
+# ... and what says the build got past its downloads and failed on its own terms: never retried for a download
+NOT_DOWNLOAD = re.compile(
+    r"Task :compile\w* FAILED|Compilation failed|: error: |There were failing tests|Task :test FAILED")
+
+DOWNLOAD_RETRY_SECONDS = 60
+
+
+def download_failure(log_text: str) -> Optional[str]:
+    """The line that says this attempt failed for want of a download before any GameTest server ran, or None.
+
+    None when the server started (a GameTest's own failure is the retry rule's business), when the build failed to
+    compile or a test failed, or when nothing in the log is a download."""
+    if "gt-adapter:" in log_text or g.RESULT_LINE.search(log_text) or NOT_DOWNLOAD.search(log_text):
+        return None
+    for ln in log_text.splitlines():
+        if DOWNLOAD.search(ln):
+            return ln.strip()[:300]
+    return None
 
 
 def never_started(log_text: str) -> bool:
-    """The attempt failed before any GameTest server ran, for want of a download: worth running again."""
-    return "gt-adapter:" not in log_text and any(u in log_text for u in UNRESOLVED)
+    """The attempt failed before any GameTest server ran, for want of a download: worth running once more."""
+    return download_failure(log_text) is not None
 
 
 def gradle_error(log_text: str, most: int = 25) -> str:
@@ -88,16 +121,23 @@ def gradle_error(log_text: str, most: int = 25) -> str:
 
 
 def attempt(name: str, out_dir: str, shard: str, classes: List[str], not_classes: List[str], exclude: List[str],
-            timeout_min: float, extra: List[str], tries: int = 3) -> dict:
-    """One server, run again (up to `tries` times, with a growing pause) only when Gradle never started it for want of a
-    download. A server that started and failed is never re-run here: that is the retry rule's business."""
-    for i in range(tries):
-        a = _attempt(name, out_dir, shard, classes, not_classes, exclude, timeout_min, extra)
-        if i == tries - 1 or not never_started(g.read_text(os.path.join(out_dir, a["logFile"]))):
-            return a
-        print("gate: %s: Gradle could not resolve a dependency; trying again in %d s" % (name, 60 * (i + 1)), flush=True)
-        time.sleep(60 * (i + 1))
-    return a
+            timeout_min: float, extra: List[str], sleep=time.sleep) -> dict:
+    """One server, run ONCE more (after DOWNLOAD_RETRY_SECONDS) only when Gradle failed before it started for want of a
+    download. A compile failure, a server that started and failed, or a gate problem is never re-run here: that is the
+    retry rule's business, or a real red. The retry is recorded on the attempt (`downloadRetry`), and the first
+    attempt's log is kept beside it (`<name>-download-failed.log`)."""
+    a = _attempt(name, out_dir, shard, classes, not_classes, exclude, timeout_min, extra)
+    why = download_failure(g.read_text(os.path.join(out_dir, a["logFile"])))
+    if why is None:
+        return a
+    kept = name + "-download-failed.log"
+    os.replace(os.path.join(out_dir, a["logFile"]), os.path.join(out_dir, kept))
+    print("gate: %s: Gradle failed for want of a download (%s); running it once more in %d s"
+          % (name, why, DOWNLOAD_RETRY_SECONDS), flush=True)
+    sleep(DOWNLOAD_RETRY_SECONDS)
+    b = _attempt(name, out_dir, shard, classes, not_classes, exclude, timeout_min, extra)
+    b["downloadRetry"] = {"why": why, "firstLog": kept, "firstSeconds": a["seconds"]}
+    return b
 
 
 def _attempt(name: str, out_dir: str, shard: str, classes: List[str], not_classes: List[str], exclude: List[str],
@@ -226,6 +266,7 @@ def run_job(args) -> int:
         args.retry = False
 
     first = attempt("run", out_dir, args.shard, classes, not_classes, exclude, args.timeout, extra)
+    attempts = [("run", first)]
     problems = check_attempt(first, expect, known)
     rec = first["record"] or {}
     rows = []
@@ -243,6 +284,7 @@ def run_job(args) -> int:
         for i, group in enumerate(groups):
             names = [r["name"] for r in group]
             a = attempt("retry-%d" % i, out_dir, args.shard, names, [], [], args.timeout, extra)
+            attempts.append(("retry-%d" % i, a))
             got = {}
             for t in (a["record"] or {}).get("tests", []):
                 got[g.short_name(t["name"], known).lower()] = t
@@ -257,6 +299,7 @@ def run_job(args) -> int:
                               "error": t.get("error"), "alone": len(group) == 1}
                 if t.get("passed"):
                     r["outcome"] = "flaky"
+    download_retries = [dict(a["downloadRetry"], attempt=n) for n, a in attempts if a.get("downloadRetry")]
     started = python_started(out_dir) if NO_PYTHON else []
     if started:
         problems.append("the game started Python (a player's game never does): %s" % "; ".join(started[:3]))
@@ -278,6 +321,8 @@ def run_job(args) -> int:
         "retries": retries,
         "problems": problems,
         "noPython": bool(NO_PYTHON),
+        # each server Gradle failed to start for want of a download and that ran once more (docs/GATE_B.md)
+        "downloadRetries": download_retries,
     }
     result["verdict"] = job_verdict(result)
     if covmap:
@@ -313,6 +358,10 @@ def summary(result: dict) -> str:
     lines = ["gate: %s %s: %s -- %d tests: %d passed, %d flaky (passed on the retry), %d failed, %d skipped" % (
         result["kind"], result["label"] or "", result["verdict"].upper(), len(rows), n["passed"], n["flaky"],
         n["failed"], n["skipped"])]
+    for d in result.get("downloadRetries") or []:
+        lines.append("  %s %s: Gradle failed for want of a download (%s) and ran once more" % (
+            "passed on a download retry --" if result["verdict"] == "green" else "download retry --", d["attempt"],
+            d["why"]))
     for r in rows:
         if r["outcome"] in ("failed", "flaky", "skipped"):
             lines.append("  %-7s %s%s" % (r["outcome"], r["name"], ("  -- " + r["error"]) if r.get("error") else ""))

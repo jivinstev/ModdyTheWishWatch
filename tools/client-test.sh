@@ -123,6 +123,8 @@ RC=3
 if [ -f "$SIG/result" ]; then
     cat "$SIG/result"
     grep -q '^PASS' "$SIG/result" && RC=0 || RC=1
+    # NORUN: the film could not run (its stage never settled, ClientHarness.couldNotRun) -- a rig fault, never judged
+    grep -q '^NORUN' "$SIG/result" && RC=2
 else
     echo "NO RESULT — the client exited before reporting (crash during startup?)"
     grep -iE 'primary monitor|GLFW|GLX visual|Exception in thread|Caused by:|FATAL|Mixin apply failed' "$SIG/run.log" 2>/dev/null | head -5

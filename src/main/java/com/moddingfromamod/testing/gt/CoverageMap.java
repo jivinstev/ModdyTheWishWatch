@@ -34,6 +34,15 @@ public final class CoverageMap {
     static final String IDLE = "__idle__";
     static final String SHUTDOWN = "__shutdown__";
     /**
+     * The SWEEP between two classes ({@link #sweep}): the harness discarding what the previous class left, and every
+     * handler that fires for it (an entity leaving its level: {@code PetBehaviours#onLeave}, {@code LiveFitWatch#onLeave}).
+     * No test of ours runs it, so it is AMBIENT ({@code tools/gate/covmap.py} PSEUDO), never the next class's. Counted
+     * as the next class's, those handlers ran in whichever classes happened to follow one that left a mob, and were
+     * ambient in a replica only when some boot or shutdown happened to discard one too: about 11 methods in or out of
+     * 40-odd classes between two replicas, and the ambient sets 20 apart (27 Nov 2026).
+     */
+    static final String SWEEP = "__sweep__";
+    /**
      * A class's SETTLE window: after its last batch, a synthetic test of its own unit that only waits, so what the class
      * left running (a listener, a make on a worker thread, a periodic poll it started) is counted as the class's, not
      * as whichever class happens to run next. At least SETTLE_TICKS ticks and SETTLE_MS of wall time.
@@ -43,9 +52,22 @@ public final class CoverageMap {
     /**
      * ...and then until no other thread is running the mod's code (a Builder make on its worker thread, a pack being
      * compiled, a poll it kicked), at most this long. Measured before: a make a class started finished in whichever
-     * class ran next, a block of about 105 methods that landed in a different class each run.
+     * class ran next, a block of about 105 methods that landed in a different class each run. The longest job a class
+     * starts is the Builder's page-facts walk ({@code BuilderPageFacts}, started when a world first answers makes): 6000
+     * pages in 99 s under coverage on a 4-core machine. At 15 s it ran on through the next five or six classes, a
+     * different number in each run, each held its whole 15 s (a block of 170 to 470 methods in every one: agreement
+     * 96% on 27 Nov 2026, against 99.26% before the walk was started ahead of the first page). So the most is
+     * well past that walk; a class with nothing running still settles in {@link #SETTLE_MS}.
      */
-    static final long SETTLE_MAX_MS = 15_000;
+    static final long SETTLE_MAX_MS = 300_000;
+
+    /**
+     * The settle window's tick budget: never the thing that ends it. The wall clock ends it ({@link #settled}); a
+     * GameTest server ticks as fast as it can (hundreds a second), and the harness holds a test to at most a minute of
+     * wall clock past its ticks ({@code seam/WallClockTimeout.MOST_MS}), so a budget of ticks this large outlasts
+     * {@link #SETTLE_MAX_MS} at any rate a server reaches.
+     */
+    static final int SETTLE_TIMEOUT_TICKS = 2_000_000;
 
     /**
      * Is the mod's own work done? No thread but the caller (the server thread, which runs the settle window's check)
@@ -53,6 +75,11 @@ public final class CoverageMap {
      * rounds) are done; the GameTest harness's own frames do not count.
      */
     static boolean quiet() {
+        return busy() == null;
+    }
+
+    /** The name of a thread still running the mod's code (see {@link #quiet}), or null when none is. */
+    static String busy() {
         Thread self = Thread.currentThread();
         for (java.util.Map.Entry<Thread, StackTraceElement[]> e : Thread.getAllStackTraces().entrySet()) {
             Thread t = e.getKey();
@@ -62,11 +89,17 @@ public final class CoverageMap {
             for (StackTraceElement f : e.getValue()) {
                 String c = f.getClassName();
                 if (c.startsWith("com.moddingfromamod.") && !c.startsWith("com.moddingfromamod.testing.")) {
-                    return false;
+                    return t.getName();
                 }
             }
         }
-        return true;
+        return null;
+    }
+
+    /** A settle window that reached {@link #SETTLE_MAX_MS} still busy says so, once: what it gave up on lands next. */
+    static void gaveUp(String cls, String thread) {
+        LOG.warn("gt-covmap: {}'s settle window reached {} s with {} still running the mod's code; what it does next "
+                + "is counted in the next class", cls, SETTLE_MAX_MS / 1000, thread);
     }
 
     /** Has a settle window that started at {@code startMs} waited enough (pure: the clock and the check handed in)? */
@@ -198,24 +231,31 @@ public final class CoverageMap {
             return;
         }
         dump(current);
-        // between two units of the Bedrock batch nothing is swept: its cases share the batch's staged board and
-        // the pool bots' spots, and a case clears its own plot (BedrockStage.clear)
-        boolean withinBedrock = current.startsWith("BedrockBatch") && cls.startsWith("BedrockBatch");
-        current = cls;
-        if (!withinBedrock) {
-            sweep();
+        if (sweeps(current, cls) && sweep()) {
+            dump(SWEEP);   // the harness's own work: ambient, whichever class comes next
         }
+        current = cls;
+    }
+
+    /**
+     * Is the world swept between {@code from} and {@code to}? Always, but between two units of the Bedrock batch: its
+     * cases share the batch's staged board and the pool bots' spots, and a case clears its own plot (BedrockStage.clear).
+     * When it is, the sweep is dumped as {@link #SWEEP} between the two, so it is neither's.
+     */
+    static boolean sweeps(String from, String to) {
+        return !(from.startsWith("BedrockBatch") && to.startsWith("BedrockBatch"));
     }
 
     /**
      * What an earlier class left in the world keeps ticking — a creature's rig, a dropped item — and
      * would be counted as this class's execution (measured: 15-57 files a class, against the same
-     * class run alone). So a new class starts with no entity but the players.
+     * class run alone). So a new class starts with no entity but the players. @return whether it ran (on the server
+     * thread, with a server up)
      */
-    private static void sweep() {
+    private static boolean sweep() {
         net.minecraft.server.MinecraftServer server = net.neoforged.neoforge.server.ServerLifecycleHooks.getCurrentServer();
         if (server == null || !server.isSameThread()) {
-            return;
+            return false;
         }
         for (net.minecraft.server.level.ServerLevel level : server.getAllLevels()) {
             java.util.List<net.minecraft.world.entity.Entity> gone = new java.util.ArrayList<>();
@@ -226,6 +266,7 @@ public final class CoverageMap {
             });
             gone.forEach(net.minecraft.world.entity.Entity::discard);
         }
+        return true;
     }
 
     static synchronized void start() {

@@ -36,6 +36,16 @@ class BuilderPageFactsTest {
     }
 
     @Test
+    void withNoWorldAnsweringWarmingStartsNothing() {
+        // the class doc's promise: a server where no world answers makes never walks
+        boolean was = BuilderPageFacts.started();
+        assertEquals(0, BuilderPageFacts.warm(false, List.of(BuilderAllowlist.REVIEWED)));
+        assertEquals(was, BuilderPageFacts.started(), "warming with no world started the worker");
+        assertEquals(null, BuilderPageFacts.peek(BuilderAllowlist.REVIEWED), "warming with no world asked for a tree");
+        assertEquals(0, BuilderPageFacts.warm(true, null));
+    }
+
+    @Test
     void theFirstPageAndEveryKindsFirstPageAreWorkedOutFirst() {
         BuilderPageFacts.Walk w = new BuilderPageFacts.Walk(new BuilderPageFacts.Index("order"));
         Set<String> first = firstLevel();
