@@ -74,113 +74,46 @@ public final class ClientHarness {
     // ── the empty stage ──────────────────────────────────────────────────────────────────────
 
     /** Client ticks between two frames of the empty stage that must agree before it is the reference. */
-    public static final int STAGE_STILL_TICKS = 20;
+    public static final int STAGE_STILL_TICKS = StageSettle.STILL_TICKS;
     /** Ticks a film waits for the empty stage to settle; past them it ends as "could not run", never judged. */
-    public static final int STAGE_SETTLE_MAX = 400;
-    /** A pixel that moved by more than this (summed over r, g and b) means the stage is still being drawn. */
-    private static final int STAGE_PIXEL_DELTA = 24;
-    private static int[][] stageCandidate;
-    private static int stageCandidateTick;
-    private static int stageCandidateChunks;
-    private static int stageCandidateSections;
-    private static String stageLastDiff;
-    private static boolean stageGaveUp;
+    public static final int STAGE_SETTLE_MAX = StageSettle.SETTLE_MAX;
+    private static final StageSettle STAGE = new StageSettle();
 
     /**
      * The empty stage as a film's reference frame, once the world has finished drawing it: null until then; call it every
-     * tick. A resource reload rebuilds every chunk section, and on a slow software renderer they come back a few at a time
-     * after the loading overlay has gone (1.21.10 under llvmpipe: the far row of the floor appeared 7 px higher after the
-     * reference was taken, so every body box was its whole strip). So the reference is taken only when nothing is left to
-     * build or upload, and two frames {@link #STAGE_STILL_TICKS} apart agree with no chunk arriving and no section drawn
-     * between them: a slow client asks the server for its chunks a batch at a time, so terrain at the edge of the view
-     * (below the floor, at the bottom of the frame) can still be arriving after the floor itself has settled.
-     * {@code grab} takes one frame.
+     * tick. The rule is {@link StageSettle}'s (nothing left to build or upload, then two frames
+     * {@link #STAGE_STILL_TICKS} apart that agree with no chunk arriving and no section drawn between them); this reads
+     * the client for it. On 1.21.10 under llvmpipe the far row of the floor appeared 7 px higher after a reference taken
+     * too early, so every body box was its whole strip. {@code grab} takes one frame.
      *
      * <p>A stage that has not settled within {@link #STAGE_SETTLE_MAX} ticks is a fault of the rig, not a finding about
      * the creature: the film ends with {@link #couldNotRun} (client-test.sh exit 2) and the last frame diff, and is never
      * judged against an unsettled reference. It then returns null for good.
      */
     public static int[][] settledStage(Minecraft mc, Path sigDir, int ticks, java.util.function.Supplier<int[][]> grab) {
-        if (stageGaveUp) {
-            return null;
-        }
-        if (stageCandidate != null && ticks < stageCandidateTick) {
-            stageCandidate = null;   // a new film's counter
-            stageLastDiff = null;
-        }
         var sections = mc.levelRenderer.getSectionRenderDispatcher();
         boolean idle = sections == null || (sections.isQueueEmpty() && sections.getToUpload() == 0);
-        if (ticks >= STAGE_SETTLE_MAX) {
-            stageGaveUp = true;
-            String busy = idle ? "the chunk sections were idle"
-                    : "chunk sections still building: " + sections.getCompileQueueSize() + " queued, "
-                    + sections.getToUpload() + " to upload";
-            couldNotRun(sigDir, "the empty stage never settled within " + STAGE_SETTLE_MAX + " client ticks ("
-                    + busy + "; last frame diff: " + (stageLastDiff == null ? "no two frames taken" : stageLastDiff)
-                    + "), so no film was judged against it");
-            mc.stop();
-            return null;
-        }
-        if (!idle) {
-            return null;
-        }
-        if (stageCandidate != null && ticks - stageCandidateTick < STAGE_STILL_TICKS) {
-            return null;
-        }
-        int chunks = mc.level == null ? -1 : mc.level.getChunkSource().getLoadedChunksCount();
-        int drawn = mc.levelRenderer.countRenderedSections();
-        int[][] frame = grab.get();
-        int[][] before = stageCandidate;
-        int chunksBefore = stageCandidateChunks;
-        int drawnBefore = stageCandidateSections;
-        stageCandidate = frame;
-        stageCandidateTick = ticks;
-        stageCandidateChunks = chunks;
-        stageCandidateSections = drawn;
-        if (before == null) {
-            return null;
-        }
-        stageLastDiff = frameDiff(before, frame);
-        if (stageLastDiff == null && (chunks != chunksBefore || drawn != drawnBefore)) {
-            stageLastDiff = "frames agree, but the client went from " + chunksBefore + " to " + chunks
-                    + " chunks loaded and " + drawnBefore + " to " + drawn + " sections drawn";
-        }
-        if (stageLastDiff == null) {
-            stageCandidate = null;
-            return frame;
-        }
-        return null;
-    }
-
-    /** Null when the two frames agree; otherwise how they differ (pixels over the bar, their box, the largest change). */
-    private static String frameDiff(int[][] a, int[][] b) {
-        if (a.length != b.length || a.length == 0 || a[0].length != b[0].length) {
-            return "the frame size changed";
-        }
-        int n = 0;
-        int max = 0;
-        int x0 = Integer.MAX_VALUE;
-        int y0 = Integer.MAX_VALUE;
-        int x1 = -1;
-        int y1 = -1;
-        for (int y = 0; y < a.length; y++) {
-            for (int x = 0; x < a[y].length; x++) {
-                int p = a[y][x];
-                int q = b[y][x];
-                int d = Math.abs(((p >> 16) & 0xFF) - ((q >> 16) & 0xFF)) + Math.abs(((p >> 8) & 0xFF) - ((q >> 8) & 0xFF))
-                        + Math.abs((p & 0xFF) - (q & 0xFF));
-                if (d > STAGE_PIXEL_DELTA) {
-                    n++;
-                    max = Math.max(max, d);
-                    x0 = Math.min(x0, x);
-                    y0 = Math.min(y0, y);
-                    x1 = Math.max(x1, x);
-                    y1 = Math.max(y1, y);
-                }
+        switch (STAGE.step(ticks, idle)) {
+            case GIVE_UP -> {
+                String busy = idle ? "the chunk sections were idle"
+                        : "chunk sections still building: " + sections.getCompileQueueSize() + " queued, "
+                        + sections.getToUpload() + " to upload";
+                String diff = STAGE.lastDiff();
+                couldNotRun(sigDir, "the empty stage never settled within " + STAGE_SETTLE_MAX + " client ticks ("
+                        + busy + "; last frame diff: " + (diff == null ? "no two frames taken" : diff)
+                        + "), so no film was judged against it");
+                mc.stop();
+                return null;
+            }
+            case SAMPLE -> {
+                int chunks = mc.level == null ? -1 : mc.level.getChunkSource().getLoadedChunksCount();
+                int drawn = mc.levelRenderer.countRenderedSections();
+                return STAGE.offer(grab.get(), ticks, chunks, drawn);
+            }
+            default -> {
+                return null;
             }
         }
-        return n == 0 ? null : n + " px moved by over " + STAGE_PIXEL_DELTA + " (largest " + max + ") in (" + x0 + ","
-                + y0 + ")-(" + x1 + "," + y1 + ") of " + a[0].length + "x" + a.length;
     }
 
     // ── world ────────────────────────────────────────────────────────────────────────────────
@@ -497,7 +430,6 @@ public final class ClientHarness {
                 + "per-creature pack, and a selected one shadows the carrier table)";
     }
 
-    /** Write PASS/FAIL where the launcher script looks for it. */
     /**
      * The film could not run: a fault of the rig (its stage, its setup), not a verdict on what it films. The result reads
      * {@code NORUN}, which tools/client-test.sh exits 2 on and tools/gate-c-rig.sh reports as COULD NOT RUN.
@@ -512,6 +444,7 @@ public final class ClientHarness {
         }
     }
 
+    /** Write PASS/FAIL where the launcher script looks for it. */
     public static void verdict(Path sigDir, boolean pass, String message) {
         // The same verdict on stdout, in the line a log-reading gate (MMVU's Gate C carrier) looks for, so a run
         // can be judged from its log alone when the signal directory is not to hand.
