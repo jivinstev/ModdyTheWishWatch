@@ -1740,4 +1740,37 @@ class AgentKnowsTheTrapsTest {
         String check = Files.readString(Path.of("src/main/java/com/moddingfromamod/reference/ReferenceBodyCheck.java"));
         assertTrue(check.contains("⚠ STANCE") && check.contains("⚠ TAIL"), "the body check must still report stance and tail");
     }
+
+    @Test
+    @DisplayName("#101: damage is what its body would have, never 0 to make it gentle; a guard that cannot hit is caught")
+    void theCreatureToolsGuideDamageAndCatchAGuardThatCannotHit() throws IOException {
+        // In archived sculpts damage was sent 79% of the time and was 0 in 58%: the tool said "Use 0 for a friendly
+        // character", and a friendly creature never attacks anyway, so the 0 only took the power from guards and moves.
+        for (String tool : new String[] {"SculptCreatureTool", "ModifyMobTool", "DefineSpeciesTool"}) {
+            String src = Files.readString(Path.of("src/main/java/com/moddingfromamod/agent/tools/" + tool + ".java"));
+            String schema = src.substring(src.indexOf("public JsonObject inputSchema()")).replaceAll("\"\\s*\\+\\s*\"", "");
+            assertTrue(!schema.contains("Use 0 for a friendly") && schema.contains("never 0 to make it gentle")
+                            && schema.contains("0 lands nothing"),
+                    tool + "'s damage line must say a friendly creature never attacks, so never send 0 to make it gentle");
+            assertTrue(src.contains("PowerLine.of(") && src.contains("PowerLine.zeroHitFlag("),
+                    tool + "'s result must carry the power line and flag a fighter with a hit of 0");
+        }
+        for (String tool : new String[] {"SculptCreatureTool", "ModifyMobTool"}) {
+            String src = Files.readString(Path.of("src/main/java/com/moddingfromamod/agent/tools/" + tool + ".java"));
+            assertTrue(src.contains("\"armor\"") && src.contains("\"knockback_resistance\""),
+                    tool + " must take armor and knockback_resistance (a shell, a heavy body), as define_species does");
+        }
+        // and a creature far above its size is told so (an advisory, never a refusal), sculpted or real
+        for (String tool : new String[] {"SculptCreatureTool", "ModifyMobTool", "DefineSpeciesTool"}) {
+            String src = Files.readString(Path.of("src/main/java/com/moddingfromamod/agent/tools/" + tool + ".java"));
+            assertTrue(src.contains("PowerLine.farAbove("), tool + "'s result must carry the far-above-its-size advisory");
+        }
+        String modify = Files.readString(Path.of("src/main/java/com/moddingfromamod/agent/tools/ModifyMobTool.java"));
+        assertTrue(modify.contains("realMobPower(") && modify.contains("PowerLine.boxVolume("),
+                "modify_mob on a REAL mob must report its power from the live entity, with the same flags");
+        // the lesson keeps no line telling it to zero a friendly creature's damage
+        String creature = WishLessons.text("creature").replace("**", "").replaceAll("\\s+", " ").toLowerCase(java.util.Locale.ROOT);
+        assertTrue(!creature.contains("damage 0") && !creature.contains("0 damage") && !creature.contains("damage: 0"),
+                "lessons/creature.md must not tell it to give a creature 0 damage");
+    }
 }

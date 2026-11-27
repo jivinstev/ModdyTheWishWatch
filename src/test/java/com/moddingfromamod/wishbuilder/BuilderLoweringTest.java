@@ -293,6 +293,31 @@ class BuilderLoweringTest {
                 + "\"ability:frost_breath\"]}")), "cat_1", LibraryPresets.SHIPPED), "two breaths: apply_effect would keep one");
     }
 
+    // ── Moddy-Worlds#61: a hostile power wins ──────────────────────────────────────────────────────────
+
+    @Test
+    void aHostileChampionOnTheRockGolemIsNeitherFriendlyNorAGuardian() {
+        for (String temper : new String[] {"", "wild"}) {
+            List<BuilderLowering.Call> calls = lower("{\"builder\":1,\"kind\":\"creature\","
+                    + "\"from\":\"preset:bodies/rock_golem\",\"temper\":\"" + temper + "\","
+                    + "\"powers\":[\"power:hostile\",\"power:glowing\"]}");
+            JsonObject sculpt = call(calls, "sculpt_creature").args();
+            String powers = sculpt.get("powers").toString();
+            assertTrue(powers.contains("hostile"), temper + ": " + powers);
+            assertFalse(powers.contains("friendly"), temper + ": friendly and hostile at once: " + powers);
+            assertFalse(sculpt.has("base") && "guardian".equals(sculpt.get("base").getAsString()),
+                    temper + ": a guardian base fights the monsters it is one of: " + sculpt);
+        }
+    }
+
+    @Test
+    void theRockGolemWithoutHostileIsStillTheFriendlyGuardian() {
+        JsonObject sculpt = call(lower("{\"builder\":1,\"kind\":\"creature\","
+                + "\"from\":\"preset:bodies/rock_golem\"}"), "sculpt_creature").args();
+        assertTrue(sculpt.get("powers").toString().contains("friendly"), sculpt.toString());
+        assertEquals("guardian", sculpt.get("base").getAsString(), sculpt.toString());
+    }
+
     // ── step 6: "Follows you", "Stays put" and "How fast" ─────────────────────────────────────────────
 
     static BuilderLowering.Call call(List<BuilderLowering.Call> calls, String tool) {

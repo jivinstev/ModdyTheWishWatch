@@ -1,4 +1,6 @@
 {
+  "damage": 12,
+  "health": 200,
   "id": "trex",
   "parts": [
     {

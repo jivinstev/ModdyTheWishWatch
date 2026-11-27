@@ -89,7 +89,7 @@ public final class RewishReader {
             Map.entry("temper", set("creature")), Map.entry("abilities", set("creature")), Map.entry("parts", set("creature")),
             Map.entry("speed", set("creature")), Map.entry("size", set("creature", "building")),
             Map.entry("scheme", set("creature", "item", "building")), Map.entry("outside", set("building")),
-            Map.entry("strength", set("item")), Map.entry("itemlook", set("item")), Map.entry("power", set("item")));
+            Map.entry("strength", set("item", "creature")), Map.entry("itemlook", set("item")), Map.entry("power", set("item")));
     /**
      * an item's own slots, read ONLY when every thing the wish names is an item: its LOOK and its POWER,
      * from the Builder's item kind alone (a magic block also has a "power" slot, which this never reads).

@@ -575,6 +575,27 @@ public final class Apprentice {
         return out;
     }
 
+    /**
+     * Does this pick keep what a slot word names? It does when the pick holds that entry, and also when the word names
+     * a power the pick's body already has ("a dragon that can fly": the dragon flies, so the Builder adds no flying
+     * pick, yet "fly" is granted). Without the second half such a word read as left out and a sure make fell to close.
+     */
+    private boolean keeps(Pick pick, Ref r) {
+        if (!r.kind().equals(pick.kind()) || !r.form().equals(pick.form())) {
+            return false;
+        }
+        if (pick.picks().getOrDefault(r.slot(), List.of()).contains(r.entry())) {
+            return true;
+        }
+        if (!r.slot().equals("powers") || pick.first("from").isEmpty()) {
+            return false;
+        }
+        BuilderTree.Kind k = tree.kind(pick.kind());
+        BuilderTree.Form form = k == null ? null : k.form(pick.form());
+        return form != null && form.slot("from") != null
+                && bodyPowers(form, pick.first("from")).contains(r.entry().substring(r.entry().indexOf(':') + 1));
+    }
+
     /** The token indexes a pick keeps: its kind word and its picks' words, or the words that named a found thing. */
     private Set<Integer> keptBy(Keywords got, Pick pick) {
         if (isFound(pick)) {
@@ -584,9 +605,7 @@ public final class Apprentice {
         Set<Integer> kept = new HashSet<>();
         for (Found m : find(got.toks())) {
             Ref r = m.ref();
-            boolean mine = r.kindWord() ? r.kind().equals(pick.kind())
-                    : r.kind().equals(pick.kind()) && r.form().equals(pick.form())
-                    && pick.picks().getOrDefault(r.slot(), List.of()).contains(r.entry());
+            boolean mine = r.kindWord() ? r.kind().equals(pick.kind()) : keeps(pick, r);
             if (mine) {
                 for (int i = m.a(); i < m.b(); i++) {
                     kept.add(i);
@@ -1722,8 +1741,7 @@ public final class Apprentice {
                         kept.add(i);
                     }
                 }
-            } else if (r.kind().equals(pick.kind()) && r.form().equals(pick.form())
-                    && pick.picks().getOrDefault(r.slot(), List.of()).contains(r.entry())) {
+            } else if (keeps(pick, r)) {
                 for (int i = m.a(); i < m.b(); i++) {
                     kept.add(i);
                 }

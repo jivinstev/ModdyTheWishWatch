@@ -142,7 +142,7 @@ public final class ProvenancePublisher {
             return false;
         }
         Path wishes = repo.resolve("wishes");
-        Path dir = wishes.resolve(kind).resolve(id);
+        Path dir = wishes.resolve(kind).resolve(com.moddingfromamod.store.SafeFileName.segment(id));   // a building id may hold ':' (Windows)
         Path manifest = dir.resolve("manifest.json");
         try {
             Files.createDirectories(dir);
@@ -189,7 +189,7 @@ public final class ProvenancePublisher {
     /** Where a given artifact's manifest lives (null if no repo configured). Handy for tests + gates. */
     public static Path manifestPath(String kind, String id) {
         Path repo = RuntimeConfig.persistDir();
-        return repo == null ? null : repo.resolve("wishes").resolve(kind).resolve(id).resolve("manifest.json");
+        return repo == null ? null : repo.resolve("wishes").resolve(kind).resolve(com.moddingfromamod.store.SafeFileName.segment(id)).resolve("manifest.json");
     }
 
     /**
@@ -207,7 +207,7 @@ public final class ProvenancePublisher {
             return false;
         }
         Path wishes = repo.resolve("wishes");
-        Path dir = wishes.resolve(kind).resolve(id);
+        Path dir = wishes.resolve(kind).resolve(com.moddingfromamod.store.SafeFileName.segment(id));   // a building id may hold ':' (Windows)
         try {
             Files.createDirectories(dir);
             ProvenanceReadme.ensure(wishes);

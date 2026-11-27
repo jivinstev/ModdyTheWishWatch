@@ -71,6 +71,51 @@ public final class ClientHarness {
     /** Ticks to let the world settle once the server is ready. */
     public static final int INGAME_SETTLE = 40;
 
+    // ── the empty stage ──────────────────────────────────────────────────────────────────────
+
+    /** Client ticks between two frames of the empty stage that must agree before it is the reference. */
+    public static final int STAGE_STILL_TICKS = StageSettle.STILL_TICKS;
+    /** Ticks a film waits for the empty stage to settle; past them it ends as "could not run", never judged. */
+    public static final int STAGE_SETTLE_MAX = StageSettle.SETTLE_MAX;
+    private static final StageSettle STAGE = new StageSettle();
+
+    /**
+     * The empty stage as a film's reference frame, once the world has finished drawing it: null until then; call it every
+     * tick. The rule is {@link StageSettle}'s (nothing left to build or upload, then two frames
+     * {@link #STAGE_STILL_TICKS} apart that agree with no chunk arriving and no section drawn between them); this reads
+     * the client for it. On 1.21.10 under llvmpipe the far row of the floor appeared 7 px higher after a reference taken
+     * too early, so every body box was its whole strip. {@code grab} takes one frame.
+     *
+     * <p>A stage that has not settled within {@link #STAGE_SETTLE_MAX} ticks is a fault of the rig, not a finding about
+     * the creature: the film ends with {@link #couldNotRun} (client-test.sh exit 2) and the last frame diff, and is never
+     * judged against an unsettled reference. It then returns null for good.
+     */
+    public static int[][] settledStage(Minecraft mc, Path sigDir, int ticks, java.util.function.Supplier<int[][]> grab) {
+        var sections = mc.levelRenderer.getSectionRenderDispatcher();
+        boolean idle = sections == null || (sections.isQueueEmpty() && sections.getToUpload() == 0);
+        switch (STAGE.step(ticks, idle)) {
+            case GIVE_UP -> {
+                String busy = idle ? "the chunk sections were idle"
+                        : "chunk sections still building: " + sections.getCompileQueueSize() + " queued, "
+                        + sections.getToUpload() + " to upload";
+                String diff = STAGE.lastDiff();
+                couldNotRun(sigDir, "the empty stage never settled within " + STAGE_SETTLE_MAX + " client ticks ("
+                        + busy + "; last frame diff: " + (diff == null ? "no two frames taken" : diff)
+                        + "), so no film was judged against it");
+                mc.stop();
+                return null;
+            }
+            case SAMPLE -> {
+                int chunks = mc.level == null ? -1 : mc.level.getChunkSource().getLoadedChunksCount();
+                int drawn = mc.levelRenderer.countRenderedSections();
+                return STAGE.offer(grab.get(), ticks, chunks, drawn);
+            }
+            default -> {
+                return null;
+            }
+        }
+    }
+
     // ── world ────────────────────────────────────────────────────────────────────────────────
 
     /**
@@ -383,6 +428,20 @@ public final class ClientHarness {
         return "packs available: " + repo.getAvailableIds() + " selected: " + repo.getSelectedIds()
                 + " (" + packId + " deliberately NOT selected — the atom rig delivers no "
                 + "per-creature pack, and a selected one shadows the carrier table)";
+    }
+
+    /**
+     * The film could not run: a fault of the rig (its stage, its setup), not a verdict on what it films. The result reads
+     * {@code NORUN}, which tools/client-test.sh exits 2 on and tools/gate-c-rig.sh reports as COULD NOT RUN.
+     */
+    public static void couldNotRun(Path sigDir, String message) {
+        System.out.println("CLIENT_TEST: RESULT=NORUN " + message.replace('\n', ' '));
+        try {
+            Files.createDirectories(sigDir);
+            Files.writeString(sigDir.resolve("result"), "NORUN — " + message + "\n");
+        } catch (Exception e) {
+            System.out.println("could not write the verdict: " + e);
+        }
     }
 
     /** Write PASS/FAIL where the launcher script looks for it. */

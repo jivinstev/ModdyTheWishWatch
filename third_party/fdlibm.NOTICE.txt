@@ -1,0 +1,12 @@
+fdlibm (Sun Microsystems), whose formulas the CBScript compiler's sinh, cosh and tanh follow
+(third_party/moddy-cbscript/src/main/java/com/moddingfromamod/cbscript/py/FdHyp.java; no fdlibm code is copied).
+fdlibm's notice, preserved as it asks:
+
+====================================================
+Copyright (C) 1993 by Sun Microsystems, Inc. All rights reserved.
+
+Developed at SunSoft, a Sun Microsystems, Inc. business.
+Permission to use, copy, modify, and distribute this
+software is freely granted, provided that this notice
+is preserved.
+====================================================

@@ -927,7 +927,25 @@ public final class BuilderTree {
         if (atTune.step() != BuilderFlow.Step.TUNE) {
             throw new IllegalStateException("the walk did not reach the tune dialog (at " + atTune.step() + ")");
         }
-        for (TuneDialog.Input in : atTune.tune().inputs()) {
+        List<TuneDialog.Input> inputs = new ArrayList<>(atTune.tune().inputs());
+        if (atTune.typedOnlyCount() != null) {
+            inputs.add(atTune.typedOnlyCount());   // #103: not on the dialog, still said in typed words
+        }
+        for (TuneDialog.Input in : inputs) {
+            if (in instanceof TuneDialog.Choice c && c.key().equals("strength")) {
+                // #103: a creature's strength, its three steps in his words and the strength words items use
+                List<Entry> es = new ArrayList<>();
+                for (TuneDialog.Option o : c.options()) {
+                    List<String> said = new ArrayList<>(BuilderVocab.STEPS.getOrDefault("strength:" + o.id(), List.of()));
+                    String own = o.display().toLowerCase(java.util.Locale.ROOT);
+                    if (!said.contains(own)) {
+                        said.add(0, own);
+                    }
+                    es.add(new Entry(o.id(), o.display(), said, Map.of(), Map.of()));
+                }
+                out.add(new Slot("strength", c.label(), 1, false, c.initial(), true, es, List.of()));
+                continue;
+            }
             if (in instanceof TuneDialog.Slider s) {
                 // a ready-made building's size slider is cut to the sizes that work FOR THAT TYPE, and the tree
                 // is one per kind — so the words keep every size, and the flow moves the size he named into the ones

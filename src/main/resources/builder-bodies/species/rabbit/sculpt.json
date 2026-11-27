@@ -1,4 +1,6 @@
 {
+  "damage": 1,
+  "health": 4,
   "id": "rabbit",
   "status": "Evening out the ears",
   "note": "Plain rabbit base; mirrored inner ears at x \u00b12.",

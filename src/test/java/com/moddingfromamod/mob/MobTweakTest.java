@@ -124,4 +124,21 @@ class MobTweakTest {
         assertTrue(s.contains("Storm"), s);
         assertEquals("nothing", parse("{}").summary());
     }
+
+    @Test
+    void armourAndKnockbackAreReadClampedAndSaid() {
+        // #101: modify_mob takes them, as define_species always did
+        MobTweak t = parse("{\"armor\":8,\"knockback_resistance\":0.8}");
+        org.junit.jupiter.api.Assertions.assertEquals(8.0, t.armor());
+        org.junit.jupiter.api.Assertions.assertEquals(0.8, t.knockbackResistance());
+        org.junit.jupiter.api.Assertions.assertFalse(t.isEmpty(), "armour alone is a change");
+        org.junit.jupiter.api.Assertions.assertTrue(t.summary().contains("8 armour")
+                && t.summary().contains("knockback resistance 0.80"), t.summary());
+        MobTweak wild = parse("{\"armor\":900,\"knockbackResistance\":-3}");
+        org.junit.jupiter.api.Assertions.assertEquals(MobTweak.MAX_ARMOR, wild.armor());
+        org.junit.jupiter.api.Assertions.assertEquals(0.0, wild.knockbackResistance());
+        MobTweak none = parse("{\"health\":5}");
+        org.junit.jupiter.api.Assertions.assertNull(none.armor());
+        org.junit.jupiter.api.Assertions.assertNull(none.knockbackResistance());
+    }
 }

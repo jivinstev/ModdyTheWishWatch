@@ -38,7 +38,9 @@ public interface WishCharge {
     static WishCharge get() {
         com.moddingfromamod.world.WorldModule m = com.moddingfromamod.world.WorldModuleHost.liveModule();
         WishCharge own = m == null ? null : m.charge();
-        return own != null ? own : Plugins.shared().first(WishCharge.class).orElse(NONE);
+        WishCharge world = own != null ? own : Plugins.shared().first(WishCharge.class).orElse(NONE);
+        // #182: a region the player stands in (or the wish was made in) answers first; none registered, nothing changes
+        return com.moddingfromamod.world.Regions.any() ? new RegionalCharge(world) : world;
     }
 
     /** The online player with this id, or null (no server, or he left). */

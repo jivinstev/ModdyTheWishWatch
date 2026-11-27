@@ -3,7 +3,7 @@
   "armor": 0.0,
   "body": "humanoid",
   "createdAt": 1793172062152,
-  "damage": 0.0,
+  "damage": 1.0,
   "health": 10.0,
   "id": "pig",
   "knockbackResistance": 0.0,

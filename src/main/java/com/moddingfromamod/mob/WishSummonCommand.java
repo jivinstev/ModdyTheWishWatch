@@ -104,12 +104,19 @@ public final class WishSummonCommand {
         }
         List<String> notes = com.moddingfromamod.agent.tools.ModifyMobTool.applyTo(
                 src.getServer().getScoreboard(), living, tweak);
+        // #174: a hotbar fire runs as the one who fired it; hold the mob to HIS limits (applyTo fitted it to the
+        // acting child's, or the tightest, when it could not tell) and remember him on it for later re-fits.
+        if (src.getPlayer() != null) {
+            com.moddingfromamod.wish.LiveFit.hold(living, src.getPlayer().getUUID());
+        }
         List<String> missed = new ArrayList<>();
-        if (tweak.scale() != null && !near(living.getAttributeValue(Attributes.SCALE), tweak.scale())) {
+        // the BASE values: what the spec set. A world's live fit is a modifier on top (LiveFit), and a mob held to
+        // its limits is a summon that took, not one that failed.
+        if (tweak.scale() != null && !near(living.getAttributeBaseValue(Attributes.SCALE), tweak.scale())) {
             missed.add("size ×" + tweak.scale());
         }
         if (tweak.health() != null
-                && !near(living.getAttributeValue(Attributes.MAX_HEALTH), tweak.health())) {
+                && !near(living.getAttributeBaseValue(Attributes.MAX_HEALTH), tweak.health())) {
             missed.add(tweak.health().intValue() + " health");
         }
         if (!missed.isEmpty()) {

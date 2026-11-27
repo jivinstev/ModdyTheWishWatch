@@ -914,7 +914,7 @@
     "friendly",
     "fireproof"
   ],
-  "damage": 0,
+  "damage": 6,
   "health": 60,
   "speed": 0.35,
   "scale": 1.2,

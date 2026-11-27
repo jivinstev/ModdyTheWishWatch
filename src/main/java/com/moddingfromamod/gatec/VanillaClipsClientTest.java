@@ -403,12 +403,16 @@ public final class VanillaClipsClientTest {
         // finding), and that the rig animates anyway because VanillaRigAnimator keeps its own
         // swing clock (the improvement).
         RESULTS.put("5.2 vanilla getAttackAnim", String.format("peak %.2f over the swing "
-                + "(swinging seen: %s) -- 0 is CORRECT: only Monster advances it, and neither "
-                + "creature path is one", peakAttack, sawSwinging));
+                + "(swinging seen: %s) -- %s", peakAttack, sawSwinging, monsterOnlySwing()
+                        ? "0 is CORRECT: only Monster advances it, and neither creature path is one"
+                        : "this game advances every living entity's swing (no updateSwingTime): recorded, not judged"));
         if (!sawSwinging) {
             BAD.add("the swing never even set `swinging` -- the test could not start an attack");
         }
-        if (peakAttack > 0f) {
+        // The finding is 1.21.x's bytecode. 26.x rewrote the swing (LivingEntity's own swing state, advanced for
+        // every living entity, and no updateSwingTime at all), so there vanilla's number moves for a rig carrier
+        // too and is recorded, not failed. Asked of the running game, so one film serves every version branch.
+        if (peakAttack > 0f && monsterOnlySwing()) {
             BAD.add("getAttackAnim advanced to " + peakAttack + " on a non-Monster carrier. That "
                     + "contradicts the bytecode this row is built on -- re-read who calls "
                     + "updateSwingTime before trusting anything else here");
@@ -430,6 +434,18 @@ public final class VanillaClipsClientTest {
     }
 
     private static volatile float peakAttack;
+
+    /** Does this game advance the attack animation only where {@code updateSwingTime} is called (1.21.x)? */
+    static boolean monsterOnlySwing() {
+        for (Class<?> c = net.minecraft.world.entity.LivingEntity.class; c != null; c = c.getSuperclass()) {
+            for (java.lang.reflect.Method m : c.getDeclaredMethods()) {
+                if (m.getName().equals("updateSwingTime") && m.getParameterCount() == 0) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
     private static int[][] attackBefore;
     private static volatile boolean sawSwinging;
 
