@@ -282,7 +282,7 @@ public final class WishHotbar {
                 return i;
             }
         }
-        int in = com.moddingfromamod.bag.WishBagService.add(sp.getServer(), sp.getUUID(), proxy(cell, sp.getUUID()));
+        int in = com.moddingfromamod.bag.WishBagService.add(sp.level().getServer(), sp.getUUID(), proxy(cell, sp.getUUID()));
         if (in > 0) {
             return -1;
         }

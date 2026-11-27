@@ -115,7 +115,7 @@ public final class AlwaysEdible {
         } catch (RuntimeException e) {
             // A food left as it was is a blemish; a tick that throws is a child who cannot play.
             com.mojang.logging.LogUtils.getLogger().warn("always-edible sweep skipped for {}: {}",
-                    player.getGameProfile().getName(), e.toString());
+                    player.getGameProfile().name(), e.toString());
         }
     }
 }
