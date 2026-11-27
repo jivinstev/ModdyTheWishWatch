@@ -240,6 +240,269 @@
         "1.21.8": "open"
       },
       "title": "MakeItemTool: the alwaysEdibleFood Javadoc sits between ownModifiers' Javadoc and ownModifiers, orphaning that doc"
+    },
+    {
+      "files": [
+        "src/main/java/com/moddingfromamod/plugin/ModResources.java",
+        "src/main/java/com/moddingfromamod/world/WorldFacts.java"
+      ],
+      "id": "KI-12",
+      "lowest": "1.21.10",
+      "notes": "found by the round at 1.21.10 (review)",
+      "override": null,
+      "rubric": {
+        "failure": "functional",
+        "reach": "unusual",
+        "visibility": "rare",
+        "workaround": true
+      },
+      "severity": "S4",
+      "source": "review",
+      "status": {
+        "1.21.10": "open"
+      },
+      "title": "Another mod's resources and world manifests are read from its primary content root only (ModResources, WorldFacts), so a split-root dev run of a world or plug-in is not found"
+    },
+    {
+      "files": [
+        "src/main/java/com/moddingfromamod/builder/BuildConnect.java",
+        "src/main/java/com/moddingfromamod/builder/BuildGrounding.java"
+      ],
+      "id": "KI-13",
+      "lowest": "1.21.10",
+      "notes": "found by the round at 1.21.10 (review)",
+      "override": null,
+      "rubric": {
+        "failure": "cosmetic",
+        "reach": "feature",
+        "visibility": "rare",
+        "workaround": true
+      },
+      "severity": "S3",
+      "source": "review",
+      "status": {
+        "1.21.10": "open"
+      },
+      "title": "Builder treats 1.21.9's copper chains as solid blocks: BuildConnect/BuildGrounding match only iron_chain, where bars and lanterns match by suffix"
+    },
+    {
+      "files": [
+        "src/main/java/com/moddingfromamod/plugin/ModResources.java",
+        "src/main/java/com/moddingfromamod/world/WorldFacts.java"
+      ],
+      "id": "KI-14",
+      "lowest": "1.21.10",
+      "notes": "found by the round at 1.21.10 (fix)",
+      "override": null,
+      "rubric": {
+        "failure": "functional",
+        "reach": "unusual",
+        "visibility": "rare",
+        "workaround": true
+      },
+      "severity": "S4",
+      "source": "review",
+      "status": {
+        "1.21.10": "open"
+      },
+      "title": "A world or plug-in mod's resources outside its first content root (a split dev run) are not found by ModResources and WorldFacts on 1.21.10"
+    },
+    {
+      "files": [
+        "src/main/resources/META-INF/accesstransformer.cfg"
+      ],
+      "id": "KI-15",
+      "lowest": "1.21.11",
+      "notes": "found by the round at 1.21.11 (fix)",
+      "override": null,
+      "rubric": {
+        "failure": "cosmetic",
+        "reach": "latent",
+        "visibility": "invisible",
+        "workaround": true
+      },
+      "severity": "S4",
+      "source": "review",
+      "status": {
+        "1.21.11": "open"
+      },
+      "title": "Dead access transformer entry for a class the port does not have (LegacyRenderType)"
+    },
+    {
+      "files": [
+        "src/main/resources/items/hotbar-badge.json",
+        "tools/gen-hotbar-badge.py"
+      ],
+      "id": "KI-16",
+      "lowest": "26.1.2",
+      "notes": "found by the round at 26.1.2 (review)",
+      "override": null,
+      "rubric": {
+        "failure": "cosmetic",
+        "reach": "latent",
+        "visibility": "invisible",
+        "workaround": true
+      },
+      "severity": "S4",
+      "source": "review",
+      "status": {
+        "26.1.2": "open"
+      },
+      "title": "hotbar-badge.json records \"minecraft\" instead of the Minecraft version it was measured against"
+    },
+    {
+      "files": [
+        "src/main/resources/items/hotbar-badge.json",
+        "tools/gen-hotbar-badge.py"
+      ],
+      "id": "KI-17",
+      "lowest": "26.1.2",
+      "notes": "found by the round at 26.1.2 (fix)",
+      "override": null,
+      "rubric": {
+        "failure": "cosmetic",
+        "reach": "feature",
+        "visibility": "rare",
+        "workaround": true
+      },
+      "severity": "S3",
+      "source": "review",
+      "status": {
+        "26.1.2": "open"
+      },
+      "title": "Hotbar badge provenance field reads \"minecraft\" instead of the measured Minecraft version"
+    },
+    {
+      "files": [
+        "src/main/resources/items/hotbar-badge.json"
+      ],
+      "id": "KI-18",
+      "lowest": "26.2",
+      "notes": "found by the round at 26.2 (review)",
+      "override": null,
+      "rubric": {
+        "failure": "cosmetic",
+        "reach": "latent",
+        "visibility": "invisible",
+        "workaround": true
+      },
+      "severity": "S4",
+      "source": "review",
+      "status": {
+        "26.2": "open"
+      },
+      "title": "26.2's hotbar-badge.json records the measured Minecraft as 26.1.2"
+    },
+    {
+      "files": [
+        "src/main/resources/items/hotbar-badge.json"
+      ],
+      "id": "KI-19",
+      "lowest": "26.2",
+      "notes": "found by the round at 26.2 (fix)",
+      "override": null,
+      "rubric": {
+        "failure": "cosmetic",
+        "reach": "latent",
+        "visibility": "invisible",
+        "workaround": true
+      },
+      "severity": "S4",
+      "source": "review",
+      "status": {
+        "26.2": "open"
+      },
+      "title": "26.2's hotbar-badge.json records its measured Minecraft as 26.1.2 (cascade merge took the lower version's value)"
+    },
+    {
+      "files": [
+        "src/main/java/com/moddingfromamod/mob/MobStates.java",
+        "src/main/java/com/moddingfromamod/vanilla/CarrierState.java",
+        "src/main/java/com/moddingfromamod/vanilla/RigTransformation.java",
+        "src/main/java/com/moddingfromamod/wish/WishCapture.java"
+      ],
+      "id": "KI-20",
+      "lowest": "26.3",
+      "notes": "found by the round at 26.3 (review)",
+      "override": null,
+      "rubric": {
+        "failure": "functional",
+        "reach": "feature",
+        "visibility": "rare",
+        "workaround": false
+      },
+      "severity": "S3",
+      "source": "review",
+      "status": {
+        "26.3": "open"
+      },
+      "title": "26.3: a creature or child captured while briefly invulnerable comes back permanently invulnerable"
+    },
+    {
+      "files": [
+        "src/main/java/com/moddingfromamod/player/NeverDie.java"
+      ],
+      "id": "KI-21",
+      "lowest": "26.3",
+      "notes": "found by the round at 26.3 (review)",
+      "override": null,
+      "rubric": {
+        "failure": "functional",
+        "reach": "feature",
+        "visibility": "rare",
+        "workaround": false
+      },
+      "severity": "S3",
+      "source": "review",
+      "status": {
+        "26.3": "open"
+      },
+      "title": "26.3: Never-die gives 2 s of full immunity (mobs ignore him) instead of a hurt cooldown"
+    },
+    {
+      "files": [
+        "src/main/java/com/moddingfromamod/mob/MobStates.java",
+        "src/main/java/com/moddingfromamod/vanilla/CarrierState.java",
+        "src/main/java/com/moddingfromamod/vanilla/RigTransformation.java",
+        "src/main/java/com/moddingfromamod/wish/WishCapture.java"
+      ],
+      "id": "KI-22",
+      "lowest": "26.3",
+      "notes": "found by the round at 26.3 (fix)",
+      "override": null,
+      "rubric": {
+        "failure": "functional",
+        "reach": "normal",
+        "visibility": "rare",
+        "workaround": true
+      },
+      "severity": "S3",
+      "source": "review",
+      "status": {
+        "26.3": "open"
+      },
+      "title": "26.3: a wish or rig capture taken during a temporary immunity restores the entity permanently invulnerable"
+    },
+    {
+      "files": [
+        "src/main/java/com/moddingfromamod/player/NeverDie.java"
+      ],
+      "id": "KI-23",
+      "lowest": "26.3",
+      "notes": "found by the round at 26.3 (fix)",
+      "override": null,
+      "rubric": {
+        "failure": "functional",
+        "reach": "feature",
+        "visibility": "common",
+        "workaround": false
+      },
+      "severity": "S3",
+      "source": "review",
+      "status": {
+        "26.3": "open"
+      },
+      "title": "26.3: never_die gives 2 s of full invulnerability after a saved death instead of a hurt cooldown"
     }
   ],
   "schema": 1
