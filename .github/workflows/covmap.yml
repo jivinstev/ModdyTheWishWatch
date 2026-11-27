@@ -8,7 +8,8 @@
 #              the map recorded it. Merged into the current map. Skipped when there are none.
 #
 #   plan     reads the current map and its costs from the gate-map branch and shares the classes among runners.
-#   warm     resolves Gradle and the decompile once and saves the cache, so the map jobs do not all download at once.
+#   warm     resolves Gradle's libraries once and saves them (never Minecraft content), so the map jobs do not all
+#            download them at once.
 #   map      one runner a share: Gate B with the JaCoCo agent on (each class in batches of its own, dumped when the
 #            running class changes), then tools/gate/CovmapAnalyze.java turns the dumps into methods per class.
 #            Coverage slows the server and changes the batches, so its pass/fail is NOT a Gate B result and is ignored;
@@ -96,8 +97,8 @@ jobs:
           echo "plan=$(python3 -c 'import json; print(json.dumps(json.load(open("plan.json", encoding="utf-8"))))')" >> "$GITHUB_OUTPUT"
 
   warm:
-    # one job resolves Gradle's dependencies and the Minecraft decompile, and saves the cache the map jobs restore: a
-    # dozen cold jobs resolving at once is what Maven Central answers with 429 Too Many Requests
+    # one job resolves Gradle's dependencies and saves the libraries the map jobs restore (Minecraft and NeoForge left
+    # out): a dozen cold jobs resolving at once is what Maven Central answers with 429 Too Many Requests
     name: Warm the Gradle cache
     needs: plan
     if: needs.plan.outputs.run == 'true'
@@ -110,14 +111,20 @@ jobs:
           distribution: temurin
           java-version: '21'
       - &gradleCache
-        name: Cache Gradle and the NeoForm decompile
-        uses: actions/cache@v6
+        id: gradleRestore
+        # Gradle's downloaded libraries and the wrapper only, never anything made from Minecraft (docs/GATE_B.md,
+        # "Downloads in CI"): this repository is public and a fork's pull request can read the base branch's cache.
+        # The NeoForm decompile, the Minecraft jars and assets, and jars-*/transforms* are rebuilt or downloaded by
+        # each job; the Mojang asset download is covered by gate.py run's download retry, not by this cache.
+        name: Restore Gradle's libraries and wrapper (no Minecraft content)
+        uses: actions/cache/restore@v6
         with:
           path: |
-            ~/.gradle/caches
+            ~/.gradle/caches/modules-2
             ~/.gradle/wrapper
-          key: gradle-${{ runner.os }}-${{ hashFiles('gradle.properties', 'build.gradle', 'versions/*.properties', 'gradle/wrapper/gradle-wrapper.properties') }}
-          restore-keys: gradle-${{ runner.os }}-
+          key: gradle-modules-${{ runner.os }}-${{ hashFiles('gradle.properties', 'build.gradle', 'versions/*.properties', 'gradle/wrapper/gradle-wrapper.properties', 'gradle/wrapper/gradle-wrapper.jar') }}
+          # a distinct prefix: never restores the older caches of all of ~/.gradle, which hold Minecraft-derived files
+          restore-keys: gradle-modules-${{ runner.os }}-
       - &centralMirror
         name: Maven Central through its public mirror (CI only, .github/gradle/central-mirror.init.gradle)
         run: mkdir -p ~/.gradle/init.d && cp .github/gradle/central-mirror.init.gradle ~/.gradle/init.d/
@@ -129,6 +136,23 @@ jobs:
             echo "Gradle failed (attempt $i); waiting before the next"; sleep $((60 * i))
           done
           exit 1
+      - name: Leave Minecraft and NeoForge out of the cache
+        run: |
+          ./gradlew --stop --console=plain || true
+          m=~/.gradle/caches/modules-2
+          for d in "$m"/files-2.1 "$m"/metadata-*/descriptors; do
+            [ -d "$d" ] || continue
+            rm -rf "$d"/com.mojang "$d"/net.minecraft "$d"/net.neoforged/neoform* "$d"/net.neoforged/neoforge*
+          done
+          rm -f "$m"/modules-2.lock "$m"/gc.properties
+      - name: Save Gradle's libraries and wrapper (only when the key missed)
+        if: steps.gradleRestore.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v6
+        with:
+          path: |
+            ~/.gradle/caches/modules-2
+            ~/.gradle/wrapper
+          key: ${{ steps.gradleRestore.outputs.cache-primary-key }}
 
   map:
     name: Map ${{ matrix.job }}.${{ matrix.replica }}

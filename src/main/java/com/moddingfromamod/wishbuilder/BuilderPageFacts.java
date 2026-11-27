@@ -25,7 +25,9 @@ import org.slf4j.LoggerFactory;
  * a lookup and a comparison per tile ({@link BuilderPageFit#draw}).
  *
  * <p>Started only when a world answers makes ({@code WorldMakes}): a server where none does never walks, never starts
- * the thread and keeps nothing ({@code BuilderPageFactsTest}). A page state the walk has not reached yet (the walk is
+ * the thread and keeps nothing ({@code BuilderPageFactsTest}). It is started as soon as one does, not at the first page:
+ * {@code BuilderPageWarm} asks for every tree in play (the server's, and each player's at join) the moment a world
+ * answers, so the first page is drawn ready. A page state the walk has not reached yet (the walk is
  * still running, or a page it never visits, such as a second pick on a multi-pick page) is asked for with {@link #need}:
  * it jumps the queue, and its page is drawn again when it is ready. Until then the page shows its tiles locked with
  * {@link BuilderPageFit#GETTING_READY}, never unfitted.
@@ -322,6 +324,38 @@ public final class BuilderPageFacts {
     }
 
     /**
+     * The index for {@code allow}'s tree if its walk has begun, else null, WITHOUT starting anything (a test, or a
+     * caller that must not start the worker).
+     */
+    public static Index peek(BuilderAllowlist allow) {
+        String fp = TREE_OF.get(allow);
+        Walk w = fp == null || fp.isEmpty() ? null : WALKS.get(fp);
+        return w == null ? null : w.index;
+    }
+
+    /**
+     * <b>Warm the trees before anyone opens the Builder</b>: with a world answering makes ({@code world}), each tree in
+     * {@code allows} not known yet is asked for, so its walk starts on the worker now rather than at the first page
+     * (which then showed its tiles locked while it was worked out). With no world answering, nothing: the worker is
+     * never started. Idempotent and cheap (two map reads per tree once known); never blocks. @return how many trees were
+     * newly asked for.
+     */
+    public static int warm(boolean world, java.util.Collection<BuilderAllowlist> allows) {
+        if (!world || allows == null) {
+            return 0;
+        }
+        int asked = 0;
+        for (BuilderAllowlist allow : allows) {
+            if (allow != null && peek(allow) == null) {
+                boolean known = TREE_OF.containsKey(allow);
+                forWorld(allow);
+                asked += known ? 0 : 1;
+            }
+        }
+        return asked;
+    }
+
+    /**
      * Work out the page at {@code snapshot}'s state ahead of the walk (a copy of the open flow, never the flow itself),
      * then run {@code ready} (which should hop to the server thread and draw the page again).
      */
@@ -344,6 +378,12 @@ public final class BuilderPageFacts {
             TREE_OF.clear();
             WALKS.clear();
         }
+    }
+
+    /** Forget every tree walked, as a change of readers does (a GameTest that must start from none). */
+    public static synchronized void forgetForTest() {
+        TREE_OF.clear();
+        WALKS.clear();
     }
 
     private static synchronized void start() {
