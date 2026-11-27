@@ -160,7 +160,7 @@ public record WorldFacts(String id, String name, String join, int minAge, List<S
         }
         for (net.neoforged.neoforgespi.language.IModFileInfo info : mods.getModFiles()) {
             try {
-                String text = readEntry(info.getFile().getFilePath(), "worlds/" + id + ".json");
+                String text = readEntry(info.getFile(), "worlds/" + id + ".json");
                 if (text != null) {
                     return text;
                 }
@@ -210,16 +210,10 @@ public record WorldFacts(String id, String name, String join, int minAge, List<S
         return new WorldFacts(id, name, join, minAge, intro, WorldGuide.parse(o.get("guide")));
     }
 
-    /** One entry of a mod's file: a jar is opened read-only, a dev run's classes folder is read in place. Null when absent. */
-    private static String readEntry(java.nio.file.Path file, String entry) throws IOException {
-        if (java.nio.file.Files.isDirectory(file)) {
-            java.nio.file.Path p = file.resolve(entry);
-            return java.nio.file.Files.isRegularFile(p) ? java.nio.file.Files.readString(p, StandardCharsets.UTF_8) : null;
-        }
-        try (java.nio.file.FileSystem fs = java.nio.file.FileSystems.newFileSystem(file, (ClassLoader) null)) {
-            java.nio.file.Path p = fs.getPath("/" + entry);
-            return java.nio.file.Files.isRegularFile(p) ? java.nio.file.Files.readString(p, StandardCharsets.UTF_8) : null;
-        }
+    /** One entry of a mod's file, read through FML's own contents (every content root of a dev run). Null when absent. */
+    private static String readEntry(net.neoforged.neoforgespi.locating.IModFile file, String entry) throws IOException {
+        byte[] b = file.getContents().readFile(entry);
+        return b == null ? null : new String(b, StandardCharsets.UTF_8);
     }
 
     private static String str(JsonObject o, String key) {
