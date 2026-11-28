@@ -137,13 +137,17 @@ of the ladder needs its own.
 
 Never cascade by hand. The plan workflow and the round task are installed only by MMVU's Setup, never edited by hand.
 
-**A fix lands on `main` first.** `main` holds every change; `neoforge-1.21.8` is `main` at a release point, and a
-higher `neoforge-<mc>` branch holds only its port's own changes plus `main` merged upward. A hotfix the release line
-needs before the next release point is made on `main` and **cherry-picked down** in the same change, never committed to
-the release line alone. `.github/workflows/release-line.yml` refuses a push or pull request that brings
-`neoforge-1.21.8` a commit with no equivalent on `main` (each commit not reachable from `main` is matched by patch-id against `main`, so a merge of `main` or a
-cherry-pick passes). Two kinds of commit are exempt: Port CI's own install-manifest refresh, and the weekly round's records
-(a commit that changes only `.port/KNOWN-ISSUES.json` and/or the README's Ports block).
+**Code lands on `main` first; the release line is `main` plus port-only commits.** `main` holds every change to the
+code; `neoforge-1.21.8` is `main` at a release point plus port-only commits, and a higher `neoforge-<mc>` branch holds
+only its port's own changes plus `main` merged upward. A hotfix the release line needs before the next release point is
+made on `main` and **cherry-picked down** in the same change, never committed to the release line alone.
+`.github/workflows/release-line.yml` refuses a push or pull request that brings `neoforge-1.21.8` a commit that changes
+something other than port-only files and has no equivalent on `main` (each commit not reachable from `main` is matched
+by patch-id against `main`, so a merge of `main` or a cherry-pick passes; merge commits are not judged). Port-only files
+are the Port CI workflows (`.github/workflows/port-ci*.yml`), everything under `.port/` (the known-issues ledger
+included) and the README's Ports block; a commit that changes only those may be on the release line alone, and one
+that mixes them with code is refused. `tools/test-release-line.py` holds that list to MMVU's round records. Port CI's
+own install-manifest refresh is exempt too.
 
 ## Building on it: extension points
 
