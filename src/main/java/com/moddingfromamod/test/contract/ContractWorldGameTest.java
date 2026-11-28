@@ -282,6 +282,31 @@ public final class ContractWorldGameTest {
         });
     }
 
+    /**
+     * The Builder's page facts are ready before anyone opens the Builder: once a world answers makes, the trees in play
+     * are warmed ({@code BuilderPageWarm}, from the server's tick), so the first Builder page this player opens is drawn
+     * READY, though no page was asked for and nothing here calls {@code forWorld}.
+     */
+    @GameTest(template = "empty_test", batch = "contract_world_pages_warm", timeoutTicks = 40000)
+    public static void theFirstBuilderPageIsReadyBeforeAnyPageIsAskedFor(GameTestHelper helper) {
+        ServerPlayer p = setUp(helper, "gtcontractwarm");
+        var allow = BuilderSettings.forPlayer(p.getUUID()).allow();
+        var flow = new com.moddingfromamod.wishbuilder.BuilderFlow(allow, com.moddingfromamod.wishbuilder.LibraryPresets.SHIPPED);
+        String first = com.moddingfromamod.wishbuilder.BuilderPageFacts.stateKey(flow);
+        com.moddingfromamod.wishbuilder.BuilderPageFacts.forgetForTest();   // no tree walked, no page asked for
+        helper.assertTrue(com.moddingfromamod.wishbuilder.BuilderPageFacts.peek(allow) == null,
+                Component.literal("a tree is still known after forgetting"));
+        com.moddingfromamod.test.RealTime.succeedWhen(helper, () -> {
+            var index = com.moddingfromamod.wishbuilder.BuilderPageFacts.peek(allow);   // looks, starts nothing
+            helper.assertTrue(index != null && index.page(first) != null,
+                    Component.literal("the first page was not worked out before it was asked for"));
+            var drawn = com.moddingfromamod.wishbuilder.BuilderPageFit.draw(flow, flow.page(), index,
+                    com.moddingfromamod.wishbuilder.BuilderMenus.world(p, flow));
+            helper.assertTrue(!com.moddingfromamod.wishbuilder.BuilderPageFit.gettingReady(drawn),
+                    Component.literal("the first Builder page was drawn getting ready"));
+        });
+    }
+
     @GameTest(template = "empty_test", batch = "contract_world_strongest_sword", timeoutTicks = 40000)
     public static void theStrongestSwordEverGivesTheStrongestSwordThisWorldAllows(GameTestHelper helper) {
         ServerPlayer p = setUp(helper, "gtcontractsword");

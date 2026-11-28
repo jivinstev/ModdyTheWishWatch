@@ -152,10 +152,19 @@ the agent's data each time the running class changes. Two things make the result
   it: two maps of one commit disagreed for 264 of 360 classes, because what a class left running landed in a
   different neighbour each run.)
 - **Each class has a settle window.** After its last batch, a synthetic test of its own waits 40 ticks and 1.5 s, and
-  then until no other thread is running the mod's code (at most 15 s), so what the class left running (a listener it
-  registered, a make on a worker thread, a poll it started) counts as its own, not as whichever class runs next.
-  (Measured before the wait for quiet: a Builder make a class started finished in the next class, a block of about 105
-  methods that landed in a different class in each run.) `tools/gate/CovmapAnalyze.java` (run as a single-file program
+  then until no other thread is running the mod's code (at most 300 s; the wall clock ends it, never its tick budget),
+  so what the class left running (a listener it registered, a make on a worker thread, a poll it started) counts as
+  its own, not as whichever class runs next. (Measured before the wait for quiet: a Builder make a class started
+  finished in the next class, a block of about 105 methods that landed in a different class in each run. Measured at
+  a 15 s most: the Builder's page-facts walk, which a class starts when its world first answers makes, took 99 s under
+  coverage and ran on through the next five or six classes, 170 to 470 methods in each, a different number of classes
+  every run; two replicas agreed on 96%.) A window that reaches its most with a thread still busy says so in the log,
+  naming the thread.
+- **The sweep between two classes is ambient.** Each class starts with no entity but the players: the harness
+  discards what the previous class left. That sweep, and every handler it fires (an entity leaving its level), is
+  dumped as `__sweep__`, never counted as the next class's: counted there, `PetBehaviours#onLeave` and its like ran in
+  whichever classes followed one that left a mob, and were ambient in a replica only when some start-up or shutdown
+  happened to discard one too. `tools/gate/CovmapAnalyze.java` (run as a single-file program
 with the JaCoCo core jars, never compiled into the mod) turns each job's dumps into the methods each class executed,
 and a table of every method's source file and line ranges. `gate.py covmap-merge` builds the map from the jobs.
 
@@ -164,7 +173,8 @@ and a table of every method's source file and line ranges. `gate.py covmap-merge
   change can only select more. A method's lines are its first to its last; an initialiser's (`<clinit>`, `<init>`) are
   exactly the lines holding its code, because its code is spread over the file's field declarations (first-to-last,
   `BuilderMenus`' static initialiser claimed lines 36 to 384, the whole file).
-- **Ambient methods** are what runs with no test of ours running: start-up, a 400-tick idle window, shutdown. They are
+- **Ambient methods** are what runs with no test of ours running: start-up, a 400-tick idle window, the sweeps
+  between classes, shutdown. They are
   kept apart from every class's set; a change to one of them runs the whole tier.
 - **Weekly, FULL**: every class, mapped twice by two replicas of the same split (the determinism check, below).
   **Daily, PARTIAL**: only the classes the map has not placed, and those whose own source file changed since the map
@@ -292,5 +302,17 @@ what Maven Central answers with `429 Too Many Requests`, and that reddened unrel
 - **A changed build starts warm**: each Gradle cache step falls back (`restore-keys`) to the newest cache when its exact
   key misses, instead of starting cold.
 - **A build that failed for want of a download runs once more**, a minute later
-  (`.github/gradle/retry-on-download.sh`; `gate.py run` does the same for a server that never started). Any other
-  failure is returned at once.
+  (`.github/gradle/retry-on-download.sh`). Any other failure is returned at once.
+- **So does a GameTest server Gradle never started for want of one** (`gate.py run`, so every job of the nightly, the
+  release gate's tier and the coverage map): a failed `:downloadAssets` (the Mojang asset download), `Could not
+  resolve`, `Could not GET`/`HEAD`, `not found in any of the following sources`, HTTP 429 or 5xx, a timeout or a reset
+  connection, with no server started, no compile error and no failed test. It runs once more after 60 s, never twice;
+  the first attempt's log is kept as `<attempt>-download-failed.log`, the job's result lists it (`downloadRetries`)
+  and its summary says `passed on a download retry`. A compile, test or gate failure is never retried this way
+  (`run.download_failure`, pinned by `test_gate.py`'s fake logs).
+- **The coverage map caches Gradle's libraries, never Minecraft content.** This repository is public and a fork's pull
+  request can read the base branch's Actions cache, so `covmap.yml` caches only `~/.gradle/caches/modules-2` and
+  `~/.gradle/wrapper`, keyed on the build files and the wrapper, with `com.mojang`, `net.minecraft`,
+  `net.neoforged/neoform*` and `net.neoforged/neoforge*` pruned before the one save (the warm job's). The NeoForm
+  runtime (`neoformruntime`), the Minecraft jars and assets and `jars-*`/`transforms*` are never cached, so each map
+  job rebuilds or downloads them; the asset download's failures are the retry's to absorb, not the cache's.

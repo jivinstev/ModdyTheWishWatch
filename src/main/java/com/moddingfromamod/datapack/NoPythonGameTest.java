@@ -1,9 +1,9 @@
 package com.moddingfromamod.datapack;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import com.moddingfromamod.testing.GateShards;
+import com.moddingfromamod.testing.ProcessStarts;
 import com.moddingfromamod.testing.gt.GameTest;
 import com.moddingfromamod.testing.gt.GameTestHolder;
 import net.minecraft.gametest.framework.GameTestHelper;
@@ -20,41 +20,6 @@ import net.minecraft.network.chat.Component;
 public final class NoPythonGameTest {
 
     private NoPythonGameTest() {
-    }
-
-    /**
-     * Records every process this JVM starts (JFR's {@code jdk.ProcessStart}: one event per start, from the JDK's own
-     * process launch, so even a program that exits at once is seen; polling the child processes misses those). The
-     * mod starts processes only through {@code ProcessBuilder}, which this covers.
-     */
-    static final class ProcessStarts implements AutoCloseable {
-        private final jdk.jfr.Recording recording = new jdk.jfr.Recording();
-        private final List<String> commands = new ArrayList<>();
-
-        ProcessStarts() {
-            recording.enable("jdk.ProcessStart").withThreshold(java.time.Duration.ZERO);
-            recording.start();
-        }
-
-        /** Stops the recording and returns every command line it saw. */
-        List<String> stop() throws java.io.IOException {
-            recording.stop();
-            java.nio.file.Path f = java.nio.file.Files.createTempFile("process-starts", ".jfr");
-            try {
-                recording.dump(f);
-                for (jdk.jfr.consumer.RecordedEvent e : jdk.jfr.consumer.RecordingFile.readAllEvents(f)) {
-                    commands.add(String.valueOf(e.getString("command")));
-                }
-            } finally {
-                java.nio.file.Files.deleteIfExists(f);
-            }
-            return commands;
-        }
-
-        @Override
-        public void close() {
-            recording.close();
-        }
     }
 
     static boolean isPython(String command) {
@@ -93,7 +58,7 @@ public final class NoPythonGameTest {
         } catch (Exception e) {
             throw com.moddingfromamod.testing.gt.GameTestCompat.assertion("could not record process starts: " + e);
         }
-        helper.assertTrue(started.stream().anyMatch(c -> c.equals("true") || c.endsWith("/true")),
+        helper.assertTrue(started.stream().anyMatch(c -> ProcessStarts.startsProgram(c, "true")),
                 Component.literal("the process recorder did not see its own control process, so it proves nothing: "
                         + started));
         List<String> python = started.stream().filter(NoPythonGameTest::isPython).toList();
