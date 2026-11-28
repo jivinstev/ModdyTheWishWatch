@@ -22,7 +22,8 @@
 # Two runs of the SAME mode need SLOT=a / SLOT=b. TIMEOUT (seconds, default 900) kills the whole run.
 #
 # On LINUX with no DISPLAY (CI, a cloud VM) the client runs under Xvfb with Mesa's llvmpipe software
-# rasteriser (OpenGL 4.5 core; Minecraft needs 3.2). Install: apt-get install -y xvfb libgl1-mesa-dri.
+# rasteriser (OpenGL 4.5 core; Minecraft needs 3.2), and on 26.x through Mesa's EGL (SDL needs it, below).
+# Install: apt-get install -y xvfb libgl1-mesa-dri libegl1 libegl-mesa0.
 # Anywhere else it uses the display you have. Never touches your real game install.
 # ─────────────────────────────────────────────────────────────────────────────
 set -uo pipefail
@@ -62,12 +63,23 @@ XVFB=()
 if [ "$(uname)" = "Linux" ] && [ -z "${DISPLAY:-}" ]; then
     if command -v xvfb-run >/dev/null 2>&1; then
         export LIBGL_ALWAYS_SOFTWARE=1    # without it Mesa may try a DRI device that does not exist
+        # 26.x opens its window with SDL3 (FML's early display, then the game), which asks for an sRGB-capable
+        # framebuffer; Xvfb's software GLX offers no such visual, so the client dies at once with "Couldn't find
+        # matching GLX visual". Through EGL on the same X display it gets one. GLFW (1.21.x) never reads this, so it
+        # is set for every version: one script, every version branch (docs/RELEASING.md, "Gate C on every version").
+        export SDL_VIDEO_FORCE_EGL="${SDL_VIDEO_FORCE_EGL:-1}"
+        if ! { ldconfig -p 2>/dev/null | grep -q 'libEGL_mesa\.so'; }; then
+            # A warning, not an exit: a 1.21.x client (GLFW) never needs EGL. A 26.x client without it cannot open
+            # its window, and the verdict below names the cause.
+            echo "client-test: WARNING — Mesa's EGL is not installed; a 26.x client cannot open its window without it." >&2
+            echo "client-test:   apt-get install -y libegl1 libegl-mesa0" >&2
+        fi
         XVFB=(xvfb-run -a -s "-screen 0 ${XVFB_SCREEN:-1280x720x24}")
         echo "client-test: headless Linux — client runs under Xvfb (llvmpipe software GL)"
     else
         # LOUD, not a skip: a Gate C that quietly did not run reads as a pass.
         echo "client-test: headless Linux (no DISPLAY) and xvfb-run is not installed." >&2
-        echo "client-test:   apt-get update && apt-get install -y xvfb libgl1-mesa-dri" >&2
+        echo "client-test:   apt-get update && apt-get install -y xvfb libgl1-mesa-dri libegl1 libegl-mesa0" >&2
         exit 2
     fi
 fi
@@ -111,9 +123,13 @@ RC=3
 if [ -f "$SIG/result" ]; then
     cat "$SIG/result"
     grep -q '^PASS' "$SIG/result" && RC=0 || RC=1
+    # NORUN: the film could not run (its stage never settled, ClientHarness.couldNotRun) -- a rig fault, never judged
+    grep -q '^NORUN' "$SIG/result" && RC=2
 else
     echo "NO RESULT — the client exited before reporting (crash during startup?)"
-    grep -iE 'primary monitor|GLFW|Exception in thread|Caused by:|FATAL|Mixin apply failed' "$SIG/run.log" 2>/dev/null | head -5
+    grep -iE 'primary monitor|GLFW|GLX visual|Exception in thread|Caused by:|FATAL|Mixin apply failed' "$SIG/run.log" 2>/dev/null | head -5
+    grep -q "Couldn't find matching GLX visual" "$SIG/run.log" 2>/dev/null \
+        && echo "(an SDL client under Xvfb without EGL: SDL_VIDEO_FORCE_EGL=1 and apt-get install -y libegl1 libegl-mesa0)"
 fi
 [ -f "$SIG/timeout" ] && { echo "TIMEOUT after ${TIMEOUT}s (client never finished)"; RC=3; }
 echo "log: $SIG/run.log"

@@ -20,7 +20,6 @@ import net.minecraft.client.server.IntegratedServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Display;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.InterpolationHandler;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -64,10 +63,59 @@ public final class RigDriftMeter {
     private static final Map<Integer, Long> lastPoseStart = new HashMap<>();
     private static final Map<Integer, double[]> lastPos = new HashMap<>();
 
-    private static Field interpData;
-    private static Field interpSteps;
+    /**
+     * The fields a display's position ease is read from, per handler class. Resolved by NAME on the handler the entity
+     * really has, walking its class hierarchy, because the shape moved between Minecraft versions and the films run on
+     * every version branch (docs/RELEASING.md, "Gate C on every version"): through 1.21.x {@code InterpolationHandler}
+     * is a class holding {@code interpolationData.steps} and {@code interpolationSteps}; from 26.x it is an interface,
+     * and a display's {@code LinearInterpolationHandler} holds {@code interpolationData.remainingSteps} beside the
+     * inherited {@code AbstractInterpolationHandler.interpolationSteps}. A shape this knows no name for fails the film
+     * with the class it looked in (the tick handler throws), never a silent zero.
+     */
+    private record Ease(Field data, Field steps, Field length) {
+        int steps(Object handler) throws IllegalAccessException {
+            return steps.getInt(data.get(handler));
+        }
+
+        int length(Object handler) throws IllegalAccessException {
+            return length.getInt(handler);
+        }
+    }
+
+    private static final Map<Class<?>, Ease> EASES = new HashMap<>();
     private static Field poseStart;
-    private static Field interpLen;
+
+    private static Ease ease(Object handler) throws IOException {
+        Ease e = EASES.get(handler.getClass());
+        if (e == null) {
+            try {
+                Field data = field(handler.getClass(), "interpolationData");
+                e = new Ease(data, field(data.getType(), "steps", "remainingSteps"),
+                        field(handler.getClass(), "interpolationSteps"));
+            } catch (NoSuchFieldException x) {
+                throw new IOException("rigdrift: cannot read the display's ease state on " + handler.getClass().getName()
+                        + ": " + x.getMessage(), x);
+            }
+            EASES.put(handler.getClass(), e);
+        }
+        return e;
+    }
+
+    /** The first of {@code names} declared on {@code c} or a superclass, made accessible. */
+    static Field field(Class<?> c, String... names) throws NoSuchFieldException {
+        for (Class<?> k = c; k != null && k != Object.class; k = k.getSuperclass()) {
+            for (String n : names) {
+                try {
+                    Field f = k.getDeclaredField(n);
+                    f.setAccessible(true);
+                    return f;
+                } catch (NoSuchFieldException ignored) {
+                    // the next name, then the superclass
+                }
+            }
+        }
+        throw new NoSuchFieldException(String.join(" or ", names) + " (in " + c.getName() + " or a superclass)");
+    }
 
     static boolean enabled() {
         return !DIR.isEmpty();
@@ -84,14 +132,7 @@ public final class RigDriftMeter {
         ticks = Files.newBufferedWriter(d.resolve("rigdrift-ticks.csv"), StandardCharsets.UTF_8);
         ticks.write("gametime,clienttick,rig,atoms,pos_starts,pose_starts,server_yaw,drawn_yaw,pos_changed,steps_hist,ease_hist,pos_ids,pose_ids\n");
         try {
-            interpData = InterpolationHandler.class.getDeclaredField("interpolationData");
-            interpData.setAccessible(true);
-            interpSteps = interpData.getType().getDeclaredField("steps");
-            interpSteps.setAccessible(true);
-            poseStart = Display.class.getDeclaredField("interpolationStartClientTick");
-            interpLen = InterpolationHandler.class.getDeclaredField("interpolationSteps");
-            interpLen.setAccessible(true);
-            poseStart.setAccessible(true);
+            poseStart = field(Display.class, "interpolationStartClientTick");
         } catch (ReflectiveOperationException e) {
             throw new IOException("rigdrift: cannot read the display's ease state: " + e, e);
         }
@@ -134,11 +175,13 @@ public final class RigDriftMeter {
                     n++;
                     // After this tick's entity tick, a move that arrived this tick has stepped once: steps = len - 1.
                     // A rig's teleport_duration is 3, so 2 here (from 0 or 1 last tick) means a new move.
-                    int steps = interpSteps.getInt(interpData.get(d.getInterpolation()));
+                    Object handler = d.getInterpolation();
+                    Ease shape = ease(handler);
+                    int steps = shape.steps(handler);
                     // Without a new move steps only falls (2, 1, 0), so 2 is a move that arrived since the last tick.
                     lastSteps.put(id, steps);
                     stepsHist[Math.max(0, Math.min(10, steps))]++;
-                    easeHist.merge(interpLen.getInt(d.getInterpolation()), 1, Integer::sum);
+                    easeHist.merge(shape.length(handler), 1, Integer::sum);
                     double[] lp = lastPos.put(id, new double[] {d.getX(), d.getY(), d.getZ()});
                     if (lp != null && (lp[0] != d.getX() || lp[1] != d.getY() || lp[2] != d.getZ())) {
                         posChanged++;

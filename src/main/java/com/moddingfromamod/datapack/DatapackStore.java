@@ -141,14 +141,45 @@ public final class DatapackStore {
     public static int installAllIntoWorld(MinecraftServer server) {
         List<String> ids = listIds();
         int installed = 0;
+        // WINDOWS: a pack already loaded has its zip open, and Windows refuses to replace an open file, so an
+        // overwrite here failed with a warning and the world kept running the OLD pack (a silent wrong result; the
+        // platform smoke, 2026-11-26). A pack whose bytes are already the world's needs no write at all (the usual
+        // boot); one that changed is staged, and if the replace is refused it is released with the rest in ONE
+        // reload, then put in place. Linux and macOS never meet the refusal.
+        java.util.Map<String, Path[]> held = new java.util.LinkedHashMap<>();
         for (String id : ids) {
             try {
                 Path dest = DatapackReloader.worldDatapackDir(server).resolve(id + ".zip");
                 Files.createDirectories(dest.getParent());
-                Files.write(dest, installBytes(id));
+                byte[] bytes = installBytes(id);
+                if (Files.isRegularFile(dest) && java.util.Arrays.equals(Files.readAllBytes(dest), bytes)) {
+                    installed++;
+                    continue;
+                }
+                Path tmp = dest.resolveSibling("." + id + ".zip.tmp");
+                Files.write(tmp, bytes);
+                try {
+                    DatapackReloader.moveInto(tmp, dest);
+                } catch (java.nio.file.FileSystemException inUse) {
+                    held.put(id, new Path[] {tmp, dest});
+                    continue;
+                }
                 installed++;
             } catch (IOException e) {
                 LOGGER.warn("could not stage wish datapack '{}' into the world: {}", id, e.toString());
+            }
+        }
+        if (!held.isEmpty()) {
+            LOGGER.info("{} wish datapack(s) held open by the loaded resources; releasing them to replace them: {}",
+                    held.size(), held.keySet());
+            DatapackReloader.releaseLoaded(server, new ArrayList<>(held.keySet()));
+            for (var e : held.entrySet()) {
+                try {
+                    DatapackReloader.moveInto(e.getValue()[0], e.getValue()[1]);
+                    installed++;
+                } catch (IOException x) {
+                    LOGGER.warn("could not stage wish datapack '{}' into the world: {}", e.getKey(), x.toString());
+                }
             }
         }
         if (installed > 0) {

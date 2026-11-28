@@ -94,6 +94,11 @@ public final class LibraryPromotion {
             return new Result(false, "promote: '" + id + "' is not a library id — it must be"
                     + " lower-case letters, digits, _ or -, and must not carry a fork suffix");
         }
+        if (com.moddingfromamod.store.SafeFileName.isWindowsReserved(id)) {
+            // the library ships to every player, and on Windows species/con/ is a device, not a folder
+            return new Result(false, "promote: '" + id + "' is a name Windows keeps for a device (con, nul, aux,"
+                    + " prn, com1, lpt1...); pick another library id with as=<id>");
+        }
         Path library = WishLibrary.dir();
         Path dest = library.resolve("species").resolve(id);
         if (Files.exists(dest) && !force) {

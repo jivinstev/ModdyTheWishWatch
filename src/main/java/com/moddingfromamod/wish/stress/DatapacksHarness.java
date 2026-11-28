@@ -10,8 +10,8 @@ import com.moddingfromamod.wish.WishCorpus;
 /**
  * Stresses {@code kind=datapacks}: the verification that did not exist.
  *
- * <p>Compiling CBScript needs Python and the compiler fork, which a headless gate cannot rely on —
- * so this harness does NOT compile. It exercises the half that was missing and is always available:
+ * <p>This harness does NOT compile (the compiler has its own gates: CbScriptCompilerTest,
+ * CbScriptCorpusTest). It exercises the half that was missing:
  * given a pack id, does the verifier tell the truth about whether it is loaded and whether its
  * functions are real?
  *

@@ -191,7 +191,10 @@ public final class WishHotbarGameTest {
             ItemStack theirs = WishHotbar.proxy(cell("Theirs " + tag, recipe + "x"), UUID.randomUUID());
             check(helper, WishHotbar.use(p, theirs).used() == WishHotbar.Used.NOT_YOURS, "another player's proxy is refused");
 
-            // ADD AGAIN never makes two; a FULL hotbar asks, and the slot he gives up moves to his bag.
+            // ADD AGAIN never makes two; a FULL hotbar puts it in his WISH BAG (never nowhere), and a slot he picks
+            // (the fallback when the bag cannot take it) moves what was there to his inventory and takes the bag's
+            // copy back, so there is still only one.
+            com.moddingfromamod.bag.WishBagService.clearForTest(p.level().getServer(), p.getUUID());
             for (int i = 0; i < WishHotbarPlan.SLOTS; i++) {
                 if (inv.getItem(i).isEmpty()) {
                     inv.setItem(i, new ItemStack(Items.DIRT));
@@ -200,8 +203,16 @@ public final class WishHotbarGameTest {
             WatchPanel.Cell other = cell("Second Fixture " + tag, recipe);
             inv.setItem(1, new ItemStack(Items.DIRT));
             WishHotbar.add(p, other);
-            check(helper, !WishHotbar.has(p, recipe), "a full hotbar places nothing until he picks a slot");
+            check(helper, !WishHotbar.has(p, recipe) && WishHotbar.inBag(p, recipe),
+                    "a full hotbar puts the wish in his Wish Bag");
+            WishHotbar.add(p, other);
+            int inBag = 0;
+            for (ItemStack e : com.moddingfromamod.bag.WishBagService.contents(p.level().getServer(), p.getUUID())) {
+                inBag += recipe.equals(WishHotbar.recipeOf(e)) ? e.getCount() : 0;
+            }
+            check(helper, inBag == 1, "pinning it again with the hotbar still full makes no second one: " + inBag);
             WishHotbar.pickedSlot(p, "slot0", other);
+            check(helper, !WishHotbar.inBag(p, recipe), "on the hotbar now, so out of the bag");
             check(helper, recipe.equals(WishHotbar.recipeOf(inv.getItem(0))), "the picked slot holds the proxy");
             check(helper, inv.getItem(WishHotbarPlan.SLOTS).is(Items.STICK), "what was there moved into his bag");
             WishHotbar.add(p, other);
@@ -210,7 +221,23 @@ public final class WishHotbarGameTest {
             for (int i = 0; i < inv.getContainerSize(); i++) {
                 count += recipe.equals(WishHotbar.recipeOf(inv.getItem(i))) ? 1 : 0;
             }
-            check(helper, count == 1 && recipe.equals(WishHotbar.recipeOf(inv.getItem(3))), "never two of one wish: " + count);
+            check(helper, count == 1 && recipe.equals(WishHotbar.recipeOf(inv.getItem(3))) && !WishHotbar.inBag(p, recipe),
+                    "never two of one wish: " + count);
+
+            // EVERY NEW WISH is in his bag too (pinToBag), once, and never when he already holds it.
+            String fresh = recipe + "-fresh";
+            WatchPinService.pinBagMockForTest(p);
+            try {
+                check(helper, WishHotbar.pinToBag(p.level().getServer(), p.getUUID(), fresh, "Fresh " + tag, "minecraft:wolf_spawn_egg")
+                        && WishHotbar.inBag(p, fresh), "a new wish is put in his Wish Bag");
+                check(helper, !WishHotbar.pinToBag(p.level().getServer(), p.getUUID(), fresh, "Fresh " + tag, "minecraft:wolf_spawn_egg"),
+                        "not twice");
+                check(helper, !WishHotbar.pinToBag(p.level().getServer(), p.getUUID(), recipe, "Held " + tag, ""),
+                        "not one he already holds on his hotbar");
+            } finally {
+                WatchPinService.unpinMockForTest(p);
+                com.moddingfromamod.bag.WishBagService.clearForTest(p.level().getServer(), p.getUUID());
+            }
 
             // OFF.
             check(helper, WishHotbar.press(p, WishHotbar.REMOVE_ID, thing) && !WishHotbar.has(p, recipe),
@@ -396,8 +423,9 @@ public final class WishHotbarGameTest {
             var inv = p.getInventory();
             inv.clearContent();
 
-            // NO CHARGE: the one second, as before.
-            Plugins.shared().replaceForTest(WishCharge.class, null);
+            // NO CHARGE: the one second, as before. NONE, not null (#108): a null puts back whatever is REGISTERED, and a
+            // world jar beside the core registers its own charge, so the default would not be what is tested.
+            Plugins.shared().replaceForTest(WishCharge.class, WishCharge.NONE);
             check(helper, WishCharge.get() == WishCharge.NONE, "a charge is in force here, so the default is not tested");
             ItemStack plain = WishHotbar.proxy(cell("Free " + tag, free), p.getUUID());
             WishHotbar.Use use = WishHotbar.use(p, plain);

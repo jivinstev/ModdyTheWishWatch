@@ -63,4 +63,43 @@ class MobStateTest {
         MobState s = new MobState(null, null, null, null, "  ", "   ", null);
         assertTrue(s.isEmpty(), "empty strings are not a name and not a colour");
     }
+
+    // ===================== #115: armour and knockback, and the record's version =====================
+
+    @Test
+    void armourAndKnockbackAreCapturedAndComeBack() {
+        MobState was = new MobState(1.0, 20.0, null, null, null, null, false, null, 4.0, 0.25);
+        MobState back = MobState.fromJson(was.toJson());
+        assertEquals(4.0, back.armor());
+        assertEquals(0.25, back.knockbackResistance());
+        assertEquals(MobState.RECORD_VERSION, was.toJson().get("v").getAsInt(), "written at the current version");
+        assertTrue(was.describe().contains("4 armour") && was.describe().contains("knockback resistance 0.25"),
+                was.describe());
+        assertFalse(new MobState(null, null, null, null, null, null, null, null, 0.0, null).isEmpty(),
+                "0 armour is a value to put back, not nothing");
+    }
+
+    @Test
+    void anOlderRecordReadsArmourAndKnockbackAsNotCapturedAndKeepsWhatItHad() {
+        // a v1 record, as a build before #115 wrote it: no "v", and even a stray armour field is not trusted
+        com.google.gson.JsonObject v1 = com.google.gson.JsonParser.parseString(
+                "{\"scale\":1.0,\"health\":20.0,\"armor\":9.0}").getAsJsonObject();
+        MobState old = MobState.fromJson(v1);
+        assertEquals(1, MobState.versionOf(v1));
+        assertEquals(1.0, old.scale());
+        assertEquals(20.0, old.maxHealth());
+        assertNull(old.armor(), "not captured: an undo leaves it as it is");
+        assertNull(old.knockbackResistance());
+    }
+
+    @Test
+    void aNewerRecordIsRefusedNotHalfRead() {
+        com.google.gson.JsonObject newer = com.google.gson.JsonParser.parseString(
+                "{\"v\":" + (MobState.RECORD_VERSION + 1) + ",\"scale\":2.0}").getAsJsonObject();
+        org.junit.jupiter.api.Assertions.assertThrows(MobState.Newer.class, () -> MobState.fromJson(newer));
+        com.google.gson.JsonObject garbled = com.google.gson.JsonParser.parseString(
+                "{\"v\":\"two\",\"scale\":2.0}").getAsJsonObject();
+        org.junit.jupiter.api.Assertions.assertThrows(MobState.Newer.class, () -> MobState.fromJson(garbled),
+                "an unreadable version is refused, never guessed at");
+    }
 }

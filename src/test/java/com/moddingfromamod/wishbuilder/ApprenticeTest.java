@@ -127,6 +127,56 @@ class ApprenticeTest {
         assertEquals(Apprentice.Band.CLOSE, c.apply("a robot dog").band());
         assertEquals(Apprentice.Band.NOTHING, c.apply("do my homework").band());
         assertEquals("auto", c.apply("a dragon that spits flames").stratum());
+        // A power the body already has is granted, not left out: the dragon flies on its own.
+        assertEquals(Apprentice.Band.SURE, c.apply("a dragon that can fly").band());
+        assertEquals(Apprentice.Band.SURE, c.apply("a dragon that breathes fire and can fly").band());
+        assertTrue(APPRENTICE.notes("a dragon that can fly", APPRENTICE.match("a dragon that can fly").offers().get(0))
+                .cant().isEmpty(), "\"fly\" is not something the dragon leaves out");
+    }
+
+    @Test
+    @DisplayName("a power the body already has is granted, for every body that has one, not left out")
+    void aBuiltInPowerIsKeptForEveryBody() {
+        // The general case of "a dragon that can fly": every creature or ride body whose "has" facts name a power,
+        // wished for with that power in its own words. The body does it on its own, so the Builder adds no pick,
+        // and the word must still count as granted (never in the tile's "cant").
+        int checked = 0;
+        List<String> wrong = new java.util.ArrayList<>();
+        for (BuilderTree.Kind k : TREE.kinds()) {
+            for (BuilderTree.Form f : k.forms()) {
+                BuilderTree.Slot from = f.slot("from");
+                BuilderTree.Slot powers = f.slot("powers");
+                if (from == null || powers == null) {
+                    continue;
+                }
+                for (BuilderTree.Entry body : from.entries()) {
+                    String has = body.facts().getOrDefault("has", "");
+                    if (has.isBlank() || body.words().isEmpty()) {
+                        continue;
+                    }
+                    for (String p : has.split(",")) {
+                        BuilderTree.Entry power = powers.entry("power:" + p.strip());
+                        if (power == null || power.words().isEmpty()) {
+                            continue;
+                        }
+                        String wish = "a " + BuilderTree.Term.parse(body.words().get(0)).phrase() + " that "
+                                + BuilderTree.Term.parse(power.words().get(0)).phrase();
+                        Apprentice.Answer a = APPRENTICE.match(wish);
+                        if (a.offers().isEmpty() || !a.offers().get(0).kind().equals(k.id())
+                                || !a.offers().get(0).form().equals(f.id())
+                                || !body.id().equals(a.offers().get(0).first("from"))) {
+                            continue;   // another body won the words; not this rule's question
+                        }
+                        checked++;
+                        if (!APPRENTICE.notes(wish, a.offers().get(0)).cant().isEmpty()) {
+                            wrong.add(wish + " -> " + APPRENTICE.notes(wish, a.offers().get(0)).cant());
+                        }
+                    }
+                }
+            }
+        }
+        assertTrue(checked >= 10, "the sweep must reach real cases, not pass empty: " + checked);
+        assertTrue(wrong.isEmpty(), "a built-in power read as left out: " + wrong);
     }
 
     @Test
@@ -235,6 +285,23 @@ class ApprenticeTest {
         assertTrue(APPRENTICE.notes("three cows", APPRENTICE.match("three cows").offers().get(0)).empty());
         assertTrue(APPRENTICE.match("a sword that does 10 damage").offers().get(0).first("count").isEmpty(),
                 "10 counts the damage, not the sword");
+    }
+
+    @Test
+    @DisplayName("#103: a Builder creature's dialog asks How strong, not How many; typed words still make several, and say its strength")
+    void typedWordsStillMakeSeveralCreatures() {
+        Apprentice.Answer cats = APPRENTICE.match("five giant cats");
+        Apprentice.Pick pick = cats.offers().get(0);
+        assertEquals("species/cat", pick.first("from"));
+        assertEquals("5", pick.first("count"), "the count is read from his words, with no control on the dialog");
+        BuilderSpec spec = ApprenticeMake.spec(BuilderAllowlist.REVIEWED, LibraryPresets.SHIPPED, TREE, pick);
+        assertEquals(5, spec.count(), "and five are made");
+        MakeFit.Fitted three = MakeFit.fit(spec, java.util.Map.of(MakeFacts.COUNT_MADE, 3.0));
+        assertTrue(three.fits() && three.spec().count() == 3, "a world's countMade fits it as before: " + three);
+        // and his words say how strong
+        Apprentice.Pick strong = APPRENTICE.match("a super strong cat").offers().get(0);
+        assertEquals("3", strong.first("strength"));
+        assertEquals("3", ApprenticeMake.spec(BuilderAllowlist.REVIEWED, LibraryPresets.SHIPPED, TREE, strong).opt("strength"));
     }
 
     @Test

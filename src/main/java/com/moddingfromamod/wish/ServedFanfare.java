@@ -220,7 +220,9 @@ public final class ServedFanfare {
                 LOGGER.info("[reveal] served {} for wish {} ({})",
                         f.look == null ? "build" : f.look.name().toLowerCase(),
                         f.job.wish.shortId(), f.quick ? "quick" : "full");
-                WishOrbs.pinServed(level, f.wishId(), fx, fy, fz, 3, FanfareTiming.fraction(0, f.quick));
+                // stood up in its wisher's colour (#178); the calls below only move its progress on
+                WishOrbs.pinServed(level, f.wishId(), fx, fy, fz, 3, FanfareTiming.fraction(0, f.quick),
+                        WishOrbs.paletteOf(f.playerId), false);
             }
             case RISE -> {
                 f.age++;

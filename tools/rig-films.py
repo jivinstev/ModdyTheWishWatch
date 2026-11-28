@@ -34,6 +34,18 @@ RIG_FILMS_EXTRA = ("vanillascale",)
 RIG_FILMS_NOT_RUN = {
     "vanillawish": "a paid real-agent wish through the Magician (Gate D), not a rig film: run it by hand",
 }
+# Films ONE Minecraft version does not run, by that version (gradle.properties' minecraft_version on the branch that
+# runs them), each with the reason: a version's declared subset of the set above. Every version branch runs this
+# file's set through the one .port/1.21.8/gate-c.json (Port CI takes the nearest lower version's file), so a film
+# that cannot run on a version is named here, on main, and reaches that branch with the next merge up. Empty means
+# every version runs every film; docs/RELEASING.md ("Gate C on every version") says which ran where.
+RIG_FILMS_NOT_ON = {
+}
+# The films a TARGETED run always runs, whatever changed (tools/gate-c-rig.sh --targeted, Port CI's Gate C on every
+# version, .port/<mc>/gate-c.json): a real client draws and photographs a creature (vanillastage), a rig walks with every
+# part held to its body (vanillawalk, the drift meter), and a rig falls and spins as it dies (vanilladeath, the spin
+# rule). About 2.5 minutes together; a change to the rig itself runs every film.
+RIG_FILMS_CORE = ("vanillastage", "vanillawalk", "vanilladeath")
 # One alternative per line, so --check can ask each whether it still matches a real file.
 RIG_PATH_RULES = (
     r"src/main/java/com/moddingfromamod/vanilla/",
@@ -48,12 +60,29 @@ RIG_PATH_RULES = (
 RIG_PATHS = re.compile("^(" + "|".join(RIG_PATH_RULES) + ")")
 
 
-def rig_films(repo=REPO):
-    """The testmodes tools/gate-c-rig.sh runs, in scoreboard order."""
+def minecraft_version(repo=REPO):
+    """This checkout's Minecraft version (gradle.properties), or "" without one."""
+    try:
+        text = open(os.path.join(repo, "gradle.properties"), encoding="utf-8").read()
+    except OSError:
+        return ""
+    m = re.search(r"(?m)^minecraft_version=(\S+)", text)
+    return m.group(1) if m else ""
+
+
+def not_on(mc=None, repo=REPO):
+    """{film: reason} this Minecraft version leaves out (RIG_FILMS_NOT_ON)."""
+    return dict(RIG_FILMS_NOT_ON.get(minecraft_version(repo) if mc is None else mc, {}))
+
+
+def rig_films(repo=REPO, mc=None, every_version=False):
+    """The testmodes tools/gate-c-rig.sh runs on this checkout's Minecraft version (or `mc`), in scoreboard order.
+    every_version: the whole set, before any version's leave-outs."""
     text = open(os.path.join(repo, SCOREBOARD), encoding="utf-8").read()
+    skip = {} if every_version else not_on(mc, repo)
     out = []
     for m in re.findall(r"GateC:([a-z0-9]+)", text) + list(RIG_FILMS_EXTRA):
-        if m not in out and m not in RIG_FILMS_NOT_RUN:
+        if m not in out and m not in RIG_FILMS_NOT_RUN and m not in skip:
             out.append(m)
     return out
 
@@ -73,6 +102,43 @@ def needed(paths):
     return ("rig-films" if hit else "none"), hit
 
 
+def targeted(paths, repo=REPO, mc=None):
+    """(films, reasons): what a targeted run runs for a change to `paths`. Every film when a path is one the films
+    measure in common (the rig, the harness, the sculpt tool, the scripts, the scoreboard); a film when only its own
+    client test changed; and RIG_FILMS_CORE always. In set order, this version's leave-outs left out."""
+    films = rig_films(repo, mc)
+    own = {}
+    for m in films:
+        c = film_class(m, repo)
+        if c:
+            own[c] = m
+    pick, why, every = set(), [], False
+    for p in paths:
+        if not RIG_PATHS.match(p):
+            continue
+        if p in own:
+            pick.add(own[p])
+            why.append(f"{own[p]}: its client test changed ({p})")
+        elif not every:
+            every = True
+            why.append(f"every film: {p} is something every film measures")
+    if every:
+        return films, why
+    for m in RIG_FILMS_CORE:
+        if m in films and m not in pick:
+            pick.add(m)
+            why.append(f"{m}: the core set, run on every change")
+    return [m for m in films if m in pick], why
+
+
+def release_base(repo=REPO, mod_id="moddingfromamod"):
+    """The newest release tag of this checkout's Minecraft version below HEAD (`<mod>-<version>-mc<mc>`), or None."""
+    mc = minecraft_version(repo)
+    r = subprocess.run(["git", "describe", "--tags", "--abbrev=0", "--match", f"{mod_id}-*-mc{mc}", "HEAD^"],
+                       cwd=repo, capture_output=True, text=True)
+    return r.stdout.strip() if r.returncode == 0 and r.stdout.strip() else None
+
+
 def changed_paths(base):
     """Every path this branch changed against the merge base with `base` (both sides of a rename)."""
     mb = subprocess.run(["git", "merge-base", base, "HEAD"], cwd=REPO, capture_output=True, text=True)
@@ -86,6 +152,15 @@ def changed_paths(base):
 def check(repo=REPO):
     problems = []
     films = rig_films(repo)
+    every = rig_films(repo, every_version=True)
+    for mc, left in RIG_FILMS_NOT_ON.items():
+        if not re.fullmatch(r"\d+(\.\d+)+", mc):
+            problems.append(f"RIG_FILMS_NOT_ON: {mc!r} is not a Minecraft version")
+        for m, why in left.items():
+            if m not in every:
+                problems.append(f"RIG_FILMS_NOT_ON[{mc}]: {m!r} is not a film of the set")
+            if not str(why).strip():
+                problems.append(f"RIG_FILMS_NOT_ON[{mc}]: {m!r} names no reason")
     for m in films + list(RIG_FILMS_NOT_RUN):
         if film_class(m, repo) is None:
             problems.append(f"rig film '{m}' is named but no client test in {FILM_DIR} claims that testmode")
@@ -93,7 +168,9 @@ def check(repo=REPO):
     for alt in RIG_PATH_RULES:
         if not any(re.match(alt, p) for p in tracked):
             problems.append(f"rig path rule {alt!r} matches no tracked file: a rename left it stale")
-    print(f"rig-films: {len(films)} films ({', '.join(films)}); not run: {', '.join(RIG_FILMS_NOT_RUN)}")
+    left = not_on(repo=repo)
+    print(f"rig-films: {len(films)} films ({', '.join(films)}); not run: {', '.join(RIG_FILMS_NOT_RUN)}"
+          + (f"; not on Minecraft {minecraft_version(repo)}: {', '.join(left)}" if left else ""))
     return problems
 
 
@@ -127,6 +204,40 @@ def self_test():
         if m not in films:
             bad += 1
             print(f"  FAIL an extra film is missing from the set: {m}")
+    # a targeted run: core always; a film's own test adds that film; a shared rig path runs them all
+    every_film = rig_films()
+    core = [m for m in every_film if m in RIG_FILMS_CORE]
+    walk_cls = film_class("vanillahair")
+    for what, paths, want in [
+        ("nothing the films measure: the core", ["README.md"], core),
+        ("a film's own test: the core and that film", [walk_cls],
+         [m for m in every_film if m in set(core) | {"vanillahair"}]),
+        ("the rig itself: every film", ["src/main/java/com/moddingfromamod/vanilla/DisplayRig.java"], every_film),
+        ("the script: every film", ["tools/gate-c-rig.sh"], every_film)]:
+        got, _ = targeted(paths)
+        ok = got == want
+        bad += not ok
+        print(f"  {'ok  ' if ok else 'FAIL'} targeted: {what} -> {got}")
+    for m in RIG_FILMS_CORE:
+        if m not in every_film:
+            bad += 1
+            print(f"  FAIL a core film is not in the set: {m}")
+    # a version's leave-outs leave that version's set only, and say why
+    every = rig_films(every_version=True)
+    saved = dict(RIG_FILMS_NOT_ON)
+    try:
+        RIG_FILMS_NOT_ON.clear()
+        RIG_FILMS_NOT_ON["9.9"] = {every[0]: "a reason"}
+        cases = [("9.9", every[0] not in rig_films(mc="9.9") and len(rig_films(mc="9.9")) == len(every) - 1),
+                 ("another version", rig_films(mc="9.8") == every),
+                 ("every_version", rig_films(mc="9.9", every_version=True) == every),
+                 ("not_on", not_on("9.9") == {every[0]: "a reason"} and not_on("9.8") == {})]
+    finally:
+        RIG_FILMS_NOT_ON.clear()
+        RIG_FILMS_NOT_ON.update(saved)
+    for what, ok in cases:
+        bad += not ok
+        print(f"  {'ok  ' if ok else 'FAIL'} RIG_FILMS_NOT_ON: {what}")
     print("✅ rig-films self-test passed" if not bad else f"❌ rig-films self-test: {bad} failure(s)")
     return 1 if bad else 0
 
@@ -137,6 +248,9 @@ def main():
     ap.add_argument("--needed", nargs="?", const="origin/main", metavar="BASE")
     ap.add_argument("--paths", nargs="*")
     ap.add_argument("--check", action="store_true")
+    ap.add_argument("--targeted", nargs="?", const="release", metavar="BASE",
+                    help="the films a targeted run runs for this branch against BASE (default: the newest release "
+                         "tag of this Minecraft version below HEAD; none, every film), as --list prints them")
     ap.add_argument("--self-test", action="store_true")
     a = ap.parse_args()
     if a.self_test:
@@ -144,6 +258,25 @@ def main():
     if a.list:
         for m in rig_films():
             print(m, film_class(m) or "?")
+        for m, why in not_on().items():
+            print(f"rig-films: {m} is not run on Minecraft {minecraft_version()}: {why}", file=sys.stderr)
+        return 0
+    if a.targeted is not None:
+        if a.paths is not None:
+            films, why = targeted(a.paths)
+        else:
+            base = release_base() if a.targeted == "release" else a.targeted
+            if base is None:
+                films, why = rig_films(), [f"every film: no {minecraft_version()} release below HEAD to compare with"]
+            else:
+                films, why = targeted(changed_paths(base))
+                why.insert(0, f"against {base}")
+        for m in films:
+            print(m, film_class(m) or "?")
+        for w in why:
+            print(f"rig-films: {w}", file=sys.stderr)
+        for m, r in not_on().items():
+            print(f"rig-films: {m} is not run on Minecraft {minecraft_version()}: {r}", file=sys.stderr)
         return 0
     if a.check:
         problems = check()

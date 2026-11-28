@@ -264,6 +264,33 @@ public final class WishHotbar {
 
     // ── adding ────────────────────────────────────────────────────────────────────────────────────
 
+    /**
+     * A kept make (#70, {@code WorldMakes.landing}), put on his hotbar as a wish: the first empty hotbar slot, else his
+     * Wish Bag (never a slot he has to give up: nothing is asked of him). The same proxy "Add to hotbar" makes, so it
+     * fires and is aimed like any hotbar wish. Returns the hotbar slot, {@code -1} for the Wish Bag, or {@code -2} when
+     * neither had room (he is told). Server thread.
+     */
+    public static int addKept(ServerPlayer sp, String recipeId, String name, String icon) {
+        WatchPanel.Cell cell = new WatchPanel.Cell(0, WatchPanel.Family.CREATION, WatchPanel.Action.WISH, name, "",
+                recipeId, "", icon, List.of());
+        remove(sp, recipeId);   // never two of one wish
+        takeFromBag(sp, recipeId);   // the bag's copy too: the one handed over now is where he is told it is
+        Inventory inv = sp.getInventory();
+        for (int i = 0; i < WishHotbarPlan.SLOTS; i++) {
+            if (inv.getItem(i).isEmpty()) {
+                inv.setItem(i, proxy(cell, sp.getUUID()));
+                showRests(sp);
+                return i;
+            }
+        }
+        int in = com.moddingfromamod.bag.WishBagService.add(sp.level().getServer(), sp.getUUID(), proxy(cell, sp.getUUID()));
+        if (in > 0) {
+            return -1;
+        }
+        sp.sendSystemMessage(Component.literal("🎯 Your hotbar and your Wish Bag are full. Make some room first."));
+        return -2;
+    }
+
     /** "Add to hotbar": the first empty slot, or ask which slot to give up. */
     public static void add(ServerPlayer sp, WatchPanel.Cell cell) {
         Inventory inv = sp.getInventory();
@@ -271,7 +298,19 @@ public final class WishHotbar {
         for (int i = 0; i < WishHotbarPlan.SLOTS; i++) {
             empty.add(inv.getItem(i).isEmpty());
         }
-        WishHotbarPlan.Plan plan = WishHotbarPlan.add(empty, freeBagSlot(inv) >= 0);
+        WishHotbarPlan.Plan plan = WishHotbarPlan.add(empty, freeBagSlot(inv) >= 0, sp.level().getServer() != null);
+        if (plan.step() == WishHotbarPlan.Step.WISH_BAG) {
+            // A full hotbar (#189): his Wish Bag, never a question he has to answer and never nowhere. Only a bag that
+            // cannot take it falls back to asking which slot to give up. The same on every client: it is all here.
+            sp.closeContainer();
+            boolean already = inBag(sp, cell.recipeId());
+            if (already || com.moddingfromamod.bag.WishBagService.add(sp.level().getServer(), sp.getUUID(),
+                    proxy(cell, sp.getUUID())) > 0) {
+                sp.sendSystemMessage(Component.literal(WishHotbarPlan.inWishBag(already)));
+                return;
+            }
+            plan = WishHotbarPlan.add(empty, freeBagSlot(inv) >= 0, false);
+        }
         switch (plan.step()) {
             case PLACE -> {
                 sp.closeContainer();
@@ -357,10 +396,66 @@ public final class WishHotbar {
 
     private static void place(ServerPlayer sp, WatchPanel.Cell cell, int slot) {
         remove(sp, cell.recipeId());   // never two of one wish
+        takeFromBag(sp, cell.recipeId());
         sp.getInventory().setItem(slot, proxy(cell, sp.getUUID()));
         showRests(sp);   // a wish still resting in his world shows the time left, whether or not it was off a while
         sp.sendSystemMessage(Component.literal("🎯 On your hotbar, slot " + (slot + 1)
                 + ". Hold it and use it to make one."));
+    }
+
+    /** Is a proxy for this recipe in his Wish Bag? */
+    public static boolean inBag(ServerPlayer sp, String recipeId) {
+        if (sp.level().getServer() == null || recipeId == null) {
+            return false;
+        }
+        for (ItemStack e : com.moddingfromamod.bag.WishBagService.contents(sp.level().getServer(), sp.getUUID())) {
+            if (recipeId.equals(recipeOf(e))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** Take every proxy for this recipe out of his Wish Bag; how many went. */
+    static int takeFromBag(ServerPlayer sp, String recipeId) {
+        if (sp.level().getServer() == null || recipeId == null) {
+            return 0;
+        }
+        int n = 0;
+        for (ItemStack e : com.moddingfromamod.bag.WishBagService.contents(sp.level().getServer(), sp.getUUID())) {
+            if (recipeId.equals(recipeOf(e))) {
+                n += com.moddingfromamod.bag.WishBagService.take(sp.level().getServer(), sp.getUUID(), e.copy(), e.getCount());
+            }
+        }
+        return n;
+    }
+
+    /**
+     * <b>Every new wish is also a hotbar wish in his Wish Bag</b> (#pins): a thing he wished for that can be made
+     * again ({@code recipeId}: a Builder make's "Make another one", a Magician's taught recipe) is put in his bag as
+     * the same proxy "Add to hotbar" makes, so it is always there to fire again and he never has to find the menu to
+     * learn that pinning exists. Nothing when he already holds one anywhere (hotbar, inventory or bag), when the bag
+     * does not apply to him (a camera, a test's mock) or is full. He is told once, in one line. Server thread.
+     *
+     * @return true when one was put in his bag
+     */
+    public static boolean pinToBag(net.minecraft.server.MinecraftServer server, UUID who, String recipeId, String name,
+                                   String icon) {
+        ServerPlayer sp = server == null || who == null ? null : server.getPlayerList().getPlayer(who);
+        if (sp == null || recipeId == null || recipeId.isBlank() || !WatchPinService.bagApplies(sp)
+                || has(sp, recipeId) || inBag(sp, recipeId)) {
+            return false;
+        }
+        WatchPanel.Cell cell = new WatchPanel.Cell(0, WatchPanel.Family.CREATION, WatchPanel.Action.WISH, name, "",
+                recipeId, "", icon == null ? "" : icon, List.of());
+        if (com.moddingfromamod.bag.WishBagService.add(server, who, proxy(cell, who)) <= 0) {
+            return false;
+        }
+        // its name is a make's or a taught recipe's label, as the watch shows it; the line is swept as any he reads,
+        // and one that does not pass is said without the name
+        String line = WishHotbarPlan.pinnedInBag(name);
+        sp.sendSystemMessage(Component.literal(WishFeedback.sweeps(line, "") ? line : WishHotbarPlan.pinnedInBag("")));
+        return true;
     }
 
     /** An empty slot of the main inventory outside the hotbar, or -1. */

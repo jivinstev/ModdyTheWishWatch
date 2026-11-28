@@ -3,10 +3,6 @@ package com.moddingfromamod.plugin;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
 
 /**
  * <b>A resource that another mod's jar may ship</b>: this mod's own jar first, then every loaded mod's file.
@@ -56,7 +52,7 @@ public final class ModResources {
         return b == null ? null : new String(b, StandardCharsets.UTF_8);
     }
 
-    /** The bytes of {@code path} inside one loaded mod's file, or null: a jar is read as a zip, a dev folder as a folder. */
+    /** The bytes of {@code path} inside one loaded mod's file, or null. */
     private static byte[] modBytes(String... path) {
         net.neoforged.fml.ModList mods;
         try {
@@ -69,7 +65,7 @@ public final class ModResources {
         }
         for (net.neoforged.neoforgespi.language.IModFileInfo info : mods.getModFiles()) {
             try {
-                byte[] b = readFromModFile(info.getFile().getFilePath(), path);
+                byte[] b = readFromModFile(info.getFile(), path);
                 if (b != null) {
                     return b;
                 }
@@ -80,30 +76,9 @@ public final class ModResources {
         return null;
     }
 
-    /** The bytes of a path relative to a mod file's root: a folder is walked, a jar is read as a zip; null if absent. */
-    private static byte[] readFromModFile(Path file, String... path) throws IOException {
-        if (file == null) {
-            return null;
-        }
-        if (Files.isDirectory(file)) {
-            Path p = file;
-            for (String segment : path) {
-                p = p.resolve(segment);
-            }
-            return Files.isRegularFile(p) ? Files.readAllBytes(p) : null;
-        }
-        if (!Files.isRegularFile(file)) {
-            return null;
-        }
-        try (ZipFile zip = new ZipFile(file.toFile())) {
-            ZipEntry entry = zip.getEntry(String.join("/", path));
-            if (entry == null) {
-                return null;
-            }
-            try (InputStream in = zip.getInputStream(entry)) {
-                return in.readAllBytes();
-            }
-        }
+    /** The bytes of a path relative to a mod file's root, read through FML's own contents (every content root); null if absent. */
+    private static byte[] readFromModFile(net.neoforged.neoforgespi.locating.IModFile file, String... path) throws IOException {
+        return file == null ? null : file.getContents().readFile(String.join("/", path));
     }
 
     private static String ownJar(String resource) {
@@ -126,7 +101,7 @@ public final class ModResources {
         }
         for (net.neoforged.neoforgespi.language.IModFileInfo info : mods.getModFiles()) {
             try {
-                byte[] b = readFromModFile(info.getFile().getFilePath(), dir, name);
+                byte[] b = readFromModFile(info.getFile(), dir, name);
                 if (b != null) {
                     return new String(b, StandardCharsets.UTF_8);
                 }

@@ -44,6 +44,33 @@ jobs:
         run: |
           set -euo pipefail
           git fetch --no-tags -q origin main
+          # The weekly round's records (MMVU keep-current): it commits the known-issues ledger and the README's Ports
+          # block straight to the release line. A commit that changes only those is allowed; README.md only when it is
+          # unchanged once the block between the ports markers is taken out of both sides.
+          records_only() {
+            local sha="$1" f
+            local changed; changed="$(git show --name-only --format= "$sha" | sed '/^$/d')"
+            [ -n "$changed" ] || return 1
+            while IFS= read -r f; do
+              case "$f" in
+                .port/KNOWN-ISSUES.json) ;;
+                README.md)
+                  python3 - "$sha" <<'PY' || return 1
+          import re, subprocess, sys
+          sha = sys.argv[1]
+          def text(ref):
+              r = subprocess.run(["git", "show", ref], capture_output=True, text=True, encoding="utf-8")
+              return r.stdout if r.returncode == 0 else ""
+          def outside(t):
+              t = re.sub(r"<!-- ports:begin -->.*?<!-- ports:end -->", "", t, flags=re.S)
+              return t.rstrip()
+          sys.exit(0 if outside(text(f"{sha}^:README.md")) == outside(text(f"{sha}:README.md")) else 1)
+          PY
+                  ;;
+                *) return 1 ;;
+              esac
+            done <<< "$changed"
+          }
           mapfile -t commits < <(git rev-list --no-merges --reverse origin/main..HEAD)
           bad=0
           if [ "${#commits[@]}" -gt 0 ]; then
@@ -59,6 +86,10 @@ jobs:
               files="$(git show --name-only --format= "$sha" | sed '/^$/d')"
               if [ "$author" = "github-actions[bot]" ] && [ "$files" = ".github/port-install.json" ]; then
                 echo "allowed: $sha is Port CI's install-manifest refresh"
+                continue
+              fi
+              if records_only "$sha"; then
+                echo "allowed: $sha only records the weekly round (the known-issues ledger, the README Ports block)"
                 continue
               fi
               echo "::error::$(git log -1 --format='%h %s' "$sha") is on the release line but not on main. Land it on main first, then merge main into the release line or cherry-pick it down."

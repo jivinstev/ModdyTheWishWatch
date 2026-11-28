@@ -127,6 +127,10 @@ public final class OwnerOfflineGameTest {
         MockPlayerNetwork.clearStaleMocks(helper);
         ServerPlayer bob = MockPlayerNetwork.inLevel(helper);
         UUID alice = UUID.randomUUID();
+        // The hut is built where Bob looks, a box that slides out of this plot into the next batch's, and it
+        // finishes going up after this test has passed: left standing, it walled in the mount of
+        // ArchetypeLifeGameTest.aMountComesOverToItsRider a batch later ("closest 6.6 (from 8.5)"). Take it down.
+        com.moddingfromamod.wishbuilder.BuilderMakeGameTest.takeDownWhenDone(helper, java.util.List.of("gt_owner_offline_hut"));
         AtomicReference<ToolResult> built = new AtomicReference<>();
         Thread t = as(alice, "world", () -> built.set(new BuildStructureTool().call(json("""
                 {"id":"gt_owner_offline_hut","name":"Hut","note":"owner offline gate","shapes":[

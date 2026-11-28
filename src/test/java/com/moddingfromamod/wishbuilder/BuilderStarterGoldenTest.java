@@ -77,6 +77,78 @@ class BuilderStarterGoldenTest {
         return out;
     }
 
+    /**
+     * #74, a deliberate change this fixture predates: a creature made from a ready-made SPECIES carries that ready-made's
+     * shipped health and attack damage (the pet dragon's 60, in every world), where before it inherited them from the
+     * world's own record of the species (20 and 3 in a fresh world). Added to the recorded sculpt; the rest of every
+     * saved make still re-makes byte for byte. A body (bodies/...) already sent its own and is unchanged.
+     */
+    static JsonArray withShipped(JsonArray calls, String preset) {
+        JsonArray out = calls.deepCopy();
+        JsonObject shipped = LibraryPresets.SHIPPED.species(preset);
+        for (JsonElement c : out) {
+            JsonObject args = c.getAsJsonObject().getAsJsonObject("args");
+            if (shipped != null && c.getAsJsonObject().get("tool").getAsString().equals("sculpt_creature") && args != null
+                    && args.has("start_from")) {
+                for (String k : new String[] {"health", "damage"}) {
+                    if (!args.has(k) && shipped.has(k)) {
+                        args.add(k, shipped.get(k).deepCopy());
+                    }
+                }
+            }
+        }
+        return out;
+    }
+
+    /**
+     * #99, a deliberate change this fixture predates: every stock creature has a reviewed stat line, so a body's sculpt
+     * now sends its reviewed health and damage (the bear's 30/6 where it sent 30/0, the duck's 8/1 where it sent none
+     * and was read as 20/3). The recorded sculpt takes the body's shipped numbers; the rest of every saved make still
+     * re-makes byte for byte. A species preset's are added by {@link #withShipped}. Since #101 a shipped armour and
+     * knockback resistance above 0 go with it too (the turtle's shell, the rock golem's footing).
+     */
+    static JsonArray withReviewedStats(JsonArray calls, String preset) {
+        JsonArray out = calls.deepCopy();
+        JsonObject sculpt = preset.startsWith("bodies/") ? LibraryPresets.SHIPPED.read(preset) : null;
+        for (JsonElement c : out) {
+            JsonObject args = c.getAsJsonObject().getAsJsonObject("args");
+            if (!c.getAsJsonObject().get("tool").getAsString().equals("sculpt_creature") || args == null) {
+                continue;
+            }
+            if (sculpt != null) {
+                for (String k : new String[] {"health", "damage"}) {
+                    if (sculpt.has(k)) {
+                        args.add(k, sculpt.get(k).deepCopy());
+                    }
+                }
+            }
+            // #101: and its shipped armour and knockback, where it has some, now that the tool takes them
+            BuilderLowering.defence(LibraryPresets.SHIPPED.species(preset), args);
+        }
+        return out;
+    }
+
+    /**
+     * #103, a deliberate change this fixture predates: a creature's size and How strong move its health and damage,
+     * and a guard always hits for its size band's (BuilderCreatureStrength). The recorded sculpt's numbers take that
+     * rule, worked out from the saved make; the rest of every saved make still re-makes byte for byte. A Normal-sized
+     * make at its own strength that is not a guard is unchanged by it.
+     */
+    static JsonArray withStrengthRule(JsonArray calls, BuilderSpec spec, String preset) {
+        JsonArray out = calls.deepCopy();
+        JsonObject sculpt = LibraryPresets.SHIPPED.read(preset);
+        JsonObject species = LibraryPresets.SHIPPED.species(preset);
+        for (JsonElement c : out) {
+            JsonObject args = c.getAsJsonObject().getAsJsonObject("args");
+            if (args != null && c.getAsJsonObject().get("tool").getAsString().equals("sculpt_creature")) {
+                JsonArray parts = args.has("parts") && args.getAsJsonArray("parts").size() > 0 ? args.getAsJsonArray("parts")
+                        : sculpt == null ? new JsonArray() : sculpt.getAsJsonArray("parts");
+                BuilderLowering.strength(spec, args, parts, BuilderParts.vehicle(preset, species));
+            }
+        }
+        return out;
+    }
+
     @Test
     void everySavedStarterMakeLowersAsItDidBefore() throws Exception {
         JsonObject before = fixture();
@@ -86,7 +158,8 @@ class BuilderStarterGoldenTest {
             BuilderSpec.Kind kind = BuilderSpec.Kind.of(key.substring(0, key.indexOf('/')));
             String preset = key.substring(key.indexOf('/') + 1);
             JsonArray now = BuilderStarterGolden.lowered(BuilderSpec.read(BuilderStarterGolden.saved(kind, preset)));
-            if (!normal(withNatural(before.getAsJsonArray(key), preset)).equals(normal(now))) {
+            if (!normal(withStrengthRule(withReviewedStats(withShipped(withNatural(before.getAsJsonArray(key), preset), preset), preset),
+                    BuilderSpec.read(BuilderStarterGolden.saved(kind, preset)), preset)).equals(normal(now))) {
                 wrong.add(key + "\n  before: " + before.get(key) + "\n  now:    " + now);
             }
         }

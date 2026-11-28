@@ -5,7 +5,7 @@
   "powers": [
     "friendly"
   ],
-  "damage": 0,
+  "damage": 4,
   "health": 40,
   "speed": 0.3,
   "parts": [

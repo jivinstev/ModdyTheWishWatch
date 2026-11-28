@@ -1,7 +1,7 @@
 {
  "behaves_like": "climber",
- "damage": 0,
- "health": 30,
+ "damage": 3,
+ "health": 20,
  "id": "crab",
  "name": "Red Crab",
  "note": "Invented crab: wide flat red shell with darker speckle, oversized claws on short arms so 'big claws' reads instantly, eyes on stalks with a 3-box smile so it's cute. Friendly, wild, wolf voice-free (silent-ish via frog).",

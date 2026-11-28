@@ -301,6 +301,61 @@ public final class WishRun {
         builderMade = true;
     }
 
+    private volatile com.moddingfromamod.world.Landing landing;
+    private volatile String landingKind;
+    private final Object landingLock = new Object();
+    private final java.util.concurrent.atomic.AtomicBoolean handedOver = new java.util.concurrent.atomic.AtomicBoolean();
+
+    /**
+     * Where this world sends what this run makes (#70, {@code WorldMakes.landing}), LOCKED the first time it is set
+     * (a Builder make before its first placing step; a Magician wish at its first {@code plan_wish}) and never changed
+     * after, as its aim is. False when it was already set.
+     */
+    public boolean lockLanding(com.moddingfromamod.world.Landing l) {
+        synchronized (landingLock) {
+            if (landing != null || l == null) {
+                return false;
+            }
+            landing = l;
+            return true;
+        }
+    }
+
+    /** …and the kind it was decided for (the plan's {@code kind} a Magician wish was kept as), locked with it. */
+    public boolean lockLanding(com.moddingfromamod.world.Landing l, String kind) {
+        synchronized (landingLock) {
+            if (!lockLanding(l)) {
+                return false;
+            }
+            landingKind = kind;
+            return true;
+        }
+    }
+
+    /** The kind this run's landing was decided for, or null. */
+    public String landingKind() {
+        return landingKind;
+    }
+
+    /** Where this run's make goes, or null before it was decided (it lands). */
+    public com.moddingfromamod.world.Landing landing() {
+        return landing;
+    }
+
+    /**
+     * A world keeps what this run makes and hands it over (#70): its creature is designed and not spawned, and no
+     * preview of it stands ({@code WishEarlyReveal}), because nothing appears until he fires it.
+     */
+    public boolean kept() {
+        var l = landing;
+        return l != null && l != com.moddingfromamod.world.Landing.LANDS;
+    }
+
+    /** True exactly once: the first time a kept run is handed over. */
+    public boolean handOverOnce() {
+        return handedOver.compareAndSet(false, true);
+    }
+
     private volatile com.moddingfromamod.world.WorldRefusal worldRefusal;
 
     /**
@@ -367,6 +422,11 @@ public final class WishRun {
     /** {@code conjure_at} marked this wish's spot. */
     public synchronized void conjured() {
         conjured = true;
+    }
+
+    /** {@code plan_wish}'s {@code kind} as first given, or null before it was. */
+    public synchronized String plannedKind() {
+        return planKind;
     }
 
     /** {@code plan_wish}'s {@code kind}, the first time it is given. */

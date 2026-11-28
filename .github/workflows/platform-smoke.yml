@@ -1,0 +1,328 @@
+# Platform smoke: the release jar and a small GameTest smoke on the platforms nothing else runs on.
+#
+# Every other job runs on ubuntu x64. A player's server or client may be Windows x64, an Apple-silicon Mac or a
+# Linux arm64 box, and the parts that can differ there are a native library (ONNX Runtime, one native set per platform
+# nested in the jar), file handling (the model copied out of the jar, the world, the datapacks a make writes) and the
+# JDK. docs/RELEASING.md ("Platform smoke") has the table of what runs where.
+#
+#   jar       the release jar, built from the ref on ubuntu by tools/store-release.sh (the same build and checks a
+#             release runs), with the NeoForge and Java versions the ref names.
+#   server    windows-latest (x64) and ubuntu-24.04-arm (arm64), required; macos-latest (arm64), the same tests but
+#             optional (continue-on-error: its runners are scarce). Each on its own JDK:
+#             1. tools/platform-smoke.py server: the official NeoForge installer installs a real server, the release
+#                jar goes in mods/, and the server boots twice. RED unless the Apprentice's model loads through this
+#                platform's ONNX Runtime native library and reads a clause ("apprentice layer: on"), the native file
+#                is where the mod unpacked it, the world saves, stops cleanly and loads again.
+#             2. a GameTest smoke from source on the same machine (tools/gate/gate.py run, the classes below): the
+#                bundled CBScript compiler, a Builder make, the Apprentice's matcher, the world's stores saved and
+#                read back. gate.py checks every class given ran, with as many tests as its source declares.
+#   client    EXPERIMENTAL, never required: windows-latest only, a Gate C film (vanillastage: a real client draws a creature and photographs it)
+#             under Mesa's llvmpipe software OpenGL, the DLLs dropped beside the JDK's java.exe.
+#
+#   record    (not on a pull request) every job's conclusion, as a `platform` record of the ref's gate tree on the
+#             gate-data branch. tools/gate/gate.py release-gate reads it: a release needs the release jar and the two
+#             required server legs green for the tree it ships (tools/gate/release.py PLATFORM_REQUIRED), and starts
+#             this workflow on the release ref, alongside the full GameTest tier, when no record covers that tree.
+#
+# When: every Thursday on main (after Wednesday's weekly round), by the release gate on a release ref, and by hand
+# with a ref. A pull request that changes this workflow or its script runs it, and records nothing.
+# Standard runners on a public repository cost no Actions minutes.
+name: Platform smoke
+
+on:
+  schedule:
+    - cron: "41 10 * * 4"   # Thursday 10:41 UTC
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "Branch, tag or commit to build and smoke (main, or a neoforge-<v> branch)"
+        type: string
+        default: main
+      client:
+        description: "Also boot a Windows client (a Gate C film under Mesa's software OpenGL)"
+        type: boolean
+        default: true
+  pull_request:
+    paths:
+      - .github/workflows/platform-smoke.yml
+      - tools/platform-smoke.py
+      - tools/test-platform-smoke.py
+
+permissions:
+  contents: read
+
+concurrency:
+  group: platform-smoke-${{ github.event_name }}-${{ inputs.ref || github.head_ref || github.ref }}
+  cancel-in-progress: true
+
+env:
+  PYTHONUTF8: "1"   # Windows' console is cp1252 otherwise, and gate.py's summary has an arrow in it
+  # The GameTest smoke: each class proves one platform-sensitive path (docs/RELEASING.md, "Platform smoke").
+  #   NoPythonGameTest       a real datapack wish compiles in-process with the bundled CBScript compiler, no Python
+  #   DatapackGameTest       CBScript compiles, the datapack is written to the world and loads
+  #   BuilderMakeGameTest    a Builder make, local only
+  #   ApprenticeGameTest     the Apprentice's matcher and its page
+  #   WishStoreFileGameTest  the wish stores saved to the real world directory and read back
+  SMOKE_CLASSES: NoPythonGameTest,DatapackGameTest,BuilderMakeGameTest,ApprenticeGameTest,WishStoreFileGameTest
+
+jobs:
+  jar:
+    name: release jar
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    outputs:
+      minecraft: ${{ steps.v.outputs.minecraft }}
+      neoforge: ${{ steps.v.outputs.neoforge }}
+      java: ${{ steps.v.outputs.java }}
+      version: ${{ steps.v.outputs.version }}
+      commit: ${{ steps.v.outputs.commit }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.ref || github.sha }}
+      - name: What the ref builds
+        id: v
+        run: |
+          p() { sed -n "s/^$1=//p" gradle.properties | head -1; }
+          mc="$(p minecraft_version)"; neo="$(p neo_version)"; mod="$(p mod_version)"
+          java="$(sed -n 's/^java_version=//p' ".port/$mc/branch.properties" 2>/dev/null | head -1)"
+          java="${java:-21}"
+          echo "minecraft=$mc" >> "$GITHUB_OUTPUT"; echo "neoforge=$neo" >> "$GITHUB_OUTPUT"
+          echo "java=$java" >> "$GITHUB_OUTPUT"; echo "version=$mod+mc$mc" >> "$GITHUB_OUTPUT"
+          echo "commit=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+          echo "### Platform smoke of \`${{ inputs.ref || github.ref_name }}\` ($(git rev-parse --short HEAD)): Minecraft $mc, NeoForge $neo, Java $java" >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: ${{ steps.v.outputs.java }}
+      - &gradle-cache
+        name: Cache Gradle and the NeoForm decompile
+        uses: actions/cache@v6
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('gradle.properties', 'build.gradle', 'versions/*.properties', 'gradle/wrapper/gradle-wrapper.properties') }}
+          restore-keys: gradle-${{ runner.os }}-${{ runner.arch }}-
+      - &centralMirror
+        name: Maven Central through its public mirror
+        shell: bash
+        run: mkdir -p ~/.gradle/init.d && cp .github/gradle/central-mirror.init.gradle ~/.gradle/init.d/
+      - name: tools/store-release.sh (the release jar, built and checked)
+        run: |
+          start=$(date +%s)
+          ./tools/store-release.sh "${{ steps.v.outputs.version }}" "$RUNNER_TEMP/store-release"
+          echo "- release jar built and checked in $(( $(date +%s) - start )) s" >> "$GITHUB_STEP_SUMMARY"
+          cp "$RUNNER_TEMP/store-release/store-release.json" "$RUNNER_TEMP/store-release.json" 2>/dev/null || true
+          ls -l build/libs/
+      - uses: actions/upload-artifact@v5
+        with:
+          name: release-jar
+          path: build/libs/moddingfromamod-${{ steps.v.outputs.version }}.jar
+          if-no-files-found: error
+          retention-days: 7
+
+  server:
+    name: server (${{ matrix.os }})
+    needs: jar
+    strategy:
+      fail-fast: false
+      matrix:
+        # windows-latest and ubuntu-24.04-arm are REQUIRED: a red one fails the run. macos-latest runs every test the
+        # others do, but its runners are scarce, so a red or unscheduled macOS leg is reported and does not fail it.
+        os: [windows-latest, ubuntu-24.04-arm, macos-latest]
+        include:
+          - os: macos-latest
+            optional: true
+    continue-on-error: ${{ matrix.optional == true }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 90
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Check out with LF line endings, as the release jar's tree is
+        # Windows runners default to core.autocrlf=true. The jar is built on Linux from LF files, so a CRLF checkout
+        # would test a tree no player gets: the bundled compiler reads its parser tables line by line, and a CRLF copy
+        # fails every compile ("27\r"). That is a bug for a Windows developer building from source, tracked apart.
+        run: git config --global core.autocrlf false
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.ref || github.sha }}
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: ${{ needs.jar.outputs.java }}
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - uses: actions/download-artifact@v5
+        with:
+          name: release-jar
+          path: ${{ runner.temp }}/jar
+      - name: The release jar on a real NeoForge server, booted twice
+        run: |
+          start=$(date +%s)
+          python tools/platform-smoke.py server --jar "$RUNNER_TEMP"/jar/*.jar \
+            --neoforge "${{ needs.jar.outputs.neoforge }}" --out "$RUNNER_TEMP/smoke/server" | tee "$RUNNER_TEMP/server.txt"
+          rc=${PIPESTATUS[0]}
+          {
+            echo "#### ${{ matrix.os }} ($(uname -m)): release jar on a NeoForge ${{ needs.jar.outputs.neoforge }} server, $(( $(date +%s) - start )) s, exit $rc"
+            echo '```'; grep -E 'platform-smoke: (installed|RED|GREEN|mod )|moddingfromamod-' "$RUNNER_TEMP/server.txt" | tail -n 12; echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          exit $rc
+      - *gradle-cache
+      - *centralMirror
+      - name: GameTest smoke from source (tools/gate/gate.py run)
+        if: ${{ !cancelled() }}
+        run: |
+          start=$(date +%s)
+          python tools/gate/gate.py run --shard ci,default --classes "$SMOKE_CLASSES" --kind platform --no-python \
+            --label "${{ matrix.os }}" --timeout 45 --out "$RUNNER_TEMP/smoke/gametest" | tee "$RUNNER_TEMP/gametest.txt"
+          rc=${PIPESTATUS[0]}
+          {
+            echo "#### ${{ matrix.os }}: GameTest smoke, $(( $(date +%s) - start )) s with the build, exit $rc"
+            echo '```'; grep -E '^gate: |^  (failed|flaky|skipped|PROBLEM)' "$RUNNER_TEMP/gametest.txt" | tail -n 20; echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          exit $rc
+      - name: Each failed test's error
+        if: ${{ failure() }}
+        run: |
+          python - "$RUNNER_TEMP/smoke/gametest/job.json" <<'PY'
+          import json, sys
+          try:
+              job = json.load(open(sys.argv[1], encoding="utf-8"))
+          except OSError as e:
+              sys.exit("no job.json: %s" % e)
+          for t in job.get("tests", []):
+              if t["outcome"] in ("failed", "flaky", "skipped"):
+                  print("::error title=%s %s::%s" % (t["outcome"], t["name"], (t.get("error") or "no error text")[:900]))
+                  r = t.get("retry") or {}
+                  if r.get("ran"):
+                      print("    retried alone: %s -- %s" % ("passed" if r.get("passed") else "failed", (r.get("error") or "")[:900]))
+          for p in job.get("problems", []):
+              print("::error title=problem::" + p[:900])
+          PY
+          # the GameTest servers' own errors (artifacts are not always at hand): each distinct ERROR or exception line
+          # with the line under it, from every attempt's log
+          for f in "$RUNNER_TEMP"/smoke/gametest/*.log; do
+            [ -f "$f" ] || continue
+            echo "== $(basename "$f")"
+            grep -E -A30 '/ERROR\]|Exception|Caused by:' "$f" | grep -vE '^\s+at (java|jdk|net\.minecraft|net\.neoforged|com\.mojang|cpw|org)\.' \
+              | awk '!seen[$0]++' | head -n 120
+          done
+      - uses: actions/upload-artifact@v5
+        if: ${{ always() }}
+        with:
+          name: platform-smoke-${{ matrix.os }}
+          path: |
+            ${{ runner.temp }}/smoke/server/*.log
+            ${{ runner.temp }}/smoke/server/*.json
+            ${{ runner.temp }}/smoke/server/server/logs/
+            ${{ runner.temp }}/smoke/gametest/
+          if-no-files-found: ignore
+          retention-days: 14
+
+  client:
+    # EXPERIMENTAL: reported, never required (continue-on-error; the release gate does not read it).
+    name: client (windows-latest, Mesa llvmpipe)
+    needs: jar
+    if: ${{ github.event_name != 'workflow_dispatch' || inputs.client }}
+    continue-on-error: true
+    runs-on: windows-latest
+    timeout-minutes: 90
+    defaults:
+      run:
+        shell: bash
+    env:
+      # pal1000/mesa-dist-win (MIT), Mesa built for Windows: its opengl32.dll beside java.exe is the first opengl32 the
+      # JDK's process loads, so LWJGL gets llvmpipe's OpenGL 4.5 instead of the runner's GDI 1.1. Downloaded here,
+      # never committed. MESA_SHA256 pins the archive; empty, the run prints the sha256 it got and fails.
+      MESA_VERSION: "26.3.1"
+      MESA_SHA256: "64e84cf13d67dd354640bf443ed0445e6a83afd06a5729f0750b3744d633b3f1"
+    steps:
+      - name: Check out with LF line endings, as the release jar's tree is
+        # Windows runners default to core.autocrlf=true. The jar is built on Linux from LF files, so a CRLF checkout
+        # would test a tree no player gets: the bundled compiler reads its parser tables line by line, and a CRLF copy
+        # fails every compile ("27\r"). That is a bug for a Windows developer building from source, tracked apart.
+        run: git config --global core.autocrlf false
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.ref || github.sha }}
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: ${{ needs.jar.outputs.java }}
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - name: Mesa's software OpenGL beside java.exe
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          tag="${MESA_VERSION:-$(gh api repos/pal1000/mesa-dist-win/releases/latest --jq .tag_name)}"
+          asset="$(gh api "repos/pal1000/mesa-dist-win/releases/tags/$tag" --jq '.assets[].name' | grep -E 'release-msvc\.7z$' | head -1)"
+          curl -fsSL --retry 3 -o "$RUNNER_TEMP/mesa.7z" "https://github.com/pal1000/mesa-dist-win/releases/download/$tag/$asset"
+          got="$(sha256sum "$RUNNER_TEMP/mesa.7z" | cut -d' ' -f1 | tr -d '\\')"
+          echo "Mesa $tag ($asset) sha256 $got" | tee -a "$GITHUB_STEP_SUMMARY"
+          if [ -z "$MESA_SHA256" ]; then echo "::error::MESA_SHA256 is not pinned: pin MESA_VERSION=$tag and MESA_SHA256=$got"; exit 1; fi
+          [ "$got" = "$MESA_SHA256" ] || { echo "::error::Mesa archive sha256 $got, pinned $MESA_SHA256"; exit 1; }
+          7z x -y -o"$RUNNER_TEMP/mesa" "$RUNNER_TEMP/mesa.7z" > /dev/null
+          # beside every java.exe Gradle's toolchain lookup could pick (the runner has several JDKs preinstalled)
+          for bin in "$(cygpath -u "$JAVA_HOME")/bin" /c/hostedtoolcache/windows/Java_*/*/x64/bin; do
+            [ -f "$bin/java.exe" ] || continue
+            cp "$RUNNER_TEMP"/mesa/x64/*.dll "$bin/"
+            echo "Mesa's DLLs beside $bin/java.exe" | tee -a "$GITHUB_STEP_SUMMARY"
+          done
+          ls "$RUNNER_TEMP"/mesa/x64/
+          echo "GALLIUM_DRIVER=llvmpipe" >> "$GITHUB_ENV"
+      - *gradle-cache
+      - *centralMirror
+      - name: A Gate C film on a Windows client (vanillastage)
+        run: |
+          start=$(date +%s)
+          python tools/platform-smoke.py client --mode vanillastage --out "$RUNNER_TEMP/smoke/client" | tee "$RUNNER_TEMP/client.txt"
+          rc=${PIPESTATUS[0]}
+          {
+            echo "#### windows-latest client: $(( $(date +%s) - start )) s with the build, exit $rc"
+            echo '```'; grep -E '^platform-smoke: ' "$RUNNER_TEMP/client.txt" | tail -n 12; echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          exit $rc
+      - uses: actions/upload-artifact@v5
+        if: ${{ always() }}
+        with:
+          name: platform-smoke-windows-client
+          path: ${{ runner.temp }}/smoke/client/
+          if-no-files-found: ignore
+          retention-days: 14
+
+  record:
+    name: record
+    needs: [jar, server, client]
+    if: ${{ always() && github.event_name != 'pull_request' && needs.jar.outputs.commit != '' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: write   # the run record, on the gate-data branch
+      actions: read
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.jar.outputs.commit }}
+          fetch-depth: 0
+      - name: The gate-data branch (run history), or an empty one
+        run: |
+          if git fetch --quiet origin gate-data; then
+            git worktree add --quiet -B gate-data gate-data FETCH_HEAD
+          else
+            git worktree add --quiet --detach gate-data
+            git -C gate-data checkout --quiet --orphan gate-data
+            git -C gate-data rm -rfq .
+          fi
+      - name: Record this run's legs for its gate tree
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python3 tools/gate/gate.py record-platform --commit "${{ needs.jar.outputs.commit }}" --out platform-record.json
+          python3 tools/gate/gate.py record --data gate-data --publish platform-record.json
