@@ -61,9 +61,34 @@ STOCK = re.compile(r"AppenderLoggingException: java\.lang\.NoClassDefFoundError:
                    r"Could not initialize class io\.netty\.channel\.kqueue\.Native\s*$")
 
 
+# That line comes with its stack trace, whose cause chain is the same stock failure: log4j's renderer meets the
+# uninitialisable class again, and under it the reason Netty's kqueue refuses this OS. Only these two causes, the
+# trace's own frames and its "... N more" lines are part of the stock report; anything else ends it.
+STOCK_CAUSE = re.compile(r"^Caused by: (?:java\.lang\.NoClassDefFoundError: Could not initialize class "
+                         r"io\.netty\.channel\.kqueue\.Native"
+                         r"|java\.lang\.ExceptionInInitializerError: Exception java\.lang\.IllegalStateException: "
+                         r"Only supported on OSX/BSD \[in thread \"[^\"]*\"\])\s*$")
+FRAME = re.compile(r"^\s+(?:at \S|\.\.\. \d+ more\s*$)")
+
+
 def bad(line: str) -> bool:
     """Whether a server log line fails the boot."""
     return bool(BAD.search(STOCK.sub("", line)))
+
+
+def first_bad(lines: list):
+    """The first line of a boot's log that fails it, or None: bad() line by line, except that the stock kqueue
+    report's own stack trace (frames and the stock causes only) is let through with it."""
+    in_stock = False
+    for line in lines:
+        if in_stock and (FRAME.search(line) or STOCK_CAUSE.search(line)):
+            continue
+        in_stock = False
+        if bad(line):
+            return line
+        if STOCK.search(line):
+            in_stock = True
+    return None
 
 
 NATIVE = {"Windows": "onnxruntime.dll", "Darwin": "libonnxruntime.dylib", "Linux": "libonnxruntime.so"}
@@ -209,10 +234,9 @@ def boot(folder: str, args_file: str, out: str, n: int, problems: list, timeout:
             problems.append("boot %d: the server did not stop within 120 s of `stop`" % n)
     finally:
         s.kill()
-    for line in s.all:
-        if bad(line):
-            problems.append("boot %d: %s" % (n, line.strip()[:400]))
-            break
+    line = first_bad(s.all)
+    if line is not None:
+        problems.append("boot %d: %s" % (n, line.strip()[:400]))
     row["copiedModel"] = any("apprentice layer:" in ln and "copied" in ln.lower() for ln in s.all)
     return row
 
