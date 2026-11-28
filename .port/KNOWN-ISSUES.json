@@ -503,6 +503,70 @@
         "26.3": "open"
       },
       "title": "26.3: never_die gives 2 s of full invulnerability after a saved death instead of a hurt cooldown"
+    },
+    {
+      "files": [
+        "src/main/resources/precompiled/manifest.json",
+        "src/main/resources/precompiled/ready-mades.json.gz"
+      ],
+      "id": "KI-24",
+      "lowest": "1.21.11",
+      "notes": "found by the round at 1.21.11 (review)",
+      "override": null,
+      "rubric": {
+        "failure": "functional",
+        "reach": "feature",
+        "visibility": "rare",
+        "workaround": true
+      },
+      "severity": "S3",
+      "source": "review",
+      "status": {
+        "1.21.11": "open"
+      },
+      "title": "1.21.11 precompiled Builder powers lack the always-edible food (#173): store recompiled from stale skeletons"
+    },
+    {
+      "files": [
+        "src/main/resources/META-INF/accesstransformer.cfg"
+      ],
+      "id": "KI-25",
+      "lowest": "1.21.11",
+      "notes": "found by the round at 1.21.11 (fix)",
+      "override": null,
+      "rubric": {
+        "failure": "cosmetic",
+        "reach": "latent",
+        "visibility": "invisible",
+        "workaround": true
+      },
+      "severity": "S4",
+      "source": "review",
+      "status": {
+        "1.21.11": "open"
+      },
+      "title": "1.21.11 ships an access transformer for a layer class the mod does not have"
+    },
+    {
+      "files": [
+        "src/main/resources/precompiled/ready-mades.json.gz"
+      ],
+      "id": "KI-26",
+      "lowest": "1.21.11",
+      "notes": "found by the round at 1.21.11 (fix)",
+      "override": null,
+      "rubric": {
+        "failure": "functional",
+        "reach": "normal",
+        "visibility": "invisible",
+        "workaround": true
+      },
+      "severity": "S4",
+      "source": "review",
+      "status": {
+        "1.21.11": "open"
+      },
+      "title": "1.21.11 precompiled store is stale: the 120 eaten Builder powers miss it and compile live"
     }
   ],
   "schema": 1
