@@ -54,20 +54,28 @@ BAD = re.compile(r"UnsatisfiedLinkError|NoClassDefFoundError|ExceptionInInitiali
                  # a wish pack the boot could not put in place: on Windows, a loaded pack's zip held open, and the world
                  # kept running the old pack (DatapackStore.installAllIntoWorld)
                  r"|could not stage wish datapack")
-# The one line BAD would match that a stock server logs too: vanilla 1.21.11 (and later) asks
-# KQueue.isAvailable() on every OS, and off macOS/BSD the log appender reports the class it could not initialize.
+# The one report BAD would match that a stock server logs too: vanilla 1.21.11 (and later) asks Netty's native
+# transports whether they are available, KQueue.isAvailable() and Epoll.isAvailable(), on every OS, and where one
+# cannot load (kqueue off macOS/BSD, epoll off Linux) the log appender reports the class it could not initialize.
 # Only this exact cause is let through; any other appender error or NoClassDefFoundError still fails the boot.
 STOCK = re.compile(r"AppenderLoggingException: java\.lang\.NoClassDefFoundError: "
-                   r"Could not initialize class io\.netty\.channel\.kqueue\.Native\s*$")
+                   r"Could not initialize class io\.netty\.channel\.(kqueue|epoll)\.Native\s*$")
+# The reason Netty's transport refuses this OS (its Native.loadNativeLibrary), by transport.
+REFUSAL = {"kqueue": "Only supported on OSX/BSD", "epoll": "Only supported on Linux"}
 
 
 # That line comes with its stack trace, whose cause chain is the same stock failure: log4j's renderer meets the
-# uninitialisable class again, and under it the reason Netty's kqueue refuses this OS. Only these two causes, the
-# trace's own frames and its "... N more" lines are part of the stock report; anything else ends it.
-STOCK_CAUSE = re.compile(r"^Caused by: (?:java\.lang\.NoClassDefFoundError: Could not initialize class "
-                         r"io\.netty\.channel\.kqueue\.Native"
-                         r"|java\.lang\.ExceptionInInitializerError: Exception java\.lang\.IllegalStateException: "
-                         r"Only supported on OSX/BSD \[in thread \"[^\"]*\"\])\s*$")
+# uninitialisable class again, and under it the reason Netty's transport refuses this OS. Only these two causes (of
+# the same transport), the trace's own frames and its "... N more" lines are part of the stock report; anything else
+# ends it.
+def stock_cause(transport: str):
+    return re.compile(r"^Caused by: (?:java\.lang\.NoClassDefFoundError: Could not initialize class "
+                      r"io\.netty\.channel\." + transport + r"\.Native"
+                      r"|java\.lang\.ExceptionInInitializerError: Exception java\.lang\.IllegalStateException: "
+                      + re.escape(REFUSAL[transport]) + r" \[in thread \"[^\"]*\"\])\s*$")
+
+
+STOCK_CAUSE = {t: stock_cause(t) for t in REFUSAL}
 FRAME = re.compile(r"^\s+(?:at \S|\.\.\. \d+ more\s*$)")
 
 
@@ -77,17 +85,18 @@ def bad(line: str) -> bool:
 
 
 def first_bad(lines: list):
-    """The first line of a boot's log that fails it, or None: bad() line by line, except that the stock kqueue
+    """The first line of a boot's log that fails it, or None: bad() line by line, except that a stock native-transport
     report's own stack trace (frames and the stock causes only) is let through with it."""
-    in_stock = False
+    in_stock = None
     for line in lines:
-        if in_stock and (FRAME.search(line) or STOCK_CAUSE.search(line)):
+        if in_stock and (FRAME.search(line) or STOCK_CAUSE[in_stock].search(line)):
             continue
-        in_stock = False
+        in_stock = None
         if bad(line):
             return line
-        if STOCK.search(line):
-            in_stock = True
+        m = STOCK.search(line)
+        if m:
+            in_stock = m.group(1)
     return None
 
 

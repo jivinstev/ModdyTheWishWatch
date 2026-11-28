@@ -23,7 +23,8 @@ CASES = [
     (PFX + "java.lang.NoClassDefFoundError: com/moddingfromamod/wish/WarmUp$Outcome", True),
     ("java.lang.NoClassDefFoundError: Could not initialize class io.netty.channel.kqueue.Native", True),
     (PFX + APPENDER + "java.lang.NoClassDefFoundError: com/moddingfromamod/wish/WarmUp$Outcome", True),
-    (PFX + APPENDER + "java.lang.NoClassDefFoundError: Could not initialize class io.netty.channel.epoll.Native", True),
+    (PFX + APPENDER + "java.lang.NoClassDefFoundError: Could not initialize class io.netty.channel.epoll.Native", False),
+    (PFX + APPENDER + "java.lang.NoClassDefFoundError: Could not initialize class io.netty.channel.nio.Native", True),
     (PFX + APPENDER + "java.io.IOException: No space left on device", True),
     (PFX + APPENDER + "java.lang.NoClassDefFoundError: Could not initialize class io.netty.channel.kqueue.Native"
      " -- java.lang.UnsatisfiedLinkError: no onnxruntime", True),
@@ -48,6 +49,9 @@ TRACE = [
     "\t... 6 more",
     "",
 ]
+# The same report for epoll, as a stock server prints it on Windows (run 46170589636).
+EPOLL = [ln.replace("kqueue.KQueue", "epoll.Epoll").replace("kqueue", "epoll")
+         .replace("Only supported on OSX/BSD", "Only supported on Linux") for ln in TRACE]
 DONE = "[Server thread/INFO] [minecraft/DedicatedServer]: Done (6.880s)! For help, type \"help\""
 OTHER_CAUSE = "Caused by: java.lang.UnsatisfiedLinkError: no onnxruntime in java.library.path"
 LOGS = [
@@ -59,6 +63,11 @@ LOGS = [
     ([DONE, TRACE[5]], TRACE[5]),
     # the stock report ends at the first line that is not part of its trace
     (TRACE + [DONE, TRACE[5]], TRACE[5]),
+    (EPOLL + [DONE], None),
+    (TRACE + EPOLL + [DONE], None),
+    # a cause of the other transport is not part of this transport's report
+    (TRACE[:5] + [EPOLL[5], DONE], EPOLL[5]),
+    (EPOLL[:8] + [TRACE[8], DONE], TRACE[8]),
     (TRACE[:3] + ["[Server thread/INFO] [x/]: hello", "\tat com.moddingfromamod.X.y(X.java:1)", TRACE[5]], TRACE[5]),
 ]
 
