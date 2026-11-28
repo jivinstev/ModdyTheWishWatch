@@ -13,10 +13,11 @@ reviewer may add `missing` (a file that should exist) and `shared` (a shared hel
 the reviewing agent, distinct from the fixer; `commit` is the commit reviewed (`git rev-parse --short HEAD`).
 tools/fork-port.py adds a `?` row for every item it finds unreviewed; it never changes a verdict.
 
-- reviewer: fresh reviewer agent of the keep-current weekly round (week 2026-11-26), not the fixer
+- reviewer: fresh reviewer agent of the keep-current weekly round (week 2026-11-27, session_01Cvm3m5fFikeBACAxaYVzRx), not the fixer
 - date: 2026-11-27
-- commit: 7c4f679
-- re-check: fresh re-checker agent of the keep-current weekly round (week 2026-11-26), neither the reviewer nor the fixer, 2026-11-27: the 3 rows the fixes changed (eda482f, cc3c40b, 7c4f679) re-checked; 0 not-ok left
+- commit: d18619b
+- re-review: every row's file checked again at d18619b against neoforge-1.21.8 at the merge-base b7cefc2; of the version-differing files changed since 7c4f679, ModdingFromAModMod, ApprenticeService and BuilderMake have the same version diff as before, WishHotbarGameTest (and the row-made WishHotbar, BuilderPageWarm) only gained renames.tsv's getServer() -> level().getServer() on the authors' new lines, gradle.properties is the derived versions, port-ci.yml is generated CI; behaviour inventory 315 same + 1 changed (RigBundleBroadcastMixin, its item row), 0 unaccounted; 0 not-ok
+- previous: review at 7c4f679 (week 2026-11-26) and its re-check of eda482f, cc3c40b, 7c4f679, 0 not-ok
 
 | kind | file | verdict | note |
 |---|---|---|---|
@@ -167,3 +168,4 @@ tools/fork-port.py adds a `?` row for every item it finds unreviewed; it never c
 | resources | src/main/resources/starter-library/datapacks/tiny_cookie_grow @4ebb62337fd1 | ok | starter datapack re-declared for 1.21.10: pack_format 81 -> 88 with min_format/max_format [88,0] (checked: pack.mcmeta is the only difference) |
 | resources | src/main/resources/tools/cbscript.SOURCE @f4a4d69f64c3 | ok | records java-port-1.21.10 e86a0f3 and the tree hash; matches the vendored tree |
 | item | main:com/moddingfromamod/mixin/RigBundleBroadcastMixin.java#injection:@Inject method=broadcast(Lnet/minecraft/network/protocol/Packet;)V @At(value="HEAD") | ok | accounted for: re-targeted to sendToTrackingPlayers, see the RigBundleBroadcastMixin row |
+| resources | src/main/resources/precompiled/ready-mades.json.gz @b944b01309f2 | ok | recompiled for #173's make_item rendering (41564e2): the same 48 of 152 entries changed as #173 changed on 1.21.8, can_always_eat in 120 places on both; against the parent's store every entry differs only in its pack.mcmeta (pack_format 88 with min_format/max_format), manifest fingerprint unchanged |
