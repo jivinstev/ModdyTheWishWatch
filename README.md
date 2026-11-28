@@ -144,8 +144,8 @@ Questions and bug reports go to GitHub Issues.
 
 | Minecraft | Branch | Newest build | Done |
 |---|---|---|---|
-| 1.21.8 | [`neoforge-1.21.8`](https://github.com/jivinstev/ModdyTheWishWatch/tree/neoforge-1.21.8) | [`moddingfromamod-1.0.12-mc1.21.8`](https://github.com/jivinstev/ModdyTheWishWatch/releases/tag/moddingfromamod-1.0.12-mc1.21.8) (pre-release) | head |
-| 1.21.10 | [`neoforge-1.21.10`](https://github.com/jivinstev/ModdyTheWishWatch/tree/neoforge-1.21.10) | [`moddingfromamod-1.0.10-mc1.21.10`](https://github.com/jivinstev/ModdyTheWishWatch/releases/tag/moddingfromamod-1.0.10-mc1.21.10) (pre-release) | not done |
+| 1.21.8 | [`neoforge-1.21.8`](https://github.com/jivinstev/ModdyTheWishWatch/tree/neoforge-1.21.8) | [`moddingfromamod-1.0.13-mc1.21.8`](https://github.com/jivinstev/ModdyTheWishWatch/releases/tag/moddingfromamod-1.0.13-mc1.21.8) (pre-release) | head |
+| 1.21.10 | [`neoforge-1.21.10`](https://github.com/jivinstev/ModdyTheWishWatch/tree/neoforge-1.21.10) | [`moddingfromamod-1.0.13-mc1.21.10`](https://github.com/jivinstev/ModdyTheWishWatch/releases/tag/moddingfromamod-1.0.13-mc1.21.10) (pre-release) | not done |
 | 1.21.11 | [`neoforge-1.21.11`](https://github.com/jivinstev/ModdyTheWishWatch/tree/neoforge-1.21.11) | [`moddingfromamod-1.0.10-mc1.21.11`](https://github.com/jivinstev/ModdyTheWishWatch/releases/tag/moddingfromamod-1.0.10-mc1.21.11) (pre-release) | not done |
 | 26.1.2 | [`neoforge-26.1.2`](https://github.com/jivinstev/ModdyTheWishWatch/tree/neoforge-26.1.2) | [`moddingfromamod-1.0.10-mc26.1.2`](https://github.com/jivinstev/ModdyTheWishWatch/releases/tag/moddingfromamod-1.0.10-mc26.1.2) (pre-release) | not done |
 | 26.2 | [`neoforge-26.2`](https://github.com/jivinstev/ModdyTheWishWatch/tree/neoforge-26.2) | [`moddingfromamod-1.0.10-mc26.2`](https://github.com/jivinstev/ModdyTheWishWatch/releases/tag/moddingfromamod-1.0.10-mc26.2) (pre-release) | not done |
